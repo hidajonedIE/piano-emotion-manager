@@ -23,6 +23,8 @@ El principio fundamental es **justo y transparente**: el técnico puede usar tod
 | Firma digital | ✅ | ✅ | Sin coste |
 | Exportar PDF | ✅ | ✅ | Sin coste |
 | Mapa de clientes | ✅ | ✅ | Sin coste |
+| **Gestión de visitas** | ✅ | ✅ | **Mejora eficiencia** |
+| **Rutas optimizadas** | ✅ | ✅ | **Mejora eficiencia** |
 | Modo offline | ✅ | ✅ | Sin coste |
 | **WhatsApp Business** | ❌ | ✅ | Tiene coste |
 | **Recordatorios automáticos** | ❌ | ✅ | Tiene coste |
