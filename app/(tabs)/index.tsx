@@ -9,6 +9,8 @@ import { ServiceCard } from '@/components/cards';
 import { Accordion } from '@/components/accordion';
 import { AnimatedCard } from '@/components/animated-card';
 import { OnboardingTutorial } from '@/components/onboarding-tutorial';
+import { GlobalSearchBar } from '@/components/global-search-bar';
+import { HamburgerMenu } from '@/components/hamburger-menu';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -171,14 +173,14 @@ export default function DashboardScreen() {
   ];
 
   // En web, usar CSS gradient directamente para evitar problemas de renderizado intermitente
-  // Degradado desde los 4 bordes hacia el centro (forma cuadrada)
+  // Degradado desde los 4 bordes hacia el centro - parte clara muy grande, especialmente arriba
   const containerStyle = Platform.OS === 'web' 
     ? [styles.container, { 
         background: `
-          linear-gradient(to bottom, #80DEEA 0%, #B2EBF2 15%, transparent 30%),
-          linear-gradient(to top, #80DEEA 0%, #B2EBF2 15%, transparent 30%),
-          linear-gradient(to right, #80DEEA 0%, #B2EBF2 15%, transparent 30%),
-          linear-gradient(to left, #80DEEA 0%, #B2EBF2 15%, transparent 30%),
+          linear-gradient(to bottom, #B2EBF2 0%, #E0F7FA 5%, transparent 15%),
+          linear-gradient(to top, #80DEEA 0%, #B2EBF2 3%, #E0F7FA 8%, transparent 20%),
+          linear-gradient(to right, #80DEEA 0%, #B2EBF2 3%, #E0F7FA 8%, transparent 20%),
+          linear-gradient(to left, #80DEEA 0%, #B2EBF2 3%, #E0F7FA 8%, transparent 20%),
           #E0F7FA
         `
       } as any]
@@ -215,6 +217,14 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.mainContainer, isDesktop && styles.mainContainerDesktop]}>
+        {/* Barra de búsqueda y menú hamburguesa */}
+        <View style={styles.topBar}>
+          <View style={styles.searchBarContainer}>
+            <GlobalSearchBar />
+          </View>
+          <HamburgerMenu />
+        </View>
+
         {/* Header con degradado azul grisáceo suave */}
         <LinearGradient
           colors={['#7A8B99', '#8E9DAA', '#A2B1BD']}
@@ -495,6 +505,15 @@ const styles = StyleSheet.create({
   mainContainerDesktop: {
     maxWidth: 800,
     width: '100%',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  searchBarContainer: {
+    flex: 1,
   },
   header: {
     marginTop: Spacing.lg,
