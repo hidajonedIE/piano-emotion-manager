@@ -10,22 +10,24 @@ El principio fundamental es **justo y transparente**: el técnico puede usar tod
 
 ### Funcionalidades por Tipo de Cuenta
 
-| Funcionalidad | Cuenta Básica | Cuenta Premium |
-|---------------|:-------------:|:--------------:|
-| Gestión de clientes | ✅ | ✅ |
-| Gestión de pianos | ✅ | ✅ |
-| Calendario y citas | ✅ | ✅ |
-| Facturación | ✅ | ✅ |
-| Inventario | ✅ | ✅ |
-| Informes y estadísticas | ✅ | ✅ |
-| Firma digital | ✅ | ✅ |
-| Exportar PDF | ✅ | ✅ |
-| Mapa de clientes | ✅ | ✅ |
-| Modo offline | ✅ | ✅ |
-| **WhatsApp Business** | ❌ | ✅ |
-| **Recordatorios automáticos** | ❌ | ✅ |
-| **Portal del cliente** | ❌ | ✅ |
-| **Notificaciones push a clientes** | ❌ | ✅ |
+| Funcionalidad | Cuenta Básica | Cuenta Premium | Razón |
+|---------------|:-------------:|:--------------:|-------|
+| Gestión de clientes | ✅ | ✅ | Sin coste |
+| Gestión de pianos | ✅ | ✅ | Sin coste |
+| Calendario y citas | ✅ | ✅ | Sin coste |
+| Facturación | ✅ | ✅ | Sin coste |
+| **Inventario** | ✅ | ✅ | **Genera ventas** |
+| **Avisos de stock bajo** | ✅ | ✅ | **Genera ventas** |
+| **Acceso directo a tienda** | ✅ | ✅ | **Genera ventas** |
+| Informes y estadísticas | ✅ | ✅ | Sin coste |
+| Firma digital | ✅ | ✅ | Sin coste |
+| Exportar PDF | ✅ | ✅ | Sin coste |
+| Mapa de clientes | ✅ | ✅ | Sin coste |
+| Modo offline | ✅ | ✅ | Sin coste |
+| **WhatsApp Business** | ❌ | ✅ | Tiene coste |
+| **Recordatorios automáticos** | ❌ | ✅ | Tiene coste |
+| **Portal del cliente** | ❌ | ✅ | Tiene coste |
+| **Notificaciones push a clientes** | ❌ | ✅ | Tiene coste |
 
 ### Lógica de Estados
 
