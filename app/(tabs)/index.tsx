@@ -11,6 +11,7 @@ import { AnimatedCard } from '@/components/animated-card';
 import { OnboardingTutorial } from '@/components/onboarding-tutorial';
 import { GlobalSearchBar } from '@/components/global-search-bar';
 import { HamburgerMenu } from '@/components/hamburger-menu';
+import { PianoEmotionStore } from '@/components/piano-emotion-store';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -479,6 +480,16 @@ export default function DashboardScreen() {
             </View>
             <IconSymbol name="chevron.right" size={20} color={textSecondary} />
           </Pressable>
+        </Accordion>
+
+        {/* Sección Piano Emotion Store */}
+        <Accordion 
+          title="Piano Emotion Store" 
+          defaultOpen={false}
+          icon="bag.fill"
+          iconColor="#D4AF37"
+        >
+          <PianoEmotionStore />
         </Accordion>
         </View>
       </ScrollView>
