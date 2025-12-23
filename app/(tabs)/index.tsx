@@ -171,16 +171,16 @@ export default function DashboardScreen() {
   ];
 
   // En web, usar CSS gradient directamente para evitar problemas de renderizado intermitente
-  // Colores azul celeste muy claro degradado
+  // Colores azul celeste degradado invertido (oscuro a claro)
   const containerStyle = Platform.OS === 'web' 
-    ? [styles.container, { background: 'linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 50%, #80DEEA 100%)' } as any]
+    ? [styles.container, { background: 'linear-gradient(135deg, #80DEEA 0%, #B2EBF2 50%, #E0F7FA 100%)' } as any]
     : styles.container;
 
   const GradientWrapper = Platform.OS === 'web' 
     ? ({ children, style }: { children: React.ReactNode; style: any }) => <View style={style}>{children}</View>
     : ({ children, style }: { children: React.ReactNode; style: any }) => (
         <LinearGradient
-          colors={['#E0F7FA', '#B2EBF2', '#80DEEA']}
+          colors={['#80DEEA', '#B2EBF2', '#E0F7FA']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={style}
