@@ -171,9 +171,9 @@ export default function DashboardScreen() {
   ];
 
   // En web, usar CSS gradient directamente para evitar problemas de renderizado intermitente
-  // Degradado radial: bordes más oscuros, centro más claro
+  // Degradado radial: centro muy claro y grande, azul solo en los extremos
   const containerStyle = Platform.OS === 'web' 
-    ? [styles.container, { background: 'radial-gradient(ellipse at center, #E0F7FA 0%, #B2EBF2 50%, #80DEEA 100%)' } as any]
+    ? [styles.container, { background: 'radial-gradient(ellipse at center, #E0F7FA 0%, #E0F7FA 60%, #B2EBF2 85%, #80DEEA 100%)' } as any]
     : styles.container;
 
   const GradientWrapper = Platform.OS === 'web' 
