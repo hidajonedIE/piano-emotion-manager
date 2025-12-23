@@ -8,7 +8,7 @@ const PRODUCT_CATEGORIES = [
     id: 'hammers',
     name: 'Macillos',
     icon: '🎹',
-    brands: ['Abel', 'Renner', 'Imhof & Mukle'],
+    brands: ['Renner'],
     description: 'Macillos de fieltro premium para pianos de cola y verticales',
     comingSoon: true,
   },
@@ -16,7 +16,7 @@ const PRODUCT_CATEGORIES = [
     id: 'strings',
     name: 'Cuerdas',
     icon: '🎵',
-    brands: ['Röslau', 'Paulello', 'Mapes'],
+    brands: ['Röslau'],
     description: 'Cuerdas de acero y entorchadas de máxima calidad',
     comingSoon: true,
   },
@@ -24,7 +24,7 @@ const PRODUCT_CATEGORIES = [
     id: 'felts',
     name: 'Fieltros y Paños',
     icon: '🧵',
-    brands: ['Wurzen', 'Royal George'],
+    brands: ['Hainsworth'],
     description: 'Fieltros técnicos para mecánica y apagadores',
     comingSoon: true,
   },
@@ -32,7 +32,7 @@ const PRODUCT_CATEGORIES = [
     id: 'tools',
     name: 'Herramientas',
     icon: '🔧',
-    brands: ['Jahn', 'Pianotek', 'Schaff'],
+    brands: ['Jahn', 'Pianotek'],
     description: 'Herramientas profesionales para técnicos de piano',
     comingSoon: true,
   },
@@ -45,10 +45,18 @@ const PRODUCT_CATEGORIES = [
     comingSoon: true,
   },
   {
+    id: 'pins',
+    name: 'Clavijas y Agrafes',
+    icon: '🔩',
+    brands: ['Klinke'],
+    description: 'Clavijas de afinación y agrafes de precisión alemana',
+    comingSoon: true,
+  },
+  {
     id: 'parts',
     name: 'Repuestos',
     icon: '⚙️',
-    brands: ['Tokiwa', 'Wessell Nickel & Gross'],
+    brands: ['Renner', 'Klinke'],
     description: 'Piezas de recambio originales y compatibles',
     comingSoon: true,
   },
@@ -123,7 +131,7 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
             <View style={styles.bannerGradient}>
               <Text style={styles.bannerTitle}>Marcas Europeas de Prestigio</Text>
               <Text style={styles.bannerSubtitle}>
-                Abel • Renner • Röslau • Paulello • Jahn
+                Renner • Klinke • Röslau • Hainsworth
               </Text>
               <View style={styles.bannerButton}>
                 <Text style={styles.bannerButtonText}>Visitar Tienda</Text>
