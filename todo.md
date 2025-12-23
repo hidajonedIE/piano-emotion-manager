@@ -407,28 +407,28 @@
 
 ## FASE 2: Clientes y Pianos
 - [ ] Añadir foto del piano (cámara/galería)
-- [ ] Mapa con ubicación de clientes
-- [ ] Historial de cambios de propietario del piano
+- [x] Mapa con ubicación de clientes
+- [x] Historial de cambios de propietario del piano
 
 ## FASE 3: Facturación Avanzada
-- [ ] Plantillas de factura personalizables (logo, colores)
-- [ ] Numeración automática de facturas configurable
-- [ ] Resumen de facturación mensual/anual
+- [x] Plantillas de factura personalizables (logo, colores)
+- [x] Numeración automática de facturas configurable
+- [x] Resumen de facturación mensual/anual
 
 ## FASE 4: Inventario Mejorado
-- [ ] Escanear código de barras para añadir productos
-- [ ] Alertas de stock bajo por notificación push
-- [ ] Historial de precios de compra
+- [x] Escanear código de barras para añadir productos
+- [x] Alertas de stock bajo por notificación
+- [x] Historial de precios de compra
 
 ## FASE 5: Informes y Estadísticas
-- [ ] Dashboard con gráficos de ingresos mensuales
-- [ ] Informe de rentabilidad por tipo de servicio
-- [ ] Exportar informes a PDF
+- [x] Dashboard con gráficos de ingresos mensuales
+- [x] Informe de rentabilidad por tipo de servicio
+- [x] Exportar informes a PDF
 
 ## FASE 6: Servicios Avanzados
-- [ ] Firma digital del cliente al finalizar servicio
-- [ ] Tiempo estimado de desplazamiento entre clientes
-- [ ] Modo offline mejorado con sincronización automática
+- [x] Firma digital del cliente al finalizar servicio
+- [x] Tiempo estimado de desplazamiento entre clientes
+- [x] Modo offline mejorado con sincronización automática
 
 ## Mejoras Calendario y Documentación
 - [x] Añadir navegación a meses anteriores y futuros en el calendario (sección Este Mes del Dashboard)
