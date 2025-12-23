@@ -1,0 +1,166 @@
+{
+  "privacyPolicy": {
+    "title": "Política de Privacidad",
+    "lastUpdated": "Última actualización",
+    "sections": {
+      "intro": {
+        "title": "1. Introducción",
+        "content": "En {companyName} ({tradeName}), con CIF {taxId} y domicilio en {address}, nos comprometemos a proteger la privacidad de nuestros usuarios. Esta Política de Privacidad describe cómo recopilamos, utilizamos y protegemos su información personal de acuerdo con el Reglamento General de Protección de Datos (RGPD) (UE) 2016/679 y la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD)."
+      },
+      "dataController": {
+        "title": "2. Responsable del Tratamiento",
+        "content": "El responsable del tratamiento de sus datos personales es:",
+        "company": "Empresa",
+        "taxId": "CIF",
+        "address": "Dirección",
+        "email": "Email de contacto",
+        "dpo": "Delegado de Protección de Datos"
+      },
+      "dataCollected": {
+        "title": "3. Datos que Recopilamos",
+        "content": "Recopilamos los siguientes tipos de datos personales:",
+        "identification": "Datos de identificación: nombre, apellidos, NIF/CIF",
+        "contact": "Datos de contacto: dirección, teléfono, correo electrónico",
+        "professional": "Datos profesionales: información sobre pianos y servicios realizados",
+        "financial": "Datos económicos: información de facturación y pagos",
+        "technical": "Datos técnicos: dirección IP, tipo de dispositivo, navegador"
+      },
+      "purposes": {
+        "title": "4. Finalidades del Tratamiento",
+        "content": "Tratamos sus datos personales para las siguientes finalidades:",
+        "serviceManagement": "Gestión de servicios de mantenimiento y reparación de pianos",
+        "clientManagement": "Gestión de la relación con clientes",
+        "invoicing": "Facturación y gestión administrativa",
+        "communication": "Comunicaciones relacionadas con los servicios",
+        "legalCompliance": "Cumplimiento de obligaciones legales"
+      },
+      "legalBasis": {
+        "title": "5. Base Legal del Tratamiento",
+        "content": "El tratamiento de sus datos se basa en:",
+        "contract": "Ejecución de un contrato o medidas precontractuales",
+        "consent": "Su consentimiento expreso",
+        "legal": "Cumplimiento de obligaciones legales",
+        "legitimate": "Interés legítimo del responsable"
+      },
+      "dataRetention": {
+        "title": "6. Conservación de Datos",
+        "content": "Conservaremos sus datos personales durante el tiempo necesario para cumplir con las finalidades descritas y, posteriormente, durante los plazos legalmente establecidos. Los datos de facturación se conservarán durante el plazo legal de 6 años según la normativa mercantil y fiscal."
+      },
+      "dataSharing": {
+        "title": "7. Comunicación de Datos",
+        "content": "Sus datos podrán ser comunicados a:",
+        "taxAuthorities": "Administraciones tributarias para cumplimiento de obligaciones fiscales",
+        "serviceProviders": "Proveedores de servicios tecnológicos (hosting, email)",
+        "verifactu": "Sistema Verifactu de la Agencia Tributaria para facturación electrónica"
+      },
+      "internationalTransfers": {
+        "title": "8. Transferencias Internacionales",
+        "content": "Algunos de nuestros proveedores de servicios pueden estar ubicados fuera del Espacio Económico Europeo. En estos casos, garantizamos que existen las salvaguardas adecuadas según el RGPD, como cláusulas contractuales tipo aprobadas por la Comisión Europea."
+      },
+      "rights": {
+        "title": "9. Sus Derechos",
+        "content": "Usted tiene los siguientes derechos respecto a sus datos personales:",
+        "access": "Derecho de acceso: conocer qué datos tratamos sobre usted",
+        "rectification": "Derecho de rectificación: corregir datos inexactos",
+        "erasure": "Derecho de supresión: solicitar la eliminación de sus datos",
+        "restriction": "Derecho de limitación: restringir el tratamiento en ciertos casos",
+        "portability": "Derecho de portabilidad: recibir sus datos en formato estructurado",
+        "objection": "Derecho de oposición: oponerse al tratamiento de sus datos",
+        "withdraw": "Derecho a retirar el consentimiento en cualquier momento",
+        "howToExercise": "Para ejercer estos derechos, puede contactarnos en {email} o a través de la sección de Privacidad de la aplicación."
+      },
+      "security": {
+        "title": "10. Medidas de Seguridad",
+        "content": "Implementamos medidas técnicas y organizativas apropiadas para proteger sus datos personales contra el acceso no autorizado, la alteración, divulgación o destrucción. Estas medidas incluyen cifrado de datos, control de acceso y copias de seguridad periódicas."
+      },
+      "cookies": {
+        "title": "11. Política de Cookies",
+        "content": "Esta aplicación puede utilizar cookies y tecnologías similares para mejorar su experiencia. Puede gestionar sus preferencias de cookies desde la sección de Configuración."
+      },
+      "changes": {
+        "title": "12. Cambios en esta Política",
+        "content": "Nos reservamos el derecho de modificar esta Política de Privacidad en cualquier momento. Le notificaremos cualquier cambio significativo a través de la aplicación o por correo electrónico."
+      },
+      "contact": {
+        "title": "13. Contacto",
+        "content": "Para cualquier consulta relacionada con esta Política de Privacidad o el tratamiento de sus datos personales, puede contactarnos en:",
+        "generalEmail": "Email general",
+        "dpoEmail": "Email del DPD",
+        "supervisoryAuthority": "También puede presentar una reclamación ante la Agencia Española de Protección de Datos (www.aepd.es) si considera que sus derechos han sido vulnerados."
+      }
+    }
+  },
+  "termsConditions": {
+    "title": "Términos y Condiciones",
+    "lastUpdated": "Última actualización",
+    "sections": {
+      "intro": {
+        "title": "1. Introducción",
+        "content": "Estos Términos y Condiciones regulan el uso de la aplicación {appName}, propiedad de {companyName} ({tradeName}), con CIF {taxId}. Al utilizar esta aplicación, usted acepta estos términos en su totalidad."
+      },
+      "definitions": {
+        "title": "2. Definiciones",
+        "app": "Aplicación: la aplicación móvil y web {appName}",
+        "user": "Usuario: cualquier persona que acceda y utilice la Aplicación",
+        "services": "Servicios: las funcionalidades proporcionadas por la Aplicación",
+        "content": "Contenido: toda la información, datos y materiales de la Aplicación"
+      },
+      "license": {
+        "title": "3. Licencia de Uso",
+        "content": "Le concedemos una licencia limitada, no exclusiva, intransferible y revocable para utilizar la Aplicación de acuerdo con estos Términos. Esta licencia no incluye el derecho a:",
+        "modify": "Modificar, copiar o distribuir la Aplicación",
+        "reverse": "Realizar ingeniería inversa o descompilar el código",
+        "commercial": "Utilizar la Aplicación para fines comerciales no autorizados",
+        "sublicense": "Sublicenciar o transferir sus derechos"
+      },
+      "userObligations": {
+        "title": "4. Obligaciones del Usuario",
+        "content": "Al utilizar la Aplicación, usted se compromete a:",
+        "accurate": "Proporcionar información veraz y actualizada",
+        "security": "Mantener la confidencialidad de sus credenciales de acceso",
+        "lawful": "Utilizar la Aplicación de forma lícita y conforme a estos Términos",
+        "respect": "Respetar los derechos de propiedad intelectual"
+      },
+      "intellectualProperty": {
+        "title": "5. Propiedad Intelectual",
+        "content": "Todos los derechos de propiedad intelectual sobre la Aplicación, incluyendo el diseño, código, gráficos, logotipos y contenido, pertenecen a {companyName} o sus licenciantes. Queda prohibida cualquier reproducción, distribución o modificación sin autorización expresa."
+      },
+      "dataProtection": {
+        "title": "6. Protección de Datos",
+        "content": "El tratamiento de sus datos personales se rige por nuestra Política de Privacidad, que forma parte integrante de estos Términos. Al utilizar la Aplicación, usted acepta dicho tratamiento."
+      },
+      "invoicing": {
+        "title": "7. Facturación Electrónica",
+        "content": "La Aplicación permite la generación de facturas electrónicas conforme a la normativa española. Las facturas generadas cumplen con los requisitos del sistema Verifactu de la Agencia Tributaria. El usuario es responsable de la veracidad de los datos incluidos en las facturas."
+      },
+      "liability": {
+        "title": "8. Limitación de Responsabilidad",
+        "content": "{companyName} no será responsable de:",
+        "indirect": "Daños indirectos, incidentales o consecuentes",
+        "dataLoss": "Pérdida de datos debido a fallos técnicos",
+        "thirdParty": "Acciones de terceros o uso indebido de la Aplicación",
+        "availability": "Interrupciones en la disponibilidad del servicio"
+      },
+      "warranties": {
+        "title": "9. Garantías",
+        "content": "La Aplicación se proporciona \"tal cual\" sin garantías de ningún tipo, expresas o implícitas. No garantizamos que la Aplicación sea ininterrumpida, libre de errores o que cumpla con sus expectativas específicas."
+      },
+      "termination": {
+        "title": "10. Terminación",
+        "content": "Podemos suspender o terminar su acceso a la Aplicación en cualquier momento si incumple estos Términos. Usted puede dejar de utilizar la Aplicación en cualquier momento eliminando su cuenta."
+      },
+      "modifications": {
+        "title": "11. Modificaciones",
+        "content": "Nos reservamos el derecho de modificar estos Términos en cualquier momento. Los cambios serán efectivos desde su publicación en la Aplicación. El uso continuado de la Aplicación tras la publicación de cambios constituye su aceptación de los mismos."
+      },
+      "governing": {
+        "title": "12. Ley Aplicable y Jurisdicción",
+        "content": "Estos Términos se rigen por la legislación española. Para cualquier controversia derivada de estos Términos, las partes se someten a los Juzgados y Tribunales de {city}, renunciando a cualquier otro fuero que pudiera corresponderles."
+      },
+      "contact": {
+        "title": "13. Contacto",
+        "content": "Para cualquier consulta sobre estos Términos, puede contactarnos en {email}."
+      }
+    }
+  }
+}

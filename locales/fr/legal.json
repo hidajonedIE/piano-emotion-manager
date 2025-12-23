@@ -1,0 +1,166 @@
+{
+  "privacyPolicy": {
+    "title": "Politique de Confidentialité",
+    "lastUpdated": "Dernière mise à jour",
+    "sections": {
+      "intro": {
+        "title": "1. Introduction",
+        "content": "Chez {companyName} ({tradeName}), avec le numéro SIRET {taxId} et siège social à {address}, nous nous engageons à protéger la vie privée de nos utilisateurs. Cette Politique de Confidentialité décrit comment nous collectons, utilisons et protégeons vos informations personnelles conformément au Règlement Général sur la Protection des Données (RGPD) (UE) 2016/679."
+      },
+      "dataController": {
+        "title": "2. Responsable du Traitement",
+        "content": "Le responsable du traitement de vos données personnelles est :",
+        "company": "Entreprise",
+        "taxId": "SIRET",
+        "address": "Adresse",
+        "email": "Email de contact",
+        "dpo": "Délégué à la Protection des Données"
+      },
+      "dataCollected": {
+        "title": "3. Données que Nous Collectons",
+        "content": "Nous collectons les types de données personnelles suivants :",
+        "identification": "Données d'identification : nom, prénom, numéro SIRET",
+        "contact": "Données de contact : adresse, téléphone, email",
+        "professional": "Données professionnelles : informations sur les pianos et services effectués",
+        "financial": "Données économiques : informations de facturation et paiements",
+        "technical": "Données techniques : adresse IP, type d'appareil, navigateur"
+      },
+      "purposes": {
+        "title": "4. Finalités du Traitement",
+        "content": "Nous traitons vos données personnelles pour les finalités suivantes :",
+        "serviceManagement": "Gestion des services de maintenance et réparation de pianos",
+        "clientManagement": "Gestion de la relation client",
+        "invoicing": "Facturation et gestion administrative",
+        "communication": "Communications relatives aux services",
+        "legalCompliance": "Respect des obligations légales"
+      },
+      "legalBasis": {
+        "title": "5. Base Légale du Traitement",
+        "content": "Le traitement de vos données repose sur :",
+        "contract": "L'exécution d'un contrat ou de mesures précontractuelles",
+        "consent": "Votre consentement explicite",
+        "legal": "Le respect d'obligations légales",
+        "legitimate": "L'intérêt légitime du responsable"
+      },
+      "dataRetention": {
+        "title": "6. Conservation des Données",
+        "content": "Nous conserverons vos données personnelles pendant le temps nécessaire pour atteindre les finalités décrites et, par la suite, pendant les délais légalement établis. Les données de facturation seront conservées pendant la durée légale de 10 ans conformément à la réglementation fiscale."
+      },
+      "dataSharing": {
+        "title": "7. Communication des Données",
+        "content": "Vos données pourront être communiquées à :",
+        "taxAuthorities": "Administrations fiscales pour le respect des obligations fiscales",
+        "serviceProviders": "Prestataires de services technologiques (hébergement, email)",
+        "verifactu": "Systèmes de facturation électronique des autorités fiscales"
+      },
+      "internationalTransfers": {
+        "title": "8. Transferts Internationaux",
+        "content": "Certains de nos prestataires de services peuvent être situés en dehors de l'Espace Économique Européen. Dans ces cas, nous garantissons l'existence de garanties appropriées conformément au RGPD, telles que les clauses contractuelles types approuvées par la Commission Européenne."
+      },
+      "rights": {
+        "title": "9. Vos Droits",
+        "content": "Vous disposez des droits suivants concernant vos données personnelles :",
+        "access": "Droit d'accès : connaître les données que nous traitons vous concernant",
+        "rectification": "Droit de rectification : corriger les données inexactes",
+        "erasure": "Droit à l'effacement : demander la suppression de vos données",
+        "restriction": "Droit à la limitation : restreindre le traitement dans certains cas",
+        "portability": "Droit à la portabilité : recevoir vos données dans un format structuré",
+        "objection": "Droit d'opposition : vous opposer au traitement de vos données",
+        "withdraw": "Droit de retirer votre consentement à tout moment",
+        "howToExercise": "Pour exercer ces droits, vous pouvez nous contacter à {email} ou via la section Confidentialité de l'application."
+      },
+      "security": {
+        "title": "10. Mesures de Sécurité",
+        "content": "Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données personnelles contre l'accès non autorisé, l'altération, la divulgation ou la destruction. Ces mesures comprennent le chiffrement des données, le contrôle d'accès et des sauvegardes régulières."
+      },
+      "cookies": {
+        "title": "11. Politique de Cookies",
+        "content": "Cette application peut utiliser des cookies et technologies similaires pour améliorer votre expérience. Vous pouvez gérer vos préférences de cookies depuis la section Paramètres."
+      },
+      "changes": {
+        "title": "12. Modifications de cette Politique",
+        "content": "Nous nous réservons le droit de modifier cette Politique de Confidentialité à tout moment. Nous vous informerons de tout changement significatif via l'application ou par email."
+      },
+      "contact": {
+        "title": "13. Contact",
+        "content": "Pour toute question relative à cette Politique de Confidentialité ou au traitement de vos données personnelles, vous pouvez nous contacter à :",
+        "generalEmail": "Email général",
+        "dpoEmail": "Email du DPD",
+        "supervisoryAuthority": "Vous pouvez également déposer une réclamation auprès de la CNIL (www.cnil.fr) si vous estimez que vos droits ont été violés."
+      }
+    }
+  },
+  "termsConditions": {
+    "title": "Conditions Générales d'Utilisation",
+    "lastUpdated": "Dernière mise à jour",
+    "sections": {
+      "intro": {
+        "title": "1. Introduction",
+        "content": "Ces Conditions Générales d'Utilisation régissent l'utilisation de l'application {appName}, propriété de {companyName} ({tradeName}), avec le numéro SIRET {taxId}. En utilisant cette application, vous acceptez ces conditions dans leur intégralité."
+      },
+      "definitions": {
+        "title": "2. Définitions",
+        "app": "Application : l'application mobile et web {appName}",
+        "user": "Utilisateur : toute personne qui accède et utilise l'Application",
+        "services": "Services : les fonctionnalités fournies par l'Application",
+        "content": "Contenu : toutes les informations, données et matériels de l'Application"
+      },
+      "license": {
+        "title": "3. Licence d'Utilisation",
+        "content": "Nous vous accordons une licence limitée, non exclusive, non transférable et révocable pour utiliser l'Application conformément à ces Conditions. Cette licence n'inclut pas le droit de :",
+        "modify": "Modifier, copier ou distribuer l'Application",
+        "reverse": "Effectuer de l'ingénierie inverse ou décompiler le code",
+        "commercial": "Utiliser l'Application à des fins commerciales non autorisées",
+        "sublicense": "Sous-licencier ou transférer vos droits"
+      },
+      "userObligations": {
+        "title": "4. Obligations de l'Utilisateur",
+        "content": "En utilisant l'Application, vous vous engagez à :",
+        "accurate": "Fournir des informations véridiques et à jour",
+        "security": "Maintenir la confidentialité de vos identifiants d'accès",
+        "lawful": "Utiliser l'Application de manière licite et conforme à ces Conditions",
+        "respect": "Respecter les droits de propriété intellectuelle"
+      },
+      "intellectualProperty": {
+        "title": "5. Propriété Intellectuelle",
+        "content": "Tous les droits de propriété intellectuelle sur l'Application, y compris le design, le code, les graphiques, les logos et le contenu, appartiennent à {companyName} ou à ses concédants. Toute reproduction, distribution ou modification sans autorisation expresse est interdite."
+      },
+      "dataProtection": {
+        "title": "6. Protection des Données",
+        "content": "Le traitement de vos données personnelles est régi par notre Politique de Confidentialité, qui fait partie intégrante de ces Conditions. En utilisant l'Application, vous acceptez ce traitement."
+      },
+      "invoicing": {
+        "title": "7. Facturation Électronique",
+        "content": "L'Application permet la génération de factures électroniques conformes à la réglementation applicable. L'utilisateur est responsable de la véracité des données incluses dans les factures."
+      },
+      "liability": {
+        "title": "8. Limitation de Responsabilité",
+        "content": "{companyName} ne sera pas responsable de :",
+        "indirect": "Dommages indirects, accessoires ou consécutifs",
+        "dataLoss": "Perte de données due à des défaillances techniques",
+        "thirdParty": "Actions de tiers ou utilisation abusive de l'Application",
+        "availability": "Interruptions de la disponibilité du service"
+      },
+      "warranties": {
+        "title": "9. Garanties",
+        "content": "L'Application est fournie \"en l'état\" sans garantie d'aucune sorte, expresse ou implicite. Nous ne garantissons pas que l'Application sera ininterrompue, exempte d'erreurs ou qu'elle répondra à vos attentes spécifiques."
+      },
+      "termination": {
+        "title": "10. Résiliation",
+        "content": "Nous pouvons suspendre ou résilier votre accès à l'Application à tout moment en cas de violation de ces Conditions. Vous pouvez cesser d'utiliser l'Application à tout moment en supprimant votre compte."
+      },
+      "modifications": {
+        "title": "11. Modifications",
+        "content": "Nous nous réservons le droit de modifier ces Conditions à tout moment. Les modifications prendront effet dès leur publication dans l'Application. L'utilisation continue de l'Application après la publication des modifications constitue votre acceptation de celles-ci."
+      },
+      "governing": {
+        "title": "12. Loi Applicable et Juridiction",
+        "content": "Ces Conditions sont régies par le droit français. Pour tout litige découlant de ces Conditions, les parties se soumettent à la compétence exclusive des tribunaux de {city}."
+      },
+      "contact": {
+        "title": "13. Contact",
+        "content": "Pour toute question concernant ces Conditions, vous pouvez nous contacter à {email}."
+      }
+    }
+  }
+}

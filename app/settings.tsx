@@ -21,6 +21,8 @@ import { useNotifications } from '@/hooks/use-notifications';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { getClientFullName, getClientFormattedAddress } from '@/types';
+import { LanguageSelector } from '@/components/language-selector';
+import { useLanguage } from '@/contexts/language-context';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -325,6 +327,18 @@ export default function SettingsScreen() {
       ],
     },
     {
+      title: 'Idioma',
+      items: [
+        {
+          icon: 'globe',
+          label: 'Idioma de la aplicación',
+          sublabel: 'Cambiar idioma',
+          customComponent: true,
+          component: 'LanguageSelector',
+        },
+      ],
+    },
+    {
       title: 'Accesos Rápidos',
       items: [
         {
@@ -598,28 +612,39 @@ export default function SettingsScreen() {
               {section.title}
             </ThemedText>
             <View style={[styles.menuCard, { backgroundColor: cardBg, borderColor }]}>
-              {section.items.map((item, itemIndex) => (
-                <Pressable
-                  key={itemIndex}
-                  style={[
-                    styles.menuItem,
-                    itemIndex < section.items.length - 1 && { borderBottomWidth: 1, borderBottomColor: borderColor },
-                  ]}
-                  onPress={item.onPress}
-                  disabled={importing}
-                >
-                  <View style={[styles.menuIcon, { backgroundColor: `${accent}15` }]}>
-                    <IconSymbol name={item.icon as any} size={20} color={accent} />
-                  </View>
-                  <View style={styles.menuContent}>
-                    <ThemedText style={styles.menuLabel}>{item.label}</ThemedText>
-                    <ThemedText style={[styles.menuSublabel, { color: textSecondary }]}>
-                      {item.sublabel}
-                    </ThemedText>
-                  </View>
-                  <IconSymbol name="chevron.right" size={20} color={textSecondary} />
-                </Pressable>
-              ))}
+              {section.items.map((item: any, itemIndex) => {
+                // Renderizar componente personalizado si está definido
+                if (item.customComponent && item.component === 'LanguageSelector') {
+                  return (
+                    <View key={itemIndex} style={[styles.menuItem, { paddingVertical: 0 }]}>
+                      <LanguageSelector />
+                    </View>
+                  );
+                }
+                
+                return (
+                  <Pressable
+                    key={itemIndex}
+                    style={[
+                      styles.menuItem,
+                      itemIndex < section.items.length - 1 && { borderBottomWidth: 1, borderBottomColor: borderColor },
+                    ]}
+                    onPress={item.onPress}
+                    disabled={importing}
+                  >
+                    <View style={[styles.menuIcon, { backgroundColor: `${accent}15` }]}>
+                      <IconSymbol name={item.icon as any} size={20} color={accent} />
+                    </View>
+                    <View style={styles.menuContent}>
+                      <ThemedText style={styles.menuLabel}>{item.label}</ThemedText>
+                      <ThemedText style={[styles.menuSublabel, { color: textSecondary }]}>
+                        {item.sublabel}
+                      </ThemedText>
+                    </View>
+                    <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         ))}

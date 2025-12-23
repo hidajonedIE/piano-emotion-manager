@@ -21,6 +21,8 @@ import { useDataMigration } from "@/hooks/use-data-migration";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/manus-runtime";
 import { SnackbarProvider } from "@/components/snackbar";
+import { LanguageProvider } from "@/contexts/language-context";
+import { DistributorProvider } from "@/contexts/distributor-context";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -105,14 +107,18 @@ export default function RootLayout() {
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <SnackbarProvider>
-              <Stack>
+            <DistributorProvider>
+              <LanguageProvider>
+                <SnackbarProvider>
+                <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
                 <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
-              </Stack>
-              <StatusBar style="auto" />
-            </SnackbarProvider>
+                </Stack>
+                <StatusBar style="auto" />
+                </SnackbarProvider>
+              </LanguageProvider>
+            </DistributorProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </trpc.Provider>

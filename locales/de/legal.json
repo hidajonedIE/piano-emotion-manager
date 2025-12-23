@@ -1,0 +1,166 @@
+{
+  "privacyPolicy": {
+    "title": "Datenschutzerklärung",
+    "lastUpdated": "Letzte Aktualisierung",
+    "sections": {
+      "intro": {
+        "title": "1. Einleitung",
+        "content": "Bei {companyName} ({tradeName}), mit USt-IdNr. {taxId} und Sitz in {address}, verpflichten wir uns zum Schutz der Privatsphäre unserer Nutzer. Diese Datenschutzerklärung beschreibt, wie wir Ihre personenbezogenen Daten gemäß der Datenschutz-Grundverordnung (DSGVO) (EU) 2016/679 erheben, verwenden und schützen."
+      },
+      "dataController": {
+        "title": "2. Verantwortlicher",
+        "content": "Verantwortlicher für die Verarbeitung Ihrer personenbezogenen Daten ist:",
+        "company": "Unternehmen",
+        "taxId": "USt-IdNr.",
+        "address": "Adresse",
+        "email": "Kontakt-E-Mail",
+        "dpo": "Datenschutzbeauftragter"
+      },
+      "dataCollected": {
+        "title": "3. Daten, die wir erheben",
+        "content": "Wir erheben folgende Arten personenbezogener Daten:",
+        "identification": "Identifikationsdaten: Name, Vorname, Steuernummer",
+        "contact": "Kontaktdaten: Adresse, Telefon, E-Mail",
+        "professional": "Berufliche Daten: Informationen über Klaviere und durchgeführte Dienstleistungen",
+        "financial": "Wirtschaftliche Daten: Rechnungs- und Zahlungsinformationen",
+        "technical": "Technische Daten: IP-Adresse, Gerätetyp, Browser"
+      },
+      "purposes": {
+        "title": "4. Zwecke der Verarbeitung",
+        "content": "Wir verarbeiten Ihre personenbezogenen Daten für folgende Zwecke:",
+        "serviceManagement": "Verwaltung von Wartungs- und Reparaturdiensten für Klaviere",
+        "clientManagement": "Verwaltung der Kundenbeziehung",
+        "invoicing": "Rechnungsstellung und Verwaltung",
+        "communication": "Kommunikation bezüglich der Dienstleistungen",
+        "legalCompliance": "Erfüllung gesetzlicher Pflichten"
+      },
+      "legalBasis": {
+        "title": "5. Rechtsgrundlage der Verarbeitung",
+        "content": "Die Verarbeitung Ihrer Daten basiert auf:",
+        "contract": "Erfüllung eines Vertrags oder vorvertraglicher Maßnahmen",
+        "consent": "Ihrer ausdrücklichen Einwilligung",
+        "legal": "Erfüllung gesetzlicher Pflichten",
+        "legitimate": "Berechtigtem Interesse des Verantwortlichen"
+      },
+      "dataRetention": {
+        "title": "6. Speicherdauer",
+        "content": "Wir speichern Ihre personenbezogenen Daten so lange, wie es für die beschriebenen Zwecke erforderlich ist, und danach für die gesetzlich vorgeschriebenen Zeiträume. Rechnungsdaten werden gemäß den handels- und steuerrechtlichen Vorschriften 10 Jahre aufbewahrt."
+      },
+      "dataSharing": {
+        "title": "7. Weitergabe von Daten",
+        "content": "Ihre Daten können weitergegeben werden an:",
+        "taxAuthorities": "Finanzbehörden zur Erfüllung steuerlicher Pflichten",
+        "serviceProviders": "Technische Dienstleister (Hosting, E-Mail)",
+        "verifactu": "Elektronische Rechnungssysteme der Steuerbehörden"
+      },
+      "internationalTransfers": {
+        "title": "8. Internationale Übermittlungen",
+        "content": "Einige unserer Dienstleister können außerhalb des Europäischen Wirtschaftsraums ansässig sein. In diesen Fällen stellen wir sicher, dass gemäß der DSGVO angemessene Garantien bestehen, wie von der Europäischen Kommission genehmigte Standardvertragsklauseln."
+      },
+      "rights": {
+        "title": "9. Ihre Rechte",
+        "content": "Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:",
+        "access": "Auskunftsrecht: Erfahren, welche Daten wir über Sie verarbeiten",
+        "rectification": "Berichtigungsrecht: Unrichtige Daten korrigieren",
+        "erasure": "Löschungsrecht: Die Löschung Ihrer Daten verlangen",
+        "restriction": "Recht auf Einschränkung: Die Verarbeitung in bestimmten Fällen einschränken",
+        "portability": "Datenübertragbarkeit: Ihre Daten in einem strukturierten Format erhalten",
+        "objection": "Widerspruchsrecht: Der Verarbeitung Ihrer Daten widersprechen",
+        "withdraw": "Recht, Ihre Einwilligung jederzeit zu widerrufen",
+        "howToExercise": "Um diese Rechte auszuüben, können Sie uns unter {email} kontaktieren oder den Datenschutzbereich der Anwendung nutzen."
+      },
+      "security": {
+        "title": "10. Sicherheitsmaßnahmen",
+        "content": "Wir setzen angemessene technische und organisatorische Maßnahmen ein, um Ihre personenbezogenen Daten vor unbefugtem Zugriff, Änderung, Offenlegung oder Zerstörung zu schützen. Diese Maßnahmen umfassen Datenverschlüsselung, Zugangskontrolle und regelmäßige Backups."
+      },
+      "cookies": {
+        "title": "11. Cookie-Richtlinie",
+        "content": "Diese Anwendung kann Cookies und ähnliche Technologien verwenden, um Ihre Erfahrung zu verbessern. Sie können Ihre Cookie-Einstellungen im Bereich Einstellungen verwalten."
+      },
+      "changes": {
+        "title": "12. Änderungen dieser Erklärung",
+        "content": "Wir behalten uns das Recht vor, diese Datenschutzerklärung jederzeit zu ändern. Über wesentliche Änderungen werden wir Sie über die Anwendung oder per E-Mail informieren."
+      },
+      "contact": {
+        "title": "13. Kontakt",
+        "content": "Bei Fragen zu dieser Datenschutzerklärung oder zur Verarbeitung Ihrer personenbezogenen Daten können Sie uns kontaktieren unter:",
+        "generalEmail": "Allgemeine E-Mail",
+        "dpoEmail": "E-Mail des DSB",
+        "supervisoryAuthority": "Sie können auch eine Beschwerde bei der zuständigen Datenschutzaufsichtsbehörde einreichen, wenn Sie der Meinung sind, dass Ihre Rechte verletzt wurden."
+      }
+    }
+  },
+  "termsConditions": {
+    "title": "Allgemeine Geschäftsbedingungen",
+    "lastUpdated": "Letzte Aktualisierung",
+    "sections": {
+      "intro": {
+        "title": "1. Einleitung",
+        "content": "Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung der Anwendung {appName}, Eigentum von {companyName} ({tradeName}), mit USt-IdNr. {taxId}. Durch die Nutzung dieser Anwendung akzeptieren Sie diese Bedingungen vollständig."
+      },
+      "definitions": {
+        "title": "2. Definitionen",
+        "app": "Anwendung: die mobile und Web-Anwendung {appName}",
+        "user": "Nutzer: jede Person, die auf die Anwendung zugreift und sie nutzt",
+        "services": "Dienste: die von der Anwendung bereitgestellten Funktionen",
+        "content": "Inhalt: alle Informationen, Daten und Materialien der Anwendung"
+      },
+      "license": {
+        "title": "3. Nutzungslizenz",
+        "content": "Wir gewähren Ihnen eine eingeschränkte, nicht-exklusive, nicht übertragbare und widerrufliche Lizenz zur Nutzung der Anwendung gemäß diesen Bedingungen. Diese Lizenz beinhaltet nicht das Recht:",
+        "modify": "Die Anwendung zu modifizieren, zu kopieren oder zu verbreiten",
+        "reverse": "Reverse Engineering durchzuführen oder den Code zu dekompilieren",
+        "commercial": "Die Anwendung für nicht autorisierte kommerzielle Zwecke zu nutzen",
+        "sublicense": "Ihre Rechte zu unterlizenzieren oder zu übertragen"
+      },
+      "userObligations": {
+        "title": "4. Pflichten des Nutzers",
+        "content": "Bei der Nutzung der Anwendung verpflichten Sie sich:",
+        "accurate": "Wahrheitsgemäße und aktuelle Informationen bereitzustellen",
+        "security": "Die Vertraulichkeit Ihrer Zugangsdaten zu wahren",
+        "lawful": "Die Anwendung rechtmäßig und gemäß diesen Bedingungen zu nutzen",
+        "respect": "Die geistigen Eigentumsrechte zu respektieren"
+      },
+      "intellectualProperty": {
+        "title": "5. Geistiges Eigentum",
+        "content": "Alle geistigen Eigentumsrechte an der Anwendung, einschließlich Design, Code, Grafiken, Logos und Inhalte, gehören {companyName} oder seinen Lizenzgebern. Jede Vervielfältigung, Verbreitung oder Änderung ohne ausdrückliche Genehmigung ist untersagt."
+      },
+      "dataProtection": {
+        "title": "6. Datenschutz",
+        "content": "Die Verarbeitung Ihrer personenbezogenen Daten unterliegt unserer Datenschutzerklärung, die integraler Bestandteil dieser Bedingungen ist. Durch die Nutzung der Anwendung akzeptieren Sie diese Verarbeitung."
+      },
+      "invoicing": {
+        "title": "7. Elektronische Rechnungsstellung",
+        "content": "Die Anwendung ermöglicht die Erstellung elektronischer Rechnungen gemäß den geltenden Vorschriften. Der Nutzer ist für die Richtigkeit der in den Rechnungen enthaltenen Daten verantwortlich."
+      },
+      "liability": {
+        "title": "8. Haftungsbeschränkung",
+        "content": "{companyName} haftet nicht für:",
+        "indirect": "Indirekte, zufällige oder Folgeschäden",
+        "dataLoss": "Datenverlust aufgrund technischer Fehler",
+        "thirdParty": "Handlungen Dritter oder missbräuchliche Nutzung der Anwendung",
+        "availability": "Unterbrechungen der Dienstverfügbarkeit"
+      },
+      "warranties": {
+        "title": "9. Gewährleistung",
+        "content": "Die Anwendung wird \"wie besehen\" ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Wir garantieren nicht, dass die Anwendung ununterbrochen, fehlerfrei oder Ihren spezifischen Erwartungen entsprechend funktioniert."
+      },
+      "termination": {
+        "title": "10. Kündigung",
+        "content": "Wir können Ihren Zugang zur Anwendung jederzeit aussetzen oder beenden, wenn Sie gegen diese Bedingungen verstoßen. Sie können die Nutzung der Anwendung jederzeit beenden, indem Sie Ihr Konto löschen."
+      },
+      "modifications": {
+        "title": "11. Änderungen",
+        "content": "Wir behalten uns das Recht vor, diese Bedingungen jederzeit zu ändern. Änderungen werden mit ihrer Veröffentlichung in der Anwendung wirksam. Die fortgesetzte Nutzung der Anwendung nach Veröffentlichung von Änderungen gilt als Ihre Zustimmung zu diesen."
+      },
+      "governing": {
+        "title": "12. Anwendbares Recht und Gerichtsstand",
+        "content": "Diese Bedingungen unterliegen deutschem Recht. Für alle Streitigkeiten aus diesen Bedingungen unterwerfen sich die Parteien der ausschließlichen Zuständigkeit der Gerichte in {city}."
+      },
+      "contact": {
+        "title": "13. Kontakt",
+        "content": "Bei Fragen zu diesen Bedingungen können Sie uns unter {email} kontaktieren."
+      }
+    }
+  }
+}

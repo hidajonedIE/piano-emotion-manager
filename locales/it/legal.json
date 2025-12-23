@@ -1,0 +1,166 @@
+{
+  "privacyPolicy": {
+    "title": "Informativa sulla Privacy",
+    "lastUpdated": "Ultimo aggiornamento",
+    "sections": {
+      "intro": {
+        "title": "1. Introduzione",
+        "content": "In {companyName} ({tradeName}), con P.IVA {taxId} e sede in {address}, ci impegniamo a proteggere la privacy dei nostri utenti. Questa Informativa sulla Privacy descrive come raccogliamo, utilizziamo e proteggiamo le vostre informazioni personali in conformità con il Regolamento Generale sulla Protezione dei Dati (GDPR) (UE) 2016/679."
+      },
+      "dataController": {
+        "title": "2. Titolare del Trattamento",
+        "content": "Il titolare del trattamento dei vostri dati personali è:",
+        "company": "Azienda",
+        "taxId": "P.IVA",
+        "address": "Indirizzo",
+        "email": "Email di contatto",
+        "dpo": "Responsabile della Protezione dei Dati"
+      },
+      "dataCollected": {
+        "title": "3. Dati che Raccogliamo",
+        "content": "Raccogliamo i seguenti tipi di dati personali:",
+        "identification": "Dati identificativi: nome, cognome, codice fiscale/P.IVA",
+        "contact": "Dati di contatto: indirizzo, telefono, email",
+        "professional": "Dati professionali: informazioni su pianoforti e servizi eseguiti",
+        "financial": "Dati economici: informazioni di fatturazione e pagamenti",
+        "technical": "Dati tecnici: indirizzo IP, tipo di dispositivo, browser"
+      },
+      "purposes": {
+        "title": "4. Finalità del Trattamento",
+        "content": "Trattiamo i vostri dati personali per le seguenti finalità:",
+        "serviceManagement": "Gestione dei servizi di manutenzione e riparazione di pianoforti",
+        "clientManagement": "Gestione del rapporto con i clienti",
+        "invoicing": "Fatturazione e gestione amministrativa",
+        "communication": "Comunicazioni relative ai servizi",
+        "legalCompliance": "Adempimento di obblighi legali"
+      },
+      "legalBasis": {
+        "title": "5. Base Giuridica del Trattamento",
+        "content": "Il trattamento dei vostri dati si basa su:",
+        "contract": "Esecuzione di un contratto o misure precontrattuali",
+        "consent": "Il vostro consenso espresso",
+        "legal": "Adempimento di obblighi legali",
+        "legitimate": "Legittimo interesse del titolare"
+      },
+      "dataRetention": {
+        "title": "6. Conservazione dei Dati",
+        "content": "Conserveremo i vostri dati personali per il tempo necessario a soddisfare le finalità descritte e, successivamente, per i periodi previsti dalla legge. I dati di fatturazione saranno conservati per il periodo legale di 10 anni secondo la normativa fiscale."
+      },
+      "dataSharing": {
+        "title": "7. Comunicazione dei Dati",
+        "content": "I vostri dati potranno essere comunicati a:",
+        "taxAuthorities": "Amministrazioni tributarie per adempimenti fiscali",
+        "serviceProviders": "Fornitori di servizi tecnologici (hosting, email)",
+        "verifactu": "Sistema di fatturazione elettronica dell'Agenzia delle Entrate"
+      },
+      "internationalTransfers": {
+        "title": "8. Trasferimenti Internazionali",
+        "content": "Alcuni dei nostri fornitori di servizi potrebbero essere situati al di fuori dello Spazio Economico Europeo. In questi casi, garantiamo che esistano le salvaguardie adeguate secondo il GDPR, come clausole contrattuali tipo approvate dalla Commissione Europea."
+      },
+      "rights": {
+        "title": "9. I Vostri Diritti",
+        "content": "Avete i seguenti diritti riguardo ai vostri dati personali:",
+        "access": "Diritto di accesso: conoscere quali dati trattiamo su di voi",
+        "rectification": "Diritto di rettifica: correggere dati inesatti",
+        "erasure": "Diritto alla cancellazione: richiedere l'eliminazione dei vostri dati",
+        "restriction": "Diritto di limitazione: limitare il trattamento in certi casi",
+        "portability": "Diritto alla portabilità: ricevere i vostri dati in formato strutturato",
+        "objection": "Diritto di opposizione: opporvi al trattamento dei vostri dati",
+        "withdraw": "Diritto di revocare il consenso in qualsiasi momento",
+        "howToExercise": "Per esercitare questi diritti, potete contattarci a {email} o attraverso la sezione Privacy dell'applicazione."
+      },
+      "security": {
+        "title": "10. Misure di Sicurezza",
+        "content": "Implementiamo misure tecniche e organizzative appropriate per proteggere i vostri dati personali contro l'accesso non autorizzato, l'alterazione, la divulgazione o la distruzione. Queste misure includono crittografia dei dati, controllo degli accessi e backup periodici."
+      },
+      "cookies": {
+        "title": "11. Politica sui Cookie",
+        "content": "Questa applicazione può utilizzare cookie e tecnologie simili per migliorare la vostra esperienza. Potete gestire le vostre preferenze sui cookie dalla sezione Impostazioni."
+      },
+      "changes": {
+        "title": "12. Modifiche a questa Informativa",
+        "content": "Ci riserviamo il diritto di modificare questa Informativa sulla Privacy in qualsiasi momento. Vi notificheremo qualsiasi modifica significativa attraverso l'applicazione o via email."
+      },
+      "contact": {
+        "title": "13. Contatti",
+        "content": "Per qualsiasi domanda relativa a questa Informativa sulla Privacy o al trattamento dei vostri dati personali, potete contattarci a:",
+        "generalEmail": "Email generale",
+        "dpoEmail": "Email del DPO",
+        "supervisoryAuthority": "Potete anche presentare un reclamo al Garante per la Protezione dei Dati Personali (www.garanteprivacy.it) se ritenete che i vostri diritti siano stati violati."
+      }
+    }
+  },
+  "termsConditions": {
+    "title": "Termini e Condizioni",
+    "lastUpdated": "Ultimo aggiornamento",
+    "sections": {
+      "intro": {
+        "title": "1. Introduzione",
+        "content": "Questi Termini e Condizioni regolano l'utilizzo dell'applicazione {appName}, di proprietà di {companyName} ({tradeName}), con P.IVA {taxId}. Utilizzando questa applicazione, accettate questi termini nella loro interezza."
+      },
+      "definitions": {
+        "title": "2. Definizioni",
+        "app": "Applicazione: l'applicazione mobile e web {appName}",
+        "user": "Utente: qualsiasi persona che acceda e utilizzi l'Applicazione",
+        "services": "Servizi: le funzionalità fornite dall'Applicazione",
+        "content": "Contenuto: tutte le informazioni, dati e materiali dell'Applicazione"
+      },
+      "license": {
+        "title": "3. Licenza d'Uso",
+        "content": "Vi concediamo una licenza limitata, non esclusiva, non trasferibile e revocabile per utilizzare l'Applicazione in conformità con questi Termini. Questa licenza non include il diritto di:",
+        "modify": "Modificare, copiare o distribuire l'Applicazione",
+        "reverse": "Effettuare reverse engineering o decompilare il codice",
+        "commercial": "Utilizzare l'Applicazione per scopi commerciali non autorizzati",
+        "sublicense": "Sublicenziare o trasferire i vostri diritti"
+      },
+      "userObligations": {
+        "title": "4. Obblighi dell'Utente",
+        "content": "Utilizzando l'Applicazione, vi impegnate a:",
+        "accurate": "Fornire informazioni veritiere e aggiornate",
+        "security": "Mantenere la riservatezza delle vostre credenziali di accesso",
+        "lawful": "Utilizzare l'Applicazione in modo lecito e conforme a questi Termini",
+        "respect": "Rispettare i diritti di proprietà intellettuale"
+      },
+      "intellectualProperty": {
+        "title": "5. Proprietà Intellettuale",
+        "content": "Tutti i diritti di proprietà intellettuale sull'Applicazione, inclusi design, codice, grafica, loghi e contenuti, appartengono a {companyName} o ai suoi licenzianti. È vietata qualsiasi riproduzione, distribuzione o modifica senza autorizzazione espressa."
+      },
+      "dataProtection": {
+        "title": "6. Protezione dei Dati",
+        "content": "Il trattamento dei vostri dati personali è regolato dalla nostra Informativa sulla Privacy, che costituisce parte integrante di questi Termini. Utilizzando l'Applicazione, accettate tale trattamento."
+      },
+      "invoicing": {
+        "title": "7. Fatturazione Elettronica",
+        "content": "L'Applicazione consente la generazione di fatture elettroniche conformi alla normativa italiana. L'utente è responsabile della veridicità dei dati inclusi nelle fatture."
+      },
+      "liability": {
+        "title": "8. Limitazione di Responsabilità",
+        "content": "{companyName} non sarà responsabile per:",
+        "indirect": "Danni indiretti, incidentali o consequenziali",
+        "dataLoss": "Perdita di dati dovuta a guasti tecnici",
+        "thirdParty": "Azioni di terzi o uso improprio dell'Applicazione",
+        "availability": "Interruzioni nella disponibilità del servizio"
+      },
+      "warranties": {
+        "title": "9. Garanzie",
+        "content": "L'Applicazione viene fornita \"così com'è\" senza garanzie di alcun tipo, espresse o implicite. Non garantiamo che l'Applicazione sia ininterrotta, priva di errori o che soddisfi le vostre aspettative specifiche."
+      },
+      "termination": {
+        "title": "10. Risoluzione",
+        "content": "Possiamo sospendere o terminare il vostro accesso all'Applicazione in qualsiasi momento in caso di violazione di questi Termini. Potete smettere di utilizzare l'Applicazione in qualsiasi momento eliminando il vostro account."
+      },
+      "modifications": {
+        "title": "11. Modifiche",
+        "content": "Ci riserviamo il diritto di modificare questi Termini in qualsiasi momento. Le modifiche saranno efficaci dalla loro pubblicazione nell'Applicazione. L'uso continuato dell'Applicazione dopo la pubblicazione delle modifiche costituisce la vostra accettazione delle stesse."
+      },
+      "governing": {
+        "title": "12. Legge Applicabile e Giurisdizione",
+        "content": "Questi Termini sono regolati dalla legge italiana. Per qualsiasi controversia derivante da questi Termini, le parti si sottopongono alla giurisdizione esclusiva del Tribunale di {city}."
+      },
+      "contact": {
+        "title": "13. Contatti",
+        "content": "Per qualsiasi domanda su questi Termini, potete contattarci a {email}."
+      }
+    }
+  }
+}
