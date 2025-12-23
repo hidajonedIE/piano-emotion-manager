@@ -443,6 +443,88 @@ export default function SettingsScreen() {
       ],
     },
     {
+      title: 'Privacidad y Legal',
+      items: [
+        {
+          icon: 'lock.shield.fill',
+          label: 'Política de Privacidad',
+          sublabel: 'RGPD y tratamiento de datos',
+          onPress: () => router.push('/privacy-policy' as any),
+        },
+        {
+          icon: 'doc.text.fill',
+          label: 'Términos y Condiciones',
+          sublabel: 'Condiciones de uso del servicio',
+          onPress: () => router.push('/terms-conditions' as any),
+        },
+        {
+          icon: 'hand.raised.fill',
+          label: 'Gestionar Cookies',
+          sublabel: 'Configurar preferencias de cookies',
+          onPress: () => {
+            // TODO: Implementar apertura del modal de cookies
+            Alert.alert('Cookies', 'Próximamente podrás gestionar tus preferencias de cookies desde aquí.');
+          },
+        },
+        {
+          icon: 'square.and.arrow.down.fill',
+          label: 'Exportar mis Datos',
+          sublabel: 'Descargar todos tus datos (RGPD)',
+          onPress: () => {
+            Alert.alert(
+              'Exportar Datos',
+              '¿Deseas descargar una copia de todos tus datos personales?',
+              [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                  text: 'Exportar',
+                  onPress: () => {
+                    // TODO: Implementar exportación RGPD
+                    Alert.alert('Exportación', 'Tu archivo de datos se está generando. Recibirás una notificación cuando esté listo.');
+                  },
+                },
+              ]
+            );
+          },
+        },
+        {
+          icon: 'trash.fill',
+          label: 'Eliminar mi Cuenta',
+          sublabel: 'Derecho al olvido (RGPD)',
+          onPress: () => {
+            Alert.alert(
+              'Eliminar Cuenta',
+              'Esta acción eliminará permanentemente todos tus datos. Esta acción no se puede deshacer.\n\n¿Estás seguro?',
+              [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                  text: 'Eliminar',
+                  style: 'destructive',
+                  onPress: () => {
+                    Alert.alert(
+                      'Confirmar Eliminación',
+                      'Por seguridad, confirma que deseas eliminar permanentemente tu cuenta y todos los datos asociados.',
+                      [
+                        { text: 'Cancelar', style: 'cancel' },
+                        {
+                          text: 'Sí, eliminar todo',
+                          style: 'destructive',
+                          onPress: () => {
+                            // TODO: Implementar eliminación de cuenta
+                            Alert.alert('Cuenta Eliminada', 'Tu cuenta y todos tus datos han sido eliminados.');
+                          },
+                        },
+                      ]
+                    );
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ],
+    },
+    {
       title: 'Ayuda',
       items: [
         {
