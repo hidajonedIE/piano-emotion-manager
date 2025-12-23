@@ -486,7 +486,7 @@ export default function DashboardScreen() {
         <Accordion 
           title="Piano Emotion Store" 
           defaultOpen={false}
-          icon="bag.fill"
+          icon="cart.fill"
           iconColor="#D4AF37"
         >
           <PianoEmotionStore />

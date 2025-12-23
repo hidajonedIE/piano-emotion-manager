@@ -81,6 +81,8 @@ const MAPPING = {
   "eurosign.circle.fill": "euro",
   "list.bullet": "list",
   "shippingbox.fill": "inventory",
+  "cart.fill": "shopping-cart",
+  "bag.fill": "shopping-bag",
   "chart.bar.fill": "bar-chart",
   "chart.pie.fill": "pie-chart",
   "person.badge.plus": "person-add",
