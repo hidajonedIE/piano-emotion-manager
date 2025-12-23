@@ -13,6 +13,8 @@ interface SearchResult {
   type: 'client' | 'piano' | 'service';
   title: string;
   subtitle: string;
+  extraInfo?: string;
+  badge?: string;
   icon: string;
   color: string;
 }
@@ -43,13 +45,21 @@ export function GlobalSearchBar() {
       const fullName = getClientFullName(client).toLowerCase();
       const email = (client.email || '').toLowerCase();
       const phone = (client.phone || '').toLowerCase();
+      const taxId = (client.taxId || '').toLowerCase();
       
-      if (fullName.includes(query) || email.includes(query) || phone.includes(query)) {
+      if (fullName.includes(query) || email.includes(query) || phone.includes(query) || taxId.includes(query)) {
+        const clientPianos = pianos.filter(p => p.clientId === client.id);
+        const clientServices = services.filter(s => s.clientId === client.id);
         results.push({
           id: client.id,
           type: 'client',
           title: getClientFullName(client),
-          subtitle: client.email || client.phone || 'Cliente',
+          subtitle: client.phone ? `Tel: ${client.phone}` : (client.email || 'Sin contacto'),
+          extraInfo: `${clientPianos.length} piano${clientPianos.length !== 1 ? 's' : ''} · ${clientServices.length} servicio${clientServices.length !== 1 ? 's' : ''}`,
+          badge: client.clientType === 'particular' ? 'Particular' : 
+                 client.clientType === 'school' ? 'Escuela' :
+                 client.clientType === 'conservatory' ? 'Conservatorio' :
+                 client.clientType === 'store' ? 'Tienda' : 'Empresa',
           icon: 'person.fill',
           color: '#6366F1',
         });
@@ -64,11 +74,19 @@ export function GlobalSearchBar() {
       
       if (brand.includes(query) || model.includes(query) || serialNumber.includes(query)) {
         const client = clients.find(c => c.id === piano.clientId);
+        const pianoServices = services.filter(s => s.pianoId === piano.id);
+        const lastService = pianoServices.length > 0 
+          ? pianoServices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+          : null;
         results.push({
           id: piano.id,
           type: 'piano',
           title: `${piano.brand} ${piano.model}`,
-          subtitle: client ? getClientFullName(client) : 'Sin cliente',
+          subtitle: client ? `Cliente: ${getClientFullName(client)}` : 'Sin cliente asignado',
+          extraInfo: lastService 
+            ? `Último servicio: ${new Date(lastService.date).toLocaleDateString('es-ES')}`
+            : 'Sin servicios registrados',
+          badge: piano.category === 'vertical' ? 'Vertical' : 'Cola',
           icon: 'pianokeys',
           color: '#10B981',
         });
@@ -82,11 +100,16 @@ export function GlobalSearchBar() {
       
       if (type.includes(query) || notes.includes(query)) {
         const client = clients.find(c => c.id === service.clientId);
+        const piano = pianos.find(p => p.id === service.pianoId);
         results.push({
           id: service.id,
           type: 'service',
           title: SERVICE_TYPE_LABELS[service.type] || 'Servicio',
-          subtitle: client ? getClientFullName(client) : new Date(service.date).toLocaleDateString('es-ES'),
+          subtitle: client ? `Cliente: ${getClientFullName(client)}` : 'Sin cliente',
+          extraInfo: piano 
+            ? `${piano.brand} ${piano.model} · ${new Date(service.date).toLocaleDateString('es-ES')}`
+            : new Date(service.date).toLocaleDateString('es-ES'),
+          badge: service.cost ? `€${service.cost}` : undefined,
           icon: 'wrench.fill',
           color: '#F59E0B',
         });
@@ -122,8 +145,18 @@ export function GlobalSearchBar() {
         <IconSymbol name={item.icon as any} size={20} color={item.color} />
       </View>
       <View style={styles.resultText}>
-        <ThemedText style={styles.resultTitle}>{item.title}</ThemedText>
+        <View style={styles.resultHeader}>
+          <ThemedText style={styles.resultTitle}>{item.title}</ThemedText>
+          {item.badge && (
+            <View style={[styles.resultBadge, { backgroundColor: item.color + '20' }]}>
+              <ThemedText style={[styles.resultBadgeText, { color: item.color }]}>{item.badge}</ThemedText>
+            </View>
+          )}
+        </View>
         <ThemedText style={[styles.resultSubtitle, { color: textSecondary }]}>{item.subtitle}</ThemedText>
+        {item.extraInfo && (
+          <ThemedText style={[styles.resultExtraInfo, { color: textSecondary }]}>{item.extraInfo}</ThemedText>
+        )}
       </View>
       <IconSymbol name="chevron.right" size={16} color={textSecondary} />
     </Pressable>
@@ -234,13 +267,32 @@ const styles = StyleSheet.create({
   resultText: {
     flex: 1,
   },
+  resultHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
   resultTitle: {
     fontSize: 15,
+    fontWeight: '600',
+  },
+  resultBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  resultBadgeText: {
+    fontSize: 10,
     fontWeight: '600',
   },
   resultSubtitle: {
     fontSize: 13,
     marginTop: 2,
+  },
+  resultExtraInfo: {
+    fontSize: 11,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   noResults: {
     padding: Spacing.lg,

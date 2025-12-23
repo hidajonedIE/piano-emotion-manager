@@ -16,7 +16,10 @@ import { PianoCard } from '@/components/cards';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { useToast } from '@/components/toast';
 import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useWhatsApp } from '@/hooks/use-whatsapp';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Client, ClientType, ClientAddress, Piano, CLIENT_TYPE_LABELS, getClientFullName, getClientFormattedAddress } from '@/types';
@@ -31,6 +34,8 @@ export default function ClientDetailScreen() {
   const { clients, addClient, updateClient, deleteClient, getClient } = useClients();
   const { pianos, getPianosByClient } = usePianos();
   const { getServicesByClient } = useServices();
+  const { showToast } = useToast();
+  const { sendCustomMessage } = useWhatsApp();
 
   const [isEditing, setIsEditing] = useState(isNew);
   const [form, setForm] = useState<Partial<Client>>({
@@ -304,6 +309,15 @@ export default function ClientDetailScreen() {
         }}
       />
 
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        items={[
+          { label: 'Inicio', path: '/' },
+          { label: 'Clientes', path: '/clients' },
+          { label: isNew ? 'Nuevo' : fullName || 'Cliente' },
+        ]}
+      />
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
@@ -479,6 +493,19 @@ export default function ClientDetailScreen() {
               <ThemedText style={[styles.actionText, { color: form.email ? accent : textSecondary }]}>
                 Email
               </ThemedText>
+            </Pressable>
+            <Pressable
+              style={[styles.actionButton, { backgroundColor: '#25D366', borderColor: '#25D366' }]}
+              onPress={() => {
+                if (form.phone) {
+                  sendCustomMessage(form as Client, 'Hola, me pongo en contacto contigo desde Piano Emotion Manager.');
+                } else {
+                  showToast('error', 'El cliente no tiene teléfono registrado');
+                }
+              }}
+            >
+              <IconSymbol name="message.fill" size={24} color="#FFFFFF" />
+              <ThemedText style={[styles.actionText, { color: '#FFFFFF' }]}>WhatsApp</ThemedText>
             </Pressable>
           </View>
         )}

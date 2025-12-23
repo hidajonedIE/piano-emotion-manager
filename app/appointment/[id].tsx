@@ -14,8 +14,12 @@ import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { useToast } from '@/components/toast';
 import { useClients, usePianos } from '@/hooks/use-storage';
 import { useAppointments } from '@/hooks/use-appointments';
+import { useWhatsApp } from '@/hooks/use-whatsapp';
+import { useCalendarSync } from '@/hooks/use-calendar-sync';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Appointment, AppointmentStatus, APPOINTMENT_STATUS_LABELS, ESTIMATED_DURATIONS } from '@/types/business';
@@ -34,6 +38,10 @@ export default function AppointmentDetailScreen() {
   const { clients, getClient } = useClients();
   const { pianos, getPiano, getPianosByClient } = usePianos();
   const { appointments, addAppointment, updateAppointment, deleteAppointment, getAppointment } = useAppointments();
+  const { showToast } = useToast();
+  const { sendAppointmentReminder } = useWhatsApp();
+  const { showExportOptions, exportToGoogleCalendar, exportToOutlookCalendar, exportToICS } = useCalendarSync();
+  const [showCalendarMenu, setShowCalendarMenu] = useState(false);
 
   const [isEditing, setIsEditing] = useState(isNew);
   const [form, setForm] = useState<Partial<Appointment>>({
@@ -393,6 +401,56 @@ export default function AppointmentDetailScreen() {
           </Pressable>
         )}
 
+        {/* Acciones rápidas (solo en modo vista) */}
+        {!isNew && !isEditing && (
+          <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={styles.sectionTitle}>Acciones</ThemedText>
+            <View style={styles.actionsGrid}>
+              {/* Enviar recordatorio por WhatsApp */}
+              <Pressable
+                style={[styles.actionButton, { backgroundColor: '#25D366' }]}
+                onPress={() => {
+                  if (selectedClient) {
+                    sendAppointmentReminder(selectedClient, form as Appointment);
+                  } else {
+                    showToast('error', 'No hay cliente seleccionado');
+                  }
+                }}
+              >
+                <IconSymbol name="message.fill" size={20} color="#FFFFFF" />
+                <ThemedText style={styles.actionButtonText}>Recordatorio WhatsApp</ThemedText>
+              </Pressable>
+
+              {/* Exportar a Google Calendar */}
+              <Pressable
+                style={[styles.actionButton, { backgroundColor: '#4285F4' }]}
+                onPress={() => exportToGoogleCalendar(form as Appointment, selectedClient || undefined)}
+              >
+                <IconSymbol name="calendar" size={20} color="#FFFFFF" />
+                <ThemedText style={styles.actionButtonText}>Google Calendar</ThemedText>
+              </Pressable>
+
+              {/* Exportar a Outlook */}
+              <Pressable
+                style={[styles.actionButton, { backgroundColor: '#0078D4' }]}
+                onPress={() => exportToOutlookCalendar(form as Appointment, selectedClient || undefined)}
+              >
+                <IconSymbol name="calendar" size={20} color="#FFFFFF" />
+                <ThemedText style={styles.actionButtonText}>Outlook</ThemedText>
+              </Pressable>
+
+              {/* Descargar ICS */}
+              <Pressable
+                style={[styles.actionButton, { backgroundColor: accent }]}
+                onPress={() => exportToICS(form as Appointment, selectedClient || undefined)}
+              >
+                <IconSymbol name="arrow.down.doc.fill" size={20} color="#FFFFFF" />
+                <ThemedText style={styles.actionButtonText}>Descargar ICS</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
         {!isNew && !isEditing && (
           <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}>
             <IconSymbol name="trash.fill" size={20} color={error} />
@@ -520,5 +578,31 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    minWidth: '45%',
+    flex: 1,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
   },
 });
