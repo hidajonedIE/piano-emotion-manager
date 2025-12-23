@@ -37,6 +37,14 @@ const PRODUCT_CATEGORIES = [
     comingSoon: true,
   },
   {
+    id: 'adhesives',
+    name: 'Adhesivos y Colas',
+    icon: '🪥',
+    brands: ['Titebond'],
+    description: 'Colas profesionales para madera y reparaciones',
+    comingSoon: true,
+  },
+  {
     id: 'maintenance',
     name: 'Mantenimiento',
     icon: '✨',
