@@ -56,6 +56,7 @@ const MAPPING = {
   // Search and filter
   "magnifyingglass": "search",
   "line.3.horizontal.decrease": "filter-list",
+  "line.3.horizontal": "menu",
   
   // Status
   "star.fill": "star",
