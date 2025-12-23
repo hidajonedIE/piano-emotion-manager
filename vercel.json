@@ -2,25 +2,14 @@
   "buildCommand": "pnpm run build && npx expo export --platform web",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
-  "framework": null,
-  "functions": {
-    "dist/index.js": {
-      "runtime": "nodejs18.x",
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/dist/index.js"
+      "destination": "/api/index.js"
     },
     {
       "source": "/(.*)",
       "destination": "/dist/$1"
     }
-  ],
-  "env": {
-    "ENABLE_EXPERIMENTAL_COREPACK": "1"
-  }
+  ]
 }
