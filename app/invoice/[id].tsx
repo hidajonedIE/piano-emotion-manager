@@ -1,0 +1,868 @@
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useEffect, useState, useMemo } from 'react';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+  Platform,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useInvoices, useBusinessInfo } from '@/hooks/use-invoices';
+import { useServiceCatalog } from '@/hooks/use-service-catalog';
+import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useInventory } from '@/hooks/use-inventory';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { BorderRadius, Spacing } from '@/constants/theme';
+import { Invoice, InvoiceItem, calculateInvoiceTotals, DEFAULT_TAX_RATE, INVOICE_STATUS_LABELS } from '@/types/invoice';
+import { SERVICE_RATE_CATEGORY_LABELS } from '@/types/service-catalog';
+import { getClientFullName, getClientFormattedAddress } from '@/types';
+import { openInvoiceForPrint, sendInvoiceByEmail, downloadInvoiceHTML } from '@/lib/invoice-pdf';
+
+export default function InvoiceDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const isNew = id === 'new';
+
+  const { invoices, addInvoice, updateInvoice, deleteInvoice, getInvoice, markAsSent, markAsPaid } = useInvoices();
+  const { businessInfo } = useBusinessInfo();
+  const { rates, getActiveRates } = useServiceCatalog();
+  const { clients } = useClients();
+  const { pianos } = usePianos();
+  const { services, getServicesByClient } = useServices();
+  const { materials, getMaterial } = useInventory();
+
+  const [isEditing, setIsEditing] = useState(isNew);
+  const [showServicePicker, setShowServicePicker] = useState(false);
+  const [showClientPicker, setShowClientPicker] = useState(false);
+  const [showServiceSelector, setShowServiceSelector] = useState(false);
+
+  const [form, setForm] = useState<Partial<Invoice>>({
+    date: new Date().toISOString().split('T')[0],
+    status: 'draft',
+    items: [],
+    business: businessInfo,
+    clientId: '',
+    clientName: '',
+  });
+
+  const cardBg = useThemeColor({}, 'cardBackground');
+  const borderColor = useThemeColor({}, 'border');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const accent = useThemeColor({}, 'accent');
+  const error = useThemeColor({}, 'error');
+  const success = useThemeColor({}, 'success');
+  const warning = useThemeColor({}, 'warning');
+  const textColor = useThemeColor({}, 'text');
+  const background = useThemeColor({}, 'background');
+
+  useEffect(() => {
+    if (!isNew && id) {
+      const invoice = getInvoice(id);
+      if (invoice) {
+        setForm(invoice);
+      }
+    } else {
+      setForm(prev => ({ ...prev, business: businessInfo }));
+    }
+  }, [id, isNew, invoices, businessInfo]);
+
+  const totals = useMemo(() => {
+    return calculateInvoiceTotals(form.items || []);
+  }, [form.items]);
+
+  const handleAddItem = (serviceId?: string) => {
+    let newItem: InvoiceItem;
+
+    if (serviceId) {
+      const rate = rates.find(r => r.id === serviceId);
+      if (rate) {
+        const total = rate.basePrice * (1 + rate.taxRate / 100);
+        newItem = {
+          description: rate.name,
+          quantity: 1,
+          unitPrice: rate.basePrice,
+          taxRate: rate.taxRate,
+          total,
+        };
+      } else {
+        return;
+      }
+    } else {
+      newItem = {
+        description: '',
+        quantity: 1,
+        unitPrice: 0,
+        taxRate: DEFAULT_TAX_RATE,
+        total: 0,
+      };
+    }
+
+    setForm(prev => ({
+      ...prev,
+      items: [...(prev.items || []), newItem],
+    }));
+    setShowServicePicker(false);
+  };
+
+  const handleUpdateItem = (index: number, updates: Partial<InvoiceItem>) => {
+    const newItems = [...(form.items || [])];
+    const item = { ...newItems[index], ...updates };
+    item.total = item.quantity * item.unitPrice * (1 + item.taxRate / 100);
+    newItems[index] = item;
+    setForm(prev => ({ ...prev, items: newItems }));
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const newItems = (form.items || []).filter((_, i) => i !== index);
+    setForm(prev => ({ ...prev, items: newItems }));
+  };
+
+  // Función para importar materiales de un servicio realizado
+  const handleImportServiceMaterials = (serviceId: string) => {
+    const service = services.find((s: any) => s.id === serviceId);
+    if (!service || !service.materialsUsed || service.materialsUsed.length === 0) {
+      Alert.alert('Info', 'Este servicio no tiene materiales registrados');
+      return;
+    }
+
+    const newItems: InvoiceItem[] = [];
+    
+    // Añadir el servicio como concepto principal
+    const serviceRate = rates.find(r => r.name === service.type || r.id === service.type);
+    if (serviceRate) {
+      newItems.push({
+        description: `Servicio: ${serviceRate.name}`,
+        quantity: 1,
+        unitPrice: serviceRate.basePrice,
+        taxRate: serviceRate.taxRate,
+        total: serviceRate.basePrice * (1 + serviceRate.taxRate / 100),
+      });
+    }
+
+    // Añadir cada material usado
+    service.materialsUsed.forEach((usage: { materialId: string; quantity: number }) => {
+      const material = getMaterial(usage.materialId);
+      if (material) {
+        const unitPrice = material.salePrice || material.unitPrice || material.costPrice || 0;
+        const taxRate = DEFAULT_TAX_RATE;
+        newItems.push({
+          description: `Material: ${material.name}`,
+          quantity: usage.quantity,
+          unitPrice,
+          taxRate,
+          total: usage.quantity * unitPrice * (1 + taxRate / 100),
+        });
+      }
+    });
+
+    if (newItems.length > 0) {
+      setForm(prev => ({
+        ...prev,
+        items: [...(prev.items || []), ...newItems],
+      }));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    setShowServiceSelector(false);
+  };
+
+  // Obtener servicios del cliente seleccionado
+  const clientServices = useMemo(() => {
+    if (!form.clientId) return [];
+    return getServicesByClient(form.clientId);
+  }, [form.clientId, services]);
+
+  const handleSelectClient = (clientId: string) => {
+    const client = clients.find((c: any) => c.id === clientId);
+    if (client) {
+      setForm(prev => ({
+        ...prev,
+        clientId: client.id,
+        clientName: getClientFullName(client),
+        clientEmail: client.email,
+        clientAddress: getClientFormattedAddress(client),
+      }));
+    }
+    setShowClientPicker(false);
+  };
+
+  const handleSave = async () => {
+    if (!form.clientName?.trim()) {
+      Alert.alert('Error', 'Debes seleccionar un cliente');
+      return;
+    }
+
+    if (!form.items || form.items.length === 0) {
+      Alert.alert('Error', 'La factura debe tener al menos un concepto');
+      return;
+    }
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    const invoiceData = {
+      ...form,
+      business: businessInfo,
+      ...totals,
+    };
+
+    if (isNew) {
+      await addInvoice(invoiceData as any);
+      router.back();
+    } else if (id) {
+      await updateInvoice(id, invoiceData);
+      setIsEditing(false);
+    }
+  };
+
+  const handlePrint = () => {
+    if (!id || isNew) return;
+    const invoice = getInvoice(id);
+    if (invoice) {
+      if (Platform.OS === 'web') {
+        openInvoiceForPrint(invoice);
+      } else {
+        Alert.alert('Info', 'La generación de PDF está disponible en la versión web');
+      }
+    }
+  };
+
+  const handleDownload = () => {
+    if (!id || isNew) return;
+    const invoice = getInvoice(id);
+    if (invoice) {
+      if (Platform.OS === 'web') {
+        downloadInvoiceHTML(invoice);
+      } else {
+        Alert.alert('Info', 'La descarga está disponible en la versión web');
+      }
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!id || isNew) return;
+    const invoice = getInvoice(id);
+    if (invoice) {
+      if (!invoice.clientEmail) {
+        Alert.alert('Error', 'El cliente no tiene email configurado');
+        return;
+      }
+      sendInvoiceByEmail(invoice);
+      await markAsSent(id);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  const handleMarkPaid = async () => {
+    if (!id || isNew) return;
+    await markAsPaid(id);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Eliminar factura',
+      '¿Estás seguro de que quieres eliminar esta factura?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            await deleteInvoice(id!);
+            router.back();
+          },
+        },
+      ]
+    );
+  };
+
+  const activeRates = getActiveRates();
+  const statusColor = form.status === 'paid' ? success : form.status === 'sent' ? accent : form.status === 'cancelled' ? error : warning;
+
+  return (
+    <ThemedView style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: isNew ? 'Nueva Factura' : `Factura ${form.invoiceNumber || ''}`,
+          headerRight: () =>
+            !isNew && (
+              <Pressable onPress={() => setIsEditing(!isEditing)}>
+                <ThemedText style={{ color: accent }}>
+                  {isEditing ? 'Cancelar' : 'Editar'}
+                </ThemedText>
+              </Pressable>
+            ),
+        }}
+      />
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Estado */}
+        {!isNew && (
+          <View style={[styles.statusBanner, { backgroundColor: `${statusColor}15`, borderColor: statusColor }]}>
+            <ThemedText style={[styles.statusText, { color: statusColor }]}>
+              {INVOICE_STATUS_LABELS[form.status as keyof typeof INVOICE_STATUS_LABELS]}
+            </ThemedText>
+          </View>
+        )}
+
+        {/* Cliente */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.sectionTitle, { color: textSecondary }]}>Cliente</ThemedText>
+          
+          {isEditing ? (
+            <Pressable
+              style={[styles.pickerButton, { borderColor }]}
+              onPress={() => setShowClientPicker(true)}
+            >
+              <ThemedText style={form.clientName ? {} : { color: textSecondary }}>
+                {form.clientName || 'Seleccionar cliente...'}
+              </ThemedText>
+              <IconSymbol name="chevron.right" size={16} color={textSecondary} />
+            </Pressable>
+          ) : (
+            <View>
+              <ThemedText style={styles.clientName}>{form.clientName}</ThemedText>
+              {form.clientEmail && (
+                <ThemedText style={[styles.clientInfo, { color: textSecondary }]}>{form.clientEmail}</ThemedText>
+              )}
+              {form.clientAddress && (
+                <ThemedText style={[styles.clientInfo, { color: textSecondary }]}>{form.clientAddress}</ThemedText>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Fecha */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.sectionTitle, { color: textSecondary }]}>Fecha</ThemedText>
+          {isEditing ? (
+            <TextInput
+              style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+              value={form.date}
+              onChangeText={(text) => setForm({ ...form, date: text })}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={textSecondary}
+            />
+          ) : (
+            <ThemedText>{form.date ? new Date(form.date).toLocaleDateString('es-ES') : '-'}</ThemedText>
+          )}
+        </View>
+
+        {/* Conceptos */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <ThemedText style={[styles.sectionTitle, { color: textSecondary }]}>Conceptos</ThemedText>
+            {isEditing && (
+              <View style={styles.headerButtons}>
+                {form.clientId && clientServices.length > 0 && (
+                  <Pressable
+                    style={[styles.addButton, { backgroundColor: `${success}15`, marginRight: Spacing.sm }]}
+                    onPress={() => setShowServiceSelector(true)}
+                  >
+                    <IconSymbol name="doc.text.fill" size={16} color={success} />
+                    <ThemedText style={[styles.addButtonText, { color: success }]}>Importar servicio</ThemedText>
+                  </Pressable>
+                )}
+                <Pressable
+                  style={[styles.addButton, { backgroundColor: `${accent}15` }]}
+                  onPress={() => setShowServicePicker(true)}
+                >
+                  <IconSymbol name="plus" size={16} color={accent} />
+                  <ThemedText style={[styles.addButtonText, { color: accent }]}>Añadir</ThemedText>
+                </Pressable>
+              </View>
+            )}
+          </View>
+
+          {(form.items || []).map((item, index) => (
+            <View key={index} style={[styles.itemCard, { borderColor }]}>
+              {isEditing ? (
+                <>
+                  <View style={styles.itemHeader}>
+                    <TextInput
+                      style={[styles.itemDescription, { color: textColor }]}
+                      value={item.description}
+                      onChangeText={(text) => handleUpdateItem(index, { description: text })}
+                      placeholder="Descripción"
+                      placeholderTextColor={textSecondary}
+                    />
+                    <Pressable onPress={() => handleRemoveItem(index)}>
+                      <IconSymbol name="trash.fill" size={18} color={error} />
+                    </Pressable>
+                  </View>
+                  <View style={styles.itemRow}>
+                    <View style={styles.itemField}>
+                      <ThemedText style={[styles.itemLabel, { color: textSecondary }]}>Cant.</ThemedText>
+                      <TextInput
+                        style={[styles.itemInput, { borderColor, color: textColor }]}
+                        value={item.quantity.toString()}
+                        onChangeText={(text) => handleUpdateItem(index, { quantity: parseInt(text) || 1 })}
+                        keyboardType="number-pad"
+                      />
+                    </View>
+                    <View style={styles.itemField}>
+                      <ThemedText style={[styles.itemLabel, { color: textSecondary }]}>Precio</ThemedText>
+                      <TextInput
+                        style={[styles.itemInput, { borderColor, color: textColor }]}
+                        value={item.unitPrice.toString()}
+                        onChangeText={(text) => handleUpdateItem(index, { unitPrice: parseFloat(text) || 0 })}
+                        keyboardType="decimal-pad"
+                      />
+                    </View>
+                    <View style={styles.itemField}>
+                      <ThemedText style={[styles.itemLabel, { color: textSecondary }]}>IVA %</ThemedText>
+                      <TextInput
+                        style={[styles.itemInput, { borderColor, color: textColor }]}
+                        value={item.taxRate.toString()}
+                        onChangeText={(text) => handleUpdateItem(index, { taxRate: parseInt(text) || 21 })}
+                        keyboardType="number-pad"
+                      />
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <ThemedText style={styles.itemDescriptionView}>{item.description}</ThemedText>
+                  <View style={styles.itemRowView}>
+                    <ThemedText style={[styles.itemDetail, { color: textSecondary }]}>
+                      {item.quantity} x €{item.unitPrice.toFixed(2)} (+{item.taxRate}% IVA)
+                    </ThemedText>
+                    <ThemedText style={styles.itemTotal}>€{item.total.toFixed(2)}</ThemedText>
+                  </View>
+                </>
+              )}
+            </View>
+          ))}
+
+          {(form.items || []).length === 0 && (
+            <ThemedText style={[styles.emptyText, { color: textSecondary }]}>
+              No hay conceptos añadidos
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Totales */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <View style={styles.totalRow}>
+            <ThemedText style={{ color: textSecondary }}>Subtotal</ThemedText>
+            <ThemedText>€{totals.subtotal.toFixed(2)}</ThemedText>
+          </View>
+          <View style={styles.totalRow}>
+            <ThemedText style={{ color: textSecondary }}>IVA</ThemedText>
+            <ThemedText>€{totals.taxAmount.toFixed(2)}</ThemedText>
+          </View>
+          <View style={[styles.totalRow, styles.totalFinal]}>
+            <ThemedText style={styles.totalLabel}>TOTAL</ThemedText>
+            <ThemedText style={[styles.totalValue, { color: accent }]}>€{totals.total.toFixed(2)}</ThemedText>
+          </View>
+        </View>
+
+        {/* Notas */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.sectionTitle, { color: textSecondary }]}>Notas</ThemedText>
+          {isEditing ? (
+            <TextInput
+              style={[styles.input, styles.inputMultiline, { backgroundColor: cardBg, borderColor, color: textColor }]}
+              value={form.notes}
+              onChangeText={(text) => setForm({ ...form, notes: text })}
+              placeholder="Notas adicionales..."
+              placeholderTextColor={textSecondary}
+              multiline
+              numberOfLines={3}
+            />
+          ) : (
+            <ThemedText style={{ color: form.notes ? textColor : textSecondary }}>
+              {form.notes || 'Sin notas'}
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Acciones */}
+        {isEditing ? (
+          <Pressable style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave}>
+            <ThemedText style={styles.saveButtonText}>
+              {isNew ? 'Crear Factura' : 'Guardar Cambios'}
+            </ThemedText>
+          </Pressable>
+        ) : (
+          <View style={styles.actionsContainer}>
+            <View style={styles.actionsRow}>
+              <Pressable style={[styles.actionButton, { backgroundColor: `${accent}15` }]} onPress={handlePrint}>
+                <IconSymbol name="printer.fill" size={20} color={accent} />
+                <ThemedText style={[styles.actionButtonText, { color: accent }]}>Imprimir/PDF</ThemedText>
+              </Pressable>
+              <Pressable style={[styles.actionButton, { backgroundColor: `${accent}15` }]} onPress={handleDownload}>
+                <IconSymbol name="arrow.down.doc.fill" size={20} color={accent} />
+                <ThemedText style={[styles.actionButtonText, { color: accent }]}>Descargar</ThemedText>
+              </Pressable>
+            </View>
+            <Pressable style={[styles.actionButtonFull, { backgroundColor: accent }]} onPress={handleSendEmail}>
+              <IconSymbol name="paperplane.fill" size={20} color="#FFFFFF" />
+              <ThemedText style={[styles.actionButtonText, { color: '#FFFFFF' }]}>Enviar por Email</ThemedText>
+            </Pressable>
+            {form.status !== 'paid' && (
+              <Pressable style={[styles.actionButtonFull, { backgroundColor: success }]} onPress={handleMarkPaid}>
+                <IconSymbol name="checkmark.circle.fill" size={20} color="#FFFFFF" />
+                <ThemedText style={[styles.actionButtonText, { color: '#FFFFFF' }]}>Marcar como Pagada</ThemedText>
+              </Pressable>
+            )}
+            <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}>
+              <IconSymbol name="trash.fill" size={20} color={error} />
+              <ThemedText style={[styles.deleteButtonText, { color: error }]}>Eliminar Factura</ThemedText>
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Modal selector de servicios */}
+      {showServicePicker && (
+        <Pressable style={styles.modalOverlay} onPress={() => setShowServicePicker(false)}>
+          <View style={[styles.modalContent, { backgroundColor: background }]}>
+            <ThemedText style={styles.modalTitle}>Seleccionar servicio</ThemedText>
+            <ScrollView style={styles.modalScroll}>
+              <Pressable
+                style={[styles.modalOption, { borderColor }]}
+                onPress={() => handleAddItem()}
+              >
+                <ThemedText>+ Concepto personalizado</ThemedText>
+              </Pressable>
+              {activeRates.map(rate => (
+                <Pressable
+                  key={rate.id}
+                  style={[styles.modalOption, { borderColor }]}
+                  onPress={() => handleAddItem(rate.id)}
+                >
+                  <View>
+                    <ThemedText>{rate.name}</ThemedText>
+                    <ThemedText style={[styles.modalOptionDetail, { color: textSecondary }]}>
+                      {SERVICE_RATE_CATEGORY_LABELS[rate.category]} - €{rate.basePrice.toFixed(2)}
+                    </ThemedText>
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </Pressable>
+      )}
+
+      {/* Modal selector de servicios del cliente para importar materiales */}
+      {showServiceSelector && (
+        <Pressable style={styles.modalOverlay} onPress={() => setShowServiceSelector(false)}>
+          <View style={[styles.modalContent, { backgroundColor: background }]}>
+            <ThemedText style={styles.modalTitle}>Importar servicio con materiales</ThemedText>
+            <ScrollView style={styles.modalScroll}>
+              {clientServices.map((service: any) => (
+                <Pressable
+                  key={service.id}
+                  style={[styles.modalOption, { borderColor }]}
+                  onPress={() => handleImportServiceMaterials(service.id)}
+                >
+                  <View>
+                    <ThemedText style={{ fontWeight: '500' }}>{service.type}</ThemedText>
+                    <ThemedText style={[styles.modalOptionDetail, { color: textSecondary }]}>
+                      {new Date(service.date).toLocaleDateString('es-ES')}
+                      {service.materialsUsed && service.materialsUsed.length > 0 && 
+                        ` - ${service.materialsUsed.length} material(es)`
+                      }
+                    </ThemedText>
+                  </View>
+                  {service.materialsUsed && service.materialsUsed.length > 0 && (
+                    <IconSymbol name="shippingbox.fill" size={16} color={success} />
+                  )}
+                </Pressable>
+              ))}
+              {clientServices.length === 0 && (
+                <ThemedText style={[styles.emptyText, { color: textSecondary }]}>
+                  No hay servicios registrados para este cliente
+                </ThemedText>
+              )}
+            </ScrollView>
+          </View>
+        </Pressable>
+      )}
+
+      {/* Modal selector de clientes */}
+      {showClientPicker && (
+        <Pressable style={styles.modalOverlay} onPress={() => setShowClientPicker(false)}>
+          <View style={[styles.modalContent, { backgroundColor: background }]}>
+            <ThemedText style={styles.modalTitle}>Seleccionar cliente</ThemedText>
+            <ScrollView style={styles.modalScroll}>
+              {clients.map((client: any) => (
+                <Pressable
+                  key={client.id}
+                  style={[styles.modalOption, { borderColor }]}
+                  onPress={() => handleSelectClient(client.id)}
+                >
+                  <ThemedText>{getClientFullName(client)}</ThemedText>
+                  {client.email && (
+                    <ThemedText style={[styles.modalOptionDetail, { color: textSecondary }]}>
+                      {client.email}
+                    </ThemedText>
+                  )}
+                </Pressable>
+              ))}
+              {clients.length === 0 && (
+                <ThemedText style={[styles.emptyText, { color: textSecondary }]}>
+                  No hay clientes registrados
+                </ThemedText>
+              )}
+            </ScrollView>
+          </View>
+        </Pressable>
+      )}
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: Spacing.md,
+    gap: Spacing.md,
+  },
+  statusBanner: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  section: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  clientName: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  clientInfo: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: 16,
+  },
+  inputMultiline: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    gap: 4,
+  },
+  addButtonText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  itemCard: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  itemDescription: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  itemDescriptionView: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  itemRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  itemRowView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemField: {
+    flex: 1,
+    gap: 2,
+  },
+  itemLabel: {
+    fontSize: 11,
+  },
+  itemInput: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    fontSize: 14,
+  },
+  itemDetail: {
+    fontSize: 13,
+  },
+  itemTotal: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  emptyText: {
+    fontSize: 14,
+    textAlign: 'center',
+    paddingVertical: Spacing.md,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  totalFinal: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.sm,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  totalValue: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  actionsContainer: {
+    gap: Spacing.sm,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.sm,
+  },
+  actionButtonFull: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.sm,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  saveButton: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    width: '100%',
+    maxHeight: '70%',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: Spacing.md,
+  },
+  modalScroll: {
+    maxHeight: 400,
+  },
+  modalOption: {
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  modalOptionDetail: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+});

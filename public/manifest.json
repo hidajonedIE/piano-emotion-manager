@@ -1,0 +1,27 @@
+{
+  "name": "Piano Emotion Manager",
+  "short_name": "Piano Emotion",
+  "description": "Aplicación profesional para técnicos de pianos acústicos. Gestión de clientes, pianos, servicios, facturación e inventario.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2D5A27",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "es",
+  "dir": "ltr"
+}
