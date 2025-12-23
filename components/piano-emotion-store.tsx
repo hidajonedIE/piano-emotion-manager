@@ -29,6 +29,14 @@ const PRODUCT_CATEGORIES = [
     comingSoon: true,
   },
   {
+    id: 'tuning-levers',
+    name: 'Llaves de Afinación',
+    icon: '🔑',
+    brands: [],
+    description: 'Llaves de afinación profesionales para técnicos',
+    comingSoon: true,
+  },
+  {
     id: 'tools',
     name: 'Herramientas',
     icon: '🔧',
