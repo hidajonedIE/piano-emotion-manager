@@ -38,6 +38,9 @@ importers:
       axios:
         specifier: ^1.12.0
         version: 1.13.2
+      babel-plugin-module-resolver:
+        specifier: ^5.0.2
+        version: 5.0.2
       cookie:
         specifier: ^1.0.2
         version: 1.0.2
@@ -177,9 +180,6 @@ importers:
       '@types/react':
         specifier: ~19.1.0
         version: 19.1.17
-      babel-plugin-module-resolver:
-        specifier: ^5.0.2
-        version: 5.0.2
       concurrently:
         specifier: ^9.1.0
         version: 9.2.1
