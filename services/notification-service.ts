@@ -1,9 +1,7 @@
-import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 
-const SCHEDULED_NOTIFICATIONS_KEY = '@piano_emotion_scheduled_notifications';
 const NOTIFICATION_HISTORY_KEY = '@piano_emotion_notification_history';
+const NOTIFICATION_SETTINGS_KEY = '@piano_emotion_notification_settings';
 
 export type NotificationType = 
   | 'appointment_reminder'
@@ -17,303 +15,294 @@ export type NotificationType =
   | 'sync_error'
   | 'general';
 
-export interface ScheduledNotification {
+export interface NotificationItem {
   id: string;
   type: NotificationType;
   title: string;
   body: string;
   data: Record<string, any>;
-  scheduledFor: string;
   createdAt: string;
-  entityId?: string;
-  entityType?: 'appointment' | 'piano' | 'client' | 'invoice' | 'material';
+  read: boolean;
+  actionUrl?: string;
 }
 
-export interface NotificationHistoryItem {
-  id: string;
-  type: NotificationType;
-  title: string;
-  body: string;
-  data: Record<string, any>;
-  sentAt: string;
-  read: boolean;
-  actionTaken?: string;
+export interface NotificationSettings {
+  browserNotifications: boolean;
+  emailReminders: boolean;
+  inAppNotifications: boolean;
+  appointmentReminder: boolean;
+  appointmentReminderTime: number; // minutos antes
+  maintenanceReminder: boolean;
+  stockAlert: boolean;
+  invoiceReminder: boolean;
 }
+
+const DEFAULT_SETTINGS: NotificationSettings = {
+  browserNotifications: false,
+  emailReminders: true,
+  inAppNotifications: true,
+  appointmentReminder: true,
+  appointmentReminderTime: 60,
+  maintenanceReminder: true,
+  stockAlert: true,
+  invoiceReminder: true,
+};
+
+type NotificationListener = (notifications: NotificationItem[]) => void;
 
 /**
- * Servicio centralizado de notificaciones push
+ * Servicio de notificaciones para webapp
+ * - Web Notifications API para notificaciones del navegador
+ * - Notificaciones in-app (centro de notificaciones)
+ * - Preparado para integración con email
  */
-class NotificationService {
+class WebNotificationService {
+  private listeners: Set<NotificationListener> = new Set();
+  private settings: NotificationSettings = DEFAULT_SETTINGS;
+  private notifications: NotificationItem[] = [];
   private initialized = false;
 
   /**
-   * Inicializar el servicio de notificaciones
+   * Inicializar el servicio
    */
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    // Configurar handler de notificaciones
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
-    });
-
-    // Configurar canal de notificaciones para Android
-    if (Platform.OS === 'android') {
-      await this.setupAndroidChannels();
-    }
-
+    await this.loadSettings();
+    await this.loadNotifications();
     this.initialized = true;
   }
 
   /**
-   * Configurar canales de notificación para Android
+   * Cargar configuración
    */
-  private async setupAndroidChannels(): Promise<void> {
-    await Notifications.setNotificationChannelAsync('appointments', {
-      name: 'Citas',
-      description: 'Recordatorios de citas programadas',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#e94560',
-      sound: 'default',
-    });
-
-    await Notifications.setNotificationChannelAsync('maintenance', {
-      name: 'Mantenimiento',
-      description: 'Recordatorios de mantenimiento de pianos',
-      importance: Notifications.AndroidImportance.DEFAULT,
-      lightColor: '#f39c12',
-    });
-
-    await Notifications.setNotificationChannelAsync('inventory', {
-      name: 'Inventario',
-      description: 'Alertas de stock bajo',
-      importance: Notifications.AndroidImportance.DEFAULT,
-      lightColor: '#e74c3c',
-    });
-
-    await Notifications.setNotificationChannelAsync('invoices', {
-      name: 'Facturas',
-      description: 'Notificaciones de facturas',
-      importance: Notifications.AndroidImportance.DEFAULT,
-      lightColor: '#27ae60',
-    });
-
-    await Notifications.setNotificationChannelAsync('sync', {
-      name: 'Sincronización',
-      description: 'Estado de sincronización de datos',
-      importance: Notifications.AndroidImportance.LOW,
-      lightColor: '#3498db',
-    });
-
-    await Notifications.setNotificationChannelAsync('general', {
-      name: 'General',
-      description: 'Notificaciones generales',
-      importance: Notifications.AndroidImportance.DEFAULT,
-    });
-  }
-
-  /**
-   * Obtener el canal de Android según el tipo de notificación
-   */
-  private getChannelId(type: NotificationType): string {
-    switch (type) {
-      case 'appointment_reminder':
-        return 'appointments';
-      case 'maintenance_due':
-        return 'maintenance';
-      case 'stock_low':
-        return 'inventory';
-      case 'invoice_overdue':
-      case 'invoice_paid':
-        return 'invoices';
-      case 'sync_completed':
-      case 'sync_error':
-        return 'sync';
-      default:
-        return 'general';
+  private async loadSettings(): Promise<void> {
+    try {
+      const stored = await AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY);
+      if (stored) {
+        this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+      }
+    } catch (error) {
+      console.error('[Notifications] Error loading settings:', error);
     }
   }
 
   /**
-   * Obtener el icono/emoji según el tipo de notificación
+   * Guardar configuración
+   */
+  async saveSettings(settings: Partial<NotificationSettings>): Promise<void> {
+    try {
+      this.settings = { ...this.settings, ...settings };
+      await AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(this.settings));
+    } catch (error) {
+      console.error('[Notifications] Error saving settings:', error);
+    }
+  }
+
+  /**
+   * Obtener configuración actual
+   */
+  getSettings(): NotificationSettings {
+    return { ...this.settings };
+  }
+
+  /**
+   * Cargar notificaciones del almacenamiento
+   */
+  private async loadNotifications(): Promise<void> {
+    try {
+      const stored = await AsyncStorage.getItem(NOTIFICATION_HISTORY_KEY);
+      if (stored) {
+        this.notifications = JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('[Notifications] Error loading notifications:', error);
+    }
+  }
+
+  /**
+   * Guardar notificaciones
+   */
+  private async saveNotifications(): Promise<void> {
+    try {
+      // Mantener solo las últimas 100 notificaciones
+      const toSave = this.notifications.slice(0, 100);
+      await AsyncStorage.setItem(NOTIFICATION_HISTORY_KEY, JSON.stringify(toSave));
+    } catch (error) {
+      console.error('[Notifications] Error saving notifications:', error);
+    }
+  }
+
+  /**
+   * Verificar si las notificaciones del navegador están soportadas
+   */
+  isBrowserNotificationSupported(): boolean {
+    return typeof window !== 'undefined' && 'Notification' in window;
+  }
+
+  /**
+   * Obtener estado del permiso de notificaciones del navegador
+   */
+  getBrowserPermissionStatus(): NotificationPermission | 'unsupported' {
+    if (!this.isBrowserNotificationSupported()) {
+      return 'unsupported';
+    }
+    return Notification.permission;
+  }
+
+  /**
+   * Solicitar permiso para notificaciones del navegador
+   */
+  async requestBrowserPermission(): Promise<boolean> {
+    if (!this.isBrowserNotificationSupported()) {
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      const granted = permission === 'granted';
+      
+      if (granted) {
+        await this.saveSettings({ browserNotifications: true });
+      }
+      
+      return granted;
+    } catch (error) {
+      console.error('[Notifications] Error requesting permission:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Obtener icono según tipo de notificación
    */
   private getNotificationIcon(type: NotificationType): string {
     switch (type) {
-      case 'appointment_reminder':
-        return '📅';
-      case 'maintenance_due':
-        return '🎹';
-      case 'stock_low':
-        return '⚠️';
-      case 'invoice_overdue':
-        return '💰';
-      case 'invoice_paid':
-        return '✅';
-      case 'service_completed':
-        return '🔧';
-      case 'client_birthday':
-        return '🎂';
-      case 'sync_completed':
-        return '🔄';
-      case 'sync_error':
-        return '❌';
-      default:
-        return '📢';
+      case 'appointment_reminder': return '📅';
+      case 'maintenance_due': return '🎹';
+      case 'stock_low': return '⚠️';
+      case 'invoice_overdue': return '💰';
+      case 'invoice_paid': return '✅';
+      case 'service_completed': return '🔧';
+      case 'client_birthday': return '🎂';
+      case 'sync_completed': return '🔄';
+      case 'sync_error': return '❌';
+      default: return '📢';
     }
   }
 
   /**
-   * Programar una notificación
+   * Enviar notificación
    */
-  async scheduleNotification(
+  async send(
     type: NotificationType,
     title: string,
     body: string,
-    triggerDate: Date,
     data: Record<string, any> = {},
-    entityId?: string,
-    entityType?: ScheduledNotification['entityType']
-  ): Promise<string | null> {
-    try {
-      // No programar si la fecha ya pasó
-      if (triggerDate <= new Date()) {
-        console.log('Notification date has passed, skipping');
-        return null;
-      }
+    actionUrl?: string
+  ): Promise<string> {
+    const id = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const icon = this.getNotificationIcon(type);
 
-      const icon = this.getNotificationIcon(type);
-      const channelId = this.getChannelId(type);
+    // Crear notificación in-app
+    const notification: NotificationItem = {
+      id,
+      type,
+      title: `${icon} ${title}`,
+      body,
+      data,
+      createdAt: new Date().toISOString(),
+      read: false,
+      actionUrl,
+    };
 
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `${icon} ${title}`,
-          body,
-          data: { type, ...data },
-          sound: true,
-          ...(Platform.OS === 'android' && { channelId }),
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: triggerDate,
-        },
-      });
+    // Añadir al inicio de la lista
+    this.notifications.unshift(notification);
+    await this.saveNotifications();
+    this.notifyListeners();
 
-      // Guardar en registro de notificaciones programadas
-      await this.saveScheduledNotification({
-        id: notificationId,
-        type,
-        title,
-        body,
-        data,
-        scheduledFor: triggerDate.toISOString(),
-        createdAt: new Date().toISOString(),
-        entityId,
-        entityType,
-      });
-
-      return notificationId;
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
-      return null;
+    // Enviar notificación del navegador si está habilitado
+    if (this.settings.browserNotifications && this.getBrowserPermissionStatus() === 'granted') {
+      this.showBrowserNotification(title, body, icon, actionUrl);
     }
+
+    return id;
   }
 
   /**
-   * Enviar notificación inmediata
+   * Mostrar notificación del navegador
    */
-  async sendImmediateNotification(
-    type: NotificationType,
+  private showBrowserNotification(
     title: string,
     body: string,
-    data: Record<string, any> = {}
-  ): Promise<string | null> {
+    icon: string,
+    actionUrl?: string
+  ): void {
     try {
-      const icon = this.getNotificationIcon(type);
-      const channelId = this.getChannelId(type);
-
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `${icon} ${title}`,
-          body,
-          data: { type, ...data },
-          sound: true,
-          ...(Platform.OS === 'android' && { channelId }),
-        },
-        trigger: null, // Enviar inmediatamente
-      });
-
-      // Guardar en historial
-      await this.addToHistory({
-        id: notificationId,
-        type,
-        title,
+      const notification = new Notification(`${icon} ${title}`, {
         body,
-        data,
-        sentAt: new Date().toISOString(),
-        read: false,
+        icon: '/icon.png', // Icono de la app
+        badge: '/badge.png',
+        tag: `piano-emotion-${Date.now()}`,
+        requireInteraction: false,
       });
 
-      return notificationId;
+      notification.onclick = () => {
+        window.focus();
+        if (actionUrl) {
+          window.location.href = actionUrl;
+        }
+        notification.close();
+      };
+
+      // Auto-cerrar después de 5 segundos
+      setTimeout(() => notification.close(), 5000);
     } catch (error) {
-      console.error('Error sending immediate notification:', error);
-      return null;
+      console.error('[Notifications] Error showing browser notification:', error);
     }
   }
 
   /**
-   * Programar recordatorio de cita
+   * Enviar recordatorio de cita
    */
-  async scheduleAppointmentReminder(
+  async sendAppointmentReminder(
     appointmentId: string,
     clientName: string,
     serviceName: string,
     appointmentDate: Date,
-    minutesBefore: number = 60
+    minutesBefore: number = this.settings.appointmentReminderTime
   ): Promise<string | null> {
-    const triggerDate = new Date(appointmentDate.getTime() - minutesBefore * 60 * 1000);
-    
+    if (!this.settings.appointmentReminder) return null;
+
     const timeText = minutesBefore >= 60 
       ? `${Math.floor(minutesBefore / 60)} hora${minutesBefore >= 120 ? 's' : ''}`
       : `${minutesBefore} minutos`;
 
-    return this.scheduleNotification(
+    return this.send(
       'appointment_reminder',
       'Cita próxima',
       `${serviceName} con ${clientName} en ${timeText}`,
-      triggerDate,
-      { appointmentId, clientName, serviceName },
-      appointmentId,
-      'appointment'
+      { appointmentId, clientName, serviceName, appointmentDate: appointmentDate.toISOString() },
+      `/appointments/${appointmentId}`
     );
   }
 
   /**
-   * Programar recordatorio de mantenimiento
+   * Enviar recordatorio de mantenimiento
    */
-  async scheduleMaintenanceReminder(
+  async sendMaintenanceReminder(
     pianoId: string,
     pianoName: string,
-    clientName: string,
-    dueDate: Date,
-    daysBefore: number = 7
+    clientName: string
   ): Promise<string | null> {
-    const triggerDate = new Date(dueDate.getTime() - daysBefore * 24 * 60 * 60 * 1000);
+    if (!this.settings.maintenanceReminder) return null;
 
-    return this.scheduleNotification(
+    return this.send(
       'maintenance_due',
       'Mantenimiento pendiente',
       `${pianoName} de ${clientName} necesita mantenimiento`,
-      triggerDate,
-      { pianoId, pianoName, clientName, dueDate: dueDate.toISOString() },
-      pianoId,
-      'piano'
+      { pianoId, pianoName, clientName },
+      `/pianos/${pianoId}`
     );
   }
 
@@ -326,36 +315,35 @@ class NotificationService {
     currentStock: number,
     minStock: number
   ): Promise<string | null> {
-    return this.sendImmediateNotification(
+    if (!this.settings.stockAlert) return null;
+
+    return this.send(
       'stock_low',
       'Stock bajo',
       `${materialName}: ${currentStock} unidades (mínimo: ${minStock})`,
-      { materialId, materialName, currentStock, minStock }
+      { materialId, materialName, currentStock, minStock },
+      `/inventory`
     );
   }
 
   /**
-   * Programar recordatorio de factura vencida
+   * Enviar recordatorio de factura vencida
    */
-  async scheduleInvoiceOverdueReminder(
+  async sendInvoiceOverdueReminder(
     invoiceId: string,
     invoiceNumber: string,
     clientName: string,
     amount: number,
-    dueDate: Date,
     currency: string = '€'
   ): Promise<string | null> {
-    // Notificar el día después del vencimiento
-    const triggerDate = new Date(dueDate.getTime() + 24 * 60 * 60 * 1000);
+    if (!this.settings.invoiceReminder) return null;
 
-    return this.scheduleNotification(
+    return this.send(
       'invoice_overdue',
       'Factura vencida',
       `Factura ${invoiceNumber} de ${clientName} (${amount}${currency}) está vencida`,
-      triggerDate,
       { invoiceId, invoiceNumber, clientName, amount },
-      invoiceId,
-      'invoice'
+      `/invoices/${invoiceId}`
     );
   }
 
@@ -369,11 +357,12 @@ class NotificationService {
     amount: number,
     currency: string = '€'
   ): Promise<string | null> {
-    return this.sendImmediateNotification(
+    return this.send(
       'invoice_paid',
       'Pago recibido',
       `Factura ${invoiceNumber} de ${clientName} pagada (${amount}${currency})`,
-      { invoiceId, invoiceNumber, clientName, amount }
+      { invoiceId, invoiceNumber, clientName, amount },
+      `/invoices/${invoiceId}`
     );
   }
 
@@ -386,239 +375,115 @@ class NotificationService {
     clientName: string,
     pianoName: string
   ): Promise<string | null> {
-    return this.sendImmediateNotification(
+    return this.send(
       'service_completed',
       'Servicio completado',
       `${serviceName} en ${pianoName} de ${clientName}`,
-      { serviceId, serviceName, clientName, pianoName }
+      { serviceId, serviceName, clientName, pianoName },
+      `/services/${serviceId}`
     );
   }
 
   /**
-   * Programar recordatorio de cumpleaños de cliente
+   * Enviar notificación de cumpleaños
    */
-  async scheduleClientBirthdayReminder(
+  async sendClientBirthdayNotification(
     clientId: string,
-    clientName: string,
-    birthday: Date
+    clientName: string
   ): Promise<string | null> {
-    // Programar para las 9:00 AM del día del cumpleaños
-    const triggerDate = new Date(birthday);
-    triggerDate.setHours(9, 0, 0, 0);
-
-    return this.scheduleNotification(
+    return this.send(
       'client_birthday',
       'Cumpleaños de cliente',
       `Hoy es el cumpleaños de ${clientName}`,
-      triggerDate,
       { clientId, clientName },
-      clientId,
-      'client'
+      `/clients/${clientId}`
     );
   }
 
   /**
-   * Enviar notificación de sincronización completada
+   * Obtener todas las notificaciones
    */
-  async sendSyncCompletedNotification(
-    itemsCount: number,
-    syncType: string = 'datos'
-  ): Promise<string | null> {
-    return this.sendImmediateNotification(
-      'sync_completed',
-      'Sincronización completada',
-      `Se han sincronizado ${itemsCount} ${syncType}`,
-      { itemsCount, syncType }
-    );
+  getNotifications(): NotificationItem[] {
+    return [...this.notifications];
   }
 
   /**
-   * Enviar notificación de error de sincronización
+   * Obtener notificaciones no leídas
    */
-  async sendSyncErrorNotification(
-    errorMessage: string
-  ): Promise<string | null> {
-    return this.sendImmediateNotification(
-      'sync_error',
-      'Error de sincronización',
-      errorMessage,
-      { errorMessage }
-    );
+  getUnreadNotifications(): NotificationItem[] {
+    return this.notifications.filter(n => !n.read);
   }
 
   /**
-   * Cancelar una notificación programada
+   * Obtener conteo de no leídas
    */
-  async cancelNotification(notificationId: string): Promise<void> {
-    try {
-      await Notifications.cancelScheduledNotificationAsync(notificationId);
-      await this.removeScheduledNotification(notificationId);
-    } catch (error) {
-      console.error('Error canceling notification:', error);
-    }
-  }
-
-  /**
-   * Cancelar todas las notificaciones de una entidad
-   */
-  async cancelNotificationsForEntity(
-    entityId: string,
-    entityType: ScheduledNotification['entityType']
-  ): Promise<void> {
-    const scheduled = await this.getScheduledNotifications();
-    const toCancel = scheduled.filter(
-      n => n.entityId === entityId && n.entityType === entityType
-    );
-
-    for (const notification of toCancel) {
-      await this.cancelNotification(notification.id);
-    }
-  }
-
-  /**
-   * Cancelar todas las notificaciones programadas
-   */
-  async cancelAllNotifications(): Promise<void> {
-    try {
-      await Notifications.cancelAllScheduledNotificationsAsync();
-      await AsyncStorage.removeItem(SCHEDULED_NOTIFICATIONS_KEY);
-    } catch (error) {
-      console.error('Error canceling all notifications:', error);
-    }
-  }
-
-  /**
-   * Obtener notificaciones programadas
-   */
-  async getScheduledNotifications(): Promise<ScheduledNotification[]> {
-    try {
-      const stored = await AsyncStorage.getItem(SCHEDULED_NOTIFICATIONS_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error getting scheduled notifications:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Guardar notificación programada
-   */
-  private async saveScheduledNotification(notification: ScheduledNotification): Promise<void> {
-    try {
-      const scheduled = await this.getScheduledNotifications();
-      scheduled.push(notification);
-      await AsyncStorage.setItem(SCHEDULED_NOTIFICATIONS_KEY, JSON.stringify(scheduled));
-    } catch (error) {
-      console.error('Error saving scheduled notification:', error);
-    }
-  }
-
-  /**
-   * Eliminar notificación programada del registro
-   */
-  private async removeScheduledNotification(notificationId: string): Promise<void> {
-    try {
-      const scheduled = await this.getScheduledNotifications();
-      const filtered = scheduled.filter(n => n.id !== notificationId);
-      await AsyncStorage.setItem(SCHEDULED_NOTIFICATIONS_KEY, JSON.stringify(filtered));
-    } catch (error) {
-      console.error('Error removing scheduled notification:', error);
-    }
-  }
-
-  /**
-   * Obtener historial de notificaciones
-   */
-  async getNotificationHistory(): Promise<NotificationHistoryItem[]> {
-    try {
-      const stored = await AsyncStorage.getItem(NOTIFICATION_HISTORY_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error getting notification history:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Añadir al historial de notificaciones
-   */
-  private async addToHistory(item: NotificationHistoryItem): Promise<void> {
-    try {
-      const history = await this.getNotificationHistory();
-      history.unshift(item); // Añadir al principio
-      
-      // Mantener solo las últimas 100 notificaciones
-      const trimmed = history.slice(0, 100);
-      
-      await AsyncStorage.setItem(NOTIFICATION_HISTORY_KEY, JSON.stringify(trimmed));
-    } catch (error) {
-      console.error('Error adding to notification history:', error);
-    }
+  getUnreadCount(): number {
+    return this.notifications.filter(n => !n.read).length;
   }
 
   /**
    * Marcar notificación como leída
    */
   async markAsRead(notificationId: string): Promise<void> {
-    try {
-      const history = await this.getNotificationHistory();
-      const updated = history.map(item =>
-        item.id === notificationId ? { ...item, read: true } : item
-      );
-      await AsyncStorage.setItem(NOTIFICATION_HISTORY_KEY, JSON.stringify(updated));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
+    const notification = this.notifications.find(n => n.id === notificationId);
+    if (notification) {
+      notification.read = true;
+      await this.saveNotifications();
+      this.notifyListeners();
     }
   }
 
   /**
-   * Marcar todas las notificaciones como leídas
+   * Marcar todas como leídas
    */
   async markAllAsRead(): Promise<void> {
-    try {
-      const history = await this.getNotificationHistory();
-      const updated = history.map(item => ({ ...item, read: true }));
-      await AsyncStorage.setItem(NOTIFICATION_HISTORY_KEY, JSON.stringify(updated));
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
+    this.notifications.forEach(n => n.read = true);
+    await this.saveNotifications();
+    this.notifyListeners();
   }
 
   /**
-   * Obtener conteo de notificaciones no leídas
+   * Eliminar una notificación
    */
-  async getUnreadCount(): Promise<number> {
-    const history = await this.getNotificationHistory();
-    return history.filter(item => !item.read).length;
+  async deleteNotification(notificationId: string): Promise<void> {
+    this.notifications = this.notifications.filter(n => n.id !== notificationId);
+    await this.saveNotifications();
+    this.notifyListeners();
   }
 
   /**
-   * Limpiar historial de notificaciones
+   * Limpiar todas las notificaciones
    */
-  async clearHistory(): Promise<void> {
-    try {
-      await AsyncStorage.removeItem(NOTIFICATION_HISTORY_KEY);
-    } catch (error) {
-      console.error('Error clearing notification history:', error);
-    }
+  async clearAll(): Promise<void> {
+    this.notifications = [];
+    await this.saveNotifications();
+    this.notifyListeners();
   }
 
   /**
-   * Limpiar notificaciones programadas expiradas
+   * Suscribirse a cambios en las notificaciones
    */
-  async cleanupExpiredNotifications(): Promise<void> {
-    try {
-      const scheduled = await this.getScheduledNotifications();
-      const now = new Date();
-      const valid = scheduled.filter(n => new Date(n.scheduledFor) > now);
-      await AsyncStorage.setItem(SCHEDULED_NOTIFICATIONS_KEY, JSON.stringify(valid));
-    } catch (error) {
-      console.error('Error cleaning up expired notifications:', error);
-    }
+  subscribe(listener: NotificationListener): () => void {
+    this.listeners.add(listener);
+    
+    // Notificar estado actual
+    listener(this.getNotifications());
+
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  /**
+   * Notificar a los listeners
+   */
+  private notifyListeners(): void {
+    const notifications = this.getNotifications();
+    this.listeners.forEach(listener => listener(notifications));
   }
 }
 
 // Exportar instancia singleton
-export const notificationService = new NotificationService();
+export const notificationService = new WebNotificationService();
 
 export default notificationService;
