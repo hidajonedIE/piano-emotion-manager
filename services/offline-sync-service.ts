@@ -1,10 +1,13 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
-import { notificationService } from './notification-service';
+/**
+ * Servicio de sincronización offline para webapp
+ * - Usa localStorage para persistencia
+ * - Usa navigator.onLine para detectar conexión
+ * - Cola de operaciones pendientes
+ * - Sincronización automática al recuperar conexión
+ */
 
-const OFFLINE_QUEUE_KEY = '@piano_emotion_offline_queue';
-const SYNC_STATUS_KEY = '@piano_emotion_sync_status';
-const LAST_SYNC_KEY = '@piano_emotion_last_sync';
+const OFFLINE_QUEUE_KEY = 'piano_emotion_offline_queue';
+const LAST_SYNC_KEY = 'piano_emotion_last_sync';
 
 export type OperationType = 'create' | 'update' | 'delete';
 export type EntityType = 'client' | 'piano' | 'service' | 'appointment' | 'invoice' | 'material';
@@ -32,26 +35,27 @@ export interface SyncStatus {
 type SyncListener = (status: SyncStatus) => void;
 
 /**
- * Servicio de sincronización offline
- * Permite trabajar sin conexión y sincronizar cuando hay internet
+ * Servicio de sincronización offline para webapp
  */
 class OfflineSyncService {
   private listeners: Set<SyncListener> = new Set();
   private isOnline: boolean = true;
   private isSyncing: boolean = false;
-  private unsubscribeNetInfo: (() => void) | null = null;
-  private syncInterval: NodeJS.Timeout | null = null;
+  private syncInterval: number | null = null;
+  private initialized = false;
 
   /**
    * Inicializar el servicio de sincronización
    */
   async initialize(): Promise<void> {
+    if (this.initialized) return;
+
     // Verificar estado de conexión inicial
-    const state = await NetInfo.fetch();
-    this.isOnline = state.isConnected ?? false;
+    this.isOnline = navigator.onLine;
 
     // Suscribirse a cambios de conexión
-    this.unsubscribeNetInfo = NetInfo.addEventListener(this.handleConnectivityChange.bind(this));
+    window.addEventListener('online', this.handleOnline.bind(this));
+    window.addEventListener('offline', this.handleOffline.bind(this));
 
     // Intentar sincronizar operaciones pendientes
     if (this.isOnline) {
@@ -59,20 +63,22 @@ class OfflineSyncService {
     }
 
     // Configurar sincronización periódica (cada 5 minutos cuando hay conexión)
-    this.syncInterval = setInterval(async () => {
+    this.syncInterval = window.setInterval(async () => {
       if (this.isOnline && !this.isSyncing) {
         await this.syncPendingOperations();
       }
     }, 5 * 60 * 1000);
+
+    this.initialized = true;
   }
 
   /**
    * Limpiar recursos al destruir el servicio
    */
   destroy(): void {
-    if (this.unsubscribeNetInfo) {
-      this.unsubscribeNetInfo();
-    }
+    window.removeEventListener('online', this.handleOnline.bind(this));
+    window.removeEventListener('offline', this.handleOffline.bind(this));
+    
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
     }
@@ -80,18 +86,21 @@ class OfflineSyncService {
   }
 
   /**
-   * Manejar cambios en la conectividad
+   * Manejar evento online
    */
-  private async handleConnectivityChange(state: NetInfoState): Promise<void> {
-    const wasOffline = !this.isOnline;
-    this.isOnline = state.isConnected ?? false;
+  private async handleOnline(): Promise<void> {
+    this.isOnline = true;
+    console.log('[OfflineSync] Connection restored, syncing...');
+    this.notifyListeners();
+    await this.syncPendingOperations();
+  }
 
-    // Si volvemos a estar online, sincronizar
-    if (wasOffline && this.isOnline) {
-      console.log('[OfflineSync] Connection restored, syncing...');
-      await this.syncPendingOperations();
-    }
-
+  /**
+   * Manejar evento offline
+   */
+  private handleOffline(): void {
+    this.isOnline = false;
+    console.log('[OfflineSync] Connection lost');
     this.notifyListeners();
   }
 
@@ -116,9 +125,9 @@ class OfflineSyncService {
       maxRetries,
     };
 
-    const queue = await this.getQueue();
+    const queue = this.getQueue();
     queue.push(operation);
-    await this.saveQueue(queue);
+    this.saveQueue(queue);
 
     this.notifyListeners();
 
@@ -133,9 +142,9 @@ class OfflineSyncService {
   /**
    * Obtener la cola de operaciones pendientes
    */
-  async getQueue(): Promise<QueuedOperation[]> {
+  getQueue(): QueuedOperation[] {
     try {
-      const stored = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
+      const stored = localStorage.getItem(OFFLINE_QUEUE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
       console.error('[OfflineSync] Error getting queue:', error);
@@ -146,9 +155,9 @@ class OfflineSyncService {
   /**
    * Guardar la cola de operaciones
    */
-  private async saveQueue(queue: QueuedOperation[]): Promise<void> {
+  private saveQueue(queue: QueuedOperation[]): void {
     try {
-      await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
     } catch (error) {
       console.error('[OfflineSync] Error saving queue:', error);
     }
@@ -169,7 +178,7 @@ class OfflineSyncService {
     let failed = 0;
 
     try {
-      const queue = await this.getQueue();
+      const queue = this.getQueue();
       
       if (queue.length === 0) {
         this.isSyncing = false;
@@ -198,18 +207,8 @@ class OfflineSyncService {
         }
       }
 
-      await this.saveQueue(remainingQueue);
-      await this.updateLastSync();
-
-      // Notificar resultado
-      if (success > 0) {
-        await notificationService.sendSyncCompletedNotification(success, 'operaciones');
-      }
-      if (failed > 0) {
-        await notificationService.sendSyncErrorNotification(
-          `${failed} operaciones no pudieron sincronizarse`
-        );
-      }
+      this.saveQueue(remainingQueue);
+      this.updateLastSync();
 
     } catch (error) {
       console.error('[OfflineSync] Sync error:', error);
@@ -226,7 +225,6 @@ class OfflineSyncService {
    */
   private async executeOperation(operation: QueuedOperation): Promise<void> {
     // Aquí se implementaría la lógica real de sincronización con el servidor
-    // Por ahora, simulamos la operación
     console.log(`[OfflineSync] Executing operation:`, operation.type, operation.entityType, operation.entityId);
 
     // Simular latencia de red
@@ -234,25 +232,18 @@ class OfflineSyncService {
 
     // En una implementación real, aquí se haría la llamada al API
     // Por ejemplo:
-    // switch (operation.type) {
-    //   case 'create':
-    //     await api.create(operation.entityType, operation.data);
-    //     break;
-    //   case 'update':
-    //     await api.update(operation.entityType, operation.entityId, operation.data);
-    //     break;
-    //   case 'delete':
-    //     await api.delete(operation.entityType, operation.entityId);
-    //     break;
-    // }
+    // const endpoint = `/api/${operation.entityType}s`;
+    // const method = operation.type === 'create' ? 'POST' : operation.type === 'update' ? 'PUT' : 'DELETE';
+    // const response = await fetch(endpoint, { method, body: JSON.stringify(operation.data) });
+    // if (!response.ok) throw new Error(`HTTP ${response.status}`);
   }
 
   /**
    * Actualizar timestamp de última sincronización
    */
-  private async updateLastSync(): Promise<void> {
+  private updateLastSync(): void {
     try {
-      await AsyncStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
     } catch (error) {
       console.error('[OfflineSync] Error updating last sync:', error);
     }
@@ -261,9 +252,9 @@ class OfflineSyncService {
   /**
    * Obtener timestamp de última sincronización
    */
-  async getLastSync(): Promise<string | null> {
+  getLastSync(): string | null {
     try {
-      return await AsyncStorage.getItem(LAST_SYNC_KEY);
+      return localStorage.getItem(LAST_SYNC_KEY);
     } catch (error) {
       console.error('[OfflineSync] Error getting last sync:', error);
       return null;
@@ -273,9 +264,9 @@ class OfflineSyncService {
   /**
    * Obtener estado actual de sincronización
    */
-  async getStatus(): Promise<SyncStatus> {
-    const queue = await this.getQueue();
-    const lastSync = await this.getLastSync();
+  getStatus(): SyncStatus {
+    const queue = this.getQueue();
+    const lastSync = this.getLastSync();
     const lastError = queue.find(op => op.error)?.error || null;
 
     return {
@@ -294,7 +285,7 @@ class OfflineSyncService {
     this.listeners.add(listener);
     
     // Notificar estado actual inmediatamente
-    this.getStatus().then(status => listener(status));
+    listener(this.getStatus());
 
     return () => {
       this.listeners.delete(listener);
@@ -304,8 +295,8 @@ class OfflineSyncService {
   /**
    * Notificar a todos los listeners
    */
-  private async notifyListeners(): Promise<void> {
-    const status = await this.getStatus();
+  private notifyListeners(): void {
+    const status = this.getStatus();
     this.listeners.forEach(listener => listener(status));
   }
 
@@ -322,34 +313,34 @@ class OfflineSyncService {
   /**
    * Limpiar cola de operaciones (usar con cuidado)
    */
-  async clearQueue(): Promise<void> {
-    await AsyncStorage.removeItem(OFFLINE_QUEUE_KEY);
+  clearQueue(): void {
+    localStorage.removeItem(OFFLINE_QUEUE_KEY);
     this.notifyListeners();
   }
 
   /**
    * Eliminar una operación específica de la cola
    */
-  async removeOperation(operationId: string): Promise<void> {
-    const queue = await this.getQueue();
+  removeOperation(operationId: string): void {
+    const queue = this.getQueue();
     const filtered = queue.filter(op => op.id !== operationId);
-    await this.saveQueue(filtered);
+    this.saveQueue(filtered);
     this.notifyListeners();
   }
 
   /**
    * Verificar si hay operaciones pendientes
    */
-  async hasPendingOperations(): Promise<boolean> {
-    const queue = await this.getQueue();
+  hasPendingOperations(): boolean {
+    const queue = this.getQueue();
     return queue.length > 0;
   }
 
   /**
    * Obtener operaciones pendientes por tipo de entidad
    */
-  async getPendingByEntityType(entityType: EntityType): Promise<QueuedOperation[]> {
-    const queue = await this.getQueue();
+  getPendingByEntityType(entityType: EntityType): QueuedOperation[] {
+    const queue = this.getQueue();
     return queue.filter(op => op.entityType === entityType);
   }
 

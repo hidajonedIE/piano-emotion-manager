@@ -11,7 +11,6 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useOfflineSync } from '@/hooks/use-offline-sync';
-import { useLanguage } from '@/contexts/language-context';
 import { BorderRadius, Spacing } from '@/constants/theme';
 
 interface ConnectionStatusProps {
@@ -22,14 +21,11 @@ interface ConnectionStatusProps {
 }
 
 export function ConnectionStatus({ showAlways = false, position = 'bottom' }: ConnectionStatusProps) {
-  const { t } = useLanguage();
   const { isOnline, isSyncing, pendingOperations, lastSyncAt, forceSync, lastError } = useOfflineSync();
   const [showDetails, setShowDetails] = useState(false);
   const [slideAnim] = useState(new Animated.Value(0));
 
-  const backgroundColor = useThemeColor({}, 'background');
   const cardBg = useThemeColor({}, 'card');
-  const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const success = useThemeColor({}, 'success');
   const warning = useThemeColor({}, 'warning');

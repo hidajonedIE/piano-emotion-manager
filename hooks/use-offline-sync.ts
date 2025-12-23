@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { offlineSyncService, SyncStatus, EntityType, OperationType } from '@/services/offline-sync-service';
 
 /**
- * Hook para gestionar la sincronización offline
+ * Hook para gestionar la sincronización offline en webapp
  */
 export function useOfflineSync() {
   const [status, setStatus] = useState<SyncStatus>({
@@ -47,21 +47,21 @@ export function useOfflineSync() {
   /**
    * Limpiar cola de operaciones pendientes
    */
-  const clearQueue = useCallback(async () => {
+  const clearQueue = useCallback(() => {
     return offlineSyncService.clearQueue();
   }, []);
 
   /**
    * Obtener operaciones pendientes
    */
-  const getPendingOperations = useCallback(async () => {
+  const getPendingOperations = useCallback(() => {
     return offlineSyncService.getQueue();
   }, []);
 
   /**
    * Eliminar una operación de la cola
    */
-  const removeOperation = useCallback(async (operationId: string) => {
+  const removeOperation = useCallback((operationId: string) => {
     return offlineSyncService.removeOperation(operationId);
   }, []);
 
