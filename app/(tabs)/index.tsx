@@ -171,18 +171,18 @@ export default function DashboardScreen() {
   ];
 
   // En web, usar CSS gradient directamente para evitar problemas de renderizado intermitente
-  // Colores azul celeste degradado invertido (oscuro a claro)
+  // Degradado radial: bordes más oscuros, centro más claro
   const containerStyle = Platform.OS === 'web' 
-    ? [styles.container, { background: 'linear-gradient(135deg, #80DEEA 0%, #B2EBF2 50%, #E0F7FA 100%)' } as any]
+    ? [styles.container, { background: 'radial-gradient(ellipse at center, #E0F7FA 0%, #B2EBF2 50%, #80DEEA 100%)' } as any]
     : styles.container;
 
   const GradientWrapper = Platform.OS === 'web' 
     ? ({ children, style }: { children: React.ReactNode; style: any }) => <View style={style}>{children}</View>
     : ({ children, style }: { children: React.ReactNode; style: any }) => (
         <LinearGradient
-          colors={['#80DEEA', '#B2EBF2', '#E0F7FA']}
+          colors={['#80DEEA', '#B2EBF2', '#E0F7FA', '#B2EBF2', '#80DEEA']}
           start={{ x: 0, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
+          end={{ x: 1, y: 1 }}
           style={style}
         >
           {children}
