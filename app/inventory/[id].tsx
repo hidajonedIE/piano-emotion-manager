@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { OrderFromStoreButton } from '@/components/low-stock-alert';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useInventory } from '@/hooks/use-inventory';
@@ -302,11 +303,17 @@ export default function InventoryDetailScreen() {
           </View>
 
           {isLowStock && !isEditing && (
-            <View style={[styles.alertBox, { backgroundColor: `${warning}15`, borderColor: warning }]}>
-              <IconSymbol name="exclamationmark.triangle.fill" size={16} color={warning} />
-              <ThemedText style={[styles.alertText, { color: warning }]}>
-                Stock bajo - Considerar reposición
-              </ThemedText>
+            <View style={styles.lowStockContainer}>
+              <View style={[styles.alertBox, { backgroundColor: `${warning}15`, borderColor: warning }]}>
+                <IconSymbol name="exclamationmark.triangle.fill" size={16} color={warning} />
+                <ThemedText style={[styles.alertText, { color: warning }]}>
+                  Stock bajo - Considerar reposición
+                </ThemedText>
+              </View>
+              <OrderFromStoreButton 
+                item={{ name: form.name || '', category: form.categoryId }} 
+                size="medium" 
+              />
             </View>
           )}
 
@@ -811,6 +818,10 @@ const styles = StyleSheet.create({
   },
   storageField: {
     flex: 1,
+  },
+  lowStockContainer: {
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
   deleteButton: {
     flexDirection: 'row',

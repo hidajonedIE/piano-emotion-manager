@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { EmptyState } from '@/components/cards';
+import { LowStockAlert } from '@/components/low-stock-alert';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
@@ -168,18 +169,19 @@ export default function InventoryScreen() {
         </ThemedText>
       </View>
 
-      {/* Alerta de stock bajo */}
+      {/* Alerta de stock bajo con enlace a Piano Emotion Store */}
       {lowStockItems.length > 0 && filter !== 'low_stock' && (
-        <Pressable
-          style={[styles.alertBanner, { backgroundColor: '#FEF3C7', borderColor: warning }]}
-          onPress={() => setFilter('low_stock')}
-        >
-          <IconSymbol name="exclamationmark.triangle.fill" size={20} color={warning} />
-          <ThemedText style={styles.alertText}>
-            {lowStockItems.length} {lowStockItems.length === 1 ? 'material necesita' : 'materiales necesitan'} reposición
-          </ThemedText>
-          <IconSymbol name="chevron.right" size={16} color={warning} />
-        </Pressable>
+        <LowStockAlert 
+          items={lowStockItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            minStock: item.minStock,
+            unit: item.unit,
+            category: item.category,
+          }))}
+          onItemPress={(item) => handleItemPress(item as InventoryItem)}
+        />
       )}
 
       <View style={styles.searchContainer}>
