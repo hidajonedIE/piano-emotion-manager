@@ -15,7 +15,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { useToast } from '@/components/toast';
+import { useSnackbar } from '@/components/snackbar';
 import { useClients, usePianos } from '@/hooks/use-storage';
 import { useAppointments } from '@/hooks/use-appointments';
 import { useWhatsApp } from '@/hooks/use-whatsapp';
@@ -38,7 +38,7 @@ export default function AppointmentDetailScreen() {
   const { clients, getClient } = useClients();
   const { pianos, getPiano, getPianosByClient } = usePianos();
   const { appointments, addAppointment, updateAppointment, deleteAppointment, getAppointment } = useAppointments();
-  const { showToast } = useToast();
+  const { error: showError } = useSnackbar();
   const { sendAppointmentReminder } = useWhatsApp();
   const { showExportOptions, exportToGoogleCalendar, exportToOutlookCalendar, exportToICS } = useCalendarSync();
   const [showCalendarMenu, setShowCalendarMenu] = useState(false);
@@ -413,7 +413,7 @@ export default function AppointmentDetailScreen() {
                   if (selectedClient) {
                     sendAppointmentReminder(selectedClient, form as Appointment);
                   } else {
-                    showToast('error', 'No hay cliente seleccionado');
+                    showError('No hay cliente seleccionado');
                   }
                 }}
               >

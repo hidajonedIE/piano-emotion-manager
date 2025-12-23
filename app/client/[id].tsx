@@ -17,7 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { useToast } from '@/components/toast';
+import { useSnackbar } from '@/components/snackbar';
 import { useClients, usePianos, useServices } from '@/hooks/use-storage';
 import { useWhatsApp } from '@/hooks/use-whatsapp';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -34,7 +34,7 @@ export default function ClientDetailScreen() {
   const { clients, addClient, updateClient, deleteClient, getClient } = useClients();
   const { pianos, getPianosByClient } = usePianos();
   const { getServicesByClient } = useServices();
-  const { showToast } = useToast();
+  const { error: showError } = useSnackbar();
   const { sendCustomMessage } = useWhatsApp();
 
   const [isEditing, setIsEditing] = useState(isNew);
@@ -500,7 +500,7 @@ export default function ClientDetailScreen() {
                 if (form.phone) {
                   sendCustomMessage(form as Client, 'Hola, me pongo en contacto contigo desde Piano Emotion Manager.');
                 } else {
-                  showToast('error', 'El cliente no tiene teléfono registrado');
+                  showError('El cliente no tiene teléfono registrado');
                 }
               }}
             >
