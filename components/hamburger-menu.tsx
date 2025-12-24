@@ -47,7 +47,8 @@ const MENU_ITEMS: MenuItem[] = [
   
   // Estadísticas y configuración
   { key: 'section_config', label: 'Configuración', icon: '', route: '', color: '', section: 'header' },
-  { key: 'stats', label: 'Estadísticas', icon: 'chart.bar.fill', route: '/stats', color: '#10B981' },
+  { key: 'analytics', label: 'Analíticas', icon: 'chart.bar.fill', route: '/analytics', color: '#4A90A4' },
+  { key: 'stats', label: 'Estadísticas', icon: 'chart.pie.fill', route: '/stats', color: '#10B981' },
   { key: 'rates', label: 'Tarifas', icon: 'list.bullet', route: '/rates', color: '#EC4899' },
   { key: 'business', label: 'Datos Fiscales', icon: 'person.text.rectangle.fill', route: '/business-info', color: '#6B7280' },
   { key: 'modules', label: 'Módulos', icon: 'square.grid.2x2.fill', route: '/settings/modules', color: '#8B5CF6' },
