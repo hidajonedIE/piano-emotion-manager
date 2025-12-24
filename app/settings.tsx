@@ -270,6 +270,54 @@ export default function SettingsScreen() {
 
   const menuItems = [
     {
+      title: 'Configuración de Negocio',
+      items: [
+        {
+          icon: 'building.2.fill',
+          label: 'Mi Empresa',
+          sublabel: 'Datos fiscales y modo de trabajo',
+          onPress: () => router.push('/settings/business' as any),
+        },
+        {
+          icon: 'person.3.fill',
+          label: 'Gestión de Equipos',
+          sublabel: 'Técnicos, roles y permisos',
+          onPress: () => router.push('/(app)/team' as any),
+          premium: true,
+        },
+        {
+          icon: 'doc.text.badge.ellipsis',
+          label: 'Facturación Electrónica',
+          sublabel: '8 países configurables',
+          onPress: () => router.push('/settings/einvoicing' as any),
+        },
+      ],
+    },
+    {
+      title: 'Módulos y Suscripción',
+      items: [
+        {
+          icon: 'square.grid.2x2.fill',
+          label: 'Módulos',
+          sublabel: 'Activar/desactivar funcionalidades',
+          onPress: () => router.push('/settings/modules' as any),
+        },
+        {
+          icon: 'star.fill',
+          label: 'Mi Suscripción',
+          sublabel: 'Plan actual y mejoras',
+          onPress: () => router.push('/settings/subscription' as any),
+        },
+        {
+          icon: 'brain',
+          label: 'Inteligencia Artificial',
+          sublabel: 'Configurar asistente IA',
+          onPress: () => router.push('/settings/ai' as any),
+          premium: true,
+        },
+      ],
+    },
+    {
       title: 'Importar Datos',
       items: [
         {
@@ -636,7 +684,14 @@ export default function SettingsScreen() {
                       <IconSymbol name={item.icon as any} size={20} color={accent} />
                     </View>
                     <View style={styles.menuContent}>
-                      <ThemedText style={styles.menuLabel}>{item.label}</ThemedText>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <ThemedText style={styles.menuLabel}>{item.label}</ThemedText>
+                        {item.premium && (
+                          <View style={{ backgroundColor: warning, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
+                            <ThemedText style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '700' }}>★</ThemedText>
+                          </View>
+                        )}
+                      </View>
                       <ThemedText style={[styles.menuSublabel, { color: textSecondary }]}>
                         {item.sublabel}
                       </ThemedText>
