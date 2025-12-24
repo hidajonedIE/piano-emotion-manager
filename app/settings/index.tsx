@@ -334,8 +334,17 @@ export default function SettingsIndexScreen() {
           icon="doc.badge.ellipsis"
           iconColor="#10B981"
           defaultOpen={false}
+          badge="Premium"
+          badgeColor="#F59E0B"
         >
           <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <View style={[styles.premiumBanner, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B' }]}>
+              <IconSymbol name="star.fill" size={16} color="#F59E0B" />
+              <ThemedText style={[styles.premiumBannerText, { color: '#F59E0B' }]}>
+                Funcionalidad disponible en planes de pago
+              </ThemedText>
+            </View>
+            
             <ThemedText style={styles.cardDescription}>
               Configura la facturación electrónica según los requisitos legales de tu país.
             </ThemedText>
@@ -345,7 +354,17 @@ export default function SettingsIndexScreen() {
               'Activar Facturación Electrónica',
               'Genera facturas en formato electrónico oficial',
               settings.eInvoicingEnabled,
-              () => updateSettings({ eInvoicingEnabled: !settings.eInvoicingEnabled })
+              () => {
+                // TODO: Verificar si es premium antes de activar
+                Alert.alert(
+                  'Funcionalidad Premium',
+                  'La facturación electrónica está disponible en los planes Profesional y Empresa.',
+                  [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Ver planes', onPress: () => router.push('/settings/subscription' as any) }
+                  ]
+                );
+              }
             )}
 
             {settings.eInvoicingEnabled && (
@@ -395,8 +414,17 @@ export default function SettingsIndexScreen() {
           icon="calculator"
           iconColor="#F97316"
           defaultOpen={false}
+          badge="Premium"
+          badgeColor="#F59E0B"
         >
           <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <View style={[styles.premiumBanner, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B' }]}>
+              <IconSymbol name="star.fill" size={16} color="#F59E0B" />
+              <ThemedText style={[styles.premiumBannerText, { color: '#F59E0B' }]}>
+                Funcionalidad disponible en planes de pago
+              </ThemedText>
+            </View>
+            
             <ThemedText style={styles.cardDescription}>
               Selecciona tu país fiscal para ver los modelos e impuestos correspondientes.
             </ThemedText>
@@ -911,6 +939,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: Spacing.sm,
+  },
+  premiumBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  premiumBannerText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
   sectionSubtitle: {
     fontSize: 14,

@@ -19,7 +19,7 @@ interface AccordionProps {
   darkMode?: boolean;
   icon?: string;
   iconColor?: string;
-  badge?: number;
+  badge?: number | string;
   badgeColor?: string;
   rightAction?: React.ReactNode;
   centerContent?: boolean;
@@ -64,7 +64,7 @@ export function Accordion({
             </View>
           )}
           <ThemedText type="subtitle" style={[styles.title, darkMode && { color: '#FFFFFF' }]}>{title}</ThemedText>
-          {badge !== undefined && badge > 0 && (
+          {badge !== undefined && (typeof badge === 'string' || badge > 0) && (
             <View style={[styles.badge, { backgroundColor: badgeColor }]}>
               <ThemedText style={styles.badgeText}>{badge}</ThemedText>
             </View>

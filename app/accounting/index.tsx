@@ -44,12 +44,16 @@ import {
   formatCurrencyForCountry,
   formatDateForCountry,
 } from '@/services/fiscal-config-service';
+import { PremiumPaywall, usePremiumAccess } from '@/components/premium-paywall';
 
 type TabType = 'export' | 'vat-book' | 'fiscal-model-1' | 'fiscal-model-2';
 
 export default function AccountingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  
+  // Verificar acceso premium
+  const { hasAccountingAccess } = usePremiumAccess();
   
   const { invoices = [] } = useInvoicesData?.() || { invoices: [] };
   
@@ -612,6 +616,21 @@ export default function AccountingScreen() {
       </View>
     );
   };
+
+  // Si no tiene acceso premium, mostrar paywall
+  if (!hasAccountingAccess) {
+    return (
+      <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+        <ScreenHeader title="Contabilidad" showBack />
+        <PremiumPaywall
+          feature="Contabilidad y Exportación Fiscal"
+          description="Accede a exportación contable, libro de IVA, modelos fiscales (303, 130) y soporte multi-país."
+          icon="calculator"
+          minPlan="professional"
+        />
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
