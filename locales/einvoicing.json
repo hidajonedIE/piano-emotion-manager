@@ -1,0 +1,326 @@
+{
+  "es": {
+    "einvoicing": {
+      "title": "Facturación Electrónica",
+      "subtitle": "Configuración por país",
+      "enableForCountry": "Habilitar facturación electrónica para {{country}}",
+      "environment": "Entorno",
+      "testEnvironment": "Pruebas (sandbox)",
+      "productionEnvironment": "Producción",
+      "productionWarning": "⚠️ Las facturas enviadas en producción son legalmente vinculantes",
+      "vatRates": "Tipos de IVA aplicables",
+      "currency": "Moneda",
+      "testConnection": "Probar conexión",
+      "spain": {
+        "title": "Configuración Verifactu",
+        "certificatePath": "Ruta del certificado (.p12)",
+        "certificatePassword": "Contraseña del certificado",
+        "helpText": "Se requiere certificado digital representativo para enviar facturas a la AEAT"
+      },
+      "italy": {
+        "title": "Configuración SDI",
+        "regimeFiscale": "Régimen fiscal",
+        "codiceDestinatario": "Código destinatario (7 caracteres)",
+        "codiceHelp": "Usar 0000000 si el cliente proporciona PEC",
+        "pecDestinatario": "PEC del destinatario"
+      },
+      "germany": {
+        "title": "Configuración ZUGFeRD",
+        "profile": "Perfil",
+        "leitwegId": "Leitweg-ID (para B2G)",
+        "leitwegHelp": "Requerido para facturas a la administración pública"
+      },
+      "france": {
+        "title": "Configuración Factur-X",
+        "siret": "SIRET (14 dígitos)",
+        "profile": "Perfil",
+        "chorusProEnabled": "Habilitar Chorus Pro (B2G)",
+        "chorusHelp": "Obligatorio para facturas a la administración pública francesa"
+      },
+      "portugal": {
+        "title": "Configuración CIUS-PT",
+        "serieDocumento": "Serie de documento",
+        "atCertificateNumber": "Número de certificación AT",
+        "atHelp": "Número asignado por la Autoridade Tributária al software certificado"
+      },
+      "denmark": {
+        "title": "Configuración OIOUBL",
+        "cvr": "CVR-nummer (8 dígitos)",
+        "ean": "EAN/GLN (13 dígitos)",
+        "eanHelp": "Requerido para facturas a la administración pública danesa",
+        "nemhandelEnabled": "Habilitar NemHandel/PEPPOL",
+        "nemhandelHelp": "Red de intercambio de facturas electrónicas"
+      }
+    }
+  },
+  "pt": {
+    "einvoicing": {
+      "title": "Faturação Eletrónica",
+      "subtitle": "Configuração por país",
+      "enableForCountry": "Ativar faturação eletrónica para {{country}}",
+      "environment": "Ambiente",
+      "testEnvironment": "Testes (sandbox)",
+      "productionEnvironment": "Produção",
+      "productionWarning": "⚠️ As faturas enviadas em produção são legalmente vinculativas",
+      "vatRates": "Taxas de IVA aplicáveis",
+      "currency": "Moeda",
+      "testConnection": "Testar ligação",
+      "spain": {
+        "title": "Configuração Verifactu",
+        "certificatePath": "Caminho do certificado (.p12)",
+        "certificatePassword": "Palavra-passe do certificado",
+        "helpText": "É necessário certificado digital representativo para enviar faturas à AEAT"
+      },
+      "italy": {
+        "title": "Configuração SDI",
+        "regimeFiscale": "Regime fiscal",
+        "codiceDestinatario": "Código destinatário (7 caracteres)",
+        "codiceHelp": "Usar 0000000 se o cliente fornecer PEC",
+        "pecDestinatario": "PEC do destinatário"
+      },
+      "germany": {
+        "title": "Configuração ZUGFeRD",
+        "profile": "Perfil",
+        "leitwegId": "Leitweg-ID (para B2G)",
+        "leitwegHelp": "Necessário para faturas à administração pública"
+      },
+      "france": {
+        "title": "Configuração Factur-X",
+        "siret": "SIRET (14 dígitos)",
+        "profile": "Perfil",
+        "chorusProEnabled": "Ativar Chorus Pro (B2G)",
+        "chorusHelp": "Obrigatório para faturas à administração pública francesa"
+      },
+      "portugal": {
+        "title": "Configuração CIUS-PT",
+        "serieDocumento": "Série de documento",
+        "atCertificateNumber": "Número de certificação AT",
+        "atHelp": "Número atribuído pela Autoridade Tributária ao software certificado"
+      },
+      "denmark": {
+        "title": "Configuração OIOUBL",
+        "cvr": "CVR-nummer (8 dígitos)",
+        "ean": "EAN/GLN (13 dígitos)",
+        "eanHelp": "Necessário para faturas à administração pública dinamarquesa",
+        "nemhandelEnabled": "Ativar NemHandel/PEPPOL",
+        "nemhandelHelp": "Rede de intercâmbio de faturas eletrónicas"
+      }
+    }
+  },
+  "it": {
+    "einvoicing": {
+      "title": "Fatturazione Elettronica",
+      "subtitle": "Configurazione per paese",
+      "enableForCountry": "Abilita fatturazione elettronica per {{country}}",
+      "environment": "Ambiente",
+      "testEnvironment": "Test (sandbox)",
+      "productionEnvironment": "Produzione",
+      "productionWarning": "⚠️ Le fatture inviate in produzione sono legalmente vincolanti",
+      "vatRates": "Aliquote IVA applicabili",
+      "currency": "Valuta",
+      "testConnection": "Testa connessione",
+      "spain": {
+        "title": "Configurazione Verifactu",
+        "certificatePath": "Percorso certificato (.p12)",
+        "certificatePassword": "Password certificato",
+        "helpText": "È richiesto un certificato digitale rappresentativo per inviare fatture all'AEAT"
+      },
+      "italy": {
+        "title": "Configurazione SDI",
+        "regimeFiscale": "Regime fiscale",
+        "codiceDestinatario": "Codice destinatario (7 caratteri)",
+        "codiceHelp": "Usare 0000000 se il cliente fornisce PEC",
+        "pecDestinatario": "PEC del destinatario"
+      },
+      "germany": {
+        "title": "Configurazione ZUGFeRD",
+        "profile": "Profilo",
+        "leitwegId": "Leitweg-ID (per B2G)",
+        "leitwegHelp": "Richiesto per fatture alla pubblica amministrazione"
+      },
+      "france": {
+        "title": "Configurazione Factur-X",
+        "siret": "SIRET (14 cifre)",
+        "profile": "Profilo",
+        "chorusProEnabled": "Abilita Chorus Pro (B2G)",
+        "chorusHelp": "Obbligatorio per fatture alla pubblica amministrazione francese"
+      },
+      "portugal": {
+        "title": "Configurazione CIUS-PT",
+        "serieDocumento": "Serie documento",
+        "atCertificateNumber": "Numero certificazione AT",
+        "atHelp": "Numero assegnato dall'Autoridade Tributária al software certificato"
+      },
+      "denmark": {
+        "title": "Configurazione OIOUBL",
+        "cvr": "CVR-nummer (8 cifre)",
+        "ean": "EAN/GLN (13 cifre)",
+        "eanHelp": "Richiesto per fatture alla pubblica amministrazione danese",
+        "nemhandelEnabled": "Abilita NemHandel/PEPPOL",
+        "nemhandelHelp": "Rete di scambio fatture elettroniche"
+      }
+    }
+  },
+  "fr": {
+    "einvoicing": {
+      "title": "Facturation Électronique",
+      "subtitle": "Configuration par pays",
+      "enableForCountry": "Activer la facturation électronique pour {{country}}",
+      "environment": "Environnement",
+      "testEnvironment": "Test (sandbox)",
+      "productionEnvironment": "Production",
+      "productionWarning": "⚠️ Les factures envoyées en production sont juridiquement contraignantes",
+      "vatRates": "Taux de TVA applicables",
+      "currency": "Devise",
+      "testConnection": "Tester la connexion",
+      "spain": {
+        "title": "Configuration Verifactu",
+        "certificatePath": "Chemin du certificat (.p12)",
+        "certificatePassword": "Mot de passe du certificat",
+        "helpText": "Un certificat numérique représentatif est requis pour envoyer des factures à l'AEAT"
+      },
+      "italy": {
+        "title": "Configuration SDI",
+        "regimeFiscale": "Régime fiscal",
+        "codiceDestinatario": "Code destinataire (7 caractères)",
+        "codiceHelp": "Utiliser 0000000 si le client fournit une PEC",
+        "pecDestinatario": "PEC du destinataire"
+      },
+      "germany": {
+        "title": "Configuration ZUGFeRD",
+        "profile": "Profil",
+        "leitwegId": "Leitweg-ID (pour B2G)",
+        "leitwegHelp": "Requis pour les factures à l'administration publique"
+      },
+      "france": {
+        "title": "Configuration Factur-X",
+        "siret": "SIRET (14 chiffres)",
+        "profile": "Profil",
+        "chorusProEnabled": "Activer Chorus Pro (B2G)",
+        "chorusHelp": "Obligatoire pour les factures à l'administration publique française"
+      },
+      "portugal": {
+        "title": "Configuration CIUS-PT",
+        "serieDocumento": "Série de document",
+        "atCertificateNumber": "Numéro de certification AT",
+        "atHelp": "Numéro attribué par l'Autoridade Tributária au logiciel certifié"
+      },
+      "denmark": {
+        "title": "Configuration OIOUBL",
+        "cvr": "CVR-nummer (8 chiffres)",
+        "ean": "EAN/GLN (13 chiffres)",
+        "eanHelp": "Requis pour les factures à l'administration publique danoise",
+        "nemhandelEnabled": "Activer NemHandel/PEPPOL",
+        "nemhandelHelp": "Réseau d'échange de factures électroniques"
+      }
+    }
+  },
+  "de": {
+    "einvoicing": {
+      "title": "Elektronische Rechnungsstellung",
+      "subtitle": "Konfiguration nach Land",
+      "enableForCountry": "E-Rechnung für {{country}} aktivieren",
+      "environment": "Umgebung",
+      "testEnvironment": "Test (Sandbox)",
+      "productionEnvironment": "Produktion",
+      "productionWarning": "⚠️ In Produktion gesendete Rechnungen sind rechtlich bindend",
+      "vatRates": "Anwendbare MwSt.-Sätze",
+      "currency": "Währung",
+      "testConnection": "Verbindung testen",
+      "spain": {
+        "title": "Verifactu-Konfiguration",
+        "certificatePath": "Zertifikatspfad (.p12)",
+        "certificatePassword": "Zertifikatspasswort",
+        "helpText": "Ein repräsentatives digitales Zertifikat ist erforderlich, um Rechnungen an die AEAT zu senden"
+      },
+      "italy": {
+        "title": "SDI-Konfiguration",
+        "regimeFiscale": "Steuerregime",
+        "codiceDestinatario": "Empfängercode (7 Zeichen)",
+        "codiceHelp": "0000000 verwenden, wenn der Kunde PEC bereitstellt",
+        "pecDestinatario": "PEC des Empfängers"
+      },
+      "germany": {
+        "title": "ZUGFeRD-Konfiguration",
+        "profile": "Profil",
+        "leitwegId": "Leitweg-ID (für B2G)",
+        "leitwegHelp": "Erforderlich für Rechnungen an öffentliche Verwaltungen"
+      },
+      "france": {
+        "title": "Factur-X-Konfiguration",
+        "siret": "SIRET (14 Ziffern)",
+        "profile": "Profil",
+        "chorusProEnabled": "Chorus Pro aktivieren (B2G)",
+        "chorusHelp": "Pflicht für Rechnungen an französische öffentliche Verwaltungen"
+      },
+      "portugal": {
+        "title": "CIUS-PT-Konfiguration",
+        "serieDocumento": "Dokumentenserie",
+        "atCertificateNumber": "AT-Zertifizierungsnummer",
+        "atHelp": "Von der Autoridade Tributária der zertifizierten Software zugewiesene Nummer"
+      },
+      "denmark": {
+        "title": "OIOUBL-Konfiguration",
+        "cvr": "CVR-Nummer (8 Ziffern)",
+        "ean": "EAN/GLN (13 Ziffern)",
+        "eanHelp": "Erforderlich für Rechnungen an dänische öffentliche Verwaltungen",
+        "nemhandelEnabled": "NemHandel/PEPPOL aktivieren",
+        "nemhandelHelp": "Netzwerk für elektronischen Rechnungsaustausch"
+      }
+    }
+  },
+  "da": {
+    "einvoicing": {
+      "title": "Elektronisk Fakturering",
+      "subtitle": "Konfiguration pr. land",
+      "enableForCountry": "Aktiver e-fakturering for {{country}}",
+      "environment": "Miljø",
+      "testEnvironment": "Test (sandbox)",
+      "productionEnvironment": "Produktion",
+      "productionWarning": "⚠️ Fakturaer sendt i produktion er juridisk bindende",
+      "vatRates": "Gældende momssatser",
+      "currency": "Valuta",
+      "testConnection": "Test forbindelse",
+      "spain": {
+        "title": "Verifactu-konfiguration",
+        "certificatePath": "Certifikatsti (.p12)",
+        "certificatePassword": "Certifikatadgangskode",
+        "helpText": "Et repræsentativt digitalt certifikat er påkrævet for at sende fakturaer til AEAT"
+      },
+      "italy": {
+        "title": "SDI-konfiguration",
+        "regimeFiscale": "Skatteordning",
+        "codiceDestinatario": "Modtagerkode (7 tegn)",
+        "codiceHelp": "Brug 0000000 hvis kunden giver PEC",
+        "pecDestinatario": "Modtagerens PEC"
+      },
+      "germany": {
+        "title": "ZUGFeRD-konfiguration",
+        "profile": "Profil",
+        "leitwegId": "Leitweg-ID (til B2G)",
+        "leitwegHelp": "Påkrævet for fakturaer til offentlige myndigheder"
+      },
+      "france": {
+        "title": "Factur-X-konfiguration",
+        "siret": "SIRET (14 cifre)",
+        "profile": "Profil",
+        "chorusProEnabled": "Aktiver Chorus Pro (B2G)",
+        "chorusHelp": "Obligatorisk for fakturaer til franske offentlige myndigheder"
+      },
+      "portugal": {
+        "title": "CIUS-PT-konfiguration",
+        "serieDocumento": "Dokumentserie",
+        "atCertificateNumber": "AT-certificeringsnummer",
+        "atHelp": "Nummer tildelt af Autoridade Tributária til certificeret software"
+      },
+      "denmark": {
+        "title": "OIOUBL-konfiguration",
+        "cvr": "CVR-nummer (8 cifre)",
+        "ean": "EAN/GLN (13 cifre)",
+        "eanHelp": "Påkrævet for fakturaer til danske offentlige myndigheder",
+        "nemhandelEnabled": "Aktiver NemHandel/PEPPOL",
+        "nemhandelHelp": "Netværk til udveksling af elektroniske fakturaer"
+      }
+    }
+  }
+}
