@@ -159,12 +159,7 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
           {/* Categorías de productos */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Categorías</Text>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              style={styles.categoriesScroll}
-              contentContainerStyle={styles.categoriesScrollContent}
-            >
+            <View style={styles.categoriesGrid}>
               {PRODUCT_CATEGORIES.map((category) => (
                 <Pressable
                   key={category.id}
@@ -185,7 +180,7 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
                   )}
                 </Pressable>
               ))}
-            </ScrollView>
+            </View>
           </View>
 
           {/* Detalle de categoría seleccionada */}
@@ -386,19 +381,20 @@ const styles = StyleSheet.create({
     color: '#5B9A8B',
     fontWeight: '500',
   },
-  categoriesScroll: {
-    // Removed negative margin that caused content clipping
-  },
-  categoriesScrollContent: {
-    paddingRight: 16,
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
   },
   categoryCard: {
     backgroundColor: '#F8F9FA',
     borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
+    padding: 12,
     alignItems: 'center',
-    minWidth: 130,
+    width: '30%',
+    minWidth: 100,
+    maxWidth: 120,
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -407,11 +403,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F9F7',
   },
   categoryIcon: {
-    fontSize: 28,
-    marginBottom: 8,
+    fontSize: 24,
+    marginBottom: 6,
   },
   categoryName: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
     color: '#1A1A1A',
     textAlign: 'center',
