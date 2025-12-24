@@ -175,7 +175,6 @@ const DEFAULT_PLANS = [
 ];
 
 async function seedModules(connection: mysql.Connection) {
-  console.log('Seeding modules...');
   for (const module of DEFAULT_MODULES) {
     try {
       const [existing] = await connection.execute(
@@ -197,18 +196,14 @@ async function seedModules(connection: mysql.Connection) {
             JSON.stringify(module.includedInPlans)
           ]
         );
-        console.log(`  ✓ Created module: ${module.name}`);
       } else {
-        console.log(`  ⚠ Module already exists: ${module.name}`);
       }
-    } catch (error: any) {
-      console.error(`  ✗ Error creating module ${module.name}:`, error.message);
+    } catch (error: unknown) {
     }
   }
 }
 
 async function seedPlans(connection: mysql.Connection) {
-  console.log('Seeding plans...');
   for (const plan of DEFAULT_PLANS) {
     try {
       const [existing] = await connection.execute(
@@ -235,18 +230,14 @@ async function seedPlans(connection: mysql.Connection) {
             plan.isPopular
           ]
         );
-        console.log(`  ✓ Created plan: ${plan.name}`);
       } else {
-        console.log(`  ⚠ Plan already exists: ${plan.name}`);
       }
-    } catch (error: any) {
-      console.error(`  ✗ Error creating plan ${plan.name}:`, error.message);
+    } catch (error: unknown) {
     }
   }
 }
 
 async function main() {
-  console.log('Connecting to TiDB with SSL...');
   
   const connection = await mysql.createConnection({
     uri: DATABASE_URL,
@@ -255,14 +246,11 @@ async function main() {
     }
   });
 
-  console.log('Connected successfully!\n');
 
   await seedModules(connection);
-  console.log('');
   await seedPlans(connection);
 
   await connection.end();
-  console.log('\nSeed completed successfully!');
 }
 
 main().catch(console.error);

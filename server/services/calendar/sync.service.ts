@@ -214,7 +214,7 @@ export class CalendarSyncService {
         result.exported += syncResult.exported;
         result.updated += syncResult.updated;
         result.deleted += syncResult.deleted;
-      } catch (error: any) {
+      } catch (error: unknown) {
         result.errors.push(`${connection.provider}: ${error.message}`);
       }
     }
@@ -268,7 +268,7 @@ export class CalendarSyncService {
           );
           result.exported += exported;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         result.errors.push(`Calendar ${calendar.name}: ${error.message}`);
       }
     }

@@ -72,7 +72,6 @@ export function ClientMap({ clients, onClientSelect }: ClientMapProps) {
 
         initializeMap();
       } catch (error) {
-        console.error('Error loading Leaflet:', error);
         setMapError('Error al cargar el mapa');
         setIsLoading(false);
       }
@@ -153,7 +152,6 @@ export function ClientMap({ clients, onClientSelect }: ClientMapProps) {
         // Esperar un poco entre peticiones para no sobrecargar Nominatim
         await new Promise(resolve => setTimeout(resolve, 200));
       } catch (error) {
-        console.error(`Error geocoding ${client.name}:`, error);
       }
     }
 

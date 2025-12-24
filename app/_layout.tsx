@@ -62,7 +62,6 @@ export default function RootLayout() {
     try {
       initManusRuntime();
     } catch (e) {
-      console.error('Error initializing Manus runtime:', e);
     }
   }, []);
 
@@ -77,7 +76,6 @@ export default function RootLayout() {
       const unsubscribe = subscribeSafeAreaInsets(handleSafeAreaUpdate);
       return () => unsubscribe();
     } catch (e) {
-      console.error('Error subscribing to safe area:', e);
     }
   }, [handleSafeAreaUpdate]);
 

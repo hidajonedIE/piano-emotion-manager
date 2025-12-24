@@ -26,7 +26,6 @@ export function useLocalStorage<T>(key: string, defaultValue: T[]) {
         setData(JSON.parse(stored));
       }
     } catch (error) {
-      console.error(`Error loading ${key}:`, error);
     } finally {
       setLoading(false);
     }
@@ -37,7 +36,6 @@ export function useLocalStorage<T>(key: string, defaultValue: T[]) {
       await AsyncStorage.setItem(key, JSON.stringify(newData));
       setData(newData);
     } catch (error) {
-      console.error(`Error saving ${key}:`, error);
     }
   };
 

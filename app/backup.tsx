@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 // @ts-ignore - expo-file-system types may not be available in all environments
@@ -33,8 +33,8 @@ export default function BackupScreen() {
     : styles.container;
 
   const GradientWrapper = Platform.OS === 'web' 
-    ? ({ children, style }: { children: React.ReactNode; style: any }) => <View style={style}>{children}</View>
-    : ({ children, style }: { children: React.ReactNode; style: any }) => (
+    ? ({ children, style }: { children: React.ReactNode; style: ViewStyle }) => <View style={style}>{children}</View>
+    : ({ children, style }: { children: React.ReactNode; style: ViewStyle }) => (
         <LinearGradient
           colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
           start={{ x: 0, y: 0 }}
@@ -95,7 +95,6 @@ const fileUri = `${ExpoFileSystem.documentDirectory}${fileName}`;
       setLastBackupInfo(`Última copia: ${date.toLocaleDateString('es-ES')} ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`);
       
     } catch (error) {
-      console.error('Error al exportar:', error);
       Alert.alert(
         'Error',
         'No se pudo crear la copia de seguridad. Inténtalo de nuevo.',
@@ -123,7 +122,6 @@ const fileUri = `${ExpoFileSystem.documentDirectory}${fileName}`;
         ]
       );
     } catch (error) {
-      console.error('Error al importar:', error);
     }
   };
 
@@ -193,7 +191,6 @@ const fileUri = `${ExpoFileSystem.documentDirectory}${fileName}`;
         );
       }
     } catch (error) {
-      console.error('Error al importar:', error);
       Alert.alert(
         'Error',
         'No se pudo restaurar la copia de seguridad. Asegúrate de seleccionar un archivo válido.',

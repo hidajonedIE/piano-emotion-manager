@@ -46,7 +46,6 @@ export function useHapticFeedback() {
       }
     } catch (error) {
       // Silently fail if haptics not available
-      console.log('Haptic feedback not available:', error);
     }
   };
 

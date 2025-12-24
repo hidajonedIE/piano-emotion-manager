@@ -189,7 +189,6 @@ export function usePermissions(organizationId?: string): UsePermissionsResult {
         // En una organización real, esto vendría del servidor
         setRole('owner');
       } catch (error) {
-        console.error('Error loading role:', error);
         setRole('viewer');
       } finally {
         setIsLoading(false);

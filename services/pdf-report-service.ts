@@ -911,7 +911,6 @@ class PDFReportService {
         });
       }
     } catch (error) {
-      console.error('Error generating PDF:', error);
       throw error;
     }
   }
@@ -923,7 +922,6 @@ class PDFReportService {
     try {
       await Print.printAsync({ html });
     } catch (error) {
-      console.error('Error previewing PDF:', error);
       throw error;
     }
   }

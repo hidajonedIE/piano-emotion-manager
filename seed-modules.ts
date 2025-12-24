@@ -4,7 +4,6 @@ import { eq } from 'drizzle-orm';
 import { DEFAULT_MODULES, DEFAULT_PLANS } from './server/data/modules-data';
 
 async function seedModules() {
-  console.log('Seeding modules...');
   for (const module of DEFAULT_MODULES) {
     const existing = await db.query.modules.findFirst({
       where: eq(modules.code, module.code),
@@ -19,15 +18,12 @@ async function seedModules() {
         type: module.type,
         includedInPlans: module.includedInPlans,
       });
-      console.log(`  - Created module: ${module.name}`);
     } else {
-      console.log(`  - Module already exists: ${module.name}`);
     }
   }
 }
 
 async function seedPlans() {
-  console.log('Seeding plans...');
   for (const plan of DEFAULT_PLANS) {
     const existing = await db.query.subscriptionPlans.findFirst({
       where: eq(subscriptionPlans.code, plan.code),
@@ -47,9 +43,7 @@ async function seedPlans() {
         features: plan.features,
         isPopular: plan.isPopular,
       });
-      console.log(`  - Created plan: ${plan.name}`);
     } else {
-      console.log(`  - Plan already exists: ${plan.name}`);
     }
   }
 }
@@ -58,10 +52,8 @@ async function main() {
   try {
     await seedModules();
     await seedPlans();
-    console.log('Seed completed successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding database:', error);
     process.exit(1);
   }
 }

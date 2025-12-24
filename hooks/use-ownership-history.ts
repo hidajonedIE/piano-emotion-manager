@@ -42,7 +42,6 @@ export function useOwnershipHistory(pianoId?: string) {
         setHistory(allHistory);
       }
     } catch (error) {
-      console.error('Error loading ownership history:', error);
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +63,6 @@ export function useOwnershipHistory(pianoId?: string) {
       
       localStorage.setItem(OWNERSHIP_HISTORY_KEY, JSON.stringify(allHistory));
     } catch (error) {
-      console.error('Error saving ownership history:', error);
     }
   };
 

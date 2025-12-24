@@ -180,7 +180,6 @@ const DEFAULT_PLANS = [
 ];
 
 async function seedModules() {
-  console.log('Seeding modules...');
   for (const module of DEFAULT_MODULES) {
     try {
       const existing = await db.select().from(modules).where(eq(modules.code, module.code));
@@ -194,18 +193,14 @@ async function seedModules() {
           type: module.type,
           includedInPlans: module.includedInPlans,
         });
-        console.log(`  - Created module: ${module.name}`);
       } else {
-        console.log(`  - Module already exists: ${module.name}`);
       }
     } catch (error) {
-      console.error(`  - Error creating module ${module.name}:`, error);
     }
   }
 }
 
 async function seedPlans() {
-  console.log('Seeding plans...');
   for (const plan of DEFAULT_PLANS) {
     try {
       const existing = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.code, plan.code));
@@ -224,25 +219,19 @@ async function seedPlans() {
           features: plan.features,
           isPopular: plan.isPopular,
         });
-        console.log(`  - Created plan: ${plan.name}`);
       } else {
-        console.log(`  - Plan already exists: ${plan.name}`);
       }
     } catch (error) {
-      console.error(`  - Error creating plan ${plan.name}:`, error);
     }
   }
 }
 
 async function main() {
   try {
-    console.log('Connecting to TiDB...');
     await seedModules();
     await seedPlans();
-    console.log('Seed completed successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding database:', error);
     process.exit(1);
   }
 }

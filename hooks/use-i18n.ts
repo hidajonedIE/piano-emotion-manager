@@ -59,7 +59,6 @@ export function useI18n() {
         setCurrentLanguage(deviceLang);
       }
     } catch (error) {
-      console.error('Error loading saved language:', error);
       setCurrentLanguage(getDeviceLanguage());
     } finally {
       setIsLoading(false);
@@ -72,7 +71,6 @@ export function useI18n() {
       setCurrentLanguage(language);
       i18n.locale = language;
     } catch (error) {
-      console.error('Error saving language:', error);
     }
   }, []);
 
@@ -127,7 +125,6 @@ export async function setLanguage(language: SupportedLanguage): Promise<void> {
     await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     i18n.locale = language;
   } catch (error) {
-    console.error('Error setting language:', error);
   }
 }
 

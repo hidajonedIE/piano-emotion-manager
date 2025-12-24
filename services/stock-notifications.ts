@@ -94,7 +94,6 @@ export async function getStockNotificationSettings(): Promise<StockNotificationS
     }
     return DEFAULT_SETTINGS;
   } catch (error) {
-    console.error('Error loading stock notification settings:', error);
     return DEFAULT_SETTINGS;
   }
 }
@@ -103,7 +102,6 @@ export async function saveStockNotificationSettings(settings: StockNotificationS
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   } catch (error) {
-    console.error('Error saving stock notification settings:', error);
   }
 }
 
@@ -122,7 +120,6 @@ export async function getNotificationUsage(): Promise<{ whatsapp: number; email:
     }
     return { whatsapp: 0, email: 0, month: currentMonth };
   } catch (error) {
-    console.error('Error loading notification usage:', error);
     return { whatsapp: 0, email: 0, month: new Date().toISOString().slice(0, 7) };
   }
 }
@@ -133,7 +130,6 @@ export async function incrementNotificationUsage(type: 'whatsapp' | 'email'): Pr
     usage[type]++;
     await AsyncStorage.setItem(STORAGE_KEYS.USAGE, JSON.stringify(usage));
   } catch (error) {
-    console.error('Error incrementing notification usage:', error);
   }
 }
 
@@ -257,14 +253,12 @@ export async function sendStockEmailNotification(
   try {
     // TODO: Integrar con servicio de email real (SendGrid, AWS SES, etc.)
     // Por ahora, simulamos el envío
-    console.log('📧 Enviando email de stock bajo:', { to, subject });
     
     // Incrementar contador de uso
     await incrementNotificationUsage('email');
     
     return { success: true };
   } catch (error) {
-    console.error('Error sending stock email:', error);
     return { success: false, error: 'Error al enviar el email' };
   }
 }
@@ -305,7 +299,6 @@ export async function sendStockWhatsAppNotification(
     
     return { success: true, url };
   } catch (error) {
-    console.error('Error preparing WhatsApp notification:', error);
     return { success: false, error: 'Error al preparar el mensaje de WhatsApp' };
   }
 }

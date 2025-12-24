@@ -234,7 +234,7 @@ export const ShopView: React.FC = () => {
   const handleAddToCart = async (productId: number) => {
     try {
       await addToCart(productId, 1);
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert(t('common.error'), error.message);
     }
   };

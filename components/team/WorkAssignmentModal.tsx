@@ -176,7 +176,7 @@ export function WorkAssignmentModal({
       
       onClose();
       Alert.alert('Éxito', isReassignment ? 'Trabajo reasignado' : 'Trabajo asignado');
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('Error', error.message || 'No se pudo completar la operación');
     } finally {
       setIsSubmitting(false);

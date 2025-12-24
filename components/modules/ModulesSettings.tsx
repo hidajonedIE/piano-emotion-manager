@@ -165,7 +165,7 @@ export const ModulesSettings: React.FC = () => {
   const handleToggle = async (moduleCode: string, enabled: boolean) => {
     try {
       await toggleModule(moduleCode, enabled);
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert(t('common.error'), error.message);
     }
   };

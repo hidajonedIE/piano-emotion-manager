@@ -71,7 +71,7 @@ export default function CreateOrganizationPage() {
           },
         ]
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('Error', error.message || 'No se pudo crear la organización');
     }
   }, [isValid, name, taxId, address, city, postalCode, phone, email, createOrganization, router]);

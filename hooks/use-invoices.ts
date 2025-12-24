@@ -20,7 +20,6 @@ export function useInvoices() {
         setInvoices(JSON.parse(data));
       }
     } catch (error) {
-      console.error('Error loading invoices:', error);
     } finally {
       setLoading(false);
     }
@@ -31,7 +30,6 @@ export function useInvoices() {
       await AsyncStorage.setItem(INVOICES_KEY, JSON.stringify(newInvoices));
       setInvoices(newInvoices);
     } catch (error) {
-      console.error('Error saving invoices:', error);
     }
   };
 
@@ -109,7 +107,6 @@ export function useBusinessInfo() {
         setBusinessInfo(JSON.parse(data));
       }
     } catch (error) {
-      console.error('Error loading business info:', error);
     } finally {
       setLoading(false);
     }
@@ -120,7 +117,6 @@ export function useBusinessInfo() {
       await AsyncStorage.setItem(BUSINESS_INFO_KEY, JSON.stringify(info));
       setBusinessInfo(info);
     } catch (error) {
-      console.error('Error saving business info:', error);
     }
   }, []);
 

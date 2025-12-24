@@ -92,7 +92,6 @@ export function OnboardingTutorial({ onComplete }: OnboardingTutorialProps) {
         setVisible(true);
       }
     } catch (error) {
-      console.error('Error checking tutorial status:', error);
     } finally {
       setLoading(false);
     }
@@ -125,7 +124,6 @@ export function OnboardingTutorial({ onComplete }: OnboardingTutorialProps) {
       setVisible(false);
       onComplete?.();
     } catch (error) {
-      console.error('Error saving tutorial status:', error);
     }
   };
 
@@ -213,7 +211,6 @@ export async function resetTutorial() {
     await AsyncStorage.removeItem(STORAGE_KEY);
     return true;
   } catch (error) {
-    console.error('Error resetting tutorial:', error);
     return false;
   }
 }

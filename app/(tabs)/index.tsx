@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Image, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, Image, Platform, Pressable, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -220,8 +220,8 @@ export default function DashboardScreen() {
     : styles.container;
 
   const GradientWrapper = Platform.OS === 'web' 
-    ? ({ children, style }: { children: React.ReactNode; style: any }) => <View style={style}>{children}</View>
-    : ({ children, style }: { children: React.ReactNode; style: any }) => (
+    ? ({ children, style }: { children: React.ReactNode; style: ViewStyle }) => <View style={style}>{children}</View>
+    : ({ children, style }: { children: React.ReactNode; style: ViewStyle }) => (
         <LinearGradient
           colors={['#80DEEA', '#B2EBF2', '#E0F7FA', '#B2EBF2', '#80DEEA']}
           start={{ x: 0, y: 0 }}

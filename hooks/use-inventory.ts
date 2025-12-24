@@ -31,7 +31,6 @@ export function useInventory() {
         setMaterials(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Error loading materials:', error);
     } finally {
       setLoading(false);
     }
@@ -42,7 +41,6 @@ export function useInventory() {
       await AsyncStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(newMaterials));
       setMaterials(newMaterials);
     } catch (error) {
-      console.error('Error saving materials:', error);
     }
   };
 

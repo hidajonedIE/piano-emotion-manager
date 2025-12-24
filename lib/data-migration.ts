@@ -27,7 +27,6 @@ type MigrationFunction = (data: Record<string, any>) => Promise<Record<string, a
 const migrations: Record<number, MigrationFunction> = {
   // Migración de v0 (sin versión) a v1
   1: async (data) => {
-    console.log('[Migration] Ejecutando migración a v1...');
     
     // Ejemplo: Añadir campos por defecto a clientes existentes
     if (data.clients) {
@@ -72,7 +71,6 @@ export async function getStoredDataVersion(): Promise<number> {
     const version = await AsyncStorage.getItem(DATA_VERSION_KEY);
     return version ? parseInt(version, 10) : 0;
   } catch (error) {
-    console.error('[Migration] Error al obtener versión:', error);
     return 0;
   }
 }
@@ -84,7 +82,6 @@ export async function setStoredDataVersion(version: number): Promise<void> {
   try {
     await AsyncStorage.setItem(DATA_VERSION_KEY, version.toString());
   } catch (error) {
-    console.error('[Migration] Error al guardar versión:', error);
   }
 }
 
@@ -101,7 +98,6 @@ async function loadAllData(): Promise<Record<string, any>> {
         data[key] = JSON.parse(stored);
       }
     } catch (error) {
-      console.error(`[Migration] Error al cargar ${key}:`, error);
     }
   }
   
@@ -117,7 +113,6 @@ async function saveAllData(data: Record<string, any>): Promise<void> {
       try {
         await AsyncStorage.setItem(storageKey, JSON.stringify(data[key]));
       } catch (error) {
-        console.error(`[Migration] Error al guardar ${key}:`, error);
       }
     }
   }
@@ -142,11 +137,9 @@ export async function runMigrations(): Promise<{
 
   // Si ya está en la versión actual, no hacer nada
   if (storedVersion >= CURRENT_DATA_VERSION) {
-    console.log('[Migration] Datos ya están en la versión actual:', CURRENT_DATA_VERSION);
     return result;
   }
 
-  console.log(`[Migration] Migrando de v${storedVersion} a v${CURRENT_DATA_VERSION}...`);
 
   try {
     // Cargar todos los datos
@@ -156,7 +149,6 @@ export async function runMigrations(): Promise<{
     for (let version = storedVersion + 1; version <= CURRENT_DATA_VERSION; version++) {
       const migration = migrations[version];
       if (migration) {
-        console.log(`[Migration] Ejecutando migración v${version}...`);
         data = await migration(data);
         result.migrationsRun.push(version);
       }
@@ -168,9 +160,7 @@ export async function runMigrations(): Promise<{
     // Actualizar versión
     await setStoredDataVersion(CURRENT_DATA_VERSION);
 
-    console.log('[Migration] Migraciones completadas exitosamente');
   } catch (error) {
-    console.error('[Migration] Error durante la migración:', error);
     result.success = false;
   }
 
@@ -181,15 +171,12 @@ export async function runMigrations(): Promise<{
  * Limpia toda la caché y datos (útil para desarrollo o reset completo)
  */
 export async function clearAllData(): Promise<void> {
-  console.log('[Migration] Limpiando todos los datos...');
   
   const keysToRemove = [DATA_VERSION_KEY, ...Object.values(DATA_KEYS)];
   
   try {
     await AsyncStorage.multiRemove(keysToRemove);
-    console.log('[Migration] Datos limpiados exitosamente');
   } catch (error) {
-    console.error('[Migration] Error al limpiar datos:', error);
   }
 }
 
@@ -237,7 +224,6 @@ export async function importData(backup: {
 
     return { success: true };
   } catch (error) {
-    console.error('[Migration] Error al importar datos:', error);
     return { success: false, error: 'Error al importar datos' };
   }
 }

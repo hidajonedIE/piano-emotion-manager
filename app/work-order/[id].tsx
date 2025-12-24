@@ -84,7 +84,6 @@ export default function WorkOrderScreen() {
       await updateService(service.id, { clientSignature: '' });
       setSignature('');
     } catch (error) {
-      console.error('Error clearing signature:', error);
     }
   };
 

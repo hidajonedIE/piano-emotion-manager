@@ -20,7 +20,6 @@ export default function CalendarScreen() {
 
   const handleEditEvent = (event: any) => {
     // Navegar a edición de evento
-    console.log('Edit event:', event);
   };
 
   return (

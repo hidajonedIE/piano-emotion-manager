@@ -37,7 +37,6 @@ export function useDistributor() {
         setConfig(detectedConfig);
       }
     } catch (err) {
-      console.error('Error loading distributor config:', err);
       setError('Error al cargar la configuración del distribuidor');
       setConfig(defaultDistributorConfig);
     } finally {
@@ -79,7 +78,6 @@ export function useDistributor() {
       
       return true;
     } catch (err) {
-      console.error('Error saving distributor config:', err);
       setError('Error al guardar la configuración');
       return false;
     }
@@ -106,7 +104,6 @@ export function useDistributor() {
       setError(null);
       return true;
     } catch (err) {
-      console.error('Error resetting distributor config:', err);
       setError('Error al restablecer la configuración');
       return false;
     }
@@ -229,7 +226,6 @@ export async function getDistributorConfig(): Promise<DistributorConfig> {
       return { ...defaultDistributorConfig, ...JSON.parse(savedConfig) };
     }
   } catch (err) {
-    console.error('Error getting distributor config:', err);
   }
   return defaultDistributorConfig;
 }

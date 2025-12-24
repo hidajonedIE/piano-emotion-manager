@@ -46,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('portal_token');
       }
     } catch (error) {
-      console.error('Error verificando token:', error);
       localStorage.removeItem('portal_token');
     } finally {
       setIsLoading(false);
@@ -66,7 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error solicitando magic link:', error);
       return { success: false, message: 'Error de conexión. Inténtalo de nuevo.' };
     }
   };
@@ -90,7 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return data;
     } catch (error) {
-      console.error('Error verificando magic link:', error);
       return { success: false, message: 'Error de conexión. Inténtalo de nuevo.' };
     }
   };

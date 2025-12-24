@@ -21,7 +21,6 @@ export function useAppointments() {
         setAppointments(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Error loading appointments:', error);
     } finally {
       setLoading(false);
     }
@@ -32,7 +31,6 @@ export function useAppointments() {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newAppointments));
       setAppointments(newAppointments);
     } catch (error) {
-      console.error('Error saving appointments:', error);
     }
   };
 

@@ -93,7 +93,6 @@ export function useServiceCategories() {
       
       setServices(loadedServices);
     } catch (error) {
-      console.error('Error loading service categories:', error);
     } finally {
       setLoading(false);
     }

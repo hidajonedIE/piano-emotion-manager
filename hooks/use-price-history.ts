@@ -60,7 +60,6 @@ export function usePriceHistory(itemId?: string) {
         setHistory(allHistory);
       }
     } catch (error) {
-      console.error('Error loading price history:', error);
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +79,6 @@ export function usePriceHistory(itemId?: string) {
       
       localStorage.setItem(PRICE_HISTORY_KEY, JSON.stringify(allHistory));
     } catch (error) {
-      console.error('Error saving price history:', error);
     }
   };
 

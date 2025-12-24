@@ -125,7 +125,6 @@ class InvoiceTemplateService {
         this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.error('[InvoiceTemplate] Error loading settings:', error);
     }
   }
 
@@ -133,7 +132,6 @@ class InvoiceTemplateService {
     try {
       localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(this.settings));
     } catch (error) {
-      console.error('[InvoiceTemplate] Error saving settings:', error);
     }
   }
 

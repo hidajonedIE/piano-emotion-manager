@@ -184,7 +184,6 @@ export function useGDPR(): GDPRHook {
         return filePath;
       }
     } catch (err) {
-      console.error('Error exporting data:', err);
       setError('Error al exportar los datos. Por favor, inténtalo de nuevo.');
       return null;
     } finally {
@@ -239,7 +238,6 @@ export function useGDPR(): GDPRHook {
 
       return true;
     } catch (err) {
-      console.error('Error deleting data:', err);
       setError('Error al eliminar los datos. Por favor, inténtalo de nuevo.');
       return false;
     } finally {
@@ -303,7 +301,6 @@ export function useGDPR(): GDPRHook {
 
       return true;
     } catch (err) {
-      console.error('Error deleting client data:', err);
       setError('Error al eliminar los datos del cliente.');
       return false;
     } finally {
@@ -353,7 +350,6 @@ export function useGDPR(): GDPRHook {
 
       return true;
     } catch (err) {
-      console.error('Error anonymizing data:', err);
       setError('Error al anonimizar los datos.');
       return false;
     } finally {
@@ -466,7 +462,6 @@ export function useGDPR(): GDPRHook {
 
       return summary;
     } catch (err) {
-      console.error('Error getting data summary:', err);
       return {
         totalClients: 0,
         totalPianos: 0,

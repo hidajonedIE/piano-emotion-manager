@@ -90,7 +90,6 @@ class OfflineSyncService {
    */
   private async handleOnline(): Promise<void> {
     this.isOnline = true;
-    console.log('[OfflineSync] Connection restored, syncing...');
     this.notifyListeners();
     await this.syncPendingOperations();
   }
@@ -100,7 +99,6 @@ class OfflineSyncService {
    */
   private handleOffline(): void {
     this.isOnline = false;
-    console.log('[OfflineSync] Connection lost');
     this.notifyListeners();
   }
 
@@ -147,7 +145,6 @@ class OfflineSyncService {
       const stored = localStorage.getItem(OFFLINE_QUEUE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('[OfflineSync] Error getting queue:', error);
       return [];
     }
   }
@@ -159,7 +156,6 @@ class OfflineSyncService {
     try {
       localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
     } catch (error) {
-      console.error('[OfflineSync] Error saving queue:', error);
     }
   }
 
@@ -186,7 +182,6 @@ class OfflineSyncService {
         return { success: 0, failed: 0 };
       }
 
-      console.log(`[OfflineSync] Syncing ${queue.length} operations...`);
 
       const remainingQueue: QueuedOperation[] = [];
 
@@ -202,7 +197,6 @@ class OfflineSyncService {
             remainingQueue.push(operation);
           } else {
             failed++;
-            console.error(`[OfflineSync] Operation failed after ${operation.maxRetries} retries:`, operation);
           }
         }
       }
@@ -211,7 +205,6 @@ class OfflineSyncService {
       this.updateLastSync();
 
     } catch (error) {
-      console.error('[OfflineSync] Sync error:', error);
     } finally {
       this.isSyncing = false;
       this.notifyListeners();
@@ -225,7 +218,6 @@ class OfflineSyncService {
    */
   private async executeOperation(operation: QueuedOperation): Promise<void> {
     // Aquí se implementaría la lógica real de sincronización con el servidor
-    console.log(`[OfflineSync] Executing operation:`, operation.type, operation.entityType, operation.entityId);
 
     // Simular latencia de red
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -245,7 +237,6 @@ class OfflineSyncService {
     try {
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
     } catch (error) {
-      console.error('[OfflineSync] Error updating last sync:', error);
     }
   }
 
@@ -256,7 +247,6 @@ class OfflineSyncService {
     try {
       return localStorage.getItem(LAST_SYNC_KEY);
     } catch (error) {
-      console.error('[OfflineSync] Error getting last sync:', error);
       return null;
     }
   }

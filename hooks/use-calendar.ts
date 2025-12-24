@@ -18,7 +18,6 @@ export function useCalendar() {
       await calendarService.initialize();
       setSettings(calendarService.getSettings());
     } catch (error) {
-      console.error('Error initializing calendar:', error);
     } finally {
       setIsLoading(false);
     }

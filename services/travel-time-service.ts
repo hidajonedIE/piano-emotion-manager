@@ -77,7 +77,6 @@ class TravelTimeService {
 
       return null;
     } catch (error) {
-      console.error('[TravelTime] Error geocoding:', error);
       return null;
     }
   }
@@ -163,7 +162,6 @@ class TravelTimeService {
         };
       }
     } catch (error) {
-      console.error('[TravelTime] Error getting route:', error);
     }
 
     // Fallback a estimación

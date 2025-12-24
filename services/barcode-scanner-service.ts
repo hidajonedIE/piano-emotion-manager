@@ -94,7 +94,7 @@ class BarcodeScannerService {
             readers: formats,
           },
           locate: true,
-        }, (err: any) => {
+        }, (err: unknown) => {
           if (err) {
             reject(new Error(`Error iniciando escáner: ${err.message || err}`));
             return;
@@ -127,7 +127,6 @@ class BarcodeScannerService {
       this.isInitialized = true;
 
     } catch (error) {
-      console.error('[BarcodeScanner] Error:', error);
       if (options.onError) {
         options.onError(error as Error);
       }
@@ -145,7 +144,6 @@ class BarcodeScannerService {
       this.quagga.stop();
       this.isScanning = false;
     } catch (error) {
-      console.error('[BarcodeScanner] Error deteniendo escáner:', error);
     }
   }
 

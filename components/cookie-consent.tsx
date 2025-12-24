@@ -93,7 +93,6 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
         setShowBanner(true);
       }
     } catch (error) {
-      console.error('Error loading cookie preferences:', error);
       setShowBanner(true);
     } finally {
       setIsLoading(false);
@@ -108,7 +107,6 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       setShowBanner(false);
       setShowSettingsModal(false);
     } catch (error) {
-      console.error('Error saving cookie preferences:', error);
     }
   };
 

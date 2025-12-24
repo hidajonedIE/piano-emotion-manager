@@ -141,7 +141,6 @@ export default function SubscriptionScreen() {
       // Success handled after mutation
     },
     onError: (error) => {
-      console.error('Error changing plan:', error);
     },
   });
 

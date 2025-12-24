@@ -189,7 +189,7 @@ export default function TeamSettingsPage() {
       
       setHasChanges(false);
       Alert.alert('Éxito', 'Configuración guardada correctamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('Error', error.message || 'No se pudo guardar la configuración');
     }
   }, [isAdmin, updateSettings, formData, workingHoursStart, workingHoursEnd, workingDays]);

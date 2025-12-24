@@ -20,7 +20,6 @@ export function useSuppliers() {
         setSuppliers(JSON.parse(data));
       }
     } catch (error) {
-      console.error('Error loading suppliers:', error);
     } finally {
       setLoading(false);
     }
@@ -31,7 +30,6 @@ export function useSuppliers() {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newSuppliers));
       setSuppliers(newSuppliers);
     } catch (error) {
-      console.error('Error saving suppliers:', error);
     }
   };
 

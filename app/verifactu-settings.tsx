@@ -76,7 +76,6 @@ export default function VerifactuSettings() {
       const data = await response.json();
       setStatus(data);
     } catch (error) {
-      console.error('Error al cargar estado:', error);
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +89,6 @@ export default function VerifactuSettings() {
         setCertificate(data.certificate);
       }
     } catch (error) {
-      console.error('Error al cargar certificado:', error);
     }
   };
 

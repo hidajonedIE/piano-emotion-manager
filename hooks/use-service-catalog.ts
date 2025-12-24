@@ -29,7 +29,6 @@ export function useServiceCatalog() {
         setRates(defaultRates);
       }
     } catch (error) {
-      console.error('Error loading service catalog:', error);
     } finally {
       setLoading(false);
     }
@@ -40,7 +39,6 @@ export function useServiceCatalog() {
       await AsyncStorage.setItem(SERVICE_CATALOG_KEY, JSON.stringify(newRates));
       setRates(newRates);
     } catch (error) {
-      console.error('Error saving service catalog:', error);
     }
   };
 

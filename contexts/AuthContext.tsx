@@ -41,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await verifyToken(token);
       }
     } catch (error) {
-      console.error('Error loading stored auth:', error);
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       }
     } catch (error) {
-      console.error('Error verifying token:', error);
       setUser(null);
     }
   };

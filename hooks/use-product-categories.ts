@@ -28,7 +28,6 @@ export function useProductCategories() {
         setCategories(defaultCats);
       }
     } catch (error) {
-      console.error('Error loading product categories:', error);
     } finally {
       setLoading(false);
     }
@@ -44,7 +43,6 @@ export function useProductCategories() {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newCategories));
       setCategories(newCategories);
     } catch (error) {
-      console.error('Error saving product categories:', error);
     }
   };
 

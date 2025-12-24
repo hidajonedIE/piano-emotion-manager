@@ -98,7 +98,7 @@ export function BarcodeScanner({ visible, onClose, onScan, title, subtitle }: Ba
       });
 
       setIsLoading(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Error iniciando el escáner');
       setIsLoading(false);
     }

@@ -45,17 +45,14 @@ export function useNotifications() {
     
     // Listener para notificaciones recibidas mientras la app está abierta
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      console.log('Notification received:', notification);
     });
 
     // Listener para cuando el usuario toca una notificación
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log('Notification response:', response);
       const data = response.notification.request.content.data;
       // Aquí se puede navegar a la pantalla correspondiente según el tipo de notificación
       if (data?.type === 'appointment' && data?.appointmentId) {
         // Navegar a la cita
-        console.log('Navigate to appointment:', data.appointmentId);
       }
     });
 
@@ -76,7 +73,6 @@ export function useNotifications() {
         setSettings(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Error loading notification settings:', error);
     } finally {
       setLoading(false);
     }
@@ -87,7 +83,6 @@ export function useNotifications() {
       await AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(newSettings));
       setSettings(newSettings);
     } catch (error) {
-      console.error('Error saving notification settings:', error);
     }
   };
 
@@ -161,10 +156,8 @@ export function useNotifications() {
         },
       });
 
-      console.log('Scheduled appointment reminder:', notificationId);
       return notificationId;
     } catch (error) {
-      console.error('Error scheduling appointment reminder:', error);
       return null;
     }
   };
@@ -211,7 +204,6 @@ export function useNotifications() {
 
       return notificationId;
     } catch (error) {
-      console.error('Error scheduling maintenance reminder:', error);
       return null;
     }
   };
@@ -247,7 +239,6 @@ export function useNotifications() {
 
       return notificationId;
     } catch (error) {
-      console.error('Error sending stock alert:', error);
       return null;
     }
   };
@@ -257,7 +248,6 @@ export function useNotifications() {
     try {
       await Notifications.cancelScheduledNotificationAsync(notificationId);
     } catch (error) {
-      console.error('Error canceling notification:', error);
     }
   };
 
@@ -266,7 +256,6 @@ export function useNotifications() {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
     } catch (error) {
-      console.error('Error canceling all notifications:', error);
     }
   };
 
@@ -275,7 +264,6 @@ export function useNotifications() {
     try {
       return await Notifications.getAllScheduledNotificationsAsync();
     } catch (error) {
-      console.error('Error getting scheduled notifications:', error);
       return [];
     }
   };
@@ -323,7 +311,6 @@ export function useNotifications() {
 
       return notificationId;
     } catch (error) {
-      console.error('Error sending assignment notification:', error);
       return null;
     }
   };
@@ -360,7 +347,6 @@ export function useNotifications() {
 
       return notificationId;
     } catch (error) {
-      console.error('Error sending work completed notification:', error);
       return null;
     }
   };
@@ -396,7 +382,6 @@ export function useNotifications() {
 
       return notificationId;
     } catch (error) {
-      console.error('Error sending invitation notification:', error);
       return null;
     }
   };
@@ -441,7 +426,6 @@ export function useNotifications() {
 
       return notificationId;
     } catch (error) {
-      console.error('Error sending reassignment notification:', error);
       return null;
     }
   };
@@ -488,7 +472,6 @@ export function useNotifications() {
 
       return notificationId;
     } catch (error) {
-      console.error('Error scheduling work reminder:', error);
       return null;
     }
   };

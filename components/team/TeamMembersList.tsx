@@ -117,7 +117,7 @@ export function TeamMembersList({
       setInviteEmail('');
       setInviteRole('technician');
       Alert.alert('Éxito', 'Invitación enviada correctamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('Error', error.message || 'No se pudo enviar la invitación');
     } finally {
       setIsSubmitting(false);
@@ -133,7 +133,7 @@ export function TeamMembersList({
       setShowRoleModal(false);
       setSelectedMember(null);
       Alert.alert('Éxito', 'Rol actualizado correctamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('Error', error.message || 'No se pudo cambiar el rol');
     } finally {
       setIsSubmitting(false);
@@ -154,7 +154,7 @@ export function TeamMembersList({
               try {
                 await onSuspendMember(member.id, reason);
                 Alert.alert('Éxito', 'Miembro suspendido');
-              } catch (error: any) {
+              } catch (error: unknown) {
                 Alert.alert('Error', error.message);
               }
             }
@@ -178,7 +178,7 @@ export function TeamMembersList({
             try {
               await onRemoveMember(member.id);
               Alert.alert('Éxito', 'Miembro eliminado');
-            } catch (error: any) {
+            } catch (error: unknown) {
               Alert.alert('Error', error.message);
             }
           },

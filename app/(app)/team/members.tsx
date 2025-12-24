@@ -79,7 +79,7 @@ function InviteModal({ visible, onClose, onInvite, isLoading }: InviteModalProps
       setMessage('');
       onClose();
       Alert.alert('Éxito', 'Invitación enviada correctamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('Error', error.message || 'No se pudo enviar la invitación');
     }
   };
@@ -243,7 +243,7 @@ export default function TeamMembersPage() {
     try {
       await changeMemberRole(memberId, newRole as any);
       Alert.alert('Éxito', 'Rol actualizado correctamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('Error', error.message || 'No se pudo cambiar el rol');
     }
   }, [changeMemberRole]);
@@ -257,7 +257,7 @@ export default function TeamMembersPage() {
           try {
             await suspendMember(memberId, reason.trim());
             Alert.alert('Éxito', 'Miembro suspendido');
-          } catch (error: any) {
+          } catch (error: unknown) {
             Alert.alert('Error', error.message || 'No se pudo suspender al miembro');
           }
         }
@@ -279,7 +279,7 @@ export default function TeamMembersPage() {
             try {
               await removeMember(memberId);
               Alert.alert('Éxito', 'Miembro eliminado');
-            } catch (error: any) {
+            } catch (error: unknown) {
               Alert.alert('Error', error.message || 'No se pudo eliminar al miembro');
             }
           },

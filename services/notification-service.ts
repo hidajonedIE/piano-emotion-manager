@@ -83,7 +83,6 @@ class WebNotificationService {
         this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.error('[Notifications] Error loading settings:', error);
     }
   }
 
@@ -95,7 +94,6 @@ class WebNotificationService {
       this.settings = { ...this.settings, ...settings };
       await AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(this.settings));
     } catch (error) {
-      console.error('[Notifications] Error saving settings:', error);
     }
   }
 
@@ -116,7 +114,6 @@ class WebNotificationService {
         this.notifications = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('[Notifications] Error loading notifications:', error);
     }
   }
 
@@ -129,7 +126,6 @@ class WebNotificationService {
       const toSave = this.notifications.slice(0, 100);
       await AsyncStorage.setItem(NOTIFICATION_HISTORY_KEY, JSON.stringify(toSave));
     } catch (error) {
-      console.error('[Notifications] Error saving notifications:', error);
     }
   }
 
@@ -168,7 +164,6 @@ class WebNotificationService {
       
       return granted;
     } catch (error) {
-      console.error('[Notifications] Error requesting permission:', error);
       return false;
     }
   }
@@ -258,7 +253,6 @@ class WebNotificationService {
       // Auto-cerrar después de 5 segundos
       setTimeout(() => notification.close(), 5000);
     } catch (error) {
-      console.error('[Notifications] Error showing browser notification:', error);
     }
   }
 

@@ -84,7 +84,6 @@ export function ConnectionStatus({ showAlways = false, position = 'bottom' }: Co
       try {
         await forceSync();
       } catch (err) {
-        console.error('Sync error:', err);
       }
     }
   };

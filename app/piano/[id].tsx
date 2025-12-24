@@ -192,7 +192,6 @@ export default function PianoDetailScreen() {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
     } catch (error) {
-      console.error('Error picking image:', error);
       Alert.alert('Error', 'No se pudo seleccionar la imagen');
     }
   };

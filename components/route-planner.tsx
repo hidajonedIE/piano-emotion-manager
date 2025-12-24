@@ -62,7 +62,6 @@ export function RoutePlanner({ appointments, onOptimize }: RoutePlannerProps) {
       const calculatedRoute = await travelTimeService.calculateRoute(stops);
       setRoute(calculatedRoute);
     } catch (error) {
-      console.error('Error calculating route:', error);
     } finally {
       setIsCalculating(false);
     }
@@ -87,7 +86,6 @@ export function RoutePlanner({ appointments, onOptimize }: RoutePlannerProps) {
         onOptimize(optimizedRoute.stops.map(s => s.id));
       }
     } catch (error) {
-      console.error('Error optimizing route:', error);
     } finally {
       setIsCalculating(false);
     }

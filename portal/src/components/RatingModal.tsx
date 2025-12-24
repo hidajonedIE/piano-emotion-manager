@@ -40,7 +40,6 @@ export default function RatingModal({
         setComment('');
       }, 2000);
     } catch (error) {
-      console.error('Error al enviar valoración:', error);
     } finally {
       setIsSubmitting(false);
     }

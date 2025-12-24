@@ -92,7 +92,6 @@ class EmailReminderService {
         this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.error('[EmailReminder] Error loading settings:', error);
     }
   }
 
@@ -104,7 +103,6 @@ class EmailReminderService {
       this.settings = { ...this.settings, ...settings };
       await AsyncStorage.setItem(EMAIL_REMINDER_SETTINGS_KEY, JSON.stringify(this.settings));
     } catch (error) {
-      console.error('[EmailReminder] Error saving settings:', error);
     }
   }
 
@@ -125,7 +123,6 @@ class EmailReminderService {
         this.scheduledEmails = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('[EmailReminder] Error loading scheduled emails:', error);
     }
   }
 
@@ -136,7 +133,6 @@ class EmailReminderService {
     try {
       await AsyncStorage.setItem(SCHEDULED_EMAILS_KEY, JSON.stringify(this.scheduledEmails));
     } catch (error) {
-      console.error('[EmailReminder] Error saving scheduled emails:', error);
     }
   }
 

@@ -149,7 +149,6 @@ export function AccountTierProvider({
       const newData = await onRefresh();
       setData(newData);
     } catch (error) {
-      console.error('Error refreshing account status:', error);
     } finally {
       setIsRefreshing(false);
     }

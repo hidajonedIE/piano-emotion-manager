@@ -17,7 +17,6 @@ export function useWhatsNew() {
       const lastSeenVersion = await AsyncStorage.getItem(STORAGE_KEY);
       setHasUnseenUpdates(lastSeenVersion !== CURRENT_VERSION);
     } catch (error) {
-      console.error('Error checking whats new status:', error);
     } finally {
       setLoading(false);
     }
@@ -28,7 +27,6 @@ export function useWhatsNew() {
       await AsyncStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
       setHasUnseenUpdates(false);
     } catch (error) {
-      console.error('Error marking whats new as seen:', error);
     }
   };
 

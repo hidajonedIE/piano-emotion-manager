@@ -61,7 +61,6 @@ class WebCalendarService {
         this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.error('[Calendar] Error loading settings:', error);
     }
   }
 
@@ -73,7 +72,6 @@ class WebCalendarService {
       this.settings = { ...this.settings, ...settings };
       localStorage.setItem(CALENDAR_SETTINGS_KEY, JSON.stringify(this.settings));
     } catch (error) {
-      console.error('[Calendar] Error saving settings:', error);
     }
   }
 

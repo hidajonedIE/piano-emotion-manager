@@ -66,7 +66,6 @@ export function useDataMigration() {
           }));
         }
       } catch (error) {
-        console.error('[useDataMigration] Error:', error);
         setState(prev => ({
           ...prev,
           isChecking: false,

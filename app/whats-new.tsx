@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -129,8 +129,8 @@ export default function WhatsNewScreen() {
     : styles.container;
 
   const GradientWrapper = Platform.OS === 'web' 
-    ? ({ children, style }: { children: React.ReactNode; style: any }) => <View style={style}>{children}</View>
-    : ({ children, style }: { children: React.ReactNode; style: any }) => (
+    ? ({ children, style }: { children: React.ReactNode; style: ViewStyle }) => <View style={style}>{children}</View>
+    : ({ children, style }: { children: React.ReactNode; style: ViewStyle }) => (
         <LinearGradient
           colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
           start={{ x: 0, y: 0 }}

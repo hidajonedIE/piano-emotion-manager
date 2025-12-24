@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 const DATABASE_URL = "mysql://3v9ofvvgodfeCHv.root:9wl3Ks7pqSVjBamc@gateway01.us-east-1.prod.aws.tidbcloud.com:4000/test";
 
 async function runMigration() {
-  console.log('Connecting to TiDB with SSL...');
   
   const connection = await mysql.createConnection({
     uri: DATABASE_URL,
@@ -18,7 +17,6 @@ async function runMigration() {
     }
   });
 
-  console.log('Connected successfully!');
 
   // Read migration file
   const migrationPath = path.join(__dirname, 'drizzle/migrations/0001_hesitant_star_brand.sql');
@@ -31,21 +29,16 @@ async function runMigration() {
     const statement = statements[i].trim();
     if (statement) {
       try {
-        console.log(`Executing statement ${i + 1}/${statements.length}...`);
         await connection.execute(statement);
-        console.log(`  ✓ Success`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (error.code === 'ER_TABLE_EXISTS_ERROR' || error.code === 'ER_DUP_KEYNAME') {
-          console.log(`  ⚠ Table/index already exists, skipping`);
         } else {
-          console.error(`  ✗ Error:`, error.message);
         }
       }
     }
   }
 
   // Now create the modules and subscription_plans tables if they don't exist
-  console.log('\nCreating modules table...');
   try {
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS modules (
@@ -64,16 +57,12 @@ async function runMigration() {
         CONSTRAINT modules_code_unique UNIQUE(code)
       )
     `);
-    console.log('  ✓ modules table created');
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error.code === 'ER_TABLE_EXISTS_ERROR') {
-      console.log('  ⚠ modules table already exists');
     } else {
-      console.error('  ✗ Error:', error.message);
     }
   }
 
-  console.log('\nCreating subscription_plans table...');
   try {
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS subscription_plans (
@@ -99,17 +88,13 @@ async function runMigration() {
         CONSTRAINT subscription_plans_code_unique UNIQUE(code)
       )
     `);
-    console.log('  ✓ subscription_plans table created');
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error.code === 'ER_TABLE_EXISTS_ERROR') {
-      console.log('  ⚠ subscription_plans table already exists');
     } else {
-      console.error('  ✗ Error:', error.message);
     }
   }
 
   await connection.end();
-  console.log('\nMigration completed!');
 }
 
 runMigration().catch(console.error);

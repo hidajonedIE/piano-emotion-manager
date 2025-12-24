@@ -3,7 +3,6 @@ import mysql from 'mysql2/promise';
 const DATABASE_URL = "mysql://3v9ofvvgodfeCHv.root:9wl3Ks7pqSVjBamc@gateway01.us-east-1.prod.aws.tidbcloud.com:4000/test";
 
 async function fixModulesTables() {
-  console.log('Connecting to TiDB with SSL...');
   
   const connection = await mysql.createConnection({
     uri: DATABASE_URL,
@@ -12,18 +11,13 @@ async function fixModulesTables() {
     }
   });
 
-  console.log('Connected successfully!\n');
 
   // Drop existing tables and recreate with correct structure
-  console.log('Dropping existing modules table...');
   try {
     await connection.execute('DROP TABLE IF EXISTS modules');
-    console.log('  ✓ Dropped modules table');
-  } catch (error: any) {
-    console.error('  ✗ Error:', error.message);
+  } catch (error: unknown) {
   }
 
-  console.log('\nCreating modules table with correct structure...');
   try {
     await connection.execute(`
       CREATE TABLE modules (
@@ -46,12 +40,9 @@ async function fixModulesTables() {
         CONSTRAINT modules_code_unique UNIQUE(code)
       )
     `);
-    console.log('  ✓ Created modules table');
-  } catch (error: any) {
-    console.error('  ✗ Error:', error.message);
+  } catch (error: unknown) {
   }
 
-  console.log('\nCreating organization_modules table...');
   try {
     await connection.execute('DROP TABLE IF EXISTS organization_modules');
     await connection.execute(`
@@ -70,13 +61,10 @@ async function fixModulesTables() {
         INDEX org_modules_idx (organizationId, moduleCode)
       )
     `);
-    console.log('  ✓ Created organization_modules table');
-  } catch (error: any) {
-    console.error('  ✗ Error:', error.message);
+  } catch (error: unknown) {
   }
 
   // Now seed the modules
-  console.log('\nSeeding modules...');
   
   const modules = [
     { code: 'clients', name: 'Gestión de Clientes', description: 'Gestiona tu cartera de clientes y sus datos de contacto', icon: 'people', color: '#8b5cf6', type: 'core', includedInPlans: ['free', 'starter', 'professional', 'enterprise'], sortOrder: 1 },
@@ -109,19 +97,14 @@ async function fixModulesTables() {
           module.sortOrder
         ]
       );
-      console.log(`  ✓ Created module: ${module.name}`);
-    } catch (error: any) {
-      console.error(`  ✗ Error creating module ${module.name}:`, error.message);
+    } catch (error: unknown) {
     }
   }
 
   // Verify the data
-  console.log('\nVerifying modules in database...');
   const [rows] = await connection.execute('SELECT code, name, type FROM modules ORDER BY sortOrder');
-  console.log('Modules in database:', rows);
 
   await connection.end();
-  console.log('\nDone!');
 }
 
 fixModulesTables().catch(console.error);

@@ -32,7 +32,6 @@ export function useReminders() {
         setReminders(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Error loading reminders:', error);
     } finally {
       setLoading(false);
     }
@@ -43,7 +42,6 @@ export function useReminders() {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newReminders));
       setReminders(newReminders);
     } catch (error) {
-      console.error('Error saving reminders:', error);
     }
   };
 

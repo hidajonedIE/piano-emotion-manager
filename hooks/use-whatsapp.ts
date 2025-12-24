@@ -67,7 +67,6 @@ export const openWhatsApp = async ({ phone, message }: WhatsAppMessage): Promise
       return false;
     }
   } catch (error) {
-    console.error('Error al abrir WhatsApp:', error);
     Alert.alert('Error', 'No se pudo abrir WhatsApp');
     return false;
   }

@@ -35,7 +35,6 @@ export function useWebNotifications() {
 
       return () => unsubscribe();
     } catch (error) {
-      console.error('Error initializing notifications:', error);
     } finally {
       setIsLoading(false);
     }
