@@ -256,14 +256,13 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    marginHorizontal: 16,
+    // Removed marginHorizontal since component is inside Accordion with padding
     marginVertical: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
-    // Removed overflow: 'hidden' to prevent content clipping
   },
   header: {
     flexDirection: 'row',

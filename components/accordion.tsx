@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    overflow: 'hidden',
+    // Removed overflow: 'hidden' to prevent content clipping in nested components
   },
   header: {
     flexDirection: 'row',
