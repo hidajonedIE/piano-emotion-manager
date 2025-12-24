@@ -15,6 +15,9 @@
     "lint": "expo lint",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {

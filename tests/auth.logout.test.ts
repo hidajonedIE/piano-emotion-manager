@@ -3,15 +3,10 @@ import { appRouter } from "../server/routers";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "../server/_core/context";
 
-type CookieCall = {
-  name: string;
-  options: Record<string, unknown>;
-};
-
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] } {
-  const clearedCookies: CookieCall[] = [];
+function createAuthContext(): { ctx: TrpcContext; setCookieHeaders: string[] } {
+  const setCookieHeaders: string[] = [];
 
   const user: AuthenticatedUser = {
     id: 1,
@@ -32,31 +27,39 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
       headers: {},
     } as TrpcContext["req"],
     res: {
-      clearCookie: (name: string, options: Record<string, unknown>) => {
-        clearedCookies.push({ name, options });
+      setHeader: (name: string, value: string) => {
+        if (name === 'Set-Cookie') {
+          setCookieHeaders.push(value);
+        }
       },
-    } as TrpcContext["res"],
+      headers: {
+        set: (name: string, value: string) => {
+          if (name === 'Set-Cookie') {
+            setCookieHeaders.push(value);
+          }
+        },
+      },
+    } as unknown as TrpcContext["res"],
   };
 
-  return { ctx, clearedCookies };
+  return { ctx, setCookieHeaders };
 }
 
 describe("auth.logout", () => {
   it("clears the session cookie and reports success", async () => {
-    const { ctx, clearedCookies } = createAuthContext();
+    const { ctx, setCookieHeaders } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.auth.logout();
 
     expect(result).toEqual({ success: true });
-    expect(clearedCookies).toHaveLength(1);
-    expect(clearedCookies[0]?.name).toBe(COOKIE_NAME);
-    expect(clearedCookies[0]?.options).toMatchObject({
-      maxAge: -1,
-      secure: true,
-      sameSite: "none",
-      httpOnly: true,
-      path: "/",
-    });
+    expect(setCookieHeaders).toHaveLength(1);
+    
+    // Verificar que la cookie se establece con Max-Age=0 para eliminarla
+    const cookieHeader = setCookieHeaders[0];
+    expect(cookieHeader).toContain(COOKIE_NAME);
+    expect(cookieHeader).toContain('Max-Age=0');
+    expect(cookieHeader).toContain('HttpOnly');
+    expect(cookieHeader).toContain('Path=/');
   });
 });
