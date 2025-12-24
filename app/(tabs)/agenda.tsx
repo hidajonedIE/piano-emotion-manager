@@ -272,7 +272,11 @@ export default function AgendaScreen() {
         )}
       </ScrollView>
 
-      <FAB onPress={handleAddAppointment} />
+      <FAB 
+        onPress={handleAddAppointment} 
+        accessibilityLabel="Añadir nueva cita"
+        accessibilityHint="Pulsa para programar una nueva cita"
+      />
     </LinearGradient>
   );
 }

@@ -571,7 +571,10 @@ export default function PianoDetailScreen() {
 
         {/* Botones de acción */}
         {isEditing && (
-          <Pressable style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave}>
+          <Pressable style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos">
             <ThemedText style={styles.saveButtonText}>
               {isNew ? 'Crear Piano' : 'Guardar Cambios'}
             </ThemedText>
@@ -579,7 +582,10 @@ export default function PianoDetailScreen() {
         )}
 
         {!isNew && !isEditing && (
-          <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}>
+          <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar"
+            accessibilityHint="Pulsa para eliminar este elemento">
             <IconSymbol name="trash.fill" size={20} color={error} />
             <ThemedText style={[styles.deleteButtonText, { color: error }]}>
               Eliminar Piano

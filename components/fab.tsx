@@ -13,9 +13,16 @@ import { BorderRadius, Shadows } from '@/constants/theme';
 interface FABProps {
   onPress: () => void;
   icon?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
-export function FAB({ onPress, icon = 'plus' }: FABProps) {
+export function FAB({ 
+  onPress, 
+  icon = 'plus',
+  accessibilityLabel = 'Añadir nuevo elemento',
+  accessibilityHint = 'Pulsa para crear un nuevo elemento',
+}: FABProps) {
   const accent = useThemeColor({}, 'accent');
   const scale = useSharedValue(1);
 
@@ -43,6 +50,9 @@ export function FAB({ onPress, icon = 'plus' }: FABProps) {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         style={[styles.fab, { backgroundColor: accent }]}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
       >
         <IconSymbol name={icon as any} size={28} color="#FFFFFF" />
       </Pressable>

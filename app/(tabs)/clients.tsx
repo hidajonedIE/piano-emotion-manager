@@ -106,6 +106,7 @@ export default function ClientsScreen() {
           value={search}
           onChangeText={setSearch}
           placeholder="Buscar cliente..."
+          accessibilityLabel="Buscar clientes"
         />
       </View>
 
@@ -138,7 +139,11 @@ export default function ClientsScreen() {
         />
       )}
 
-      <FAB onPress={handleAddClient} />
+      <FAB 
+        onPress={handleAddClient} 
+        accessibilityLabel="Añadir nuevo cliente"
+        accessibilityHint="Pulsa para crear un nuevo cliente"
+      />
     </LinearGradient>
   );
 }

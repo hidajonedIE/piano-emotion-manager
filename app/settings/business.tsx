@@ -135,7 +135,10 @@ export default function BusinessSettingsScreen() {
         options={{
           title: 'Configuración de Empresa',
           headerRight: () => (
-            <Pressable onPress={handleSave} disabled={!hasChanges}>
+            <Pressable onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos" disabled={!hasChanges}>
               <ThemedText style={[styles.saveButton, { color: hasChanges ? accent : textSecondary }]}>
                 Guardar
               </ThemedText>

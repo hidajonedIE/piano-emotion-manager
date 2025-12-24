@@ -48,7 +48,13 @@ export function ScreenHeader({
     >
       <View style={styles.headerRow}>
         {showBackButton && (
-          <Pressable onPress={handleBack} style={styles.backButton}>
+          <Pressable 
+            onPress={handleBack} 
+            style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Volver atrás"
+            accessibilityHint="Pulsa para volver a la pantalla anterior"
+          >
             <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
           </Pressable>
         )}

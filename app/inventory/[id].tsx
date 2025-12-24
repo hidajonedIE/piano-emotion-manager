@@ -170,7 +170,10 @@ export default function InventoryDetailScreen() {
             <ThemedText style={{ color: accent }}>Editar</ThemedText>
           </Pressable>
         ) : (
-          <Pressable onPress={handleSave} style={styles.editButton}>
+          <Pressable onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos" style={styles.editButton}>
             <ThemedText style={{ color: accent, fontWeight: '600' }}>Guardar</ThemedText>
           </Pressable>
         )}
@@ -535,7 +538,10 @@ export default function InventoryDetailScreen() {
 
         {/* Botón eliminar */}
         {!isNew && (
-          <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}>
+          <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar"
+            accessibilityHint="Pulsa para eliminar este elemento">
             <IconSymbol name="trash.fill" size={18} color={error} />
             <ThemedText style={{ color: error, marginLeft: 8 }}>Eliminar material</ThemedText>
           </Pressable>

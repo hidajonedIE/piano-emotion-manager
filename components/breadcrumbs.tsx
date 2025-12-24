@@ -43,6 +43,8 @@ export function Breadcrumbs({ items, showHome = true }: BreadcrumbsProps) {
       showsHorizontalScrollIndicator={false}
       style={styles.container}
       contentContainerStyle={styles.content}
+      accessibilityRole="navigation"
+      accessibilityLabel="Ruta de navegación"
     >
       {allItems.map((item, index) => {
         const isLast = index === allItems.length - 1;
@@ -65,6 +67,9 @@ export function Breadcrumbs({ items, showHome = true }: BreadcrumbsProps) {
                 styles.item,
                 isClickable && pressed && styles.itemPressed,
               ]}
+              accessibilityRole={isClickable ? "link" : "text"}
+              accessibilityLabel={isLast ? `${item.label}, ubicación actual` : `Ir a ${item.label}`}
+              accessibilityState={{ disabled: !isClickable }}
             >
               {item.icon && (
                 <IconSymbol

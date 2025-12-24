@@ -194,7 +194,10 @@ export default function BusinessInfoScreen() {
         </View>
 
         {/* Botón guardar */}
-        <Pressable style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave}>
+        <Pressable style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos">
           <IconSymbol name="checkmark" size={20} color="#FFFFFF" />
           <ThemedText style={styles.saveButtonText}>Guardar datos fiscales</ThemedText>
         </Pressable>

@@ -85,6 +85,9 @@ export function HamburgerMenu() {
       <Pressable
         style={[styles.hamburgerButton, { backgroundColor: cardBg, borderColor }]}
         onPress={() => setIsOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Abrir menú de navegación"
+        accessibilityHint="Pulsa para ver todas las secciones de la aplicación"
       >
         <IconSymbol name="line.3.horizontal" size={24} color={textColor} />
       </Pressable>
@@ -104,7 +107,12 @@ export function HamburgerMenu() {
             {/* Header del menú */}
             <View style={[styles.menuHeader, { borderBottomColor: borderColor }]}>
               <ThemedText style={styles.menuTitle}>Menú</ThemedText>
-              <Pressable onPress={() => setIsOpen(false)} style={styles.closeButton}>
+              <Pressable 
+                onPress={() => setIsOpen(false)} 
+                style={styles.closeButton}
+                accessibilityRole="button"
+                accessibilityLabel="Cerrar menú"
+              >
                 <IconSymbol name="xmark" size={24} color={textColor} />
               </Pressable>
             </View>
@@ -136,6 +144,9 @@ export function HamburgerMenu() {
                       isActive && { backgroundColor: accent + '15' },
                     ]}
                     onPress={() => handleMenuPress(item)}
+                    accessibilityRole="menuitem"
+                    accessibilityLabel={`${item.label}${item.premium ? ', función premium' : ''}${isActive ? ', sección actual' : ''}`}
+                    accessibilityState={{ selected: isActive }}
                   >
                     <View style={[styles.menuItemIcon, { backgroundColor: item.color + '20' }]}>
                       <IconSymbol name={item.icon as any} size={20} color={item.color} />

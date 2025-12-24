@@ -191,7 +191,11 @@ export default function PianosScreen() {
         />
       )}
 
-      <FAB onPress={handleAddPiano} />
+      <FAB 
+        onPress={handleAddPiano} 
+        accessibilityLabel="Añadir nuevo piano"
+        accessibilityHint="Pulsa para registrar un nuevo piano"
+      />
     </LinearGradient>
   );
 }

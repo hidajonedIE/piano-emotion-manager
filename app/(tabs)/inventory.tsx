@@ -226,6 +226,7 @@ export default function InventoryScreen() {
               value={search}
               onChangeText={setSearch}
               placeholder="Buscar material..."
+          accessibilityLabel="Buscar materiales"
             />
           </View>
           <Pressable

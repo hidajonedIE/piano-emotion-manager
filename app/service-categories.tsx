@@ -199,7 +199,10 @@ export default function ServiceCategoriesScreen() {
             <ThemedText type="subtitle">
               {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
             </ThemedText>
-            <Pressable onPress={handleSave}>
+            <Pressable onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos">
               <ThemedText style={{ color: accent, fontWeight: '600' }}>Guardar</ThemedText>
             </Pressable>
           </View>

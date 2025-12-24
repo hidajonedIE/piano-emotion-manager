@@ -109,7 +109,10 @@ export default function SupplierDetailScreen() {
         <ThemedText type="title" style={styles.title}>
           {isNew ? 'Nuevo Proveedor' : 'Editar Proveedor'}
         </ThemedText>
-        <Pressable onPress={handleSave} style={[styles.saveButton, { backgroundColor: accent }]}>
+        <Pressable onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos" style={[styles.saveButton, { backgroundColor: accent }]}>
           <ThemedText style={styles.saveButtonText}>Guardar</ThemedText>
         </Pressable>
       </View>
@@ -210,7 +213,10 @@ export default function SupplierDetailScreen() {
 
         {/* Eliminar */}
         {!isNew && (
-          <Pressable style={styles.deleteButton} onPress={handleDelete}>
+          <Pressable style={styles.deleteButton} onPress={handleDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar"
+            accessibilityHint="Pulsa para eliminar este elemento">
             <IconSymbol name="trash.fill" size={20} color="#EF4444" />
             <ThemedText style={styles.deleteButtonText}>Eliminar Proveedor</ThemedText>
           </Pressable>

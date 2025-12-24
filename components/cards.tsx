@@ -55,8 +55,11 @@ export function ClientCard({ client, pianoCount, onPress }: ClientCardProps) {
         { backgroundColor: cardBg, borderColor },
         pressed && styles.cardPressed,
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={`Cliente ${fullName}, ${CLIENT_TYPE_LABELS[client.type]}, ${pianoCount} pianos`}
+      accessibilityHint="Pulsa para ver detalles del cliente"
     >
-      <View style={[styles.avatar, { backgroundColor: accent }]}>
+      <View style={[styles.avatar, { backgroundColor: accent }]} accessible={false}>
         <ThemedText style={styles.avatarText}>{initials}</ThemedText>
       </View>
       <View style={styles.cardContent}>
@@ -103,6 +106,8 @@ export function PianoCard({ piano, clientName, onPress }: PianoCardProps) {
     onPress();
   };
 
+  const pianoDescription = `${piano.brand} ${piano.model || ''}, ${PIANO_CATEGORY_LABELS[piano.category]}, estado ${PIANO_CONDITION_LABELS[piano.condition]}`;
+
   return (
     <Pressable
       onPress={handlePress}
@@ -111,8 +116,11 @@ export function PianoCard({ piano, clientName, onPress }: PianoCardProps) {
         { backgroundColor: cardBg, borderColor },
         pressed && styles.cardPressed,
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={clientName ? `Piano ${pianoDescription}, cliente ${clientName}` : `Piano ${pianoDescription}`}
+      accessibilityHint="Pulsa para ver detalles del piano"
     >
-      <View style={[styles.pianoIcon, { backgroundColor: `${conditionColor}15` }]}>
+      <View style={[styles.pianoIcon, { backgroundColor: `${conditionColor}15` }]} accessible={false}>
         <IconSymbol name="pianokeys" size={24} color={conditionColor} />
       </View>
       <View style={styles.cardContent}>
@@ -169,6 +177,8 @@ export function ServiceCard({ service, pianoInfo, clientName, onPress }: Service
     ? MAINTENANCE_LEVEL_COLORS[service.maintenanceLevel]
     : accent;
 
+  const serviceDescription = `${SERVICE_TYPE_LABELS[service.type]}, ${formatDate(service.date)}${service.cost !== undefined ? `, ${service.cost} euros` : ''}`;
+
   return (
     <Pressable
       onPress={handlePress}
@@ -177,8 +187,11 @@ export function ServiceCard({ service, pianoInfo, clientName, onPress }: Service
         { backgroundColor: cardBg, borderColor },
         pressed && styles.cardPressed,
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={clientName ? `Servicio ${serviceDescription}, cliente ${clientName}` : `Servicio ${serviceDescription}`}
+      accessibilityHint="Pulsa para ver detalles del servicio"
     >
-      <View style={[styles.serviceIcon, { backgroundColor: `${maintenanceColor}15` }]}>
+      <View style={[styles.serviceIcon, { backgroundColor: `${maintenanceColor}15` }]} accessible={false}>
         <IconSymbol name="wrench.fill" size={20} color={maintenanceColor} />
       </View>
       <View style={styles.cardContent}>

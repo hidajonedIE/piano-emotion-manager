@@ -218,6 +218,9 @@ export default function TeamSettingsPage() {
             <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos"
               disabled={isUpdating}
             >
               <Text style={[styles.saveButtonText, { color: colors.primary }]}>

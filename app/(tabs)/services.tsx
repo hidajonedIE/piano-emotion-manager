@@ -146,6 +146,7 @@ export default function ServicesScreen() {
           value={search}
           onChangeText={setSearch}
           placeholder="Buscar servicio..."
+          accessibilityLabel="Buscar servicios"
         />
       </View>
 
@@ -208,7 +209,11 @@ export default function ServicesScreen() {
         />
       )}
 
-      <FAB onPress={handleAddService} />
+      <FAB 
+        onPress={handleAddService} 
+        accessibilityLabel="Añadir nuevo servicio"
+        accessibilityHint="Pulsa para registrar un nuevo servicio"
+      />
     </LinearGradient>
   );
 }

@@ -514,6 +514,9 @@ export default function ClientDetailScreen() {
             <Pressable
               style={[styles.actionButton, { backgroundColor: cardBg, borderColor }]}
               onPress={handleCall}
+            accessibilityRole="button"
+            accessibilityLabel="Llamar al cliente"
+            accessibilityHint="Pulsa para iniciar una llamada telefónica"
             >
               <IconSymbol name="phone.fill" size={24} color={accent} />
               <ThemedText style={[styles.actionText, { color: accent }]}>Llamar</ThemedText>
@@ -521,6 +524,9 @@ export default function ClientDetailScreen() {
             <Pressable
               style={[styles.actionButton, { backgroundColor: cardBg, borderColor }]}
               onPress={handleEmail}
+            accessibilityRole="button"
+            accessibilityLabel="Enviar email al cliente"
+            accessibilityHint="Pulsa para abrir el correo electrónico"
               disabled={!form.email}
             >
               <IconSymbol name="envelope.fill" size={24} color={form.email ? accent : textSecondary} />
@@ -590,6 +596,9 @@ export default function ClientDetailScreen() {
           <Pressable
             style={[styles.deleteButton, { borderColor: error }]}
             onPress={handleDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar"
+            accessibilityHint="Pulsa para eliminar este elemento"
           >
             <IconSymbol name="trash.fill" size={20} color={error} />
             <ThemedText style={{ color: error, marginLeft: 8 }}>Eliminar cliente</ThemedText>
@@ -603,6 +612,9 @@ export default function ClientDetailScreen() {
           <Pressable
             style={[styles.saveButton, { backgroundColor: accent }]}
             onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos"
           >
             <ThemedText style={styles.saveButtonText}>
               {isNew ? 'Crear Cliente' : 'Guardar Cambios'}

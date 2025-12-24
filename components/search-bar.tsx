@@ -8,9 +8,15 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  accessibilityLabel?: string;
 }
 
-export function SearchBar({ value, onChangeText, placeholder = 'Buscar...' }: SearchBarProps) {
+export function SearchBar({ 
+  value, 
+  onChangeText, 
+  placeholder = 'Buscar...',
+  accessibilityLabel = 'Campo de búsqueda',
+}: SearchBarProps) {
   const backgroundColor = useThemeColor({}, 'surface');
   const borderColor = useThemeColor({}, 'border');
   const textColor = useThemeColor({}, 'text');
@@ -18,7 +24,12 @@ export function SearchBar({ value, onChangeText, placeholder = 'Buscar...' }: Se
   const iconColor = useThemeColor({}, 'icon');
 
   return (
-    <View style={[styles.container, { backgroundColor, borderColor }]}>
+    <View 
+      style={[styles.container, { backgroundColor, borderColor }]}
+      accessible={true}
+      accessibilityRole="search"
+      accessibilityLabel={accessibilityLabel}
+    >
       <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
       <TextInput
         style={[styles.input, { color: textColor }]}
@@ -28,6 +39,8 @@ export function SearchBar({ value, onChangeText, placeholder = 'Buscar...' }: Se
         placeholderTextColor={placeholderColor}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={`Escribe para ${placeholder.toLowerCase()}`}
       />
     </View>
   );

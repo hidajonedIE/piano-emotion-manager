@@ -178,7 +178,10 @@ export default function ProductCategoriesScreen() {
             <ThemedText type="subtitle">
               {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
             </ThemedText>
-            <Pressable onPress={handleSave}>
+            <Pressable onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos">
               <ThemedText style={{ color: tintColor, fontWeight: '600' }}>
                 Guardar
               </ThemedText>
