@@ -5,6 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { advancedModulesRouter } from "./routers/advanced-modules.router";
+import { modulesRouter } from "./routers/modules.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -431,6 +432,10 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(({ ctx, input }) => db.deleteReminder(ctx.user.openId, input.id)),
   }),
+
+  // ============ MODULES ============
+  // Gestión de módulos y suscripciones
+  modules: modulesRouter,
 
   // ============ ADVANCED MODULES ============
   // Gestión de equipos, CRM, Reportes, Contabilidad, Tienda, Módulos, Calendario avanzado

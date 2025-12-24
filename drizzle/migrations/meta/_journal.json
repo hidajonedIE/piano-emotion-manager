@@ -8,6 +8,13 @@
       "when": 1766505126815,
       "tag": "0000_easy_sage",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1766584529966,
+      "tag": "0001_hesitant_star_brand",
+      "breakpoints": true
     }
   ]
 }
