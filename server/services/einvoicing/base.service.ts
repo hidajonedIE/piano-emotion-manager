@@ -194,6 +194,10 @@ export class EInvoicingServiceFactory {
         const { BelgiumPeppolService } = await import('./belgium/peppol.service');
         service = new BelgiumPeppolService();
         break;
+      case 'GB':
+        const { UKMTDService } = await import('./uk/mtd.service');
+        service = new UKMTDService();
+        break;
       default:
         throw new Error(`País no soportado: ${country}`);
     }

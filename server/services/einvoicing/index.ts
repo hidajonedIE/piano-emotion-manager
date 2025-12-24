@@ -18,6 +18,7 @@ export { FacturXService, ChorusProClient } from './france/facturx.service';
 export { CIUSPTService, SAFTPTGenerator } from './portugal/ciuspt.service';
 export { OIOUBLService, NemHandelClient } from './denmark/oioubl.service';
 export { BelgiumPeppolService } from './belgium/peppol.service';
+export { UKMTDService } from './uk/mtd.service';
 
 // Re-exportar tipos específicos de cada país
 export type { FatturaPAConfig, RegimeFiscale, TipoDocumento as ITTipoDocumento } from './italy/sdi.service';
@@ -25,3 +26,4 @@ export type { ZUGFeRDProfile, DocumentType as DEDocumentType } from './germany/z
 export type { FacturXProfile, FacturXConfig } from './france/facturx.service';
 export type { CIUSPTConfig, TipoDocumento as PTTipoDocumento, TipoIVA } from './portugal/ciuspt.service';
 export type { OIOUBLConfig, OIOUBLDocumentType } from './denmark/oioubl.service';
+export type { UKMTDConfig, VATReturn, VATObligation, VATLiability, VATPayment } from './uk/mtd.service';

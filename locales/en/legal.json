@@ -1,0 +1,167 @@
+{
+  "privacyPolicy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated",
+    "sections": {
+      "intro": {
+        "title": "1. Introduction",
+        "content": "At {companyName} ({tradeName}), with company registration number {taxId} and registered address at {address}, we are committed to protecting the privacy of our users. This Privacy Policy describes how we collect, use and protect your personal information in accordance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018."
+      },
+      "dataController": {
+        "title": "2. Data Controller",
+        "content": "The data controller responsible for your personal data is:",
+        "company": "Company",
+        "taxId": "Company Number",
+        "vatNumber": "VAT Number",
+        "address": "Registered Address",
+        "email": "Contact Email",
+        "dpo": "Data Protection Officer"
+      },
+      "dataCollected": {
+        "title": "3. Data We Collect",
+        "content": "We collect the following types of personal data:",
+        "identification": "Identification data: name, company number, VAT number",
+        "contact": "Contact data: address, telephone, email address",
+        "professional": "Professional data: information about pianos and services performed",
+        "financial": "Financial data: invoicing and payment information",
+        "technical": "Technical data: IP address, device type, browser"
+      },
+      "purposes": {
+        "title": "4. Purposes of Processing",
+        "content": "We process your personal data for the following purposes:",
+        "serviceManagement": "Management of piano maintenance and repair services",
+        "clientManagement": "Client relationship management",
+        "invoicing": "Invoicing and administrative management",
+        "communication": "Communications related to services",
+        "legalCompliance": "Compliance with legal obligations"
+      },
+      "legalBasis": {
+        "title": "5. Legal Basis for Processing",
+        "content": "The processing of your data is based on:",
+        "contract": "Performance of a contract or pre-contractual measures",
+        "consent": "Your explicit consent",
+        "legal": "Compliance with legal obligations",
+        "legitimate": "Legitimate interests of the controller"
+      },
+      "dataRetention": {
+        "title": "6. Data Retention",
+        "content": "We will retain your personal data for as long as necessary to fulfil the purposes described and, subsequently, for the legally required periods. Invoicing data will be retained for the legal period of 6 years in accordance with HMRC requirements."
+      },
+      "dataSharing": {
+        "title": "7. Data Sharing",
+        "content": "Your data may be shared with:",
+        "taxAuthorities": "HM Revenue & Customs for compliance with tax obligations",
+        "serviceProviders": "Technology service providers (hosting, email)",
+        "mtd": "Making Tax Digital system for digital record keeping and VAT returns"
+      },
+      "internationalTransfers": {
+        "title": "8. International Transfers",
+        "content": "Some of our service providers may be located outside the United Kingdom. In these cases, we ensure that appropriate safeguards are in place in accordance with UK GDPR, such as standard contractual clauses approved by the Information Commissioner's Office."
+      },
+      "rights": {
+        "title": "9. Your Rights",
+        "content": "You have the following rights regarding your personal data:",
+        "access": "Right of access: to know what data we process about you",
+        "rectification": "Right to rectification: to correct inaccurate data",
+        "erasure": "Right to erasure: to request deletion of your data",
+        "restriction": "Right to restriction: to restrict processing in certain cases",
+        "portability": "Right to data portability: to receive your data in a structured format",
+        "objection": "Right to object: to object to the processing of your data",
+        "withdraw": "Right to withdraw consent at any time",
+        "howToExercise": "To exercise these rights, you can contact us at {email} or through the Privacy section of the application."
+      },
+      "security": {
+        "title": "10. Security Measures",
+        "content": "We implement appropriate technical and organisational measures to protect your personal data against unauthorised access, alteration, disclosure or destruction. These measures include data encryption, access control and regular backups."
+      },
+      "cookies": {
+        "title": "11. Cookie Policy",
+        "content": "This application may use cookies and similar technologies to improve your experience. You can manage your cookie preferences from the Settings section."
+      },
+      "changes": {
+        "title": "12. Changes to this Policy",
+        "content": "We reserve the right to modify this Privacy Policy at any time. We will notify you of any significant changes through the application or by email."
+      },
+      "contact": {
+        "title": "13. Contact",
+        "content": "For any queries relating to this Privacy Policy or the processing of your personal data, you can contact us at:",
+        "generalEmail": "General email",
+        "dpoEmail": "DPO email",
+        "supervisoryAuthority": "You may also lodge a complaint with the Information Commissioner's Office (ico.org.uk) if you believe your rights have been infringed."
+      }
+    }
+  },
+  "termsConditions": {
+    "title": "Terms and Conditions",
+    "lastUpdated": "Last updated",
+    "sections": {
+      "intro": {
+        "title": "1. Introduction",
+        "content": "These Terms and Conditions govern the use of the {appName} application, owned by {companyName} ({tradeName}), with company registration number {taxId}. By using this application, you accept these terms in full."
+      },
+      "definitions": {
+        "title": "2. Definitions",
+        "app": "Application: the {appName} mobile and web application",
+        "user": "User: any person who accesses and uses the Application",
+        "services": "Services: the functionalities provided by the Application",
+        "content": "Content: all information, data and materials in the Application"
+      },
+      "license": {
+        "title": "3. Licence to Use",
+        "content": "We grant you a limited, non-exclusive, non-transferable and revocable licence to use the Application in accordance with these Terms. This licence does not include the right to:",
+        "modify": "Modify, copy or distribute the Application",
+        "reverse": "Reverse engineer or decompile the code",
+        "commercial": "Use the Application for unauthorised commercial purposes",
+        "sublicense": "Sublicence or transfer your rights"
+      },
+      "userObligations": {
+        "title": "4. User Obligations",
+        "content": "When using the Application, you agree to:",
+        "accurate": "Provide accurate and up-to-date information",
+        "security": "Maintain the confidentiality of your access credentials",
+        "lawful": "Use the Application lawfully and in accordance with these Terms",
+        "respect": "Respect intellectual property rights"
+      },
+      "intellectualProperty": {
+        "title": "5. Intellectual Property",
+        "content": "All intellectual property rights in the Application, including design, code, graphics, logos and content, belong to {companyName} or its licensors. Any reproduction, distribution or modification without express authorisation is prohibited."
+      },
+      "dataProtection": {
+        "title": "6. Data Protection",
+        "content": "The processing of your personal data is governed by our Privacy Policy, which forms an integral part of these Terms. By using the Application, you accept such processing."
+      },
+      "invoicing": {
+        "title": "7. Digital Invoicing",
+        "content": "The Application enables the generation of digital invoices in compliance with UK regulations. Invoices generated comply with Making Tax Digital (MTD) requirements from HM Revenue & Customs. The user is responsible for the accuracy of the data included in invoices."
+      },
+      "liability": {
+        "title": "8. Limitation of Liability",
+        "content": "{companyName} shall not be liable for:",
+        "indirect": "Indirect, incidental or consequential damages",
+        "dataLoss": "Loss of data due to technical failures",
+        "thirdParty": "Actions of third parties or misuse of the Application",
+        "availability": "Interruptions in service availability"
+      },
+      "warranties": {
+        "title": "9. Warranties",
+        "content": "The Application is provided \"as is\" without warranties of any kind, express or implied. We do not warrant that the Application will be uninterrupted, error-free or that it will meet your specific expectations."
+      },
+      "termination": {
+        "title": "10. Termination",
+        "content": "We may suspend or terminate your access to the Application at any time if you breach these Terms. You may stop using the Application at any time by deleting your account."
+      },
+      "modifications": {
+        "title": "11. Modifications",
+        "content": "We reserve the right to modify these Terms at any time. Changes will be effective from their publication in the Application. Continued use of the Application after the publication of changes constitutes your acceptance of them."
+      },
+      "governing": {
+        "title": "12. Governing Law and Jurisdiction",
+        "content": "These Terms are governed by the laws of England and Wales. For any dispute arising from these Terms, the parties submit to the exclusive jurisdiction of the courts of England and Wales."
+      },
+      "contact": {
+        "title": "13. Contact",
+        "content": "For any queries about these Terms, you can contact us at {email}."
+      }
+    }
+  }
+}

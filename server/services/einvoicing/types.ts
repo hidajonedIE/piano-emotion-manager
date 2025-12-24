@@ -4,7 +4,7 @@
  */
 
 // Países soportados
-export type SupportedCountry = 'ES' | 'IT' | 'DE' | 'FR' | 'PT' | 'DK' | 'BE';
+export type SupportedCountry = 'ES' | 'IT' | 'DE' | 'FR' | 'PT' | 'DK' | 'BE' | 'GB';
 
 // Sistemas de facturación por país
 export type InvoicingSystem = 
@@ -14,7 +14,8 @@ export type InvoicingSystem =
   | 'facturx'     // Francia
   | 'ciuspt'      // Portugal
   | 'oioubl'      // Dinamarca
-  | 'PEPPOL';     // Bélgica
+  | 'PEPPOL'      // Bélgica
+  | 'mtd';        // Reino Unido (Making Tax Digital)
 
 // Mapeo país -> sistema
 export const COUNTRY_SYSTEM_MAP: Record<SupportedCountry, InvoicingSystem> = {
@@ -25,6 +26,7 @@ export const COUNTRY_SYSTEM_MAP: Record<SupportedCountry, InvoicingSystem> = {
   PT: 'ciuspt',
   DK: 'oioubl',
   BE: 'PEPPOL',
+  GB: 'mtd',
 };
 
 // Estado de una factura electrónica
@@ -36,6 +38,7 @@ export enum EInvoiceStatus {
   REJECTED = 'rejected',
   DELIVERED = 'delivered',
   ERROR = 'error',
+  RECORDED = 'recorded',  // UK: recorded for VAT return
 }
 
 // Datos comunes de factura (EN 16931)
@@ -135,6 +138,13 @@ export interface CountrySpecificConfig {
   belgium?: {
     enterpriseNumber?: string;      // Numéro d'entreprise (10 dígitos)
     peppolEndpointId?: string;      // ID del endpoint PEPPOL del receptor
+  };
+
+  // Reino Unido
+  uk?: {
+    vrn?: string;                   // VAT Registration Number (9 dígitos)
+    companyNumber?: string;         // Companies House registration number
+    periodKey?: string;             // VAT period key for MTD
   };
 }
 
@@ -282,6 +292,16 @@ export interface DistributorEInvoicingConfig {
       accessPointId?: string;         // ID del Access Point PEPPOL
       environment: 'test' | 'production';
     };
+
+    // Reino Unido (MTD)
+    mtd?: {
+      vrn: string;                    // VAT Registration Number (9 digits)
+      companyNumber?: string;         // Companies House registration number
+      clientId: string;               // HMRC OAuth client ID
+      clientSecret: string;           // HMRC OAuth client secret
+      softwareId: string;             // HMRC-issued software ID
+      environment: 'sandbox' | 'production';
+    };
   };
   
   // Configuración de numeración
@@ -301,6 +321,7 @@ export const VAT_RATES: Record<SupportedCountry, { standard: number; reduced: nu
   PT: { standard: 23, reduced: [13, 6] },
   DK: { standard: 25, reduced: [] },  // Dinamarca no tiene tipos reducidos
   BE: { standard: 21, reduced: [12, 6] },
+  GB: { standard: 20, reduced: [5] },  // UK: 20% standard, 5% reduced, 0% zero-rated
 };
 
 // Códigos de moneda por país
@@ -312,4 +333,41 @@ export const DEFAULT_CURRENCY: Record<SupportedCountry, string> = {
   PT: 'EUR',
   DK: 'DKK',
   BE: 'EUR',
+  GB: 'GBP',
+};
+
+// Nombres de países
+export const COUNTRY_NAMES: Record<SupportedCountry, { en: string; native: string }> = {
+  ES: { en: 'Spain', native: 'España' },
+  IT: { en: 'Italy', native: 'Italia' },
+  DE: { en: 'Germany', native: 'Deutschland' },
+  FR: { en: 'France', native: 'France' },
+  PT: { en: 'Portugal', native: 'Portugal' },
+  DK: { en: 'Denmark', native: 'Danmark' },
+  BE: { en: 'Belgium', native: 'Belgique/België' },
+  GB: { en: 'United Kingdom', native: 'United Kingdom' },
+};
+
+// Formato de fecha por país
+export const DATE_FORMATS: Record<SupportedCountry, string> = {
+  ES: 'DD/MM/YYYY',
+  IT: 'DD/MM/YYYY',
+  DE: 'DD.MM.YYYY',
+  FR: 'DD/MM/YYYY',
+  PT: 'DD/MM/YYYY',
+  DK: 'DD-MM-YYYY',
+  BE: 'DD/MM/YYYY',
+  GB: 'DD/MM/YYYY',
+};
+
+// Formato de NIF/VAT por país
+export const TAX_ID_FORMATS: Record<SupportedCountry, { pattern: RegExp; example: string }> = {
+  ES: { pattern: /^[A-Z]\d{7}[A-Z0-9]$|^\d{8}[A-Z]$/, example: 'B12345678 or 12345678A' },
+  IT: { pattern: /^IT\d{11}$/, example: 'IT12345678901' },
+  DE: { pattern: /^DE\d{9}$/, example: 'DE123456789' },
+  FR: { pattern: /^FR[A-Z0-9]{2}\d{9}$/, example: 'FR12345678901' },
+  PT: { pattern: /^PT\d{9}$/, example: 'PT123456789' },
+  DK: { pattern: /^DK\d{8}$/, example: 'DK12345678' },
+  BE: { pattern: /^BE0\d{9}$/, example: 'BE0123456789' },
+  GB: { pattern: /^GB\d{9}$|^\d{9}$/, example: 'GB123456789 or 123456789' },
 };

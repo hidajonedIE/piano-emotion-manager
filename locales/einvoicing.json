@@ -377,6 +377,84 @@
       }
     }
   },
+  "en": {
+    "einvoicing": {
+      "title": "Electronic Invoicing",
+      "subtitle": "Configuration by country",
+      "enableForCountry": "Enable electronic invoicing for {{country}}",
+      "environment": "Environment",
+      "testEnvironment": "Test (sandbox)",
+      "productionEnvironment": "Production",
+      "productionWarning": "⚠️ Invoices sent in production are legally binding",
+      "vatRates": "Applicable VAT rates",
+      "currency": "Currency",
+      "testConnection": "Test connection",
+      "spain": {
+        "title": "Verifactu Configuration",
+        "certificatePath": "Certificate path (.p12)",
+        "certificatePassword": "Certificate password",
+        "helpText": "A representative digital certificate is required to send invoices to AEAT"
+      },
+      "italy": {
+        "title": "SDI Configuration",
+        "regimeFiscale": "Tax regime",
+        "codiceDestinatario": "Recipient code (7 characters)",
+        "codiceHelp": "Use 0000000 if the client provides PEC",
+        "pecDestinatario": "Recipient's PEC"
+      },
+      "germany": {
+        "title": "ZUGFeRD Configuration",
+        "profile": "Profile",
+        "leitwegId": "Leitweg-ID (for B2G)",
+        "leitwegHelp": "Required for invoices to public administration"
+      },
+      "france": {
+        "title": "Factur-X Configuration",
+        "siret": "SIRET (14 digits)",
+        "profile": "Profile",
+        "chorusProEnabled": "Enable Chorus Pro (B2G)",
+        "chorusHelp": "Mandatory for invoices to French public administration"
+      },
+      "portugal": {
+        "title": "CIUS-PT Configuration",
+        "serieDocumento": "Document series",
+        "atCertificateNumber": "AT certification number",
+        "atHelp": "Number assigned by Autoridade Tributária to certified software"
+      },
+      "denmark": {
+        "title": "OIOUBL Configuration",
+        "cvr": "CVR number (8 digits)",
+        "ean": "EAN/GLN (13 digits)",
+        "eanHelp": "Required for invoices to Danish public administration",
+        "nemhandelEnabled": "Enable NemHandel/PEPPOL",
+        "nemhandelHelp": "Electronic invoice exchange network"
+      },
+      "belgium": {
+        "title": "PEPPOL Belgium Configuration",
+        "enterpriseNumber": "Enterprise number (10 digits)",
+        "enterpriseHelp": "BCE/KBO number registered in Belgium",
+        "peppolEndpoint": "Recipient's PEPPOL endpoint",
+        "peppolHelp": "Recipient identifier on the PEPPOL network",
+        "mercuriusEnabled": "Use Mercurius platform (B2G)",
+        "mercuriusHelp": "Central platform for invoicing to Belgian public sector"
+      },
+      "uk": {
+        "title": "Making Tax Digital Configuration",
+        "vatNumber": "VAT Registration Number",
+        "vatNumberHelp": "Your 9-digit VAT number (GB123456789)",
+        "companyNumber": "Company Registration Number",
+        "companyNumberHelp": "Your Companies House registration number",
+        "mtdEnabled": "Enable Making Tax Digital",
+        "mtdHelp": "Required for VAT-registered businesses above the threshold",
+        "softwareId": "Software ID",
+        "softwareIdHelp": "HMRC-issued software identifier",
+        "vrn": "VAT Registration Number (VRN)",
+        "vrnHelp": "9-digit number issued by HMRC",
+        "peppolEnabled": "Enable PEPPOL (optional)",
+        "peppolHelp": "For electronic invoicing via PEPPOL network"
+      }
+    }
+  },
   "nl": {
     "einvoicing": {
       "title": "Elektronische Facturatie",

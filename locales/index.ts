@@ -4,6 +4,7 @@ import it from './it/translations.json';
 import fr from './fr/translations.json';
 import de from './de/translations.json';
 import da from './da/translations.json';
+import en from './en/translations.json';
 
 export const translations = {
   es,
@@ -12,9 +13,10 @@ export const translations = {
   fr,
   de,
   da,
+  en,
 };
 
-export type SupportedLanguage = 'es' | 'pt' | 'it' | 'fr' | 'de' | 'da';
+export type SupportedLanguage = 'es' | 'pt' | 'it' | 'fr' | 'de' | 'da' | 'en';
 
 export const supportedLanguages: { code: SupportedLanguage; name: string; nativeName: string; flag: string }[] = [
   { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
@@ -23,6 +25,7 @@ export const supportedLanguages: { code: SupportedLanguage; name: string; native
   { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
   { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
   { code: 'da', name: 'Danish', nativeName: 'Dansk', flag: '🇩🇰' },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
 ];
 
 export const defaultLanguage: SupportedLanguage = 'es';
