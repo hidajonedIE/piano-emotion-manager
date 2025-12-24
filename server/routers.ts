@@ -45,7 +45,12 @@ export const appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       // Clear cookie by setting it with expired date
       const cookieValue = `${COOKIE_NAME}=; Path=${cookieOptions.path || '/'}; HttpOnly; SameSite=${cookieOptions.sameSite || 'Lax'}; Max-Age=0`;
-      ctx.res.setHeader('Set-Cookie', cookieValue);
+      // Set cookie header - works with both Express and Vercel responses
+      if (typeof ctx.res.setHeader === 'function') {
+        ctx.res.setHeader('Set-Cookie', cookieValue);
+      } else if (ctx.res.headers && typeof ctx.res.headers.set === 'function') {
+        ctx.res.headers.set('Set-Cookie', cookieValue);
+      }
       return { success: true } as const;
     }),
   }),
