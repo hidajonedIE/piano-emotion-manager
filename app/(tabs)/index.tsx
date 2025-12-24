@@ -708,7 +708,9 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: Spacing.sm,
+    width: '100%',
   },
   statsGridDesktop: {
     maxWidth: 600,
