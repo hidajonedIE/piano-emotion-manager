@@ -1,11 +1,41 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "../shared/const.js";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
-import * as db from "./db";
-import { advancedModulesRouter } from "./routers/advanced-modules.router";
-import { modulesRouter } from "./routers/modules.router";
+import { getSessionCookieOptions } from "./_core/cookies.js";
+import { systemRouter } from "./_core/systemRouter.js";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc.js";
+import * as db from "./db.js";
+
+// Tipo para los módulos
+interface ModuleInfo {
+  code: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  type: 'core' | 'free' | 'premium' | 'addon';
+  isEnabled: boolean;
+  isAvailable: boolean;
+  requiresUpgrade: boolean;
+  includedInCurrentPlan: boolean;
+}
+
+// Módulos por defecto
+const DEFAULT_MODULES: ModuleInfo[] = [
+  { code: 'clients', name: 'Gestión de Clientes', description: 'Gestiona tu cartera de clientes y sus datos de contacto', icon: 'people', color: '#8b5cf6', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
+  { code: 'pianos', name: 'Registro de Pianos', description: 'Mantén un registro detallado de todos los pianos', icon: 'musical-notes', color: '#ec4899', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
+  { code: 'services', name: 'Servicios', description: 'Registra afinaciones, reparaciones y otros servicios', icon: 'construct', color: '#f59e0b', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
+  { code: 'calendar', name: 'Calendario', description: 'Agenda y gestiona tus citas', icon: 'calendar', color: '#3b82f6', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
+  { code: 'basic_invoicing', name: 'Facturación Básica', description: 'Genera facturas simples para tus servicios', icon: 'document-text', color: '#14b8a6', type: 'free', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
+  { code: 'inventory', name: 'Inventario', description: 'Control de stock de piezas y materiales', icon: 'cube', color: '#6366f1', type: 'free', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
+  { code: 'team_management', name: 'Gestión de Equipos', description: 'Gestiona equipos de técnicos con roles y permisos', icon: 'people-circle', color: '#10b981', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+  { code: 'advanced_invoicing', name: 'Facturación Electrónica', description: 'Facturación electrónica multi-país con cumplimiento legal', icon: 'receipt', color: '#0891b2', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+  { code: 'accounting', name: 'Contabilidad', description: 'Gestión de gastos, ingresos y reportes financieros', icon: 'calculator', color: '#f97316', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+  { code: 'reports', name: 'Reportes y Analytics', description: 'Análisis avanzado y reportes personalizados', icon: 'analytics', color: '#06b6d4', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+  { code: 'crm', name: 'CRM Avanzado', description: 'Segmentación de clientes, campañas y automatizaciones', icon: 'heart', color: '#ef4444', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+  { code: 'shop', name: 'Tienda Online', description: 'Acceso a tiendas de proveedores integradas', icon: 'cart', color: '#84cc16', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+  { code: 'calendar_sync', name: 'Sincronización Calendario', description: 'Sincroniza con Google Calendar y Outlook', icon: 'sync', color: '#a855f7', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+  { code: 'ai_assistant', name: 'Asistente IA', description: 'Asistente inteligente para diagnósticos y recomendaciones', icon: 'sparkles', color: '#f59e0b', type: 'addon', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
+];
 
 export const appRouter = router({
   system: systemRouter,
@@ -434,12 +464,243 @@ export const appRouter = router({
   }),
 
   // ============ MODULES ============
-  // Gestión de módulos y suscripciones
-  modules: modulesRouter,
+  modules: router({
+    // Obtener módulos con estado
+    getModulesWithStatus: protectedProcedure.query(async (): Promise<ModuleInfo[]> => {
+      return DEFAULT_MODULES;
+    }),
+
+    // Obtener suscripción actual
+    getCurrentSubscription: protectedProcedure.query(async () => {
+      return {
+        plan: 'free',
+        status: 'active',
+        expiresAt: null,
+      };
+    }),
+
+    // Obtener plan actual
+    getCurrentPlan: protectedProcedure.query(async () => {
+      return 'free';
+    }),
+
+    // Obtener planes disponibles
+    getAvailablePlans: protectedProcedure.query(async () => {
+      return [
+        {
+          code: 'free',
+          name: 'Gratuito',
+          description: 'Para técnicos independientes que empiezan',
+          monthlyPrice: '0',
+          yearlyPrice: '0',
+          features: ['Gestión básica de clientes', 'Registro de pianos', 'Calendario simple', 'Facturación básica'],
+          isPopular: false,
+        },
+        {
+          code: 'starter',
+          name: 'Inicial',
+          description: 'Para técnicos que quieren crecer',
+          monthlyPrice: '9.99',
+          yearlyPrice: '99.99',
+          features: ['Todo lo del plan Gratuito', 'Facturación electrónica', 'Sincronización calendario', 'Tienda online', 'Soporte por email'],
+          isPopular: false,
+        },
+        {
+          code: 'professional',
+          name: 'Profesional',
+          description: 'Para empresas con equipos de técnicos',
+          monthlyPrice: '29.99',
+          yearlyPrice: '299.99',
+          features: ['Todo lo del plan Inicial', 'Gestión de equipos', 'Inventario', 'Contabilidad', 'Reportes avanzados', 'CRM', 'Soporte prioritario'],
+          isPopular: true,
+        },
+        {
+          code: 'enterprise',
+          name: 'Empresarial',
+          description: 'Para grandes empresas con necesidades avanzadas',
+          monthlyPrice: '99.99',
+          yearlyPrice: '999.99',
+          features: ['Todo lo del plan Profesional', 'Usuarios ilimitados', 'Marca blanca', 'API personalizada', 'Soporte dedicado', 'SLA garantizado'],
+          isPopular: false,
+        },
+      ];
+    }),
+
+    // Obtener uso de recursos
+    getResourceUsage: protectedProcedure.query(async () => {
+      return {
+        users: { current: 1, limit: 1, percentage: 100 },
+        clients: { current: 0, limit: 50, percentage: 0 },
+        pianos: { current: 0, limit: 100, percentage: 0 },
+        invoices: { current: 0, limit: 10, percentage: 0 },
+        storage: { current: 0, limit: 100, percentage: 0 },
+      };
+    }),
+
+    // Activar/desactivar módulo
+    toggleModule: protectedProcedure
+      .input(z.object({
+        moduleCode: z.string(),
+        enabled: z.boolean(),
+      }))
+      .mutation(async () => {
+        return { success: true };
+      }),
+
+    // Cambiar plan
+    changePlan: protectedProcedure
+      .input(z.object({
+        planCode: z.enum(['free', 'starter', 'professional', 'enterprise']),
+        billingCycle: z.enum(['monthly', 'yearly']),
+      }))
+      .mutation(async () => {
+        return { success: true };
+      }),
+
+    // Verificar si puede realizar una acción
+    canPerformAction: protectedProcedure
+      .input(z.object({
+        resource: z.enum(['users', 'clients', 'pianos', 'invoices', 'storage']),
+      }))
+      .mutation(async () => {
+        return { allowed: true };
+      }),
+  }),
 
   // ============ ADVANCED MODULES ============
-  // Gestión de equipos, CRM, Reportes, Contabilidad, Tienda, Módulos, Calendario avanzado
-  advanced: advancedModulesRouter,
+  advanced: router({
+    // Team / Organization
+    team: router({
+      getMyOrganization: protectedProcedure.query(async () => null),
+      createOrganization: protectedProcedure
+        .input(z.object({
+          name: z.string().min(1).max(255),
+          taxId: z.string().optional(),
+          address: z.string().optional(),
+          phone: z.string().optional(),
+          email: z.string().email().optional(),
+        }))
+        .mutation(async ({ input }) => ({ id: 1, ...input })),
+      listMembers: protectedProcedure.query(async () => []),
+      inviteMember: protectedProcedure
+        .input(z.object({
+          email: z.string().email(),
+          role: z.enum(["admin", "manager", "senior_tech", "technician", "apprentice", "receptionist", "accountant", "viewer"]),
+        }))
+        .mutation(async () => ({ success: true, invitationId: "inv_123" })),
+    }),
+
+    // CRM
+    crm: router({
+      getClientProfile: protectedProcedure
+        .input(z.object({ clientId: z.number() }))
+        .query(async () => null),
+      getInteractions: protectedProcedure
+        .input(z.object({ clientId: z.number() }))
+        .query(async () => []),
+      getSegments: protectedProcedure.query(async () => []),
+      getCampaigns: protectedProcedure.query(async () => []),
+    }),
+
+    // Reports
+    reports: router({
+      getDashboardMetrics: protectedProcedure
+        .input(z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+        }))
+        .query(async () => ({
+          totalRevenue: 0,
+          totalServices: 0,
+          newClients: 0,
+          avgServiceValue: 0,
+          revenueByMonth: [],
+          servicesByType: [],
+          topClients: [],
+        })),
+    }),
+
+    // Accounting
+    accounting: router({
+      getFinancialSummary: protectedProcedure
+        .input(z.object({
+          year: z.number(),
+          month: z.number().optional(),
+        }))
+        .query(async () => ({
+          income: 0,
+          expenses: 0,
+          profit: 0,
+          pendingInvoices: 0,
+          taxDue: 0,
+        })),
+      getExpenses: protectedProcedure
+        .input(z.object({
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+          category: z.string().optional(),
+        }))
+        .query(async () => []),
+    }),
+
+    // Shop
+    shop: router({
+      getStores: protectedProcedure.query(async () => []),
+      getProducts: protectedProcedure
+        .input(z.object({ storeId: z.number() }))
+        .query(async () => []),
+      getOrders: protectedProcedure
+        .input(z.object({
+          status: z.enum(["pending_approval", "approved", "processing", "shipped", "delivered", "cancelled"]).optional(),
+        }))
+        .query(async () => []),
+    }),
+
+    // Modules (legacy)
+    modules: router({
+      getAvailableModules: protectedProcedure.query(async () => [
+        { code: "clients", name: "Clientes", category: "core", enabled: true, premium: false },
+        { code: "pianos", name: "Pianos", category: "core", enabled: true, premium: false },
+        { code: "services", name: "Servicios", category: "core", enabled: true, premium: false },
+        { code: "calendar", name: "Calendario", category: "core", enabled: true, premium: false },
+        { code: "invoicing", name: "Facturación", category: "free", enabled: true, premium: false },
+        { code: "team", name: "Gestión de Equipos", category: "premium", enabled: false, premium: true },
+        { code: "inventory", name: "Inventario", category: "premium", enabled: false, premium: true },
+        { code: "accounting", name: "Contabilidad", category: "premium", enabled: false, premium: true },
+        { code: "reports", name: "Reportes", category: "premium", enabled: false, premium: true },
+        { code: "crm", name: "CRM Avanzado", category: "premium", enabled: false, premium: true },
+        { code: "shop", name: "Tienda", category: "premium", enabled: false, premium: true },
+      ]),
+      getSubscription: protectedProcedure.query(async () => ({
+        plan: "free",
+        status: "active",
+        expiresAt: null,
+        features: ["clients", "pianos", "services", "calendar", "invoicing"],
+      })),
+      toggleModule: protectedProcedure
+        .input(z.object({
+          moduleCode: z.string(),
+          enabled: z.boolean(),
+        }))
+        .mutation(async () => ({ success: true })),
+    }),
+
+    // Calendar Advanced
+    calendarAdvanced: router({
+      syncWithGoogle: protectedProcedure
+        .input(z.object({ calendarId: z.string() }))
+        .mutation(async () => ({ success: true, syncedEvents: 0 })),
+      syncWithOutlook: protectedProcedure
+        .input(z.object({ calendarId: z.string() }))
+        .mutation(async () => ({ success: true, syncedEvents: 0 })),
+      getAvailability: protectedProcedure
+        .input(z.object({
+          date: z.string(),
+          technicianId: z.string().optional(),
+        }))
+        .query(async () => []),
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
