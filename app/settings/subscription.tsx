@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
 
-type SubscriptionPlan = 'free' | 'professional' | 'enterprise';
+type SubscriptionPlan = 'free' | 'professional_basic' | 'professional_advanced' | 'enterprise_basic' | 'enterprise_advanced';
 type BillingCycle = 'monthly' | 'yearly';
 
 interface PlanInfo {
@@ -30,6 +30,7 @@ interface PlanInfo {
   features: string[];
   isPopular: boolean;
   note?: string;
+  limits?: string;
 }
 
 const PLANS: PlanInfo[] = [
@@ -42,41 +43,82 @@ const PLANS: PlanInfo[] = [
     features: [
       'Gestión de clientes ilimitada',
       'Gestión de pianos ilimitada',
-      'Agenda y servicios',
+      'Agenda y calendario',
+      'Gestión de servicios',
       'Facturación básica',
       'Acceso a Piano Emotion Store',
+      'Historial de intervenciones',
     ],
     isPopular: false,
   },
   {
-    code: 'professional',
-    name: 'Profesional',
+    code: 'professional_basic',
+    name: 'Profesional Básico',
     description: 'Para técnicos independientes',
     monthlyPrice: 9.99,
     yearlyPrice: 99,
     features: [
       'Todo lo del plan Gratuito',
-      'WhatsApp integrado',
+      'WhatsApp Business integrado',
       'Email integrado',
-      'Recordatorios automáticos',
+      'Recordatorios automáticos a clientes',
+      'Confirmaciones de cita',
+      'Marketing automatizado',
       'Soporte prioritario',
     ],
+    limits: '50 WhatsApp + 100 Emails/mes',
     isPopular: true,
     note: 'Gratis con mínimo de compra en distribuidor',
   },
   {
-    code: 'enterprise',
-    name: 'Empresa',
+    code: 'professional_advanced',
+    name: 'Profesional Avanzado',
+    description: 'Para técnicos con alto volumen',
+    monthlyPrice: 14.99,
+    yearlyPrice: 149,
+    features: [
+      'Todo lo del plan Profesional Básico',
+      'Mayor capacidad de mensajes',
+      'Campañas de marketing avanzadas',
+      'Plantillas personalizadas ilimitadas',
+      'Soporte premium',
+    ],
+    limits: '100 WhatsApp + 200 Emails/mes',
+    isPopular: false,
+    note: 'Gratis con mínimo de compra en distribuidor',
+  },
+  {
+    code: 'enterprise_basic',
+    name: 'Empresa Básico',
     description: 'Para equipos de técnicos',
     monthlyPrice: 9.99,
     yearlyPrice: 99,
     features: [
-      'Todo lo del plan Profesional',
+      'Todo lo del plan Profesional Básico',
       'Multi-técnico (gestión de equipos)',
-      'Panel de administración',
+      'Panel de administración centralizado',
+      'Asignación de clientes por técnico',
       'Reportes de equipo',
       '+5€/mes por técnico adicional',
     ],
+    limits: '50 WA + 100 Emails por técnico/mes',
+    isPopular: false,
+    note: 'Gratis con mínimo de compra en distribuidor',
+  },
+  {
+    code: 'enterprise_advanced',
+    name: 'Empresa Avanzado',
+    description: 'Para equipos con alto volumen',
+    monthlyPrice: 14.99,
+    yearlyPrice: 149,
+    features: [
+      'Todo lo del plan Empresa Básico',
+      'Mayor capacidad de mensajes por técnico',
+      'Campañas avanzadas por técnico',
+      'Estadísticas detalladas por técnico',
+      '+7€/mes por técnico adicional',
+    ],
+    limits: '100 WA + 200 Emails por técnico/mes',
     isPopular: false,
     note: 'Gratis con mínimo de compra en distribuidor',
   },
@@ -207,6 +249,12 @@ export default function SubscriptionScreen() {
               <Text style={styles.planName}>{plan.name}</Text>
               <Text style={styles.planDescription}>{plan.description}</Text>
               <Text style={styles.price}>{getPrice(plan)}</Text>
+              {plan.limits && (
+                <View style={styles.limitsContainer}>
+                  <Ionicons name="speedometer" size={14} color="#3b82f6" />
+                  <Text style={styles.limitsText}>{plan.limits}</Text>
+                </View>
+              )}
               {plan.note && (
                 <Text style={styles.planNote}>{plan.note}</Text>
               )}
@@ -392,6 +440,22 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 12,
     fontStyle: 'italic',
+  },
+  limitsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  limitsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3b82f6',
   },
   featureRow: { 
     flexDirection: 'row', 
