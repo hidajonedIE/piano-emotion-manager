@@ -40,6 +40,27 @@ export default function SettingsLayout() {
           presentation: 'card',
         }} 
       />
+      <Stack.Screen 
+        name="business" 
+        options={{ 
+          title: 'Mi Empresa',
+          presentation: 'card',
+        }} 
+      />
+      <Stack.Screen 
+        name="einvoicing" 
+        options={{ 
+          title: 'Facturación Electrónica',
+          presentation: 'card',
+        }} 
+      />
+      <Stack.Screen 
+        name="ai" 
+        options={{ 
+          title: 'Inteligencia Artificial',
+          presentation: 'card',
+        }} 
+      />
     </Stack>
   );
 }
