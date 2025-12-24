@@ -2,10 +2,6 @@
   "buildCommand": "pnpm run build && npx expo export --platform web",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
-  "rewrites": [
-    {
-      "source": "/((?!_expo|assets|favicon.ico|manifest.json|icon-192.png|icon-512.png).*)",
-      "destination": "/index.html"
-    }
-  ]
+  "trailingSlash": false,
+  "cleanUrls": true
 }
