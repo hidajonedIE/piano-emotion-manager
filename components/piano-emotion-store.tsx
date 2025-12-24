@@ -159,9 +159,8 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
           {/* Categorías de productos */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Categorías</Text>
-            <View style={styles.categoriesContainer}>
-              {/* Primera fila - primeras 5 categorías */}
-              <View style={styles.categoriesRow}>
+            {/* Primera fila - primeras 5 categorías */}
+            <View style={styles.categoriesRow}>
               {PRODUCT_CATEGORIES.slice(0, 5).map((category) => (
                 <Pressable
                   key={category.id}
@@ -182,30 +181,29 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
                   )}
                 </Pressable>
               ))}
-              </View>
-              {/* Segunda fila - resto de categorías */}
-              <View style={styles.categoriesRow}>
-                {PRODUCT_CATEGORIES.slice(5).map((category) => (
-                  <Pressable
-                    key={category.id}
-                    style={[
-                      styles.categoryCard,
-                      selectedCategory === category.id && styles.categoryCardSelected,
-                    ]}
-                    onPress={() => setSelectedCategory(
-                      selectedCategory === category.id ? null : category.id
-                    )}
-                  >
-                    <Text style={styles.categoryIcon}>{category.icon}</Text>
-                    <Text style={styles.categoryName}>{category.name}</Text>
-                    {category.comingSoon && (
-                      <View style={styles.comingSoonBadge}>
-                        <Text style={styles.comingSoonText}>Próximamente</Text>
-                      </View>
-                    )}
-                  </Pressable>
-                ))}
-              </View>
+            </View>
+            {/* Segunda fila - resto de categorías */}
+            <View style={styles.categoriesRow}>
+              {PRODUCT_CATEGORIES.slice(5).map((category) => (
+                <Pressable
+                  key={category.id}
+                  style={[
+                    styles.categoryCard,
+                    selectedCategory === category.id && styles.categoryCardSelected,
+                  ]}
+                  onPress={() => setSelectedCategory(
+                    selectedCategory === category.id ? null : category.id
+                  )}
+                >
+                  <Text style={styles.categoryIcon}>{category.icon}</Text>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                  {category.comingSoon && (
+                    <View style={styles.comingSoonBadge}>
+                      <Text style={styles.comingSoonText}>Próximamente</Text>
+                    </View>
+                  )}
+                </Pressable>
+              ))}
             </View>
           </View>
 
@@ -407,10 +405,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#5B9A8B',
     fontWeight: '500',
-  },
-  categoriesContainer: {
-    flexDirection: 'column',
-    width: '100%',
   },
   categoriesRow: {
     flexDirection: 'row',
