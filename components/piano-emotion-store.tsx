@@ -159,32 +159,8 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
           {/* Categorías de productos */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Categorías</Text>
-            {/* Primera fila - primeras 5 categorías */}
-            <View style={styles.categoriesRow}>
-              {PRODUCT_CATEGORIES.slice(0, 5).map((category) => (
-                <Pressable
-                  key={category.id}
-                  style={[
-                    styles.categoryCard,
-                    selectedCategory === category.id && styles.categoryCardSelected,
-                  ]}
-                  onPress={() => setSelectedCategory(
-                    selectedCategory === category.id ? null : category.id
-                  )}
-                >
-                  <Text style={styles.categoryIcon}>{category.icon}</Text>
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                  {category.comingSoon && (
-                    <View style={styles.comingSoonBadge}>
-                      <Text style={styles.comingSoonText}>Próximamente</Text>
-                    </View>
-                  )}
-                </Pressable>
-              ))}
-            </View>
-            {/* Segunda fila - resto de categorías */}
-            <View style={styles.categoriesRow}>
-              {PRODUCT_CATEGORIES.slice(5).map((category) => (
+            <View style={styles.categoriesGrid}>
+              {PRODUCT_CATEGORIES.map((category) => (
                 <Pressable
                   key={category.id}
                   style={[
@@ -407,11 +383,12 @@ const styles = StyleSheet.create({
     color: '#5B9A8B',
     fontWeight: '500',
   },
-  categoriesRow: {
+  categoriesGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 8,
+    width: '100%',
   },
   categoryCard: {
     backgroundColor: '#F8F9FA',
