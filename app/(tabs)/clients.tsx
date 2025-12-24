@@ -40,16 +40,16 @@ export default function ClientsScreen() {
     [pianos]
   );
 
-  const handleClientPress = (client: Client) => {
+  const handleClientPress = useCallback((client: Client) => {
     router.push({
       pathname: '/client/[id]',
       params: { id: client.id },
     });
-  };
+  }, [router]);
 
-  const handleAddClient = () => {
+  const handleAddClient = useCallback(() => {
     router.push('/client/new');
-  };
+  }, [router]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -129,6 +129,15 @@ export default function ClientsScreen() {
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          initialNumToRender={10}
+          getItemLayout={(_, index) => ({
+            length: 88,
+            offset: 88 * index,
+            index,
+          })}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

@@ -1,3 +1,4 @@
+import React, { memo, useCallback } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
@@ -17,7 +18,7 @@ interface FABProps {
   accessibilityHint?: string;
 }
 
-export function FAB({ 
+export const FAB = memo(function FAB({ 
   onPress, 
   icon = 'plus',
   accessibilityLabel = 'Añadir nuevo elemento',
@@ -30,18 +31,18 @@ export function FAB({
     transform: [{ scale: scale.value }],
   }));
 
-  const handlePressIn = () => {
+  const handlePressIn = useCallback(() => {
     scale.value = withSpring(0.9);
-  };
+  }, []);
 
-  const handlePressOut = () => {
+  const handlePressOut = useCallback(() => {
     scale.value = withSpring(1);
-  };
+  }, []);
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress();
-  };
+  }, [onPress]);
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
@@ -58,7 +59,7 @@ export function FAB({
       </Pressable>
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -11,7 +12,7 @@ interface SearchBarProps {
   accessibilityLabel?: string;
 }
 
-export function SearchBar({ 
+export const SearchBar = memo(function SearchBar({ 
   value, 
   onChangeText, 
   placeholder = 'Buscar...',
@@ -44,7 +45,7 @@ export function SearchBar({
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

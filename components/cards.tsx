@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -27,7 +28,7 @@ interface ClientCardProps {
   onPress: () => void;
 }
 
-export function ClientCard({ client, pianoCount, onPress }: ClientCardProps) {
+export const ClientCard = memo(function ClientCard({ client, pianoCount, onPress }: ClientCardProps) {
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
@@ -87,7 +88,7 @@ export function ClientCard({ client, pianoCount, onPress }: ClientCardProps) {
       </View>
     </Pressable>
   );
-}
+});
 
 interface PianoCardProps {
   piano: Piano;
@@ -95,7 +96,7 @@ interface PianoCardProps {
   onPress: () => void;
 }
 
-export function PianoCard({ piano, clientName, onPress }: PianoCardProps) {
+export const PianoCard = memo(function PianoCard({ piano, clientName, onPress }: PianoCardProps) {
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
@@ -153,7 +154,7 @@ export function PianoCard({ piano, clientName, onPress }: PianoCardProps) {
       </View>
     </Pressable>
   );
-}
+});
 
 interface ServiceCardProps {
   service: Service;
@@ -162,7 +163,7 @@ interface ServiceCardProps {
   onPress: () => void;
 }
 
-export function ServiceCard({ service, pianoInfo, clientName, onPress }: ServiceCardProps) {
+export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clientName, onPress }: ServiceCardProps) {
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
@@ -240,7 +241,7 @@ export function ServiceCard({ service, pianoInfo, clientName, onPress }: Service
       </View>
     </Pressable>
   );
-}
+});
 
 // Componente para estados vacíos
 interface EmptyStateProps {
