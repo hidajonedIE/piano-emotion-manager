@@ -17,7 +17,6 @@ import {
 import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useDataMigration } from "@/hooks/use-data-migration";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/manus-runtime";
 import { SnackbarProvider } from "@/components/snackbar";
@@ -51,20 +50,12 @@ export default function RootLayout() {
   const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
   const [frame, setFrame] = useState<Rect>(initialFrame);
 
-  // Ejecutar migraciones de datos al iniciar
-  const migrationState = useDataMigration();
-
   useEffect(() => {
-    // Solo ocultar splash cuando las fuentes estén cargadas Y las migraciones completas
-    if (fontsLoaded && migrationState.isComplete) {
+    // Ocultar splash cuando las fuentes estén cargadas
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
-      
-      // Log de migraciones ejecutadas
-      if (migrationState.migrationsRun.length > 0) {
-        console.log('[App] Migraciones ejecutadas:', migrationState.migrationsRun);
-      }
     }
-  }, [fontsLoaded, migrationState.isComplete, migrationState.migrationsRun]);
+  }, [fontsLoaded]);
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
