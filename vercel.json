@@ -4,12 +4,8 @@
   "installCommand": "pnpm install",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/dist/$1"
+      "source": "/((?!_expo|assets|favicon.ico|manifest.json|icon-192.png|icon-512.png).*)",
+      "destination": "/index.html"
     }
   ]
 }
