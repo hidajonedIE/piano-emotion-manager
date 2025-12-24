@@ -10,10 +10,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
-  Platform,
-  Modal,
   Pressable,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
@@ -73,105 +70,6 @@ const PLANS: PlanInfo[] = [
   },
 ];
 
-// Custom confirmation modal for web compatibility
-interface ConfirmModalProps {
-  visible: boolean;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-function ConfirmModal({ visible, title, message, onConfirm, onCancel }: ConfirmModalProps) {
-  if (!visible) return null;
-  
-  return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="fade"
-      onRequestClose={onCancel}
-    >
-      <View style={modalStyles.overlay}>
-        <View style={modalStyles.container}>
-          <Text style={modalStyles.title}>{title}</Text>
-          <Text style={modalStyles.message}>{message}</Text>
-          <View style={modalStyles.buttons}>
-            <Pressable style={modalStyles.cancelButton} onPress={onCancel}>
-              <Text style={modalStyles.cancelButtonText}>Cancelar</Text>
-            </Pressable>
-            <Pressable style={modalStyles.confirmButton} onPress={onConfirm}>
-              <Text style={modalStyles.confirmButtonText}>Confirmar</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-const modalStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  container: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  message: {
-    fontSize: 15,
-    color: '#6b7280',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  buttons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: '#f3f4f6',
-  },
-  cancelButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-  confirmButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: '#10b981',
-  },
-  confirmButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
-  },
-});
-
 export default function SubscriptionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -186,19 +84,9 @@ export default function SubscriptionScreen() {
   // tRPC mutation for changing plan
   const changePlanMutation = trpc.subscription.changePlan.useMutation({
     onSuccess: () => {
-      if (Platform.OS === 'web') {
-        // Use alert for web
-        window.alert('Tu plan ha sido actualizado correctamente.');
-      } else {
-        Alert.alert('Éxito', 'Tu plan ha sido actualizado correctamente.');
-      }
+      // Success handled after mutation
     },
     onError: (error) => {
-      if (Platform.OS === 'web') {
-        window.alert('No se pudo cambiar el plan. Inténtalo de nuevo.');
-      } else {
-        Alert.alert('Error', 'No se pudo cambiar el plan. Inténtalo de nuevo.');
-      }
       console.error('Error changing plan:', error);
     },
   });
@@ -253,101 +141,119 @@ export default function SubscriptionScreen() {
     <>
       <Stack.Screen options={{ title: 'Suscripción' }} />
       
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        visible={showConfirmModal}
-        title={selectedPlan ? `Cambiar a ${selectedPlan.name}` : ''}
-        message={getConfirmMessage()}
-        onConfirm={handleConfirmPlanChange}
-        onCancel={handleCancelPlanChange}
-      />
-      
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
-        {/* Current Plan Banner */}
-        <View style={styles.currentPlanBanner}>
-          <View style={styles.currentPlanInfo}>
-            <Text style={styles.currentPlanLabel}>Tu plan actual</Text>
-            <Text style={styles.currentPlanName}>
-              {PLANS.find(p => p.code === currentPlan)?.name || 'Gratuito'}
-            </Text>
-          </View>
-          <Ionicons name="checkmark-circle" size={28} color="#10b981" />
-        </View>
-
-        <View style={styles.billingToggle}>
-          <TouchableOpacity
-            style={[styles.toggleButton, billingCycle === 'monthly' && styles.toggleButtonActive]}
-            onPress={() => setBillingCycle('monthly')}
-          >
-            <Text style={[styles.toggleText, billingCycle === 'monthly' && styles.toggleTextActive]}>Mensual</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleButton, billingCycle === 'yearly' && styles.toggleButtonActive]}
-            onPress={() => setBillingCycle('yearly')}
-          >
-            <Text style={[styles.toggleText, billingCycle === 'yearly' && styles.toggleTextActive]}>Anual -17%</Text>
-          </TouchableOpacity>
-        </View>
-
-        {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#3b82f6" />
-            <Text style={styles.loadingText}>Actualizando plan...</Text>
-          </View>
-        )}
-
-        {PLANS.map((plan) => (
-          <View 
-            key={plan.code} 
-            style={[
-              styles.planCard, 
-              plan.isPopular && styles.planCardPopular, 
-              plan.code === currentPlan && styles.planCardCurrent
-            ]}
-          >
-            {plan.isPopular && (
-              <View style={styles.popularBadge}>
-                <Text style={styles.popularBadgeText}>Popular</Text>
-              </View>
-            )}
-            {plan.code === currentPlan && (
-              <View style={styles.currentBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                <Text style={styles.currentBadgeText}>Actual</Text>
-              </View>
-            )}
-            <Text style={styles.planName}>{plan.name}</Text>
-            <Text style={styles.planDescription}>{plan.description}</Text>
-            <Text style={styles.price}>{getPrice(plan)}</Text>
-            {plan.features.map((f, i) => (
-              <View key={i} style={styles.featureRow}>
-                <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                <Text style={styles.featureText}>{f}</Text>
-              </View>
-            ))}
-            <TouchableOpacity
-              style={[
-                styles.selectButton, 
-                plan.code === currentPlan && styles.selectButtonCurrent
-              ]}
-              onPress={() => handleSelectPlan(plan)}
-              disabled={plan.code === currentPlan || isLoading}
-            >
-              <Text style={[
-                styles.selectButtonText,
-                plan.code === currentPlan && styles.selectButtonTextCurrent
-              ]}>
-                {plan.code === currentPlan ? 'Plan actual' : 'Seleccionar'}
+      <View style={styles.wrapper}>
+        <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
+          {/* Current Plan Banner */}
+          <View style={styles.currentPlanBanner}>
+            <View style={styles.currentPlanInfo}>
+              <Text style={styles.currentPlanLabel}>Tu plan actual</Text>
+              <Text style={styles.currentPlanName}>
+                {PLANS.find(p => p.code === currentPlan)?.name || 'Gratuito'}
               </Text>
+            </View>
+            <Ionicons name="checkmark-circle" size={28} color="#10b981" />
+          </View>
+
+          <View style={styles.billingToggle}>
+            <TouchableOpacity
+              style={[styles.toggleButton, billingCycle === 'monthly' && styles.toggleButtonActive]}
+              onPress={() => setBillingCycle('monthly')}
+            >
+              <Text style={[styles.toggleText, billingCycle === 'monthly' && styles.toggleTextActive]}>Mensual</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.toggleButton, billingCycle === 'yearly' && styles.toggleButtonActive]}
+              onPress={() => setBillingCycle('yearly')}
+            >
+              <Text style={[styles.toggleText, billingCycle === 'yearly' && styles.toggleTextActive]}>Anual -17%</Text>
             </TouchableOpacity>
           </View>
-        ))}
-      </ScrollView>
+
+          {isLoading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#3b82f6" />
+              <Text style={styles.loadingText}>Actualizando plan...</Text>
+            </View>
+          )}
+
+          {PLANS.map((plan) => (
+            <View 
+              key={plan.code} 
+              style={[
+                styles.planCard, 
+                plan.isPopular && styles.planCardPopular, 
+                plan.code === currentPlan && styles.planCardCurrent
+              ]}
+            >
+              {plan.isPopular && (
+                <View style={styles.popularBadge}>
+                  <Text style={styles.popularBadgeText}>Popular</Text>
+                </View>
+              )}
+              {plan.code === currentPlan && (
+                <View style={styles.currentBadge}>
+                  <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                  <Text style={styles.currentBadgeText}>Actual</Text>
+                </View>
+              )}
+              <Text style={styles.planName}>{plan.name}</Text>
+              <Text style={styles.planDescription}>{plan.description}</Text>
+              <Text style={styles.price}>{getPrice(plan)}</Text>
+              {plan.features.map((f, i) => (
+                <View key={i} style={styles.featureRow}>
+                  <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                  <Text style={styles.featureText}>{f}</Text>
+                </View>
+              ))}
+              <TouchableOpacity
+                style={[
+                  styles.selectButton, 
+                  plan.code === currentPlan && styles.selectButtonCurrent
+                ]}
+                onPress={() => handleSelectPlan(plan)}
+                disabled={plan.code === currentPlan || isLoading}
+              >
+                <Text style={[
+                  styles.selectButtonText,
+                  plan.code === currentPlan && styles.selectButtonTextCurrent
+                ]}>
+                  {plan.code === currentPlan ? 'Plan actual' : 'Seleccionar'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+        
+        {/* Inline Modal Overlay */}
+        {showConfirmModal && (
+          <View style={styles.modalOverlay}>
+            <Pressable style={styles.modalBackdrop} onPress={handleCancelPlanChange} />
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>
+                {selectedPlan ? `Cambiar a ${selectedPlan.name}` : ''}
+              </Text>
+              <Text style={styles.modalMessage}>{getConfirmMessage()}</Text>
+              <View style={styles.modalButtons}>
+                <Pressable style={styles.cancelButton} onPress={handleCancelPlanChange}>
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </Pressable>
+                <Pressable style={styles.confirmButton} onPress={handleConfirmPlanChange}>
+                  <Text style={styles.confirmButtonText}>Confirmar</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        )}
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    position: 'relative',
+  },
   container: { 
     flex: 1, 
     backgroundColor: '#f9fafb', 
@@ -496,5 +402,77 @@ const styles = StyleSheet.create({
   },
   selectButtonTextCurrent: {
     color: '#10b981',
+  },
+  // Modal styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+    zIndex: 1001,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: '#6b7280',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#10b981',
+  },
+  confirmButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
