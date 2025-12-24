@@ -382,18 +382,17 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   categoriesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
+    // @ts-ignore - CSS Grid for web
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
     gap: 8,
     width: '100%',
-  },
+  } as any,
   categoryCard: {
     backgroundColor: '#F8F9FA',
     borderRadius: 12,
     padding: 10,
     alignItems: 'center',
-    width: 95,
     borderWidth: 2,
     borderColor: 'transparent',
   },
