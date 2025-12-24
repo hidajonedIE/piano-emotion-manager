@@ -71,6 +71,9 @@ interface AppSettings {
   // IA
   aiRecommendationsEnabled: boolean;
   aiAssistantEnabled: boolean;
+  
+  // Contabilidad
+  fiscalCountry: 'ES' | 'DE' | 'FR' | 'IT' | 'PT' | 'GB' | 'MX' | 'AR' | 'CO' | 'CL';
 }
 
 const defaultSettings: AppSettings = {
@@ -96,6 +99,7 @@ const defaultSettings: AppSettings = {
   outlookCalendarSync: false,
   aiRecommendationsEnabled: true,
   aiAssistantEnabled: false,
+  fiscalCountry: 'ES',
 };
 
 const EINVOICING_COUNTRIES = [
@@ -108,6 +112,19 @@ const EINVOICING_COUNTRIES = [
   { code: 'DK', name: 'Dinamarca (OIOUBL)', flag: '🇩🇰' },
   { code: 'BE', name: 'Bélgica (PEPPOL)', flag: '🇧🇪' },
   { code: 'GB', name: 'Reino Unido (MTD)', flag: '🇬🇧' },
+];
+
+const FISCAL_COUNTRIES = [
+  { code: 'ES', name: 'España', flag: '🇪🇸', taxName: 'IVA', rates: '21%, 10%, 4%' },
+  { code: 'DE', name: 'Alemania', flag: '🇩🇪', taxName: 'MwSt', rates: '19%, 7%' },
+  { code: 'FR', name: 'Francia', flag: '🇫🇷', taxName: 'TVA', rates: '20%, 10%, 5.5%, 2.1%' },
+  { code: 'IT', name: 'Italia', flag: '🇮🇹', taxName: 'IVA', rates: '22%, 10%, 5%, 4%' },
+  { code: 'PT', name: 'Portugal', flag: '🇵🇹', taxName: 'IVA', rates: '23%, 13%, 6%' },
+  { code: 'GB', name: 'Reino Unido', flag: '🇬🇧', taxName: 'VAT', rates: '20%, 5%, 0%' },
+  { code: 'MX', name: 'México', flag: '🇲🇽', taxName: 'IVA', rates: '16%, 8%, 0%' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷', taxName: 'IVA', rates: '21%, 10.5%, 27%' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴', taxName: 'IVA', rates: '19%, 5%' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱', taxName: 'IVA', rates: '19%' },
 ];
 
 const ALL_MODULES = [
@@ -369,6 +386,58 @@ export default function SettingsIndexScreen() {
                 )}
               </>
             )}
+          </View>
+        </Accordion>
+
+        {/* ========== CONTABILIDAD ========== */}
+        <Accordion
+          title="Contabilidad"
+          icon="calculator"
+          iconColor="#F97316"
+          defaultOpen={false}
+        >
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={styles.cardDescription}>
+              Selecciona tu país fiscal para ver los modelos e impuestos correspondientes.
+            </ThemedText>
+
+            <ThemedText style={[styles.sectionSubtitle, { marginTop: Spacing.sm }]}>
+              País Fiscal
+            </ThemedText>
+            <View style={styles.countriesGrid}>
+              {FISCAL_COUNTRIES.map((country) => (
+                <Pressable
+                  key={country.code}
+                  style={[
+                    styles.countryOption,
+                    { borderColor: settings.fiscalCountry === country.code ? accent : borderColor },
+                    settings.fiscalCountry === country.code && { backgroundColor: `${accent}10` },
+                  ]}
+                  onPress={() => updateSettings({ fiscalCountry: country.code as any })}
+                >
+                  <ThemedText style={styles.countryFlag}>{country.flag}</ThemedText>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText style={styles.countryName}>{country.name}</ThemedText>
+                    <ThemedText style={[styles.countryTax, { color: textSecondary }]}>
+                      {country.taxName}: {country.rates}
+                    </ThemedText>
+                  </View>
+                  {settings.fiscalCountry === country.code && (
+                    <IconSymbol name="checkmark.circle.fill" size={16} color={accent} />
+                  )}
+                </Pressable>
+              ))}
+            </View>
+
+            <Pressable
+              style={[styles.actionButton, { backgroundColor: accent, marginTop: Spacing.md }]}
+              onPress={() => router.push('/accounting' as any)}
+            >
+              <IconSymbol name="chart.bar.fill" size={20} color="#FFFFFF" />
+              <ThemedText style={styles.actionButtonText}>
+                Ir a Contabilidad
+              </ThemedText>
+            </Pressable>
           </View>
         </Accordion>
 
@@ -946,6 +1015,10 @@ const styles = StyleSheet.create({
   countryName: {
     fontSize: 13,
     flex: 1,
+  },
+  countryTax: {
+    fontSize: 11,
+    marginTop: 2,
   },
   moduleCategory: {
     marginTop: Spacing.md,

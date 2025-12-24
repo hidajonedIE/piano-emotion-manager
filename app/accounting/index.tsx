@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState, useMemo } from 'react';
+import { useRouter } from 'expo-router';
+import { useState, useMemo, useCallback } from 'react';
 import {
   Alert,
   Pressable,
@@ -8,6 +8,8 @@ import {
   View,
   Share,
   Platform,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -33,8 +35,17 @@ import {
   VATBookEntry,
   ExportPeriod,
 } from '@/services/accounting-export-service';
+import {
+  CountryCode,
+  CountryFiscalConfig,
+  FiscalModel,
+  getFiscalConfig,
+  getAvailableCountries,
+  formatCurrencyForCountry,
+  formatDateForCountry,
+} from '@/services/fiscal-config-service';
 
-type TabType = 'export' | 'vat-book' | 'model-303' | 'model-130';
+type TabType = 'export' | 'vat-book' | 'fiscal-model-1' | 'fiscal-model-2';
 
 export default function AccountingScreen() {
   const router = useRouter();
@@ -42,6 +53,8 @@ export default function AccountingScreen() {
   
   const { invoices = [] } = useInvoicesData?.() || { invoices: [] };
   
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>('ES');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('export');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedQuarter, setSelectedQuarter] = useState(getCurrentQuarter());
@@ -56,6 +69,10 @@ export default function AccountingScreen() {
   const success = useThemeColor({}, 'success');
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');
+
+  // Obtener configuración fiscal del país seleccionado
+  const fiscalConfig = useMemo(() => getFiscalConfig(selectedCountry), [selectedCountry]);
+  const availableCountries = useMemo(() => getAvailableCountries(), []);
 
   // Filtrar facturas por período seleccionado
   const filteredInvoices = useMemo(() => {
@@ -82,34 +99,31 @@ export default function AccountingScreen() {
     return { totalBase, totalVAT, totalAmount, paidAmount, pendingAmount };
   }, [filteredInvoices]);
 
-  // Datos del Modelo 303
-  const model303Data = useMemo(() => {
-    return calculateModel303(
-      filteredInvoices, // Facturas emitidas
-      [], // Facturas recibidas (gastos) - TODO: implementar
-      selectedQuarter,
-      selectedYear,
-      0 // Compensación anterior
-    );
-  }, [filteredInvoices, selectedQuarter, selectedYear]);
-
-  // Datos del Modelo 130
-  const model130Data = useMemo(() => {
+  // Calcular datos fiscales según el país
+  const fiscalData = useMemo(() => {
     const ingresos = filteredInvoices.reduce((sum, inv) => sum + (inv.subtotal || 0), 0);
-    // TODO: Implementar gastos reales
-    const gastos = 0;
+    const ivaTotal = filteredInvoices.reduce((sum, inv) => sum + (inv.vatAmount || 0), 0);
     
-    return calculateModel130(
+    // Agrupar por tipo de IVA
+    const byVatRate: Record<number, { base: number; vat: number }> = {};
+    filteredInvoices.forEach(inv => {
+      const rate = inv.vatRate || fiscalConfig.taxRates[0].rate;
+      if (!byVatRate[rate]) {
+        byVatRate[rate] = { base: 0, vat: 0 };
+      }
+      byVatRate[rate].base += inv.subtotal || 0;
+      byVatRate[rate].vat += inv.vatAmount || 0;
+    });
+
+    return {
       ingresos,
-      ingresos, // Acumulado (simplificado)
-      gastos,
-      gastos, // Acumulado (simplificado)
-      0, // Retenciones
-      0, // Pagos anteriores
-      selectedQuarter,
-      selectedYear
-    );
-  }, [filteredInvoices, selectedQuarter, selectedYear]);
+      ivaTotal,
+      byVatRate,
+      gastos: 0, // TODO: Implementar gastos
+      ivaDeducible: 0,
+      resultado: ivaTotal, // Simplificado
+    };
+  }, [filteredInvoices, fiscalConfig]);
 
   function getCurrentQuarter(): string {
     const month = new Date().getMonth();
@@ -119,16 +133,19 @@ export default function AccountingScreen() {
     return '4T';
   }
 
+  const formatAmount = useCallback((amount: number) => {
+    return formatCurrencyForCountry(amount, selectedCountry);
+  }, [selectedCountry]);
+
   const handleExportCSV = async () => {
     setIsExporting(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
       const csv = generateInvoicesCSV(filteredInvoices);
-      const filename = `facturas_${selectedYear}_${selectedQuarter}.csv`;
+      const filename = `facturas_${selectedCountry}_${selectedYear}_${selectedQuarter}.csv`;
       
       if (Platform.OS === 'web') {
-        // En web, descargar directamente
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -138,7 +155,6 @@ export default function AccountingScreen() {
         URL.revokeObjectURL(url);
         Alert.alert('Exportación completada', `Archivo ${filename} descargado`);
       } else {
-        // En móvil, guardar y compartir
         const fileUri = FileSystem.documentDirectory + filename;
         await FileSystem.writeAsStringAsync(fileUri, csv, {
           encoding: FileSystem.EncodingType.UTF8,
@@ -157,21 +173,21 @@ export default function AccountingScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      // Convertir facturas a entradas del libro de IVA
       const entries: VATBookEntry[] = filteredInvoices.map(inv => ({
         invoiceNumber: inv.number || '',
         date: inv.date || '',
         clientName: inv.clientName || '',
         clientTaxId: inv.clientTaxId || '',
         baseAmount: inv.subtotal || 0,
-        vatRate: inv.vatRate || 21,
+        vatRate: inv.vatRate || fiscalConfig.taxRates[0].rate,
         vatAmount: inv.vatAmount || 0,
         totalAmount: inv.total || 0,
         type: 'issued' as const,
       }));
 
       const csv = generateVATBookCSV(entries, type);
-      const filename = `libro_iva_${type === 'issued' ? 'emitidas' : 'recibidas'}_${selectedYear}_${selectedQuarter}.csv`;
+      const taxName = fiscalConfig.taxName.split(' ')[0]; // IVA, VAT, MwSt, etc.
+      const filename = `libro_${taxName.toLowerCase()}_${type === 'issued' ? 'emitidas' : 'recibidas'}_${selectedCountry}_${selectedYear}_${selectedQuarter}.csv`;
       
       if (Platform.OS === 'web') {
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -190,19 +206,55 @@ export default function AccountingScreen() {
         await Sharing.shareAsync(fileUri);
       }
     } catch (err) {
-      Alert.alert('Error', 'No se pudo exportar el libro de IVA');
+      Alert.alert('Error', `No se pudo exportar el libro de ${fiscalConfig.taxName}`);
     } finally {
       setIsExporting(false);
     }
   };
 
-  const handleExportModel303 = async () => {
+  const handleExportFiscalModel = async (model: FiscalModel) => {
     setIsExporting(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      const summary = generateModel303Summary(model303Data);
-      const filename = `modelo_303_${selectedYear}_${selectedQuarter}.txt`;
+      // Generar resumen del modelo fiscal
+      let summary = `${fiscalConfig.flag} ${fiscalConfig.name} - ${model.name}\n`;
+      summary += `${'='.repeat(50)}\n\n`;
+      summary += `Período: ${selectedQuarter} ${selectedYear}\n`;
+      summary += `Fecha de generación: ${formatDateForCountry(new Date(), selectedCountry)}\n\n`;
+      summary += `${model.description}\n`;
+      summary += `Plazo: ${model.deadline}\n\n`;
+      summary += `${'─'.repeat(50)}\n\n`;
+
+      // Añadir campos del modelo
+      model.fields.forEach(field => {
+        let value = 0;
+        
+        // Calcular valores según el campo
+        if (field.id.includes('base') || field.id.includes('ingresos') || field.id.includes('umsaetze') || field.id.includes('ca_')) {
+          value = fiscalData.ingresos;
+        } else if (field.id.includes('cuota') || field.id.includes('steuer') || field.id.includes('tva') || field.id.includes('iva') || field.id.includes('vat')) {
+          value = fiscalData.ivaTotal;
+        } else if (field.id.includes('deducible') || field.id.includes('vorsteuer') || field.id.includes('deductible') || field.id.includes('credito')) {
+          value = fiscalData.ivaDeducible;
+        } else if (field.id.includes('resultado') || field.id.includes('zahllast') || field.id.includes('nette') || field.id.includes('apurado') || field.id.includes('saldo')) {
+          value = fiscalData.resultado;
+        }
+
+        if (field.type === 'currency') {
+          summary += `${field.label}: ${formatAmount(value)}\n`;
+        } else {
+          summary += `${field.label}: ${value}\n`;
+        }
+      });
+
+      summary += `\n${'─'.repeat(50)}\n`;
+      summary += `\nRequisitos de facturación en ${fiscalConfig.name}:\n`;
+      fiscalConfig.invoiceRequirements.forEach((req, i) => {
+        summary += `${i + 1}. ${req}\n`;
+      });
+
+      const filename = `${model.code}_${selectedCountry}_${selectedYear}_${selectedQuarter}.txt`;
       
       if (Platform.OS === 'web') {
         const blob = new Blob([summary], { type: 'text/plain;charset=utf-8;' });
@@ -221,63 +273,368 @@ export default function AccountingScreen() {
         await Sharing.shareAsync(fileUri);
       }
     } catch (err) {
-      Alert.alert('Error', 'No se pudo exportar el Modelo 303');
+      Alert.alert('Error', `No se pudo exportar el ${model.name}`);
     } finally {
       setIsExporting(false);
     }
   };
 
-  const handleExportModel130 = async () => {
-    setIsExporting(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const renderCountryPicker = () => (
+    <Modal
+      visible={showCountryPicker}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowCountryPicker(false)}
+    >
+      <Pressable
+        style={styles.modalOverlay}
+        onPress={() => setShowCountryPicker(false)}
+      >
+        <View style={[styles.modalContent, { backgroundColor: cardBg }]}>
+          <ThemedText style={styles.modalTitle}>Seleccionar País</ThemedText>
+          <FlatList
+            data={availableCountries}
+            keyExtractor={(item) => item.code}
+            renderItem={({ item }) => (
+              <Pressable
+                style={[
+                  styles.countryItem,
+                  { borderBottomColor: borderColor },
+                  item.code === selectedCountry && { backgroundColor: accent + '20' },
+                ]}
+                onPress={() => {
+                  setSelectedCountry(item.code);
+                  setShowCountryPicker(false);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <ThemedText style={styles.countryFlag}>{item.flag}</ThemedText>
+                <ThemedText style={styles.countryName}>{item.name}</ThemedText>
+                {item.code === selectedCountry && (
+                  <IconSymbol name="checkmark" size={20} color={accent} />
+                )}
+              </Pressable>
+            )}
+          />
+        </View>
+      </Pressable>
+    </Modal>
+  );
 
-    try {
-      const summary = generateModel130Summary(model130Data);
-      const filename = `modelo_130_${selectedYear}_${selectedQuarter}.txt`;
-      
-      if (Platform.OS === 'web') {
-        const blob = new Blob([summary], { type: 'text/plain;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(url);
-        Alert.alert('Exportación completada', `Archivo ${filename} descargado`);
-      } else {
-        const fileUri = FileSystem.documentDirectory + filename;
-        await FileSystem.writeAsStringAsync(fileUri, summary, {
-          encoding: FileSystem.EncodingType.UTF8,
-        });
-        await Sharing.shareAsync(fileUri);
-      }
-    } catch (err) {
-      Alert.alert('Error', 'No se pudo exportar el Modelo 130');
-    } finally {
-      setIsExporting(false);
-    }
+  const renderTabs = () => {
+    const tabs = [
+      { key: 'export', label: 'Exportar', icon: 'square.and.arrow.up' },
+      { key: 'vat-book', label: `Libro ${fiscalConfig.taxName.split(' ')[0]}`, icon: 'book.fill' },
+    ];
+
+    // Añadir tabs para los modelos fiscales del país
+    fiscalConfig.fiscalModels.slice(0, 2).forEach((model, index) => {
+      tabs.push({
+        key: `fiscal-model-${index + 1}` as TabType,
+        label: model.code,
+        icon: 'doc.text.fill',
+      });
+    });
+
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabsContainer}
+        contentContainerStyle={styles.tabsContent}
+      >
+        {tabs.map((tab) => (
+          <Pressable
+            key={tab.key}
+            style={[
+              styles.tab,
+              { borderColor: borderColor },
+              activeTab === tab.key && { backgroundColor: accent, borderColor: accent },
+            ]}
+            onPress={() => {
+              setActiveTab(tab.key as TabType);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+          >
+            <IconSymbol
+              name={tab.icon as any}
+              size={16}
+              color={activeTab === tab.key ? '#fff' : textSecondary}
+            />
+            <ThemedText
+              style={[
+                styles.tabText,
+                { color: activeTab === tab.key ? '#fff' : textSecondary },
+              ]}
+            >
+              {tab.label}
+            </ThemedText>
+          </Pressable>
+        ))}
+      </ScrollView>
+    );
   };
 
-  const tabs: { key: TabType; label: string; icon: string }[] = [
-    { key: 'export', label: 'Exportar', icon: 'arrow.down.doc' },
-    { key: 'vat-book', label: 'Libro IVA', icon: 'book' },
-    { key: 'model-303', label: 'Mod. 303', icon: 'doc.text' },
-    { key: 'model-130', label: 'Mod. 130', icon: 'doc.text.fill' },
-  ];
+  const renderExportTab = () => (
+    <View style={styles.tabContent}>
+      <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+        <ThemedText style={styles.cardTitle}>Exportar Facturas</ThemedText>
+        <ThemedText style={[styles.cardDescription, { color: textSecondary }]}>
+          Exporta tus facturas en formato CSV compatible con Excel y software de contabilidad.
+        </ThemedText>
+        
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Total</ThemedText>
+            <ThemedText style={styles.statValue}>{formatAmount(totals.totalAmount)}</ThemedText>
+          </View>
+          <View style={styles.statItem}>
+            <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Base</ThemedText>
+            <ThemedText style={styles.statValue}>{formatAmount(totals.totalBase)}</ThemedText>
+          </View>
+          <View style={styles.statItem}>
+            <ThemedText style={[styles.statLabel, { color: textSecondary }]}>{fiscalConfig.taxName.split(' ')[0]}</ThemedText>
+            <ThemedText style={styles.statValue}>{formatAmount(totals.totalVAT)}</ThemedText>
+          </View>
+        </View>
 
-  const years = [2023, 2024, 2025, 2026];
-  const quarters = ['1T', '2T', '3T', '4T'];
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <ThemedText style={[styles.statLabel, { color: success }]}>Cobrado</ThemedText>
+            <ThemedText style={[styles.statValue, { color: success }]}>{formatAmount(totals.paidAmount)}</ThemedText>
+          </View>
+          <View style={styles.statItem}>
+            <ThemedText style={[styles.statLabel, { color: warning }]}>Pendiente</ThemedText>
+            <ThemedText style={[styles.statValue, { color: warning }]}>{formatAmount(totals.pendingAmount)}</ThemedText>
+          </View>
+        </View>
 
-  const renderPeriodSelector = () => (
-    <View style={[styles.periodSelector, { backgroundColor: cardBg, borderColor }]}>
-      <View style={styles.periodRow}>
-        <ThemedText style={[styles.periodLabel, { color: textSecondary }]}>Año:</ThemedText>
-        <View style={styles.periodOptions}>
-          {years.map(year => (
+        <Pressable
+          style={[styles.exportButton, { backgroundColor: accent }]}
+          onPress={handleExportCSV}
+          disabled={isExporting}
+        >
+          <IconSymbol name="square.and.arrow.up" size={20} color="#fff" />
+          <ThemedText style={styles.exportButtonText}>
+            {isExporting ? 'Exportando...' : 'Exportar CSV'}
+          </ThemedText>
+        </Pressable>
+      </View>
+
+      {/* Información del país */}
+      <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+        <ThemedText style={styles.cardTitle}>Información Fiscal</ThemedText>
+        
+        <View style={styles.infoRow}>
+          <ThemedText style={[styles.infoLabel, { color: textSecondary }]}>País:</ThemedText>
+          <ThemedText style={styles.infoValue}>{fiscalConfig.flag} {fiscalConfig.name}</ThemedText>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <ThemedText style={[styles.infoLabel, { color: textSecondary }]}>Impuesto:</ThemedText>
+          <ThemedText style={styles.infoValue}>{fiscalConfig.taxName}</ThemedText>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <ThemedText style={[styles.infoLabel, { color: textSecondary }]}>ID Fiscal:</ThemedText>
+          <ThemedText style={styles.infoValue}>{fiscalConfig.fiscalIdName}</ThemedText>
+        </View>
+
+        <ThemedText style={[styles.sectionTitle, { marginTop: Spacing.md }]}>Tipos de {fiscalConfig.taxName.split(' ')[0]}</ThemedText>
+        {fiscalConfig.taxRates.map((rate, index) => (
+          <View key={index} style={styles.taxRateRow}>
+            <ThemedText style={styles.taxRateName}>{rate.name}</ThemedText>
+            <ThemedText style={[styles.taxRateValue, { color: accent }]}>{rate.rate}%</ThemedText>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+
+  const renderVATBookTab = () => (
+    <View style={styles.tabContent}>
+      <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+        <ThemedText style={styles.cardTitle}>Libro de {fiscalConfig.taxName.split(' ')[0]}</ThemedText>
+        <ThemedText style={[styles.cardDescription, { color: textSecondary }]}>
+          Registro oficial de facturas emitidas y recibidas según la normativa de {fiscalConfig.name}.
+        </ThemedText>
+
+        <Pressable
+          style={[styles.exportButton, { backgroundColor: success }]}
+          onPress={() => handleExportVATBook('issued')}
+          disabled={isExporting}
+        >
+          <IconSymbol name="arrow.up.doc" size={20} color="#fff" />
+          <ThemedText style={styles.exportButtonText}>
+            Facturas Emitidas ({filteredInvoices.length})
+          </ThemedText>
+        </Pressable>
+
+        <Pressable
+          style={[styles.exportButton, { backgroundColor: accent, marginTop: Spacing.sm }]}
+          onPress={() => handleExportVATBook('received')}
+          disabled={isExporting}
+        >
+          <IconSymbol name="arrow.down.doc" size={20} color="#fff" />
+          <ThemedText style={styles.exportButtonText}>
+            Facturas Recibidas (0)
+          </ThemedText>
+        </Pressable>
+      </View>
+
+      {/* Desglose por tipo de IVA */}
+      <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+        <ThemedText style={styles.cardTitle}>Desglose por Tipo</ThemedText>
+        
+        {Object.entries(fiscalData.byVatRate).map(([rate, data]) => (
+          <View key={rate} style={styles.vatBreakdownRow}>
+            <View style={styles.vatBreakdownLeft}>
+              <ThemedText style={styles.vatBreakdownRate}>{rate}%</ThemedText>
+              <ThemedText style={[styles.vatBreakdownLabel, { color: textSecondary }]}>
+                Base: {formatAmount(data.base)}
+              </ThemedText>
+            </View>
+            <ThemedText style={[styles.vatBreakdownAmount, { color: accent }]}>
+              {formatAmount(data.vat)}
+            </ThemedText>
+          </View>
+        ))}
+
+        <View style={[styles.totalRow, { borderTopColor: borderColor }]}>
+          <ThemedText style={styles.totalLabel}>Total {fiscalConfig.taxName.split(' ')[0]}</ThemedText>
+          <ThemedText style={[styles.totalValue, { color: accent }]}>
+            {formatAmount(fiscalData.ivaTotal)}
+          </ThemedText>
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderFiscalModelTab = (modelIndex: number) => {
+    const model = fiscalConfig.fiscalModels[modelIndex];
+    if (!model) return null;
+
+    return (
+      <View style={styles.tabContent}>
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+          <View style={styles.modelHeader}>
+            <ThemedText style={styles.modelCode}>{model.code}</ThemedText>
+            <View style={[styles.frequencyBadge, { backgroundColor: accent + '20' }]}>
+              <ThemedText style={[styles.frequencyText, { color: accent }]}>
+                {model.frequency === 'monthly' ? 'Mensual' : 
+                 model.frequency === 'quarterly' ? 'Trimestral' : 'Anual'}
+              </ThemedText>
+            </View>
+          </View>
+          
+          <ThemedText style={styles.modelName}>{model.name}</ThemedText>
+          <ThemedText style={[styles.cardDescription, { color: textSecondary }]}>
+            {model.description}
+          </ThemedText>
+
+          <View style={[styles.deadlineBox, { backgroundColor: warning + '15', borderColor: warning }]}>
+            <IconSymbol name="clock" size={16} color={warning} />
+            <ThemedText style={[styles.deadlineText, { color: warning }]}>
+              {model.deadline}
+            </ThemedText>
+          </View>
+        </View>
+
+        {/* Campos del modelo */}
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={styles.cardTitle}>Datos del Período</ThemedText>
+          
+          {model.fields.map((field, index) => {
+            let value = 0;
+            
+            if (field.id.includes('base') || field.id.includes('ingresos') || field.id.includes('umsaetze') || field.id.includes('ca_') || field.id.includes('einnahmen')) {
+              value = fiscalData.ingresos;
+            } else if (field.id.includes('cuota') || field.id.includes('steuer') || field.id.includes('tva') || field.id.includes('iva_') || field.id.includes('vat') || field.id.includes('debito')) {
+              value = fiscalData.ivaTotal;
+            } else if (field.id.includes('deducible') || field.id.includes('vorsteuer') || field.id.includes('deductible') || field.id.includes('credito') || field.id.includes('dedut')) {
+              value = fiscalData.ivaDeducible;
+            } else if (field.id.includes('resultado') || field.id.includes('zahllast') || field.id.includes('nette') || field.id.includes('apurado') || field.id.includes('saldo') || field.id.includes('gewinn') || field.id.includes('dovuta')) {
+              value = fiscalData.resultado;
+            } else if (field.id.includes('gastos') || field.id.includes('ausgaben') || field.id.includes('deducciones')) {
+              value = fiscalData.gastos;
+            }
+
+            const isResult = field.id.includes('resultado') || field.id.includes('zahllast') || 
+                            field.id.includes('nette') || field.id.includes('saldo') || 
+                            field.id.includes('total') || field.id.includes('gewinn') ||
+                            field.id.includes('pagar') || field.id.includes('dovuta');
+
+            return (
+              <View 
+                key={field.id} 
+                style={[
+                  styles.fieldRow,
+                  isResult && { backgroundColor: accent + '10', marginHorizontal: -Spacing.md, paddingHorizontal: Spacing.md },
+                ]}
+              >
+                <ThemedText style={[styles.fieldLabel, isResult && { fontWeight: '600' }]}>
+                  {field.label}
+                </ThemedText>
+                <ThemedText style={[
+                  styles.fieldValue,
+                  isResult && { color: value >= 0 ? error : success, fontWeight: '700' },
+                ]}>
+                  {field.type === 'currency' ? formatAmount(value) : value}
+                </ThemedText>
+              </View>
+            );
+          })}
+
+          <Pressable
+            style={[styles.exportButton, { backgroundColor: accent, marginTop: Spacing.md }]}
+            onPress={() => handleExportFiscalModel(model)}
+            disabled={isExporting}
+          >
+            <IconSymbol name="square.and.arrow.up" size={20} color="#fff" />
+            <ThemedText style={styles.exportButtonText}>
+              {isExporting ? 'Exportando...' : `Exportar ${model.code}`}
+            </ThemedText>
+          </Pressable>
+        </View>
+
+        {/* Requisitos de facturación */}
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={styles.cardTitle}>Requisitos de Facturación</ThemedText>
+          {fiscalConfig.invoiceRequirements.map((req, index) => (
+            <View key={index} style={styles.requirementRow}>
+              <IconSymbol name="checkmark.circle.fill" size={16} color={success} />
+              <ThemedText style={[styles.requirementText, { color: textSecondary }]}>
+                {req}
+              </ThemedText>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+      <ScreenHeader title="Contabilidad" showBack />
+
+      {/* Selector de país */}
+      <Pressable
+        style={[styles.countrySelector, { backgroundColor: cardBg, borderColor }]}
+        onPress={() => setShowCountryPicker(true)}
+      >
+        <ThemedText style={styles.countrySelectorFlag}>{fiscalConfig.flag}</ThemedText>
+        <ThemedText style={styles.countrySelectorName}>{fiscalConfig.name}</ThemedText>
+        <IconSymbol name="chevron.down" size={16} color={textSecondary} />
+      </Pressable>
+
+      {/* Selector de período */}
+      <View style={styles.periodSelector}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {[2023, 2024, 2025, 2026].map((year) => (
             <Pressable
               key={year}
               style={[
-                styles.periodOption,
+                styles.periodButton,
                 { borderColor },
                 selectedYear === year && { backgroundColor: accent, borderColor: accent },
               ]}
@@ -285,390 +642,50 @@ export default function AccountingScreen() {
             >
               <ThemedText
                 style={[
-                  styles.periodOptionText,
-                  selectedYear === year && { color: '#FFFFFF' },
+                  styles.periodButtonText,
+                  { color: selectedYear === year ? '#fff' : textSecondary },
                 ]}
               >
                 {year}
               </ThemedText>
             </Pressable>
           ))}
-        </View>
-      </View>
-      <View style={styles.periodRow}>
-        <ThemedText style={[styles.periodLabel, { color: textSecondary }]}>Trimestre:</ThemedText>
-        <View style={styles.periodOptions}>
-          {quarters.map(q => (
+        </ScrollView>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: Spacing.xs }}>
+          {['1T', '2T', '3T', '4T'].map((quarter) => (
             <Pressable
-              key={q}
+              key={quarter}
               style={[
-                styles.periodOption,
+                styles.periodButton,
                 { borderColor },
-                selectedQuarter === q && { backgroundColor: accent, borderColor: accent },
+                selectedQuarter === quarter && { backgroundColor: accent, borderColor: accent },
               ]}
-              onPress={() => setSelectedQuarter(q)}
+              onPress={() => setSelectedQuarter(quarter)}
             >
               <ThemedText
                 style={[
-                  styles.periodOptionText,
-                  selectedQuarter === q && { color: '#FFFFFF' },
+                  styles.periodButtonText,
+                  { color: selectedQuarter === quarter ? '#fff' : textSecondary },
                 ]}
               >
-                {q}
+                {quarter}
               </ThemedText>
             </Pressable>
           ))}
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderSummaryCard = () => (
-    <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor }]}>
-      <ThemedText type="subtitle" style={styles.summaryTitle}>
-        Resumen {selectedQuarter} {selectedYear}
-      </ThemedText>
-      <View style={styles.summaryGrid}>
-        <View style={styles.summaryItem}>
-          <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>Facturas</ThemedText>
-          <ThemedText style={styles.summaryValue}>{filteredInvoices.length}</ThemedText>
-        </View>
-        <View style={styles.summaryItem}>
-          <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>Base Imponible</ThemedText>
-          <ThemedText style={styles.summaryValue}>{formatCurrency(totals.totalBase)}</ThemedText>
-        </View>
-        <View style={styles.summaryItem}>
-          <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>IVA</ThemedText>
-          <ThemedText style={styles.summaryValue}>{formatCurrency(totals.totalVAT)}</ThemedText>
-        </View>
-        <View style={styles.summaryItem}>
-          <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>Total</ThemedText>
-          <ThemedText style={[styles.summaryValue, { color: accent }]}>
-            {formatCurrency(totals.totalAmount)}
-          </ThemedText>
-        </View>
-      </View>
-      <View style={styles.summaryDivider} />
-      <View style={styles.summaryRow}>
-        <View style={styles.summaryItem}>
-          <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>Cobrado</ThemedText>
-          <ThemedText style={[styles.summaryValue, { color: success }]}>
-            {formatCurrency(totals.paidAmount)}
-          </ThemedText>
-        </View>
-        <View style={styles.summaryItem}>
-          <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>Pendiente</ThemedText>
-          <ThemedText style={[styles.summaryValue, { color: warning }]}>
-            {formatCurrency(totals.pendingAmount)}
-          </ThemedText>
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderExportTab = () => (
-    <View style={styles.tabContent}>
-      {renderSummaryCard()}
-      
-      <ThemedText type="subtitle" style={styles.sectionTitle}>Exportar Facturas</ThemedText>
-      
-      <Pressable
-        style={[styles.exportButton, { backgroundColor: cardBg, borderColor }]}
-        onPress={handleExportCSV}
-        disabled={isExporting}
-      >
-        <View style={[styles.exportIcon, { backgroundColor: '#10B981' }]}>
-          <IconSymbol name="tablecells" size={24} color="#FFFFFF" />
-        </View>
-        <View style={styles.exportInfo}>
-          <ThemedText style={styles.exportTitle}>Exportar a CSV</ThemedText>
-          <ThemedText style={[styles.exportDesc, { color: textSecondary }]}>
-            Compatible con Excel, Google Sheets y software contable
-          </ThemedText>
-        </View>
-        <IconSymbol name="chevron.right" size={20} color={textSecondary} />
-      </Pressable>
-
-      <Pressable
-        style={[styles.exportButton, { backgroundColor: cardBg, borderColor }]}
-        onPress={() => router.push('/analytics/report')}
-      >
-        <View style={[styles.exportIcon, { backgroundColor: '#EF4444' }]}>
-          <IconSymbol name="doc.text.fill" size={24} color="#FFFFFF" />
-        </View>
-        <View style={styles.exportInfo}>
-          <ThemedText style={styles.exportTitle}>Generar PDF</ThemedText>
-          <ThemedText style={[styles.exportDesc, { color: textSecondary }]}>
-            Informe completo con gráficos y resumen
-          </ThemedText>
-        </View>
-        <IconSymbol name="chevron.right" size={20} color={textSecondary} />
-      </Pressable>
-    </View>
-  );
-
-  const renderVATBookTab = () => (
-    <View style={styles.tabContent}>
-      <View style={[styles.infoCard, { backgroundColor: '#3B82F620', borderColor: '#3B82F6' }]}>
-        <IconSymbol name="info.circle" size={20} color="#3B82F6" />
-        <ThemedText style={[styles.infoText, { color: '#3B82F6' }]}>
-          El Libro de IVA es obligatorio para autónomos y empresas. Debe conservarse durante 4 años.
-        </ThemedText>
+        </ScrollView>
       </View>
 
-      <ThemedText type="subtitle" style={styles.sectionTitle}>Libro Registro de Facturas</ThemedText>
+      {renderTabs()}
 
-      <Pressable
-        style={[styles.exportButton, { backgroundColor: cardBg, borderColor }]}
-        onPress={() => handleExportVATBook('issued')}
-        disabled={isExporting}
-      >
-        <View style={[styles.exportIcon, { backgroundColor: '#8B5CF6' }]}>
-          <IconSymbol name="arrow.up.doc" size={24} color="#FFFFFF" />
-        </View>
-        <View style={styles.exportInfo}>
-          <ThemedText style={styles.exportTitle}>Facturas Emitidas</ThemedText>
-          <ThemedText style={[styles.exportDesc, { color: textSecondary }]}>
-            {filteredInvoices.length} facturas · {formatCurrency(totals.totalAmount)}
-          </ThemedText>
-        </View>
-        <IconSymbol name="chevron.right" size={20} color={textSecondary} />
-      </Pressable>
-
-      <Pressable
-        style={[styles.exportButton, { backgroundColor: cardBg, borderColor }]}
-        onPress={() => handleExportVATBook('received')}
-        disabled={isExporting}
-      >
-        <View style={[styles.exportIcon, { backgroundColor: '#F59E0B' }]}>
-          <IconSymbol name="arrow.down.doc" size={24} color="#FFFFFF" />
-        </View>
-        <View style={styles.exportInfo}>
-          <ThemedText style={styles.exportTitle}>Facturas Recibidas</ThemedText>
-          <ThemedText style={[styles.exportDesc, { color: textSecondary }]}>
-            Gastos deducibles del período
-          </ThemedText>
-        </View>
-        <IconSymbol name="chevron.right" size={20} color={textSecondary} />
-      </Pressable>
-    </View>
-  );
-
-  const renderModel303Tab = () => (
-    <View style={styles.tabContent}>
-      <View style={[styles.infoCard, { backgroundColor: '#10B98120', borderColor: '#10B981' }]}>
-        <IconSymbol name="info.circle" size={20} color="#10B981" />
-        <ThemedText style={[styles.infoText, { color: '#10B981' }]}>
-          El Modelo 303 es la autoliquidación trimestral del IVA. Plazo: hasta el día 20 del mes siguiente al trimestre.
-        </ThemedText>
-      </View>
-
-      <View style={[styles.modelCard, { backgroundColor: cardBg, borderColor }]}>
-        <ThemedText type="subtitle">IVA Devengado (Ventas)</ThemedText>
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Base Imponible 21%</ThemedText>
-          <ThemedText>{formatCurrency(model303Data.baseImponibleGeneral)}</ThemedText>
-        </View>
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Cuota IVA 21%</ThemedText>
-          <ThemedText>{formatCurrency(model303Data.cuotaDevengadaGeneral)}</ThemedText>
-        </View>
-        
-        <View style={[styles.modelDivider, { backgroundColor: borderColor }]} />
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ fontWeight: '600' }}>Total Cuota Devengada</ThemedText>
-          <ThemedText style={{ fontWeight: '600', color: accent }}>
-            {formatCurrency(model303Data.totalCuotaDevengada)}
-          </ThemedText>
-        </View>
-      </View>
-
-      <View style={[styles.modelCard, { backgroundColor: cardBg, borderColor }]}>
-        <ThemedText type="subtitle">IVA Deducible (Compras)</ThemedText>
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Cuota deducible bienes</ThemedText>
-          <ThemedText>{formatCurrency(model303Data.cuotaDeducibleBienes)}</ThemedText>
-        </View>
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Cuota deducible servicios</ThemedText>
-          <ThemedText>{formatCurrency(model303Data.cuotaDeducibleServicios)}</ThemedText>
-        </View>
-        
-        <View style={[styles.modelDivider, { backgroundColor: borderColor }]} />
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ fontWeight: '600' }}>Total Cuota Deducible</ThemedText>
-          <ThemedText style={{ fontWeight: '600', color: success }}>
-            {formatCurrency(model303Data.totalCuotaDeducible)}
-          </ThemedText>
-        </View>
-      </View>
-
-      <View style={[styles.resultCard, { 
-        backgroundColor: model303Data.resultadoLiquidacion >= 0 ? '#EF444420' : '#10B98120',
-        borderColor: model303Data.resultadoLiquidacion >= 0 ? '#EF4444' : '#10B981',
-      }]}>
-        <ThemedText type="subtitle">Resultado Liquidación</ThemedText>
-        <ThemedText style={[styles.resultAmount, { 
-          color: model303Data.resultadoLiquidacion >= 0 ? error : success 
-        }]}>
-          {formatCurrency(model303Data.resultadoLiquidacion)}
-        </ThemedText>
-        <ThemedText style={{ color: textSecondary }}>
-          {model303Data.resultadoLiquidacion > 0 ? 'A INGRESAR' : model303Data.resultadoLiquidacion < 0 ? 'A COMPENSAR' : 'SIN ACTIVIDAD'}
-        </ThemedText>
-      </View>
-
-      <Pressable
-        style={[styles.exportButton, { backgroundColor: accent }]}
-        onPress={handleExportModel303}
-        disabled={isExporting}
-      >
-        <IconSymbol name="arrow.down.doc" size={24} color="#FFFFFF" />
-        <ThemedText style={[styles.exportTitle, { color: '#FFFFFF', marginLeft: Spacing.sm }]}>
-          Exportar Modelo 303
-        </ThemedText>
-      </Pressable>
-    </View>
-  );
-
-  const renderModel130Tab = () => (
-    <View style={styles.tabContent}>
-      <View style={[styles.infoCard, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
-        <IconSymbol name="info.circle" size={20} color="#F59E0B" />
-        <ThemedText style={[styles.infoText, { color: '#F59E0B' }]}>
-          El Modelo 130 es el pago fraccionado del IRPF para autónomos en estimación directa. Se aplica el 20% sobre el rendimiento neto.
-        </ThemedText>
-      </View>
-
-      <View style={[styles.modelCard, { backgroundColor: cardBg, borderColor }]}>
-        <ThemedText type="subtitle">Ingresos y Gastos</ThemedText>
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Ingresos del trimestre</ThemedText>
-          <ThemedText style={{ color: success }}>{formatCurrency(model130Data.ingresosTrimestre)}</ThemedText>
-        </View>
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Gastos del trimestre</ThemedText>
-          <ThemedText style={{ color: error }}>{formatCurrency(model130Data.gastosTrimestre)}</ThemedText>
-        </View>
-        
-        <View style={[styles.modelDivider, { backgroundColor: borderColor }]} />
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ fontWeight: '600' }}>Rendimiento Neto</ThemedText>
-          <ThemedText style={{ fontWeight: '600', color: accent }}>
-            {formatCurrency(model130Data.rendimientoNetoTrimestre)}
-          </ThemedText>
-        </View>
-      </View>
-
-      <View style={[styles.modelCard, { backgroundColor: cardBg, borderColor }]}>
-        <ThemedText type="subtitle">Cálculo Pago Fraccionado</ThemedText>
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Rendimiento neto acumulado</ThemedText>
-          <ThemedText>{formatCurrency(model130Data.rendimientoNetoAcumulado)}</ThemedText>
-        </View>
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Porcentaje aplicable</ThemedText>
-          <ThemedText>{model130Data.porcentajeAplicable}%</ThemedText>
-        </View>
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Pago fraccionado</ThemedText>
-          <ThemedText>{formatCurrency(model130Data.pagoFraccionado)}</ThemedText>
-        </View>
-        
-        <View style={[styles.modelDivider, { backgroundColor: borderColor }]} />
-        
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Retenciones ingresadas</ThemedText>
-          <ThemedText>{formatCurrency(model130Data.retencionesIngresadas)}</ThemedText>
-        </View>
-        <View style={styles.modelRow}>
-          <ThemedText style={{ color: textSecondary }}>Pagos anteriores</ThemedText>
-          <ThemedText>{formatCurrency(model130Data.pagosAnteriores)}</ThemedText>
-        </View>
-      </View>
-
-      <View style={[styles.resultCard, { 
-        backgroundColor: model130Data.resultadoLiquidacion > 0 ? '#EF444420' : '#10B98120',
-        borderColor: model130Data.resultadoLiquidacion > 0 ? '#EF4444' : '#10B981',
-      }]}>
-        <ThemedText type="subtitle">Resultado Liquidación</ThemedText>
-        <ThemedText style={[styles.resultAmount, { 
-          color: model130Data.resultadoLiquidacion > 0 ? error : success 
-        }]}>
-          {formatCurrency(model130Data.resultadoLiquidacion)}
-        </ThemedText>
-        <ThemedText style={{ color: textSecondary }}>
-          {model130Data.resultadoLiquidacion > 0 ? 'A INGRESAR' : 'SIN INGRESO'}
-        </ThemedText>
-      </View>
-
-      <Pressable
-        style={[styles.exportButton, { backgroundColor: accent }]}
-        onPress={handleExportModel130}
-        disabled={isExporting}
-      >
-        <IconSymbol name="arrow.down.doc" size={24} color="#FFFFFF" />
-        <ThemedText style={[styles.exportTitle, { color: '#FFFFFF', marginLeft: Spacing.sm }]}>
-          Exportar Modelo 130
-        </ThemedText>
-      </Pressable>
-    </View>
-  );
-
-  return (
-    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
-      <ScreenHeader title="Contabilidad" showBack />
-
-      {/* Tabs */}
-      <View style={[styles.tabsContainer, { borderColor }]}>
-        {tabs.map(tab => (
-          <Pressable
-            key={tab.key}
-            style={[
-              styles.tab,
-              activeTab === tab.key && { borderBottomColor: accent, borderBottomWidth: 2 },
-            ]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setActiveTab(tab.key);
-            }}
-          >
-            <IconSymbol
-              name={tab.icon as any}
-              size={18}
-              color={activeTab === tab.key ? accent : textSecondary}
-            />
-            <ThemedText
-              style={[
-                styles.tabText,
-                { color: activeTab === tab.key ? accent : textSecondary },
-              ]}
-            >
-              {tab.label}
-            </ThemedText>
-          </Pressable>
-        ))}
-      </View>
-
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xl }}
-        showsVerticalScrollIndicator={false}
-      >
-        {renderPeriodSelector()}
-
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 'export' && renderExportTab()}
         {activeTab === 'vat-book' && renderVATBookTab()}
-        {activeTab === 'model-303' && renderModel303Tab()}
-        {activeTab === 'model-130' && renderModel130Tab()}
+        {activeTab === 'fiscal-model-1' && renderFiscalModelTab(0)}
+        {activeTab === 'fiscal-model-2' && renderFiscalModelTab(1)}
       </ScrollView>
+
+      {renderCountryPicker()}
     </ThemedView>
   );
 }
@@ -677,162 +694,276 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  tabsContainer: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-  },
-  tab: {
-    flex: 1,
+  countrySelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  countrySelectorFlag: {
+    fontSize: 24,
+    marginRight: Spacing.sm,
+  },
+  countrySelectorName: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  periodSelector: {
+    paddingHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  periodButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginRight: Spacing.xs,
+  },
+  periodButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  tabsContainer: {
+    marginTop: Spacing.sm,
+  },
+  tabsContent: {
+    paddingHorizontal: Spacing.md,
+  },
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginRight: Spacing.xs,
     gap: Spacing.xs,
   },
   tabText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
   },
   content: {
     flex: 1,
+    marginTop: Spacing.sm,
   },
   tabContent: {
-    padding: Spacing.md,
-    gap: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.xl,
   },
-  periodSelector: {
-    margin: Spacing.md,
-    padding: Spacing.md,
+  card: {
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    gap: Spacing.sm,
-  },
-  periodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  periodLabel: {
-    width: 80,
-    fontSize: 14,
-  },
-  periodOptions: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: Spacing.xs,
-  },
-  periodOption: {
-    flex: 1,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  periodOptionText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  summaryCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-  },
-  summaryTitle: {
     marginBottom: Spacing.md,
   },
-  summaryGrid: {
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  cardDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: Spacing.md,
+  },
+  statsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.md,
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
   },
-  summaryItem: {
+  statItem: {
     flex: 1,
-    minWidth: '40%',
+    alignItems: 'center',
   },
-  summaryLabel: {
+  statLabel: {
     fontSize: 12,
     marginBottom: 2,
   },
-  summaryValue: {
+  statValue: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  summaryDivider: {
-    height: 1,
-    backgroundColor: '#E5E7EB',
-    marginVertical: Spacing.md,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  sectionTitle: {
-    marginTop: Spacing.sm,
   },
   exportButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    gap: Spacing.md,
-  },
-  exportIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
   },
-  exportInfo: {
-    flex: 1,
-  },
-  exportTitle: {
-    fontSize: 15,
+  exportButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
-  exportDesc: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  infoCard: {
+  infoRow: {
     flexDirection: 'row',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    gap: Spacing.sm,
-    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.xs,
   },
-  infoText: {
+  infoLabel: {
+    fontSize: 14,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  taxRateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.xs,
+  },
+  taxRateName: {
+    fontSize: 14,
+  },
+  taxRateValue: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  vatBreakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  vatBreakdownLeft: {
+    flex: 1,
+  },
+  vatBreakdownRate: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  vatBreakdownLabel: {
+    fontSize: 12,
+  },
+  vatBreakdownAmount: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: Spacing.md,
+    marginTop: Spacing.sm,
+    borderTopWidth: 1,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  totalValue: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  modelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.xs,
+  },
+  modelCode: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  modelName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  frequencyBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  frequencyText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  deadlineBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+  },
+  deadlineText: {
     flex: 1,
     fontSize: 13,
     lineHeight: 18,
   },
-  modelCard: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    gap: Spacing.sm,
-  },
-  modelRow: {
+  fieldRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: Spacing.sm,
   },
-  modelDivider: {
-    height: 1,
-    marginVertical: Spacing.xs,
+  fieldLabel: {
+    fontSize: 14,
+    flex: 1,
   },
-  resultCard: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
+  fieldValue: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  requirementRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: Spacing.xs,
+    gap: Spacing.sm,
+  },
+  requirementText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: Spacing.xs,
+    padding: Spacing.lg,
   },
-  resultAmount: {
-    fontSize: 32,
-    fontWeight: '700',
+  modalContent: {
+    width: '100%',
+    maxHeight: '70%',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  countryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    borderBottomWidth: 1,
+  },
+  countryFlag: {
+    fontSize: 28,
+    marginRight: Spacing.md,
+  },
+  countryName: {
+    flex: 1,
+    fontSize: 16,
   },
 });
