@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 4,
     alignItems: 'center',
-    minWidth: 100,
+    minWidth: 110,
     borderWidth: 2,
     borderColor: 'transparent',
   },
