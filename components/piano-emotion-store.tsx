@@ -387,6 +387,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
+    width: '100%',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -408,8 +409,10 @@ const styles = StyleSheet.create({
   categoriesRow: {
     flexDirection: 'row',
     justifyContent: 'center',
+    flexWrap: 'wrap',
     gap: 8,
     marginBottom: 8,
+    width: '100%',
   },
   categoryCard: {
     backgroundColor: '#F8F9FA',
