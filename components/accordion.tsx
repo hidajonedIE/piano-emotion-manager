@@ -128,7 +128,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.md,
-    alignItems: 'center',
   },
   rightSection: {
     flexDirection: 'row',

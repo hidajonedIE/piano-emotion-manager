@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
-    overflow: 'hidden',
+    // Removed overflow: 'hidden' to prevent content clipping
   },
   header: {
     flexDirection: 'row',
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   categoriesScroll: {
-    marginHorizontal: -4,
+    // Removed negative margin that caused content clipping
   },
   categoryCard: {
     backgroundColor: '#F8F9FA',
