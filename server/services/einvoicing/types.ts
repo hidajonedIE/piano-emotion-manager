@@ -4,7 +4,7 @@
  */
 
 // Países soportados
-export type SupportedCountry = 'ES' | 'IT' | 'DE' | 'FR' | 'PT' | 'DK';
+export type SupportedCountry = 'ES' | 'IT' | 'DE' | 'FR' | 'PT' | 'DK' | 'BE';
 
 // Sistemas de facturación por país
 export type InvoicingSystem = 
@@ -13,7 +13,8 @@ export type InvoicingSystem =
   | 'zugferd'     // Alemania
   | 'facturx'     // Francia
   | 'ciuspt'      // Portugal
-  | 'oioubl';     // Dinamarca
+  | 'oioubl'      // Dinamarca
+  | 'PEPPOL';     // Bélgica
 
 // Mapeo país -> sistema
 export const COUNTRY_SYSTEM_MAP: Record<SupportedCountry, InvoicingSystem> = {
@@ -23,17 +24,19 @@ export const COUNTRY_SYSTEM_MAP: Record<SupportedCountry, InvoicingSystem> = {
   FR: 'facturx',
   PT: 'ciuspt',
   DK: 'oioubl',
+  BE: 'PEPPOL',
 };
 
 // Estado de una factura electrónica
-export type EInvoiceStatus = 
-  | 'draft'           // Borrador
-  | 'pending'         // Pendiente de envío
-  | 'sent'            // Enviada al sistema
-  | 'accepted'        // Aceptada por el sistema
-  | 'rejected'        // Rechazada
-  | 'delivered'       // Entregada al receptor
-  | 'error';          // Error
+export enum EInvoiceStatus {
+  DRAFT = 'draft',
+  PENDING = 'pending',
+  SENT = 'sent',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  DELIVERED = 'delivered',
+  ERROR = 'error',
+}
 
 // Datos comunes de factura (EN 16931)
 export interface BaseInvoiceData {
@@ -127,15 +130,44 @@ export interface CountrySpecificConfig {
     ean?: string;                   // EAN/GLN
     orderReference?: string;
   };
+
+  // Bélgica
+  belgium?: {
+    enterpriseNumber?: string;      // Numéro d'entreprise (10 dígitos)
+    peppolEndpointId?: string;      // ID del endpoint PEPPOL del receptor
+  };
 }
 
 // Factura completa con datos específicos del país
 export interface EInvoice extends BaseInvoiceData {
   id: string;
+  invoiceId: string;
   country: SupportedCountry;
   system: InvoicingSystem;
   status: EInvoiceStatus;
   countryConfig?: CountrySpecificConfig;
+  
+  // Datos del proveedor y cliente (formato alternativo para compatibilidad)
+  supplier?: {
+    name: string;
+    vatNumber: string;
+    address: {
+      street: string;
+      city: string;
+      zip: string;
+      countryCode: string;
+    };
+  };
+  customer?: {
+    name: string;
+    vatNumber?: string;
+    address: {
+      street: string;
+      city: string;
+      zip: string;
+      countryCode: string;
+    };
+  };
   
   // Metadatos del sistema
   xmlContent?: string;              // XML generado
@@ -161,13 +193,15 @@ export interface EInvoice extends BaseInvoiceData {
 // Resultado de envío
 export interface SendResult {
   success: boolean;
-  invoiceId: string;
+  invoiceId?: string;
+  transactionId?: string;
   registrationCode?: string;
   hash?: string;
   qrCode?: string;
   pdfUrl?: string;
   errorCode?: string;
   errorMessage?: string;
+  message?: string;
 }
 
 // Interfaz común para todos los servicios de facturación
@@ -178,8 +212,8 @@ export interface IEInvoicingService {
   // Generar XML según el formato del país
   generateXML(invoice: EInvoice): Promise<string>;
   
-  // Generar PDF con el formato del país
-  generatePDF(invoice: EInvoice): Promise<Buffer>;
+  // Generar PDF con el formato del país (opcional para algunos países)
+  generatePDF?(invoice: EInvoice): Promise<Buffer>;
   
   // Enviar al sistema del país
   send(invoice: EInvoice): Promise<SendResult>;
@@ -241,6 +275,13 @@ export interface DistributorEInvoicingConfig {
       cvr: string;
       nemhandelEnabled?: boolean;
     };
+
+    // Bélgica (PEPPOL)
+    peppol?: {
+      enterpriseNumber: string;       // Numéro d'entreprise BCE/KBO
+      accessPointId?: string;         // ID del Access Point PEPPOL
+      environment: 'test' | 'production';
+    };
   };
   
   // Configuración de numeración
@@ -259,6 +300,7 @@ export const VAT_RATES: Record<SupportedCountry, { standard: number; reduced: nu
   FR: { standard: 20, reduced: [10, 5.5], superReduced: 2.1 },
   PT: { standard: 23, reduced: [13, 6] },
   DK: { standard: 25, reduced: [] },  // Dinamarca no tiene tipos reducidos
+  BE: { standard: 21, reduced: [12, 6] },
 };
 
 // Códigos de moneda por país
@@ -269,4 +311,5 @@ export const DEFAULT_CURRENCY: Record<SupportedCountry, string> = {
   FR: 'EUR',
   PT: 'EUR',
   DK: 'DKK',
+  BE: 'EUR',
 };

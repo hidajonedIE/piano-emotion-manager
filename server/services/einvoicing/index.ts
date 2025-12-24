@@ -17,6 +17,7 @@ export { ZUGFeRDService, XRechnungUtils } from './germany/zugferd.service';
 export { FacturXService, ChorusProClient } from './france/facturx.service';
 export { CIUSPTService, SAFTPTGenerator } from './portugal/ciuspt.service';
 export { OIOUBLService, NemHandelClient } from './denmark/oioubl.service';
+export { BelgiumPeppolService } from './belgium/peppol.service';
 
 // Re-exportar tipos específicos de cada país
 export type { FatturaPAConfig, RegimeFiscale, TipoDocumento as ITTipoDocumento } from './italy/sdi.service';

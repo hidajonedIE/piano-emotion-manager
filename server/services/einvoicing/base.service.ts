@@ -190,6 +190,10 @@ export class EInvoicingServiceFactory {
         const { OIOUBLService } = await import('./denmark/oioubl.service');
         service = new OIOUBLService();
         break;
+      case 'BE':
+        const { BelgiumPeppolService } = await import('./belgium/peppol.service');
+        service = new BelgiumPeppolService();
+        break;
       default:
         throw new Error(`País no soportado: ${country}`);
     }

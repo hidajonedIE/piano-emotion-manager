@@ -50,6 +50,15 @@
         "eanHelp": "Requerido para facturas a la administración pública danesa",
         "nemhandelEnabled": "Habilitar NemHandel/PEPPOL",
         "nemhandelHelp": "Red de intercambio de facturas electrónicas"
+      },
+      "belgium": {
+        "title": "Configuración PEPPOL Bélgica",
+        "enterpriseNumber": "Número de empresa (10 dígitos)",
+        "enterpriseHelp": "Número BCE/KBO registrado en Bélgica",
+        "peppolEndpoint": "Endpoint PEPPOL del receptor",
+        "peppolHelp": "Identificador del receptor en la red PEPPOL",
+        "mercuriusEnabled": "Usar plataforma Mercurius (B2G)",
+        "mercuriusHelp": "Plataforma central para facturación al sector público belga"
       }
     }
   },
@@ -104,6 +113,15 @@
         "eanHelp": "Necessário para faturas à administração pública dinamarquesa",
         "nemhandelEnabled": "Ativar NemHandel/PEPPOL",
         "nemhandelHelp": "Rede de intercâmbio de faturas eletrónicas"
+      },
+      "belgium": {
+        "title": "Configuração PEPPOL Bélgica",
+        "enterpriseNumber": "Número de empresa (10 dígitos)",
+        "enterpriseHelp": "Número BCE/KBO registado na Bélgica",
+        "peppolEndpoint": "Endpoint PEPPOL do destinatário",
+        "peppolHelp": "Identificador do destinatário na rede PEPPOL",
+        "mercuriusEnabled": "Usar plataforma Mercurius (B2G)",
+        "mercuriusHelp": "Plataforma central para faturação ao setor público belga"
       }
     }
   },
@@ -158,6 +176,15 @@
         "eanHelp": "Richiesto per fatture alla pubblica amministrazione danese",
         "nemhandelEnabled": "Abilita NemHandel/PEPPOL",
         "nemhandelHelp": "Rete di scambio fatture elettroniche"
+      },
+      "belgium": {
+        "title": "Configurazione PEPPOL Belgio",
+        "enterpriseNumber": "Numero impresa (10 cifre)",
+        "enterpriseHelp": "Numero BCE/KBO registrato in Belgio",
+        "peppolEndpoint": "Endpoint PEPPOL del destinatario",
+        "peppolHelp": "Identificatore del destinatario nella rete PEPPOL",
+        "mercuriusEnabled": "Usa piattaforma Mercurius (B2G)",
+        "mercuriusHelp": "Piattaforma centrale per fatturazione al settore pubblico belga"
       }
     }
   },
@@ -212,6 +239,15 @@
         "eanHelp": "Requis pour les factures à l'administration publique danoise",
         "nemhandelEnabled": "Activer NemHandel/PEPPOL",
         "nemhandelHelp": "Réseau d'échange de factures électroniques"
+      },
+      "belgium": {
+        "title": "Configuration PEPPOL Belgique",
+        "enterpriseNumber": "Numéro d'entreprise (10 chiffres)",
+        "enterpriseHelp": "Numéro BCE/KBO enregistré en Belgique",
+        "peppolEndpoint": "Endpoint PEPPOL du destinataire",
+        "peppolHelp": "Identifiant du destinataire sur le réseau PEPPOL",
+        "mercuriusEnabled": "Utiliser la plateforme Mercurius (B2G)",
+        "mercuriusHelp": "Plateforme centrale pour la facturation au secteur public belge"
       }
     }
   },
@@ -266,6 +302,15 @@
         "eanHelp": "Erforderlich für Rechnungen an dänische öffentliche Verwaltungen",
         "nemhandelEnabled": "NemHandel/PEPPOL aktivieren",
         "nemhandelHelp": "Netzwerk für elektronischen Rechnungsaustausch"
+      },
+      "belgium": {
+        "title": "PEPPOL Belgien Konfiguration",
+        "enterpriseNumber": "Unternehmensnummer (10 Ziffern)",
+        "enterpriseHelp": "In Belgien registrierte BCE/KBO-Nummer",
+        "peppolEndpoint": "PEPPOL-Endpunkt des Empfängers",
+        "peppolHelp": "Empfängerkennung im PEPPOL-Netzwerk",
+        "mercuriusEnabled": "Mercurius-Plattform verwenden (B2G)",
+        "mercuriusHelp": "Zentrale Plattform für Rechnungsstellung an den belgischen öffentlichen Sektor"
       }
     }
   },
@@ -320,6 +365,38 @@
         "eanHelp": "Påkrævet for fakturaer til danske offentlige myndigheder",
         "nemhandelEnabled": "Aktiver NemHandel/PEPPOL",
         "nemhandelHelp": "Netværk til udveksling af elektroniske fakturaer"
+      },
+      "belgium": {
+        "title": "PEPPOL Belgien konfiguration",
+        "enterpriseNumber": "Virksomhedsnummer (10 cifre)",
+        "enterpriseHelp": "BCE/KBO-nummer registreret i Belgien",
+        "peppolEndpoint": "Modtagerens PEPPOL-endpoint",
+        "peppolHelp": "Modtageridentifikator på PEPPOL-netværket",
+        "mercuriusEnabled": "Brug Mercurius-platform (B2G)",
+        "mercuriusHelp": "Central platform til fakturering til den belgiske offentlige sektor"
+      }
+    }
+  },
+  "nl": {
+    "einvoicing": {
+      "title": "Elektronische Facturatie",
+      "subtitle": "Configuratie per land",
+      "enableForCountry": "E-facturatie inschakelen voor {{country}}",
+      "environment": "Omgeving",
+      "testEnvironment": "Test (sandbox)",
+      "productionEnvironment": "Productie",
+      "productionWarning": "⚠️ Facturen verzonden in productie zijn juridisch bindend",
+      "vatRates": "Toepasselijke BTW-tarieven",
+      "currency": "Valuta",
+      "testConnection": "Verbinding testen",
+      "belgium": {
+        "title": "PEPPOL België Configuratie",
+        "enterpriseNumber": "Ondernemingsnummer (10 cijfers)",
+        "enterpriseHelp": "In België geregistreerd BCE/KBO-nummer",
+        "peppolEndpoint": "PEPPOL-endpoint van de ontvanger",
+        "peppolHelp": "Identificatie van de ontvanger op het PEPPOL-netwerk",
+        "mercuriusEnabled": "Mercurius-platform gebruiken (B2G)",
+        "mercuriusHelp": "Centraal platform voor facturatie aan de Belgische publieke sector"
       }
     }
   }
