@@ -309,22 +309,21 @@ export default function DashboardScreen() {
           defaultOpen={false}
           icon="bolt.fill"
           iconColor="#C9A227"
+          centerContent
         >
-          <View style={styles.gridWrapper}>
-            <View style={[styles.quickActionsGrid, isDesktop && styles.quickActionsGridDesktop]}>
-              {quickActions.map((action) => (
-                <Pressable
-                  key={action.key}
-                  style={[styles.quickActionCard, { backgroundColor: cardBg, borderColor }]}
-                  onPress={() => handleQuickAction(action.key)}
-                >
-                  <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}15` }]}>
-                    <IconSymbol name={action.icon as any} size={28} color={action.color} />
-                  </View>
-                  <ThemedText style={styles.quickActionLabel}>{action.label}</ThemedText>
-                </Pressable>
-              ))}
-            </View>
+          <View style={[styles.quickActionsGrid, isDesktop && styles.quickActionsGridDesktop]}>
+            {quickActions.map((action) => (
+              <Pressable
+                key={action.key}
+                style={[styles.quickActionCard, { backgroundColor: cardBg, borderColor }]}
+                onPress={() => handleQuickAction(action.key)}
+              >
+                <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}15` }]}>
+                  <IconSymbol name={action.icon as any} size={28} color={action.color} />
+                </View>
+                <ThemedText style={styles.quickActionLabel}>{action.label}</ThemedText>
+              </Pressable>
+            ))}
           </View>
         </Accordion>
 
@@ -412,19 +411,18 @@ export default function DashboardScreen() {
           iconColor="#3B82F6"
           badge={stats.urgentCount > 0 ? stats.urgentCount : undefined}
           badgeColor="#EF4444"
+          centerContent
         >
-          <View style={styles.gridWrapper}>
-            <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop]}>
-              {moduleActions.map((action) => (
-                <AnimatedCard
-                  key={action.key}
-                  icon={action.icon}
-                  label={action.label}
-                  color={action.color}
-                  onPress={() => handleQuickAction(action.key)}
-                />
-              ))}
-            </View>
+          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop]}>
+            {moduleActions.map((action) => (
+              <AnimatedCard
+                key={action.key}
+                icon={action.icon}
+                label={action.label}
+                color={action.color}
+                onPress={() => handleQuickAction(action.key)}
+              />
+            ))}
           </View>
         </Accordion>
 
@@ -434,20 +432,19 @@ export default function DashboardScreen() {
           defaultOpen={false}
           icon="star.fill"
           iconColor="#F59E0B"
+          centerContent
         >
-          <View style={styles.gridWrapper}>
-            <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop]}>
-              {advancedModules.map((action) => (
-                <AnimatedCard
-                  key={action.key}
-                  icon={action.icon}
-                  label={action.label}
-                  color={action.color}
-                  onPress={() => handleQuickAction(action.key)}
-                  badge={action.premium ? '★' : undefined}
-                />
-              ))}
-            </View>
+          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop]}>
+            {advancedModules.map((action) => (
+              <AnimatedCard
+                key={action.key}
+                icon={action.icon}
+                label={action.label}
+                color={action.color}
+                onPress={() => handleQuickAction(action.key)}
+                badge={action.premium ? '★' : undefined}
+              />
+            ))}
           </View>
         </Accordion>
 
@@ -656,12 +653,6 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  gridWrapper: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
   },
   quickActionsGrid: {

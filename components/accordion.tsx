@@ -22,6 +22,7 @@ interface AccordionProps {
   badge?: number;
   badgeColor?: string;
   rightAction?: React.ReactNode;
+  centerContent?: boolean;
 }
 
 export function Accordion({ 
@@ -34,6 +35,7 @@ export function Accordion({
   badge,
   badgeColor = '#EF4444',
   rightAction,
+  centerContent = false,
 }: AccordionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const rotation = useSharedValue(defaultOpen ? 90 : 0);
@@ -76,7 +78,7 @@ export function Accordion({
         </View>
       </Pressable>
       {isOpen && (
-        <View style={styles.content}>
+        <View style={[styles.content, centerContent && styles.contentCentered]}>
           {children}
         </View>
       )}
@@ -128,6 +130,9 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.md,
+  },
+  contentCentered: {
+    alignItems: 'center',
   },
   rightSection: {
     flexDirection: 'row',
