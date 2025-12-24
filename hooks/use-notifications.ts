@@ -280,6 +280,219 @@ export function useNotifications() {
     }
   };
 
+  // ==========================================
+  // NOTIFICACIONES DE EQUIPO
+  // ==========================================
+
+  // Notificar nueva asignación de trabajo
+  const sendAssignmentNotification = async (
+    technicianName: string,
+    clientName: string,
+    serviceType: string,
+    scheduledDate: Date,
+    assignmentId: string
+  ): Promise<string | null> => {
+    if (!settings.enabled) {
+      return null;
+    }
+
+    const hasPermission = permissionStatus === 'granted' || (await requestPermissions());
+    if (!hasPermission) {
+      return null;
+    }
+
+    const dateStr = scheduledDate.toLocaleDateString('es-ES', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '📋 Nueva Asignación',
+          body: `${serviceType} para ${clientName} - ${dateStr}`,
+          data: {
+            type: 'assignment_new',
+            assignmentId,
+          },
+          sound: true,
+        },
+        trigger: null, // Enviar inmediatamente
+      });
+
+      return notificationId;
+    } catch (error) {
+      console.error('Error sending assignment notification:', error);
+      return null;
+    }
+  };
+
+  // Notificar trabajo completado
+  const sendWorkCompletedNotification = async (
+    technicianName: string,
+    clientName: string,
+    serviceType: string,
+    assignmentId: string
+  ): Promise<string | null> => {
+    if (!settings.enabled) {
+      return null;
+    }
+
+    const hasPermission = permissionStatus === 'granted' || (await requestPermissions());
+    if (!hasPermission) {
+      return null;
+    }
+
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '✅ Trabajo Completado',
+          body: `${technicianName} completó ${serviceType} para ${clientName}`,
+          data: {
+            type: 'assignment_completed',
+            assignmentId,
+          },
+          sound: true,
+        },
+        trigger: null,
+      });
+
+      return notificationId;
+    } catch (error) {
+      console.error('Error sending work completed notification:', error);
+      return null;
+    }
+  };
+
+  // Notificar invitación a organización
+  const sendInvitationNotification = async (
+    organizationName: string,
+    inviterName: string,
+    invitationToken: string
+  ): Promise<string | null> => {
+    if (!settings.enabled) {
+      return null;
+    }
+
+    const hasPermission = permissionStatus === 'granted' || (await requestPermissions());
+    if (!hasPermission) {
+      return null;
+    }
+
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '🎉 Invitación Recibida',
+          body: `${inviterName} te ha invitado a unirte a ${organizationName}`,
+          data: {
+            type: 'invitation_received',
+            invitationToken,
+          },
+          sound: true,
+        },
+        trigger: null,
+      });
+
+      return notificationId;
+    } catch (error) {
+      console.error('Error sending invitation notification:', error);
+      return null;
+    }
+  };
+
+  // Notificar reasignación de trabajo
+  const sendReassignmentNotification = async (
+    clientName: string,
+    serviceType: string,
+    scheduledDate: Date,
+    assignmentId: string,
+    reason?: string
+  ): Promise<string | null> => {
+    if (!settings.enabled) {
+      return null;
+    }
+
+    const hasPermission = permissionStatus === 'granted' || (await requestPermissions());
+    if (!hasPermission) {
+      return null;
+    }
+
+    const dateStr = scheduledDate.toLocaleDateString('es-ES', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '🔄 Trabajo Reasignado',
+          body: `Se te ha asignado: ${serviceType} para ${clientName} - ${dateStr}`,
+          data: {
+            type: 'assignment_reassigned',
+            assignmentId,
+            reason,
+          },
+          sound: true,
+        },
+        trigger: null,
+      });
+
+      return notificationId;
+    } catch (error) {
+      console.error('Error sending reassignment notification:', error);
+      return null;
+    }
+  };
+
+  // Recordatorio de trabajo programado
+  const scheduleWorkReminder = async (
+    clientName: string,
+    serviceType: string,
+    scheduledDate: Date,
+    assignmentId: string,
+    minutesBefore: number = 60
+  ): Promise<string | null> => {
+    if (!settings.enabled) {
+      return null;
+    }
+
+    const hasPermission = permissionStatus === 'granted' || (await requestPermissions());
+    if (!hasPermission) {
+      return null;
+    }
+
+    const triggerDate = new Date(scheduledDate.getTime() - minutesBefore * 60 * 1000);
+    
+    if (triggerDate <= new Date()) {
+      return null;
+    }
+
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '⏰ Trabajo Próximo',
+          body: `${serviceType} para ${clientName} en ${minutesBefore} minutos`,
+          data: {
+            type: 'work_reminder',
+            assignmentId,
+          },
+          sound: true,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: triggerDate,
+        },
+      });
+
+      return notificationId;
+    } catch (error) {
+      console.error('Error scheduling work reminder:', error);
+      return null;
+    }
+  };
+
   return {
     settings,
     saveSettings,
@@ -292,5 +505,11 @@ export function useNotifications() {
     cancelNotification,
     cancelAllNotifications,
     getScheduledNotifications,
+    // Notificaciones de equipo
+    sendAssignmentNotification,
+    sendWorkCompletedNotification,
+    sendInvitationNotification,
+    sendReassignmentNotification,
+    scheduleWorkReminder,
   };
 }
