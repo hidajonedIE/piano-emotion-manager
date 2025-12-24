@@ -453,5 +453,33 @@
     "fr": "Français",
     "de": "Deutsch",
     "da": "Dansk"
+  },
+  "modules": {
+    "title": "Módulos",
+    "currentPlan": "Plan actual",
+    "changePlan": "Cambiar plan",
+    "upgrade": "Mejorar",
+    "resourceUsage": "Uso de recursos",
+    "users": "Usuarios",
+    "clients": "Clientes",
+    "pianos": "Pianos",
+    "invoicesMonth": "Facturas/mes",
+    "storage": "Almacenamiento",
+    "coreModules": "Módulos principales",
+    "coreModulesDesc": "Funcionalidades esenciales incluidas en todos los planes",
+    "freeModules": "Módulos gratuitos",
+    "freeModulesDesc": "Funcionalidades adicionales sin coste",
+    "premiumModules": "Módulos premium",
+    "premiumModulesDesc": "Funcionalidades avanzadas para profesionales",
+    "addons": "Complementos",
+    "addonsDesc": "Extensiones opcionales para tu negocio",
+    "alwaysActive": "Siempre activo",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "included": "Incluido",
+    "notIncluded": "No incluido",
+    "requiresPremium": "Requiere plan premium"
   }
 }
