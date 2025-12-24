@@ -358,76 +358,22 @@ export default function SettingsIndexScreen() {
           </View>
         </Accordion>
 
-        {/* ========== MÓDULOS ========== */}
-        <Accordion
-          title="Módulos y Funcionalidades"
-          icon="square.grid.2x2.fill"
-          iconColor="#8B5CF6"
-          defaultOpen={false}
+        {/* ========== MÓDULOS (Enlace a página dedicada) ========== */}
+        <Pressable
+          style={[styles.linkCard, { backgroundColor: cardBg, borderColor }]}
+          onPress={() => router.push('/settings/modules' as any)}
         >
-          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-            <ThemedText style={styles.cardDescription}>
-              Activa o desactiva los módulos según tus necesidades. Los módulos premium requieren suscripción.
-            </ThemedText>
-
-            {['core', 'free', 'premium', 'enterprise'].map((category) => {
-              const categoryModules = ALL_MODULES.filter(m => m.category === category);
-              if (categoryModules.length === 0) return null;
-
-              const categoryNames: Record<string, string> = {
-                core: 'Módulos Esenciales',
-                free: 'Módulos Gratuitos',
-                premium: 'Módulos Premium ★',
-                enterprise: 'Módulos Enterprise ★★',
-              };
-
-              return (
-                <View key={category} style={styles.moduleCategory}>
-                  <ThemedText style={[styles.categoryTitle, { color: textSecondary }]}>
-                    {categoryNames[category]}
-                  </ThemedText>
-                  {categoryModules.map((module) => (
-                    <View key={module.code} style={[styles.moduleRow, { borderBottomColor: borderColor }]}>
-                      <View style={[styles.moduleIcon, { backgroundColor: `${accent}15` }]}>
-                        <IconSymbol name={module.icon as any} size={18} color={accent} />
-                      </View>
-                      <View style={styles.moduleContent}>
-                        <View style={styles.moduleHeader}>
-                          <ThemedText style={styles.moduleName}>{module.name}</ThemedText>
-                          {module.premium && (
-                            <View style={[styles.premiumBadge, { backgroundColor: warning }]}>
-                              <ThemedText style={styles.premiumBadgeText}>★</ThemedText>
-                            </View>
-                          )}
-                        </View>
-                      </View>
-                      <Switch
-                        value={settings.activeModules.includes(module.code)}
-                        onValueChange={() => toggleModule(module.code)}
-                        disabled={module.category === 'core'}
-                        trackColor={{ false: borderColor, true: accent }}
-                      />
-                    </View>
-                  ))}
-                </View>
-              );
-            })}
-
-            <Pressable
-              style={[styles.upgradeButton, { backgroundColor: `${warning}15`, borderColor: warning }]}
-              onPress={() => router.push('/settings/subscription' as any)}
-            >
-              <IconSymbol name="star.fill" size={20} color={warning} />
-              <View style={styles.upgradeContent}>
-                <ThemedText style={[styles.upgradeTitle, { color: warning }]}>Desbloquear Premium</ThemedText>
-                <ThemedText style={[styles.upgradeDescription, { color: textSecondary }]}>
-                  Accede a todas las funcionalidades avanzadas
-                </ThemedText>
-              </View>
-              <IconSymbol name="chevron.right" size={20} color={warning} />
-            </Pressable>
+          <View style={[styles.linkIcon, { backgroundColor: '#8B5CF615' }]}>
+            <IconSymbol name="square.grid.2x2.fill" size={24} color="#8B5CF6" />
           </View>
-        </Accordion>
+          <View style={styles.linkContent}>
+            <ThemedText style={styles.linkTitle}>Módulos y Plan</ThemedText>
+            <ThemedText style={[styles.linkDescription, { color: textSecondary }]}>
+              Gestiona los módulos activos y tu suscripción
+            </ThemedText>
+          </View>
+          <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+        </Pressable>
 
         {/* ========== TIENDA ========== */}
         <Accordion
@@ -930,5 +876,32 @@ const styles = StyleSheet.create({
   linkText: {
     flex: 1,
     fontSize: 16,
+  },
+  linkCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+    gap: Spacing.md,
+  },
+  linkIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  linkContent: {
+    flex: 1,
+  },
+  linkTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  linkDescription: {
+    fontSize: 13,
+    marginTop: 2,
   },
 });

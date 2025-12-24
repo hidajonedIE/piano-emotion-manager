@@ -202,7 +202,7 @@ export default function DashboardScreen() {
     { key: 'reports', icon: 'chart.pie.fill', label: 'Reportes', color: '#06B6D4', premium: true },
     { key: 'accounting', icon: 'calculator', label: 'Contabilidad', color: '#F97316', premium: true },
     { key: 'shop', icon: 'cart.fill', label: 'Tienda', color: '#84CC16', premium: true },
-    { key: 'modules', icon: 'square.grid.2x2.fill', label: 'Módulos', color: '#8B5CF6' },
+    { key: 'modules', icon: 'creditcard.fill', label: 'Gestionar Plan', color: '#8B5CF6' },
   ];
 
   // En web, usar CSS gradient directamente para evitar problemas de renderizado intermitente
@@ -402,9 +402,9 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Módulos */}
+        {/* Accesos Rápidos */}
         <Accordion 
-          title="Módulos" 
+          title="Accesos Rápidos" 
           defaultOpen={false}
           icon="square.grid.2x2.fill"
           iconColor="#3B82F6"

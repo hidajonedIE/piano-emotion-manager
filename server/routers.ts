@@ -663,35 +663,6 @@ export const appRouter = router({
         .query(async () => []),
     }),
 
-    // Modules (legacy)
-    modules: router({
-      getAvailableModules: protectedProcedure.query(async () => [
-        { code: "clients", name: "Clientes", category: "core", enabled: true, premium: false },
-        { code: "pianos", name: "Pianos", category: "core", enabled: true, premium: false },
-        { code: "services", name: "Servicios", category: "core", enabled: true, premium: false },
-        { code: "calendar", name: "Calendario", category: "core", enabled: true, premium: false },
-        { code: "invoicing", name: "Facturación", category: "free", enabled: true, premium: false },
-        { code: "team", name: "Gestión de Equipos", category: "premium", enabled: false, premium: true },
-        { code: "inventory", name: "Inventario", category: "premium", enabled: false, premium: true },
-        { code: "accounting", name: "Contabilidad", category: "premium", enabled: false, premium: true },
-        { code: "reports", name: "Reportes", category: "premium", enabled: false, premium: true },
-        { code: "crm", name: "CRM Avanzado", category: "premium", enabled: false, premium: true },
-        { code: "shop", name: "Tienda", category: "premium", enabled: false, premium: true },
-      ]),
-      getSubscription: protectedProcedure.query(async () => ({
-        plan: "free",
-        status: "active",
-        expiresAt: null,
-        features: ["clients", "pianos", "services", "calendar", "invoicing"],
-      })),
-      toggleModule: protectedProcedure
-        .input(z.object({
-          moduleCode: z.string(),
-          enabled: z.boolean(),
-        }))
-        .mutation(async () => ({ success: true })),
-    }),
-
     // Calendar Advanced
     calendarAdvanced: router({
       syncWithGoogle: protectedProcedure
