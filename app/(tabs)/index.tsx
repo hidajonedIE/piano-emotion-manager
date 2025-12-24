@@ -685,6 +685,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    alignContent: 'center',
     gap: Spacing.sm,
   },
   moduleCard: {
