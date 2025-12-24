@@ -309,9 +309,8 @@ export default function DashboardScreen() {
           defaultOpen={false}
           icon="bolt.fill"
           iconColor="#C9A227"
-          centerContent
         >
-          <View style={[styles.quickActionsGrid, isDesktop && styles.quickActionsGridDesktop, { marginLeft: 'auto', marginRight: 'auto' } as any]}>
+          <View style={styles.centeredGrid}>
             {quickActions.map((action) => (
               <Pressable
                 key={action.key}
@@ -411,9 +410,8 @@ export default function DashboardScreen() {
           iconColor="#3B82F6"
           badge={stats.urgentCount > 0 ? stats.urgentCount : undefined}
           badgeColor="#EF4444"
-          centerContent
         >
-          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop, { marginLeft: 'auto', marginRight: 'auto' } as any]}>
+          <View style={styles.centeredGrid}>
             {moduleActions.map((action) => (
               <AnimatedCard
                 key={action.key}
@@ -432,9 +430,8 @@ export default function DashboardScreen() {
           defaultOpen={false}
           icon="star.fill"
           iconColor="#F59E0B"
-          centerContent
         >
-          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop, { marginLeft: 'auto', marginRight: 'auto' } as any]}>
+          <View style={styles.centeredGrid}>
             {advancedModules.map((action) => (
               <AnimatedCard
                 key={action.key}
@@ -654,6 +651,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  centeredGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.md,
   },
   quickActionsGrid: {
     flexDirection: 'row',
