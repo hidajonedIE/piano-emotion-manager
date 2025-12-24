@@ -159,8 +159,32 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
           {/* Categorías de productos */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Categorías</Text>
-            <View style={styles.categoriesGrid}>
-              {PRODUCT_CATEGORIES.map((category) => (
+            {/* Primera fila - primeras 5 categorías */}
+            <View style={styles.categoriesRow}>
+              {PRODUCT_CATEGORIES.slice(0, 5).map((category) => (
+                <Pressable
+                  key={category.id}
+                  style={[
+                    styles.categoryCard,
+                    selectedCategory === category.id && styles.categoryCardSelected,
+                  ]}
+                  onPress={() => setSelectedCategory(
+                    selectedCategory === category.id ? null : category.id
+                  )}
+                >
+                  <Text style={styles.categoryIcon}>{category.icon}</Text>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                  {category.comingSoon && (
+                    <View style={styles.comingSoonBadge}>
+                      <Text style={styles.comingSoonText}>Próximamente</Text>
+                    </View>
+                  )}
+                </Pressable>
+              ))}
+            </View>
+            {/* Segunda fila - resto de categorías */}
+            <View style={styles.categoriesRow}>
+              {PRODUCT_CATEGORIES.slice(5).map((category) => (
                 <Pressable
                   key={category.id}
                   style={[
@@ -381,18 +405,18 @@ const styles = StyleSheet.create({
     color: '#5B9A8B',
     fontWeight: '500',
   },
-  categoriesGrid: {
-    // @ts-ignore - CSS Grid for web
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+  categoriesRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     gap: 8,
-    width: '100%',
-  } as any,
+    marginBottom: 8,
+  },
   categoryCard: {
     backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    padding: 10,
+    borderRadius: 10,
+    padding: 8,
     alignItems: 'center',
+    width: 70,
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -401,24 +425,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F9F7',
   },
   categoryIcon: {
-    fontSize: 24,
-    marginBottom: 6,
+    fontSize: 20,
+    marginBottom: 4,
   },
   categoryName: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: '600',
     color: '#1A1A1A',
     textAlign: 'center',
   },
   comingSoonBadge: {
     backgroundColor: '#E8EDF5',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginTop: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 6,
+    marginTop: 4,
   },
   comingSoonText: {
-    fontSize: 10,
+    fontSize: 7,
     color: '#7A8B99',
     fontWeight: '500',
   },
