@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { CalendarView } from '@/components/calendar-view';
 import { EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
+import { RouteOptimizer } from '@/components/route-optimizer';
 import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -74,6 +75,14 @@ export default function AgendaScreen() {
   }, [appointments]);
 
   const pendingCount = appointments.filter((a: Appointment) => a.status !== 'cancelled' && a.status !== 'completed').length;
+
+  // Citas de hoy para el optimizador de rutas
+  const todayAppointments = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return appointments
+      .filter(a => a.date === today && a.status !== 'cancelled' && a.status !== 'completed')
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [appointments]);
 
   const [showCalendar, setShowCalendar] = useState(true);
 
@@ -228,6 +237,15 @@ export default function AgendaScreen() {
             events={calendarEvents}
             onEventPress={handleCalendarEventPress}
             onDatePress={handleCalendarDatePress}
+          />
+        )}
+
+        {/* Optimizador de Rutas - Solo muestra citas de hoy */}
+        {todayAppointments.length > 0 && (
+          <RouteOptimizer
+            appointments={todayAppointments}
+            getClient={getClient}
+            onAppointmentPress={handleAppointmentPress}
           />
         )}
 

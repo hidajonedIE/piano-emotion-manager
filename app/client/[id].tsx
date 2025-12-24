@@ -161,6 +161,40 @@ export default function ClientDetailScreen() {
     }
   };
 
+  const handleOpenMaps = () => {
+    const address = form.address;
+    if (!address) return;
+    
+    // Construir dirección completa
+    const addressParts = [
+      address.street,
+      address.number,
+      address.postalCode,
+      address.city,
+      address.province,
+      'España'
+    ].filter(Boolean);
+    
+    if (addressParts.length < 2) {
+      Alert.alert('Dirección incompleta', 'El cliente no tiene una dirección válida para navegar.');
+      return;
+    }
+    
+    const fullAddress = addressParts.join(', ');
+    const encodedAddress = encodeURIComponent(fullAddress);
+    
+    // URL de Google Maps para navegación (funciona en móvil y web)
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Linking.openURL(mapsUrl);
+  };
+
+  const hasValidAddress = () => {
+    const address = form.address;
+    return address && (address.street || address.city);
+  };
+
   const handleAddPiano = () => {
     router.push({
       pathname: '/piano/[id]',
@@ -507,6 +541,16 @@ export default function ClientDetailScreen() {
               <IconSymbol name="message.fill" size={24} color="#FFFFFF" />
               <ThemedText style={[styles.actionText, { color: '#FFFFFF' }]}>WhatsApp</ThemedText>
             </Pressable>
+            <Pressable
+              style={[styles.actionButton, { backgroundColor: '#4285F4', borderColor: '#4285F4' }]}
+              onPress={handleOpenMaps}
+              disabled={!hasValidAddress()}
+            >
+              <IconSymbol name="map.fill" size={24} color={hasValidAddress() ? '#FFFFFF' : '#FFFFFF80'} />
+              <ThemedText style={[styles.actionText, { color: hasValidAddress() ? '#FFFFFF' : '#FFFFFF80' }]}>
+                Cómo llegar
+              </ThemedText>
+            </Pressable>
           </View>
         )}
 
@@ -669,20 +713,23 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: 'row',
-    gap: Spacing.md,
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
   },
   actionButton: {
-    flex: 1,
+    flexBasis: '48%',
+    flexGrow: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: Spacing.md,
+    padding: Spacing.sm,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     gap: Spacing.xs,
+    minWidth: 120,
   },
   actionText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   pianosSection: {
