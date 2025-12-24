@@ -12,6 +12,9 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Platform,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -70,20 +73,132 @@ const PLANS: PlanInfo[] = [
   },
 ];
 
+// Custom confirmation modal for web compatibility
+interface ConfirmModalProps {
+  visible: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function ConfirmModal({ visible, title, message, onConfirm, onCancel }: ConfirmModalProps) {
+  if (!visible) return null;
+  
+  return (
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <View style={modalStyles.overlay}>
+        <View style={modalStyles.container}>
+          <Text style={modalStyles.title}>{title}</Text>
+          <Text style={modalStyles.message}>{message}</Text>
+          <View style={modalStyles.buttons}>
+            <Pressable style={modalStyles.cancelButton} onPress={onCancel}>
+              <Text style={modalStyles.cancelButtonText}>Cancelar</Text>
+            </Pressable>
+            <Pressable style={modalStyles.confirmButton} onPress={onConfirm}>
+              <Text style={modalStyles.confirmButtonText}>Confirmar</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  message: {
+    fontSize: 15,
+    color: '#6b7280',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  buttons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#10b981',
+  },
+  confirmButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+});
+
 export default function SubscriptionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('yearly');
   const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>('free');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanInfo | null>(null);
 
   // tRPC mutation for changing plan
   const changePlanMutation = trpc.subscription.changePlan.useMutation({
     onSuccess: () => {
-      Alert.alert('Éxito', 'Tu plan ha sido actualizado correctamente.');
+      if (Platform.OS === 'web') {
+        // Use alert for web
+        window.alert('Tu plan ha sido actualizado correctamente.');
+      } else {
+        Alert.alert('Éxito', 'Tu plan ha sido actualizado correctamente.');
+      }
     },
     onError: (error) => {
-      Alert.alert('Error', 'No se pudo cambiar el plan. Inténtalo de nuevo.');
+      if (Platform.OS === 'web') {
+        window.alert('No se pudo cambiar el plan. Inténtalo de nuevo.');
+      } else {
+        Alert.alert('Error', 'No se pudo cambiar el plan. Inténtalo de nuevo.');
+      }
       console.error('Error changing plan:', error);
     },
   });
@@ -91,37 +206,34 @@ export default function SubscriptionScreen() {
   const handleSelectPlan = (plan: PlanInfo) => {
     if (plan.code === currentPlan) return;
     
-    const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
-    const priceText = price === 0 ? 'Gratis' : `${price.toFixed(2)}€/${billingCycle === 'yearly' ? 'año' : 'mes'}`;
+    setSelectedPlan(plan);
+    setShowConfirmModal(true);
+  };
+  
+  const handleConfirmPlanChange = async () => {
+    if (!selectedPlan) return;
     
-    Alert.alert(
-      `Cambiar a ${plan.name}`,
-      `¿Deseas cambiar tu plan a ${plan.name}?\n\nPrecio: ${priceText}`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Confirmar',
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              await changePlanMutation.mutateAsync({
-                planCode: plan.code,
-                billingCycle: billingCycle,
-              });
-              // Update local state to reflect the change
-              setCurrentPlan(plan.code);
-            } catch (error) {
-              // Error handled in onError callback
-            } finally {
-              setIsLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    setShowConfirmModal(false);
+    setIsLoading(true);
+    
+    try {
+      await changePlanMutation.mutateAsync({
+        planCode: selectedPlan.code,
+        billingCycle: billingCycle,
+      });
+      // Update local state to reflect the change
+      setCurrentPlan(selectedPlan.code);
+    } catch (error) {
+      // Error handled in onError callback
+    } finally {
+      setIsLoading(false);
+      setSelectedPlan(null);
+    }
+  };
+  
+  const handleCancelPlanChange = () => {
+    setShowConfirmModal(false);
+    setSelectedPlan(null);
   };
 
   const getPrice = (plan: PlanInfo) => {
@@ -129,10 +241,27 @@ export default function SubscriptionScreen() {
     const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
     return `${price.toFixed(2)}€/${billingCycle === 'yearly' ? 'año' : 'mes'}`;
   };
+  
+  const getConfirmMessage = () => {
+    if (!selectedPlan) return '';
+    const price = billingCycle === 'yearly' ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
+    const priceText = price === 0 ? 'Gratis' : `${price.toFixed(2)}€/${billingCycle === 'yearly' ? 'año' : 'mes'}`;
+    return `¿Deseas cambiar tu plan a ${selectedPlan.name}?\n\nPrecio: ${priceText}`;
+  };
 
   return (
     <>
       <Stack.Screen options={{ title: 'Suscripción' }} />
+      
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        visible={showConfirmModal}
+        title={selectedPlan ? `Cambiar a ${selectedPlan.name}` : ''}
+        message={getConfirmMessage()}
+        onConfirm={handleConfirmPlanChange}
+        onCancel={handleCancelPlanChange}
+      />
+      
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
         {/* Current Plan Banner */}
         <View style={styles.currentPlanBanner}>
