@@ -660,7 +660,9 @@ const styles = StyleSheet.create({
   },
   gridWrapper: {
     width: '100%',
-    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   quickActionsGrid: {
     flexDirection: 'row',
