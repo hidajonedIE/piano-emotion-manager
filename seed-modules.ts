@@ -1,7 +1,7 @@
 import { db } from './drizzle/db';
 import { modules, subscriptionPlans } from './drizzle/modules-schema';
 import { eq } from 'drizzle-orm';
-import { DEFAULT_MODULES, DEFAULT_PLANS } from './server/services/modules/modules.service';
+import { DEFAULT_MODULES, DEFAULT_PLANS } from './server/data/modules-data';
 
 async function seedModules() {
   console.log('Seeding modules...');

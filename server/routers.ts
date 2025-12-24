@@ -4,38 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies.js";
 import { systemRouter } from "./_core/systemRouter.js";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc.js";
 import * as db from "./db.js";
-
-// Tipo para los módulos
-interface ModuleInfo {
-  code: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  type: 'core' | 'free' | 'premium' | 'addon';
-  isEnabled: boolean;
-  isAvailable: boolean;
-  requiresUpgrade: boolean;
-  includedInCurrentPlan: boolean;
-}
-
-// Módulos por defecto
-const DEFAULT_MODULES: ModuleInfo[] = [
-  { code: 'clients', name: 'Gestión de Clientes', description: 'Gestiona tu cartera de clientes y sus datos de contacto', icon: 'people', color: '#8b5cf6', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
-  { code: 'pianos', name: 'Registro de Pianos', description: 'Mantén un registro detallado de todos los pianos', icon: 'musical-notes', color: '#ec4899', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
-  { code: 'services', name: 'Servicios', description: 'Registra afinaciones, reparaciones y otros servicios', icon: 'construct', color: '#f59e0b', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
-  { code: 'calendar', name: 'Calendario', description: 'Agenda y gestiona tus citas', icon: 'calendar', color: '#3b82f6', type: 'core', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
-  { code: 'basic_invoicing', name: 'Facturación Básica', description: 'Genera facturas simples para tus servicios', icon: 'document-text', color: '#14b8a6', type: 'free', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
-  { code: 'inventory', name: 'Inventario', description: 'Control de stock de piezas y materiales', icon: 'cube', color: '#6366f1', type: 'free', isEnabled: true, isAvailable: true, requiresUpgrade: false, includedInCurrentPlan: true },
-  { code: 'team_management', name: 'Gestión de Equipos', description: 'Gestiona equipos de técnicos con roles y permisos', icon: 'people-circle', color: '#10b981', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-  { code: 'advanced_invoicing', name: 'Facturación Electrónica', description: 'Facturación electrónica multi-país con cumplimiento legal', icon: 'receipt', color: '#0891b2', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-  { code: 'accounting', name: 'Contabilidad', description: 'Gestión de gastos, ingresos y reportes financieros', icon: 'calculator', color: '#f97316', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-  { code: 'reports', name: 'Reportes y Analytics', description: 'Análisis avanzado y reportes personalizados', icon: 'analytics', color: '#06b6d4', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-  { code: 'crm', name: 'CRM Avanzado', description: 'Segmentación de clientes, campañas y automatizaciones', icon: 'heart', color: '#ef4444', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-  { code: 'shop', name: 'Tienda Online', description: 'Acceso a tiendas de proveedores integradas', icon: 'cart', color: '#84cc16', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-  { code: 'calendar_sync', name: 'Sincronización Calendario', description: 'Sincroniza con Google Calendar y Outlook', icon: 'sync', color: '#a855f7', type: 'premium', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-  { code: 'ai_assistant', name: 'Asistente IA', description: 'Asistente inteligente para diagnósticos y recomendaciones', icon: 'sparkles', color: '#f59e0b', type: 'addon', isEnabled: false, isAvailable: false, requiresUpgrade: true, includedInCurrentPlan: false },
-];
+import { getModulesForPlan, DEFAULT_PLANS, type ModuleInfo } from "./data/modules-data.js";
 
 export const appRouter = router({
   system: systemRouter,
@@ -474,7 +443,8 @@ export const appRouter = router({
   modules: router({
     // Obtener módulos con estado
     getModulesWithStatus: publicProcedure.query(async (): Promise<ModuleInfo[]> => {
-      return DEFAULT_MODULES;
+      // TODO: Obtener el plan actual del usuario cuando se implemente la BD
+      return getModulesForPlan('free');
     }),
 
     // Obtener suscripción actual
