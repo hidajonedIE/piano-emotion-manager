@@ -10,11 +10,13 @@ import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
 import { ThemedView } from '@/components/themed-view';
 import { useClientsData, usePianosData } from '@/hooks/data';
+import { useTranslation } from '@/hooks/use-translation';
 import { Spacing } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
 
 export default function ClientsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { clients, loading, refresh } = useClientsData();
   const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
@@ -78,7 +80,7 @@ export default function ClientsScreen() {
         style={styles.container}
       >
         <ScreenHeader 
-          title="Clientes" 
+          title={t('navigation.clients')} 
           icon="person.2.fill"
         />
         <View style={styles.loadingState}>
@@ -96,8 +98,8 @@ export default function ClientsScreen() {
       style={styles.container}
     >
       <ScreenHeader 
-        title="Clientes" 
-        subtitle={`${clients.length} ${clients.length === 1 ? 'cliente' : 'clientes'}`}
+        title={t('navigation.clients')} 
+        subtitle={`${clients.length} ${clients.length === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`}
         icon="person.2.fill"
       />
 
@@ -105,19 +107,19 @@ export default function ClientsScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Buscar cliente..."
-          accessibilityLabel="Buscar clientes"
+          placeholder={t('common.search') + '...'}
+          accessibilityLabel={t('common.search') + ' ' + t('navigation.clients').toLowerCase()}
         />
       </View>
 
       {filteredClients.length === 0 ? (
         <EmptyState
           icon="person.2.fill"
-          title={search ? 'Sin resultados' : 'Sin clientes'}
+          title={search ? t('common.noResults') : t('clients.noClients')}
           message={
             search
-              ? 'No se encontraron clientes con ese criterio de búsqueda.'
-              : 'Agrega tu primer cliente tocando el botón + abajo.'
+              ? t('clients.noClients')
+              : t('clients.addFirstClient')
           }
         />
       ) : (
@@ -132,7 +134,7 @@ export default function ClientsScreen() {
               refreshing={refreshing}
               onRefresh={handleRefresh}
               tintColor="#7A8B99"
-              title="Actualizando clientes..."
+              title={t('common.loading')}
               titleColor="#7A8B99"
             />
           }
@@ -141,8 +143,8 @@ export default function ClientsScreen() {
 
       <FAB 
         onPress={handleAddClient} 
-        accessibilityLabel="Añadir nuevo cliente"
-        accessibilityHint="Pulsa para crear un nuevo cliente"
+        accessibilityLabel={t('clients.newClient')}
+        accessibilityHint={t('clients.addFirstClient')}
       />
     </LinearGradient>
   );

@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
@@ -25,6 +26,7 @@ type FilterType = 'all' | 'low_stock' | MaterialCategory;
 
 export default function InventoryScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { materials: items, loading, lowStockItems } = useInventoryData();
   const getLowStockItems = () => lowStockItems;
@@ -182,18 +184,18 @@ export default function InventoryScreen() {
   );
 
   const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: 'Todos' },
-    { key: 'low_stock', label: `Stock bajo (${lowStockItems.length})` },
-    { key: 'strings', label: 'Cuerdas' },
-    { key: 'hammers', label: 'Martillos' },
-    { key: 'felts', label: 'Fieltros' },
-    { key: 'tools', label: 'Herramientas' },
+    { key: 'all', label: t('common.all') },
+    { key: 'low_stock', label: `${t('inventory.lowStockAlert')} (${lowStockItems.length})` },
+    { key: 'strings', label: t('inventory.categories.strings') },
+    { key: 'hammers', label: t('inventory.categories.hammers') },
+    { key: 'felts', label: t('inventory.categories.felts') },
+    { key: 'tools', label: t('inventory.categories.tools') },
   ];
 
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
-        <ThemedText type="title">Inventario</ThemedText>
+        <ThemedText type="title">{t('navigation.inventory')}</ThemedText>
         <ThemedText style={styles.subtitle}>
           {items.length} {items.length === 1 ? 'material' : 'materiales'}
           {lowStockItems.length > 0 && (
@@ -225,8 +227,8 @@ export default function InventoryScreen() {
             <SearchBar
               value={search}
               onChangeText={setSearch}
-              placeholder="Buscar material..."
-          accessibilityLabel="Buscar materiales"
+              placeholder={t('common.search') + '...'}
+          accessibilityLabel={t('common.search') + ' ' + t('navigation.inventory').toLowerCase()}
             />
           </View>
           <Pressable
@@ -275,7 +277,7 @@ export default function InventoryScreen() {
       ) : filteredItems.length === 0 ? (
         <EmptyState
           icon="shippingbox.fill"
-          title={search || filter !== 'all' ? 'Sin resultados' : 'Inventario vacío'}
+          title={search || filter !== 'all' ? t('common.noResults') : t('inventory.noItems')}
           message={
             search || filter !== 'all'
               ? 'No se encontraron materiales con ese criterio.'

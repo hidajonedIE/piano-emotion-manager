@@ -11,6 +11,7 @@ import { SearchBar } from '@/components/search-bar';
 import { ThemedText } from '@/components/themed-text';
 import { useClientsData, usePianosData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslation } from '@/hooks/use-translation';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Piano, PianoCategory, getClientFullName } from '@/types';
 
@@ -18,6 +19,7 @@ type FilterType = 'all' | PianoCategory;
 
 export default function PianosScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { pianos, loading, refresh } = usePianosData();
   const { getClient } = useClientsData();
   const [search, setSearch] = useState('');
@@ -92,9 +94,9 @@ export default function PianosScreen() {
   );
 
   const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: 'Todos' },
-    { key: 'vertical', label: 'Verticales' },
-    { key: 'grand', label: 'De Cola' },
+    { key: 'all', label: t('common.all') },
+    { key: 'vertical', label: t('pianos.categories.upright') },
+    { key: 'grand', label: t('pianos.categories.grand') },
   ];
 
   // Mostrar animación de carga inicial
@@ -107,7 +109,7 @@ export default function PianosScreen() {
         style={styles.container}
       >
         <ScreenHeader 
-          title="Pianos" 
+          title={t('navigation.pianos')} 
           icon="pianokeys"
         />
         <View style={styles.loadingState}>
@@ -125,7 +127,7 @@ export default function PianosScreen() {
       style={styles.container}
     >
       <ScreenHeader 
-        title="Pianos" 
+        title={t('navigation.pianos')} 
         subtitle={`${pianos.length} ${pianos.length === 1 ? 'piano' : 'pianos'}`}
         icon="pianokeys"
       />
@@ -134,7 +136,8 @@ export default function PianosScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Buscar piano o cliente..."
+          placeholder={t('common.search') + '...'}
+          accessibilityLabel={t('common.search') + ' ' + t('navigation.pianos').toLowerCase()}
         />
       </View>
 
@@ -149,6 +152,9 @@ export default function PianosScreen() {
               filter === f.key && { backgroundColor: accent, borderColor: accent },
             ]}
             onPress={() => setFilter(f.key)}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('common.filter')}: ${f.label}`}
+            accessibilityState={{ selected: filter === f.key }}
           >
             <ThemedText
               style={[
@@ -165,11 +171,11 @@ export default function PianosScreen() {
       {filteredPianos.length === 0 ? (
         <EmptyState
           icon="pianokeys"
-          title={search || filter !== 'all' ? 'Sin resultados' : 'Sin pianos'}
+          title={search || filter !== 'all' ? t('common.noResults') : t('pianos.noPianos')}
           message={
             search || filter !== 'all'
-              ? 'No se encontraron pianos con ese criterio.'
-              : 'Agrega tu primer piano tocando el botón + abajo.'
+              ? t('common.noResults')
+              : t('pianos.addFirstPiano')
           }
         />
       ) : (
@@ -184,7 +190,7 @@ export default function PianosScreen() {
               refreshing={refreshing}
               onRefresh={handleRefresh}
               tintColor="#7A8B99"
-              title="Actualizando pianos..."
+              title={t('common.loading')}
               titleColor="#7A8B99"
             />
           }
@@ -193,8 +199,8 @@ export default function PianosScreen() {
 
       <FAB 
         onPress={handleAddPiano} 
-        accessibilityLabel="Añadir nuevo piano"
-        accessibilityHint="Pulsa para registrar un nuevo piano"
+        accessibilityLabel={t('pianos.newPiano')}
+        accessibilityHint={t('pianos.addFirstPiano')}
       />
     </LinearGradient>
   );

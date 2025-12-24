@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -20,6 +21,7 @@ import { formatDate, getClientFullName } from '@/types';
 
 export default function AgendaScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { appointments, loading } = useAppointmentsData();
   const { getClient } = useClientsData();
@@ -54,12 +56,12 @@ export default function AgendaScreen() {
       if (!group) {
         let label: string;
         if (apt.date === today) {
-          label = 'Hoy';
+          label = t('appointments.today');
         } else {
           const tomorrow = new Date();
           tomorrow.setDate(tomorrow.getDate() + 1);
           if (apt.date === tomorrow.toISOString().split('T')[0]) {
-            label = 'Mañana';
+            label = t('appointments.tomorrow');
           } else {
             label = formatDate(apt.date);
           }

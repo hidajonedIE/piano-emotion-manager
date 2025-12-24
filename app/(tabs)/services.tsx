@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
@@ -18,6 +19,7 @@ type FilterType = 'all' | ServiceType;
 
 export default function ServicesScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { services, loading, refresh } = useServicesData();
   const { getPiano } = usePianosData();
   const { getClient } = useClientsData();
@@ -98,11 +100,11 @@ export default function ServicesScreen() {
   );
 
   const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: 'Todos' },
-    { key: 'tuning', label: 'Afinación' },
-    { key: 'repair', label: 'Reparación' },
-    { key: 'maintenance', label: 'Mantenimiento' },
-    { key: 'regulation', label: 'Regulación' },
+    { key: 'all', label: t('common.all') },
+    { key: 'tuning', label: t('services.types.tuning') },
+    { key: 'repair', label: t('services.types.repair') },
+    { key: 'maintenance', label: t('services.types.cleaning') },
+    { key: 'regulation', label: t('services.types.regulation') },
   ];
 
   // Calcular estadísticas
@@ -118,7 +120,7 @@ export default function ServicesScreen() {
         style={styles.container}
       >
         <ScreenHeader 
-          title="Servicios" 
+          title={t('navigation.services')} 
           icon="wrench.fill"
         />
         <View style={styles.loadingState}>
@@ -136,8 +138,8 @@ export default function ServicesScreen() {
       style={styles.container}
     >
       <ScreenHeader 
-        title="Servicios" 
-        subtitle={`${filteredServices.length} ${filteredServices.length === 1 ? 'servicio' : 'servicios'}${totalCost > 0 ? ` · €${totalCost.toFixed(0)}` : ''}`}
+        title={t('navigation.services')} 
+        subtitle={`${filteredServices.length} ${filteredServices.length === 1 ? t('services.title').toLowerCase().slice(0, -1) : t('services.title').toLowerCase()}${totalCost > 0 ? ` · €${totalCost.toFixed(0)}` : ''}`}
         icon="wrench.fill"
       />
 
@@ -145,8 +147,8 @@ export default function ServicesScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Buscar servicio..."
-          accessibilityLabel="Buscar servicios"
+          placeholder={t('common.search') + '...'}
+          accessibilityLabel={t('common.search') + ' ' + t('navigation.services').toLowerCase()}
         />
       </View>
 
@@ -183,11 +185,11 @@ export default function ServicesScreen() {
       {filteredServices.length === 0 ? (
         <EmptyState
           icon="wrench.fill"
-          title={search || filter !== 'all' ? 'Sin resultados' : 'Sin servicios'}
+          title={search || filter !== 'all' ? t('common.noResults') : t('services.noServices')}
           message={
             search || filter !== 'all'
-              ? 'No se encontraron servicios con ese criterio.'
-              : 'Registra tu primer servicio tocando el botón + abajo.'
+              ? t('common.noResults')
+              : t('services.addFirstService')
           }
         />
       ) : (
@@ -202,7 +204,7 @@ export default function ServicesScreen() {
               refreshing={refreshing}
               onRefresh={handleRefresh}
               tintColor="#7A8B99"
-              title="Actualizando servicios..."
+              title={t('common.loading')}
               titleColor="#7A8B99"
             />
           }
@@ -211,8 +213,8 @@ export default function ServicesScreen() {
 
       <FAB 
         onPress={handleAddService} 
-        accessibilityLabel="Añadir nuevo servicio"
-        accessibilityHint="Pulsa para registrar un nuevo servicio"
+        accessibilityLabel={t('services.newService')}
+        accessibilityHint={t('services.addFirstService')}
       />
     </LinearGradient>
   );
