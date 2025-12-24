@@ -473,7 +473,7 @@ export const appRouter = router({
   // ============ MODULES ============
   modules: router({
     // Obtener módulos con estado
-    getModulesWithStatus: protectedProcedure.query(async (): Promise<ModuleInfo[]> => {
+    getModulesWithStatus: publicProcedure.query(async (): Promise<ModuleInfo[]> => {
       return DEFAULT_MODULES;
     }),
 
