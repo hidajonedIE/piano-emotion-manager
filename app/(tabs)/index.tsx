@@ -656,6 +656,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: Spacing.md,
+    width: '100%',
   },
   quickActionsGridDesktop: {
     maxWidth: 600,
@@ -687,6 +688,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignContent: 'center',
     gap: Spacing.sm,
+    width: '100%',
   },
   moduleCard: {
     width: 100,
