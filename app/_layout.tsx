@@ -112,8 +112,11 @@ export default function RootLayout() {
                 <SnackbarProvider>
                 <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="(app)" options={{ headerShown: false }} />
                 <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
                 <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
+                <Stack.Screen name="settings/modules" options={{ title: "Módulos", headerBackTitle: "Atrás" }} />
+                <Stack.Screen name="settings/subscription" options={{ title: "Suscripción", headerBackTitle: "Atrás" }} />
                 </Stack>
                 <StatusBar style="auto" />
                 </SnackbarProvider>

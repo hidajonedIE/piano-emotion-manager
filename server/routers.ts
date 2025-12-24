@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db";
+import { advancedModulesRouter } from "./routers/advanced-modules.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -430,6 +431,10 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(({ ctx, input }) => db.deleteReminder(ctx.user.openId, input.id)),
   }),
+
+  // ============ ADVANCED MODULES ============
+  // Gestión de equipos, CRM, Reportes, Contabilidad, Tienda, Módulos, Calendario avanzado
+  advanced: advancedModulesRouter,
 });
 
 export type AppRouter = typeof appRouter;

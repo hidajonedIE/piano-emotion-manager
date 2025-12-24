@@ -12,22 +12,45 @@ interface MenuItem {
   icon: string;
   route: string;
   color: string;
+  premium?: boolean;
+  section?: string;
 }
 
 const MENU_ITEMS: MenuItem[] = [
+  // Navegación principal
   { key: 'home', label: 'Inicio', icon: 'house.fill', route: '/', color: '#6366F1' },
   { key: 'clients', label: 'Clientes', icon: 'person.2.fill', route: '/clients', color: '#6366F1' },
   { key: 'pianos', label: 'Pianos', icon: 'pianokeys', route: '/pianos', color: '#10B981' },
   { key: 'services', label: 'Servicios', icon: 'wrench.fill', route: '/services', color: '#F59E0B' },
   { key: 'agenda', label: 'Agenda', icon: 'calendar', route: '/agenda', color: '#EC4899' },
+  
   { key: 'divider1', label: '', icon: '', route: '', color: '' },
-  { key: 'inventory', label: 'Inventario', icon: 'shippingbox.fill', route: '/inventory', color: '#8B5CF6' },
+  
+  // Gestión de negocio
+  { key: 'section_business', label: 'Gestión de Negocio', icon: '', route: '', color: '', section: 'header' },
   { key: 'invoices', label: 'Facturas', icon: 'doc.text.fill', route: '/invoices', color: '#3B82F6' },
-  { key: 'rates', label: 'Tarifas', icon: 'list.bullet', route: '/rates', color: '#EC4899' },
+  { key: 'inventory', label: 'Inventario', icon: 'shippingbox.fill', route: '/(app)/inventory', color: '#8B5CF6', premium: true },
+  { key: 'accounting', label: 'Contabilidad', icon: 'calculator', route: '/(app)/accounting', color: '#F97316', premium: true },
   { key: 'suppliers', label: 'Proveedores', icon: 'building.2.fill', route: '/suppliers', color: '#F97316' },
-  { key: 'stats', label: 'Estadísticas', icon: 'chart.bar.fill', route: '/stats', color: '#10B981' },
+  { key: 'shop', label: 'Tienda', icon: 'cart.fill', route: '/(app)/shop', color: '#84CC16', premium: true },
+  
   { key: 'divider2', label: '', icon: '', route: '', color: '' },
+  
+  // Herramientas avanzadas
+  { key: 'section_tools', label: 'Herramientas Avanzadas', icon: '', route: '', color: '', section: 'header' },
+  { key: 'team', label: 'Gestión de Equipos', icon: 'person.3.fill', route: '/(app)/team', color: '#10B981', premium: true },
+  { key: 'crm', label: 'CRM Avanzado', icon: 'heart.fill', route: '/(app)/crm', color: '#EF4444', premium: true },
+  { key: 'calendar', label: 'Calendario Avanzado', icon: 'calendar.badge.clock', route: '/(app)/calendar', color: '#A855F7', premium: true },
+  { key: 'reports', label: 'Reportes y Analytics', icon: 'chart.pie.fill', route: '/(app)/reports', color: '#06B6D4', premium: true },
+  
+  { key: 'divider3', label: '', icon: '', route: '', color: '' },
+  
+  // Estadísticas y configuración
+  { key: 'section_config', label: 'Configuración', icon: '', route: '', color: '', section: 'header' },
+  { key: 'stats', label: 'Estadísticas', icon: 'chart.bar.fill', route: '/stats', color: '#10B981' },
+  { key: 'rates', label: 'Tarifas', icon: 'list.bullet', route: '/rates', color: '#EC4899' },
   { key: 'business', label: 'Datos Fiscales', icon: 'person.text.rectangle.fill', route: '/business-info', color: '#6B7280' },
+  { key: 'modules', label: 'Módulos', icon: 'square.grid.2x2.fill', route: '/settings/modules', color: '#8B5CF6' },
   { key: 'settings', label: 'Configuración', icon: 'gearshape.fill', route: '/settings', color: '#64748B' },
   { key: 'help', label: 'Ayuda', icon: 'questionmark.circle.fill', route: '/help', color: '#0EA5E9' },
 ];
@@ -89,8 +112,18 @@ export function HamburgerMenu() {
             {/* Items del menú */}
             <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
               {MENU_ITEMS.map((item) => {
+                // Divisor
                 if (item.key.startsWith('divider')) {
                   return <View key={item.key} style={[styles.divider, { backgroundColor: borderColor }]} />;
+                }
+
+                // Cabecera de sección
+                if (item.section === 'header') {
+                  return (
+                    <ThemedText key={item.key} style={[styles.sectionHeader, { color: textSecondary }]}>
+                      {item.label}
+                    </ThemedText>
+                  );
                 }
 
                 const isActive = isActiveRoute(item.route);
@@ -115,6 +148,11 @@ export function HamburgerMenu() {
                     >
                       {item.label}
                     </ThemedText>
+                    {item.premium && (
+                      <View style={styles.premiumBadge}>
+                        <IconSymbol name="star.fill" size={10} color="#F59E0B" />
+                      </View>
+                    )}
                     {isActive && (
                       <View style={[styles.activeIndicator, { backgroundColor: accent }]} />
                     )}
@@ -145,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   menuContainer: {
-    width: 280,
+    width: 300,
     maxWidth: '85%',
     height: '100%',
     borderTopLeftRadius: BorderRadius.xl,
@@ -181,6 +219,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: Spacing.sm,
   },
+  sectionHeader: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xs,
+    marginLeft: Spacing.md,
+  },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,8 +245,14 @@ const styles = StyleSheet.create({
   },
   menuItemLabel: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
+  },
+  premiumBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   activeIndicator: {
     width: 4,

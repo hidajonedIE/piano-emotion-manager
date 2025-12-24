@@ -147,6 +147,27 @@ export default function DashboardScreen() {
       case 'suppliers':
         router.push('/suppliers' as any);
         break;
+      case 'team':
+        router.push('/(app)/team' as any);
+        break;
+      case 'crm':
+        router.push('/(app)/crm' as any);
+        break;
+      case 'calendar_adv':
+        router.push('/(app)/calendar' as any);
+        break;
+      case 'reports':
+        router.push('/(app)/reports' as any);
+        break;
+      case 'accounting':
+        router.push('/(app)/accounting' as any);
+        break;
+      case 'shop':
+        router.push('/(app)/shop' as any);
+        break;
+      case 'modules':
+        router.push('/settings/modules' as any);
+        break;
     }
   };
 
@@ -171,6 +192,17 @@ export default function DashboardScreen() {
     { key: 'rates', icon: 'list.bullet', label: 'Tarifas', color: '#EC4899' },
     { key: 'business', icon: 'person.fill', label: 'Datos Fiscales', color: '#6B7280' },
     { key: 'settings', icon: 'gearshape.fill', label: 'Configuración', color: '#64748B' },
+  ];
+
+  // Módulos avanzados (Premium)
+  const advancedModules = [
+    { key: 'team', icon: 'person.3.fill', label: 'Equipos', color: '#10B981', premium: true },
+    { key: 'crm', icon: 'heart.fill', label: 'CRM', color: '#EF4444', premium: true },
+    { key: 'calendar_adv', icon: 'calendar.badge.clock', label: 'Calendario+', color: '#A855F7', premium: true },
+    { key: 'reports', icon: 'chart.pie.fill', label: 'Reportes', color: '#06B6D4', premium: true },
+    { key: 'accounting', icon: 'calculator', label: 'Contabilidad', color: '#F97316', premium: true },
+    { key: 'shop', icon: 'cart.fill', label: 'Tienda', color: '#84CC16', premium: true },
+    { key: 'modules', icon: 'square.grid.2x2.fill', label: 'Módulos', color: '#8B5CF6' },
   ];
 
   // En web, usar CSS gradient directamente para evitar problemas de renderizado intermitente
@@ -387,6 +419,27 @@ export default function DashboardScreen() {
                 label={action.label}
                 color={action.color}
                 onPress={() => handleQuickAction(action.key)}
+              />
+            ))}
+          </View>
+        </Accordion>
+
+        {/* Herramientas Avanzadas (Premium) */}
+        <Accordion 
+          title="Herramientas Avanzadas" 
+          defaultOpen={false}
+          icon="star.fill"
+          iconColor="#F59E0B"
+        >
+          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop]}>
+            {advancedModules.map((action) => (
+              <AnimatedCard
+                key={action.key}
+                icon={action.icon}
+                label={action.label}
+                color={action.color}
+                onPress={() => handleQuickAction(action.key)}
+                badge={action.premium ? '★' : undefined}
               />
             ))}
           </View>
