@@ -1,4 +1,11 @@
-import type { CookieOptions } from "express";
+// Cookie options interface for session cookies
+export interface SessionCookieOptions {
+  domain?: string;
+  httpOnly: boolean;
+  path: string;
+  sameSite: "strict" | "lax" | "none";
+  secure: boolean;
+}
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
@@ -44,9 +51,7 @@ function getParentDomain(hostname: string): string | undefined {
   return "." + parts.slice(-2).join(".");
 }
 
-export function getSessionCookieOptions(
-  req: any,
-): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
+export function getSessionCookieOptions(req: any): SessionCookieOptions {
   const hostname = (req as any).hostname || (req as any).headers?.host?.split(':')[0] || 'localhost';
   const domain = getParentDomain(hostname);
 
