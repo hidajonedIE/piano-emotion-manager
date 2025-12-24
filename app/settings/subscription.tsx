@@ -98,27 +98,21 @@ export default function SubscriptionScreen() {
     setShowConfirmModal(true);
   };
   
-  const handleConfirmPlanChange = async () => {
+  const handleConfirmPlanChange = () => {
     if (!selectedPlan) return;
     
-    const planToSet = selectedPlan.code;
-    setShowConfirmModal(false);
-    setIsLoading(true);
+    const newPlan = selectedPlan.code;
     
-    try {
-      await changePlanMutation.mutateAsync({
-        planCode: planToSet,
-        billingCycle: billingCycle,
-      });
-    } catch (error) {
-      // Error handled in onError callback
-      console.log('Backend error, but updating UI anyway for demo');
-    } finally {
-      // Update local state to reflect the change (even if backend fails for demo)
-      setCurrentPlan(planToSet);
-      setIsLoading(false);
-      setSelectedPlan(null);
-    }
+    // Update UI immediately
+    setCurrentPlan(newPlan);
+    setShowConfirmModal(false);
+    setSelectedPlan(null);
+    
+    // Try to sync with backend (non-blocking)
+    changePlanMutation.mutate({
+      planCode: newPlan,
+      billingCycle: billingCycle,
+    });
   };
   
   const handleCancelPlanChange = () => {

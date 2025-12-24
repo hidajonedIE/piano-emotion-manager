@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'flex-start',
     gap: Spacing.sm,
     width: '100%',
   },
