@@ -47,6 +47,11 @@ interface AppSettings {
   
   // Inventario
   defaultMinStock: number; // Umbral de stock bajo por defecto
+  stockAlertEmail: boolean; // Alertas de stock por email
+  stockAlertWhatsApp: boolean; // Alertas de stock por WhatsApp
+  stockAlertFrequency: 'immediate' | 'daily' | 'weekly'; // Frecuencia de alertas
+  stockAlertEmailAddress?: string; // Email para alertas
+  stockAlertPhone?: string; // Teléfono para WhatsApp
   
   // Tienda
   shopEnabled: boolean;
@@ -75,6 +80,11 @@ const defaultSettings: AppSettings = {
   eInvoicingCredentials: {},
   activeModules: ['clients', 'pianos', 'services', 'calendar', 'invoicing'],
   defaultMinStock: 5, // Umbral de stock bajo por defecto
+  stockAlertEmail: false,
+  stockAlertWhatsApp: false,
+  stockAlertFrequency: 'immediate' as const,
+  stockAlertEmailAddress: '',
+  stockAlertPhone: '',
   shopEnabled: false,
   externalStores: [],
   purchaseApprovalThreshold: 100,
@@ -416,6 +426,89 @@ export default function SettingsIndexScreen() {
                 Los materiales sin umbral específico usarán este valor. Si un material tiene su propio umbral configurado, ese será el que se aplique.
               </ThemedText>
             </View>
+
+            {/* Separador */}
+            <View style={[styles.divider, { backgroundColor: borderColor, marginVertical: Spacing.md }]} />
+
+            {/* Alertas de Stock */}
+            <ThemedText style={[styles.sectionSubtitle, { marginBottom: Spacing.sm }]}>Alertas de Stock Bajo</ThemedText>
+            
+            {renderSettingRow(
+              'envelope.fill',
+              'Alertas por Email',
+              'Recibe notificaciones cuando el stock esté bajo',
+              settings.stockAlertEmail,
+              () => updateSettings({ stockAlertEmail: !settings.stockAlertEmail })
+            )}
+
+            {settings.stockAlertEmail && (
+              <View style={[styles.inputRow, { marginLeft: 56, marginBottom: Spacing.sm }]}>
+                <TextInput
+                  style={[styles.input, styles.flexInput, { borderColor, color: useThemeColor({}, 'text') }]}
+                  placeholder="tu@email.com"
+                  placeholderTextColor={textSecondary}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={settings.stockAlertEmailAddress}
+                  onChangeText={(text) => updateSettings({ stockAlertEmailAddress: text })}
+                />
+              </View>
+            )}
+
+            {renderSettingRow(
+              'message.fill',
+              'Alertas por WhatsApp',
+              'Recibe alertas en tu WhatsApp (requiere plan Profesional)',
+              settings.stockAlertWhatsApp,
+              () => updateSettings({ stockAlertWhatsApp: !settings.stockAlertWhatsApp })
+            )}
+
+            {settings.stockAlertWhatsApp && (
+              <View style={[styles.inputRow, { marginLeft: 56, marginBottom: Spacing.sm }]}>
+                <TextInput
+                  style={[styles.input, styles.flexInput, { borderColor, color: useThemeColor({}, 'text') }]}
+                  placeholder="+34 600 000 000"
+                  placeholderTextColor={textSecondary}
+                  keyboardType="phone-pad"
+                  value={settings.stockAlertPhone}
+                  onChangeText={(text) => updateSettings({ stockAlertPhone: text })}
+                />
+              </View>
+            )}
+
+            {(settings.stockAlertEmail || settings.stockAlertWhatsApp) && (
+              <>
+                <ThemedText style={[styles.settingSublabel, { color: textSecondary, marginTop: Spacing.sm }]}>
+                  Frecuencia de alertas
+                </ThemedText>
+                <View style={styles.frequencyOptions}>
+                  {[
+                    { value: 'immediate', label: 'Inmediata' },
+                    { value: 'daily', label: 'Resumen diario' },
+                    { value: 'weekly', label: 'Resumen semanal' },
+                  ].map((option) => (
+                    <Pressable
+                      key={option.value}
+                      style={[
+                        styles.frequencyOption,
+                        { borderColor },
+                        settings.stockAlertFrequency === option.value && { borderColor: accent, backgroundColor: `${accent}15` },
+                      ]}
+                      onPress={() => updateSettings({ stockAlertFrequency: option.value as any })}
+                    >
+                      <ThemedText
+                        style={[
+                          styles.frequencyOptionText,
+                          settings.stockAlertFrequency === option.value && { color: accent, fontWeight: '600' },
+                        ]}
+                      >
+                        {option.label}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            )}
 
             <Pressable
               style={[styles.actionButton, { backgroundColor: '#F59E0B', marginTop: Spacing.md }]}
@@ -982,5 +1075,27 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     lineHeight: 18,
+  },
+  divider: {
+    height: 1,
+    width: '100%',
+  },
+  flexInput: {
+    flex: 1,
+  },
+  frequencyOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  frequencyOption: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  frequencyOptionText: {
+    fontSize: 13,
   },
 });

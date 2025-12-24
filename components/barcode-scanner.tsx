@@ -5,7 +5,10 @@ import {
   Pressable,
   Modal,
   Platform,
+  Dimensions,
 } from 'react-native';
+import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
+import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -18,9 +21,26 @@ interface BarcodeScannerProps {
   onClose: () => void;
   onScan: (result: BarcodeResult) => void;
   title?: string;
+  subtitle?: string;
 }
 
-export function BarcodeScanner({ visible, onClose, onScan, title }: BarcodeScannerProps) {
+// Tipos de código de barras soportados en móvil
+const MOBILE_BARCODE_TYPES = [
+  'ean13',
+  'ean8',
+  'upc_a',
+  'upc_e',
+  'code128',
+  'code39',
+  'code93',
+  'codabar',
+  'itf14',
+  'qr',
+  'datamatrix',
+  'pdf417',
+];
+
+export function BarcodeScanner({ visible, onClose, onScan, title, subtitle }: BarcodeScannerProps) {
   const scannerRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,27 +120,17 @@ export function BarcodeScanner({ visible, onClose, onScan, title }: BarcodeScann
     onClose();
   };
 
-  // Solo funciona en web
+  // Versión móvil con expo-camera
   if (Platform.OS !== 'web') {
     return (
-      <Modal visible={visible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <ThemedView style={[styles.modalContent, { backgroundColor: cardBg }]}>
-            <View style={styles.notSupported}>
-              <IconSymbol name="barcode.viewfinder" size={48} color={textSecondary} />
-              <ThemedText style={[styles.notSupportedText, { color: textSecondary }]}>
-                El escáner de código de barras solo está disponible en la versión web
-              </ThemedText>
-              <Pressable
-                style={[styles.closeButton, { backgroundColor: primary }]}
-                onPress={onClose}
-              >
-                <ThemedText style={styles.closeButtonText}>Cerrar</ThemedText>
-              </Pressable>
-            </View>
-          </ThemedView>
-        </View>
-      </Modal>
+      <MobileBarcodeScanner
+        visible={visible}
+        onClose={onClose}
+        onScan={onScan}
+        title={title}
+        subtitle={subtitle}
+        colors={{ cardBg, textColor, textSecondary, primary, success }}
+      />
     );
   }
 
@@ -376,6 +386,402 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+});
+
+// ============================================
+// COMPONENTE MÓVIL CON EXPO-CAMERA
+// ============================================
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SCAN_AREA_SIZE = SCREEN_WIDTH * 0.7;
+
+interface MobileBarcodeScannerProps {
+  visible: boolean;
+  onClose: () => void;
+  onScan: (result: BarcodeResult) => void;
+  title?: string;
+  subtitle?: string;
+  colors: {
+    cardBg: string;
+    textColor: string;
+    textSecondary: string;
+    primary: string;
+    success: string;
+  };
+}
+
+function MobileBarcodeScanner({
+  visible,
+  onClose,
+  onScan,
+  title = 'Escanear Código',
+  subtitle = 'Apunta la cámara al código de barras',
+  colors,
+}: MobileBarcodeScannerProps) {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scanned, setScanned] = useState(false);
+  const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
+
+  // Resetear estado cuando se abre el modal
+  useEffect(() => {
+    if (visible) {
+      setScanned(false);
+      setLastScannedCode(null);
+    }
+  }, [visible]);
+
+  // Solicitar permisos al abrir
+  useEffect(() => {
+    if (visible && !permission?.granted) {
+      requestPermission();
+    }
+  }, [visible, permission]);
+
+  const handleBarCodeScanned = (result: BarcodeScanningResult) => {
+    // Evitar escaneos múltiples del mismo código
+    if (scanned || result.data === lastScannedCode) {
+      return;
+    }
+
+    setScanned(true);
+    setLastScannedCode(result.data);
+    
+    // Feedback háptico
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    // Notificar al padre con formato BarcodeResult
+    onScan({
+      code: result.data,
+      format: result.type,
+      timestamp: new Date(),
+    });
+  };
+
+  const handleRescan = () => {
+    setScanned(false);
+    setLastScannedCode(null);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  // Si no hay permisos
+  if (!permission?.granted && visible) {
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={onClose}
+      >
+        <View style={mobileStyles.container}>
+          <View style={mobileStyles.header}>
+            <Pressable style={mobileStyles.closeButton} onPress={onClose}>
+              <IconSymbol name="xmark" size={24} color="#333" />
+            </Pressable>
+            <ThemedText style={mobileStyles.title}>{title}</ThemedText>
+            <View style={mobileStyles.placeholder} />
+          </View>
+
+          <View style={mobileStyles.permissionContainer}>
+            <IconSymbol name="camera.fill" size={64} color="#9CA3AF" />
+            <ThemedText style={mobileStyles.permissionTitle}>
+              Permiso de Cámara Requerido
+            </ThemedText>
+            <ThemedText style={mobileStyles.permissionText}>
+              Para escanear códigos de barras, necesitamos acceso a la cámara de tu dispositivo.
+            </ThemedText>
+            <Pressable style={mobileStyles.permissionButton} onPress={requestPermission}>
+              <ThemedText style={mobileStyles.permissionButtonText}>
+                Permitir Acceso
+              </ThemedText>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <View style={mobileStyles.container}>
+        {/* Header */}
+        <View style={mobileStyles.header}>
+          <Pressable style={mobileStyles.closeButton} onPress={onClose}>
+            <IconSymbol name="xmark" size={24} color="#333" />
+          </Pressable>
+          <ThemedText style={mobileStyles.title}>{title}</ThemedText>
+          <View style={mobileStyles.placeholder} />
+        </View>
+
+        {/* Cámara */}
+        <View style={mobileStyles.cameraContainer}>
+          <CameraView
+            style={mobileStyles.camera}
+            facing="back"
+            barcodeScannerSettings={{
+              barcodeTypes: MOBILE_BARCODE_TYPES as any,
+            }}
+            onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+          >
+            {/* Overlay con guía de escaneo */}
+            <View style={mobileStyles.overlay}>
+              <View style={mobileStyles.overlayTop} />
+              <View style={mobileStyles.overlayMiddle}>
+                <View style={mobileStyles.overlaySide} />
+                <View style={mobileStyles.scanArea}>
+                  {/* Esquinas de la guía */}
+                  <View style={[mobileStyles.corner, mobileStyles.cornerTopLeft]} />
+                  <View style={[mobileStyles.corner, mobileStyles.cornerTopRight]} />
+                  <View style={[mobileStyles.corner, mobileStyles.cornerBottomLeft]} />
+                  <View style={[mobileStyles.corner, mobileStyles.cornerBottomRight]} />
+                  
+                  {/* Línea de escaneo */}
+                  {!scanned && (
+                    <View style={mobileStyles.scanLine} />
+                  )}
+                </View>
+                <View style={mobileStyles.overlaySide} />
+              </View>
+              <View style={mobileStyles.overlayBottom}>
+                <ThemedText style={mobileStyles.subtitle}>{subtitle}</ThemedText>
+              </View>
+            </View>
+          </CameraView>
+        </View>
+
+        {/* Resultado del escaneo */}
+        {scanned && lastScannedCode && (
+          <View style={mobileStyles.resultContainer}>
+            <View style={mobileStyles.resultCard}>
+              <IconSymbol name="checkmark.circle.fill" size={32} color="#10B981" />
+              <View style={mobileStyles.resultContent}>
+                <ThemedText style={mobileStyles.resultLabel}>Código detectado</ThemedText>
+                <ThemedText style={mobileStyles.resultCode}>{lastScannedCode}</ThemedText>
+              </View>
+            </View>
+            
+            <View style={mobileStyles.resultActions}>
+              <Pressable style={mobileStyles.rescanButton} onPress={handleRescan}>
+                <IconSymbol name="arrow.clockwise" size={20} color="#6B7280" />
+                <ThemedText style={mobileStyles.rescanButtonText}>Escanear otro</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* Tipos de código soportados */}
+        <View style={mobileStyles.supportedTypes}>
+          <ThemedText style={mobileStyles.supportedTypesTitle}>Códigos soportados:</ThemedText>
+          <ThemedText style={mobileStyles.supportedTypesList}>
+            EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, QR
+          </ThemedText>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const mobileStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    backgroundColor: '#FFF',
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  placeholder: {
+    width: 40,
+  },
+  cameraContainer: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  camera: {
+    flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  overlayTop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  overlayMiddle: {
+    flexDirection: 'row',
+  },
+  overlaySide: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  scanArea: {
+    width: SCAN_AREA_SIZE,
+    height: SCAN_AREA_SIZE * 0.6,
+    backgroundColor: 'transparent',
+    position: 'relative',
+  },
+  corner: {
+    position: 'absolute',
+    width: 30,
+    height: 30,
+    borderColor: '#10B981',
+    borderWidth: 3,
+  },
+  cornerTopLeft: {
+    top: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+  cornerTopRight: {
+    top: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+  },
+  cornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+  },
+  cornerBottomRight: {
+    bottom: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+  },
+  scanLine: {
+    position: 'absolute',
+    top: '50%',
+    left: 10,
+    right: 10,
+    height: 2,
+    backgroundColor: '#10B981',
+    opacity: 0.8,
+  },
+  overlayBottom: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    paddingTop: Spacing.lg,
+  },
+  subtitle: {
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  permissionContainer: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.xl,
+  },
+  permissionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#111827',
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  permissionText: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: Spacing.lg,
+  },
+  permissionButton: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  permissionButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  resultContainer: {
+    backgroundColor: '#FFF',
+    padding: Spacing.md,
+  },
+  resultCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.md,
+  },
+  resultContent: {
+    flex: 1,
+  },
+  resultLabel: {
+    fontSize: 13,
+    color: '#059669',
+    marginBottom: 2,
+  },
+  resultCode: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#065F46',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  resultActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: Spacing.md,
+  },
+  rescanButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+  },
+  rescanButtonText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  supportedTypes: {
+    backgroundColor: '#FFF',
+    padding: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  supportedTypesTitle: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginBottom: 4,
+  },
+  supportedTypesList: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });
 

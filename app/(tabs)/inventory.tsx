@@ -6,6 +6,8 @@ import * as Haptics from 'expo-haptics';
 
 import { EmptyState } from '@/components/cards';
 import { LowStockAlert } from '@/components/low-stock-alert';
+import { BarcodeScanner } from '@/components/barcode-scanner';
+import { BarcodeResult } from '@/services/barcode-scanner-service';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
@@ -28,6 +30,7 @@ export default function InventoryScreen() {
   const { suppliers } = useSuppliers();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
+  const [showScanner, setShowScanner] = useState(false);
 
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');
@@ -84,6 +87,33 @@ export default function InventoryScreen() {
       pathname: '/inventory/[id]' as any,
       params: { id: 'new' },
     });
+  };
+
+  const handleScanBarcode = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowScanner(true);
+  };
+
+  const handleBarcodeScanned = (result: BarcodeResult) => {
+    setShowScanner(false);
+    
+    // Buscar material por código de barras o SKU
+    const foundItem = items.find(
+      (item) => item.barcode === result.code || item.sku === result.code
+    );
+
+    if (foundItem) {
+      // Si se encuentra, abrir el material
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      handleItemPress(foundItem);
+    } else {
+      // Si no se encuentra, crear nuevo con el código de barras
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      router.push({
+        pathname: '/inventory/[id]' as any,
+        params: { id: 'new', barcode: result.code },
+      });
+    }
   };
 
   const getStockColor = (item: InventoryItem) => {
@@ -189,11 +219,21 @@ export default function InventoryScreen() {
       )}
 
       <View style={styles.searchContainer}>
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Buscar material..."
-        />
+        <View style={styles.searchRow}>
+          <View style={styles.searchBarWrapper}>
+            <SearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Buscar material..."
+            />
+          </View>
+          <Pressable
+            style={[styles.scanButton, { backgroundColor: accent }]}
+            onPress={handleScanBarcode}
+          >
+            <IconSymbol name="barcode.viewfinder" size={22} color="#FFFFFF" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Filtros */}
@@ -251,6 +291,15 @@ export default function InventoryScreen() {
       )}
 
       <FAB onPress={handleAddItem} />
+
+      {/* Escáner de código de barras */}
+      <BarcodeScanner
+        visible={showScanner}
+        onClose={() => setShowScanner(false)}
+        onScan={handleBarcodeScanned}
+        title="Escanear Material"
+        subtitle="Escanea el código de barras o QR del producto"
+      />
     </ThemedView>
   );
 }
@@ -289,6 +338,21 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  searchBarWrapper: {
+    flex: 1,
+  },
+  scanButton: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filtersWrapper: {
     marginBottom: Spacing.sm,

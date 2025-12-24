@@ -26,7 +26,7 @@ import { BorderRadius, Spacing } from '@/constants/theme';
 import { Material } from '@/types/inventory';
 
 export default function InventoryDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, barcode: initialBarcode } = useLocalSearchParams<{ id: string; barcode?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const isNew = id === 'new';
@@ -50,6 +50,7 @@ export default function InventoryDetailScreen() {
     supplierId: '',
     supplierName: '',
     supplierCode: '',
+    sku: '',
     barcode: '',
     location: '',
     description: '',
@@ -75,6 +76,13 @@ export default function InventoryDetailScreen() {
     }
   }, [id, isNew, materials]);
 
+  // Si viene de escanear un código de barras, establecerlo
+  useEffect(() => {
+    if (isNew && initialBarcode) {
+      setForm(prev => ({ ...prev, barcode: initialBarcode }));
+    }
+  }, [isNew, initialBarcode]);
+
   const isLowStock = (form.currentStock || 0) <= (form.minStock || 0);
 
   const handleSave = async () => {
@@ -98,6 +106,7 @@ export default function InventoryDetailScreen() {
         supplierId: form.supplierId?.trim(),
         supplierName: form.supplierName?.trim(),
         supplierCode: form.supplierCode?.trim(),
+        sku: form.sku?.trim(),
         barcode: form.barcode?.trim(),
         location: form.location?.trim(),
         description: form.description?.trim(),
@@ -474,19 +483,35 @@ export default function InventoryDetailScreen() {
             </View>
 
             <View style={styles.storageField}>
-              <ThemedText style={[styles.stockLabel, { color: textSecondary }]}>Código/SKU</ThemedText>
+              <ThemedText style={[styles.stockLabel, { color: textSecondary }]}>SKU (interno)</ThemedText>
               {isEditing ? (
                 <TextInput
                   style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
-                  value={form.barcode}
-                  onChangeText={(text) => setForm({ ...form, barcode: text })}
-                  placeholder="SKU-001"
+                  value={form.sku}
+                  onChangeText={(text) => setForm({ ...form, sku: text })}
+                  placeholder="MI-CUE-001"
                   placeholderTextColor={textSecondary}
                 />
               ) : (
-                <ThemedText style={styles.value}>{form.barcode || '-'}</ThemedText>
+                <ThemedText style={styles.value}>{form.sku || '-'}</ThemedText>
               )}
             </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <ThemedText style={[styles.stockLabel, { color: textSecondary }]}>Código de barras (EAN/UPC)</ThemedText>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                value={form.barcode}
+                onChangeText={(text) => setForm({ ...form, barcode: text })}
+                placeholder="8412345678901"
+                placeholderTextColor={textSecondary}
+                keyboardType="numeric"
+              />
+            ) : (
+              <ThemedText style={styles.value}>{form.barcode || '-'}</ThemedText>
+            )}
           </View>
         </View>
 

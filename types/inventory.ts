@@ -58,7 +58,9 @@ export interface Material {
   supplierName?: string;
   // Código de referencia del proveedor
   supplierCode?: string;
-  // Código de barras o SKU
+  // SKU - Código interno de referencia
+  sku?: string;
+  // Código de barras EAN/UPC del fabricante
   barcode?: string;
   // Ubicación en almacén
   location?: string;
