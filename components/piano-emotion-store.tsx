@@ -386,6 +386,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   section: {
+    flexDirection: 'column',
     marginBottom: 20,
     width: '100%',
   },
