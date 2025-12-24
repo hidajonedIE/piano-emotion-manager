@@ -25,12 +25,12 @@ export function ConnectionStatus({ showAlways = false, position = 'bottom' }: Co
   const [showDetails, setShowDetails] = useState(false);
   const [slideAnim] = useState(new Animated.Value(0));
 
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const success = useThemeColor({}, 'success');
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
 
   // Determinar si mostrar el banner
   const shouldShow = showAlways || !isOnline || pendingOperations > 0 || isSyncing;

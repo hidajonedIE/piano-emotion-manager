@@ -33,10 +33,10 @@ export function RoutePlanner({ appointments, onOptimize }: RoutePlannerProps) {
   const [isOptimized, setIsOptimized] = useState(false);
 
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const success = useThemeColor({}, 'success');
   const warning = useThemeColor({}, 'warning');
   const border = useThemeColor({}, 'border');

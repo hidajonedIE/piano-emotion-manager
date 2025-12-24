@@ -28,11 +28,11 @@ export function LanguageSelector({ mode = 'modal', onLanguageChange }: LanguageS
   const [modalVisible, setModalVisible] = useState(false);
 
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const borderColor = useThemeColor({}, 'border');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
 
   const handleSelectLanguage = async (language: SupportedLanguage) => {
     if (Platform.OS !== 'web') {

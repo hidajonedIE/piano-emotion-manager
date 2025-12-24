@@ -24,11 +24,11 @@ export default function PrivacySettingsScreen() {
   const insets = useSafeAreaInsets();
   
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const borderColor = useThemeColor({}, 'border');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const success = useThemeColor({}, 'success');
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');

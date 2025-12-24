@@ -20,10 +20,10 @@ export default function CalendarSettingsScreen() {
   const { settings, isLoading, updateSettings } = useCalendar();
 
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const border = useThemeColor({}, 'border');
 
   const calendarOptions = [

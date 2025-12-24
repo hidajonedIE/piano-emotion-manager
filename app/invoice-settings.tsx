@@ -28,10 +28,10 @@ export default function InvoiceSettingsScreen() {
   const [previewNumber, setPreviewNumber] = useState('');
 
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const border = useThemeColor({}, 'border');
   const success = useThemeColor({}, 'success');
 

@@ -28,10 +28,10 @@ export function BarcodeScanner({ visible, onClose, onScan, title }: BarcodeScann
   const [cameraSupported, setCameraSupported] = useState(true);
 
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const success = useThemeColor({}, 'success');
 
   useEffect(() => {

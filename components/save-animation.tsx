@@ -32,8 +32,8 @@ export function SaveAnimation({
   const [rotateAnim] = useState(new Animated.Value(0));
   const [checkmarkAnim] = useState(new Animated.Value(0));
 
-  const cardBg = useThemeColor({}, 'card');
-  const primary = useThemeColor({}, 'primary');
+  const cardBg = useThemeColor({}, 'cardBackground');
+  const primary = useThemeColor({}, 'tint');
   const success = useThemeColor({}, 'success');
   const error = useThemeColor({}, 'error');
 

@@ -29,8 +29,8 @@ export function ClientMap({ clients, onClientSelect }: ClientMapProps) {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
 
-  const primary = useThemeColor({}, 'primary');
-  const cardBg = useThemeColor({}, 'card');
+  const primary = useThemeColor({}, 'tint');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
 

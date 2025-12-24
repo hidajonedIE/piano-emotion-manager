@@ -36,10 +36,10 @@ export function NotificationCenter({ mode = 'inline', onClose, visible = true }:
   } = useWebNotifications();
 
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const border = useThemeColor({}, 'border');
   const error = useThemeColor({}, 'error');
 
@@ -205,7 +205,7 @@ export function NotificationButton() {
   const { unreadCount } = useWebNotifications();
   
   const textColor = useThemeColor({}, 'text');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
 
   return (
     <>

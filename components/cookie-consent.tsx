@@ -184,10 +184,10 @@ interface CookieBannerProps {
 }
 
 function CookieBanner({ onAcceptAll, onRejectAll, onSettings }: CookieBannerProps) {
-  const backgroundColor = useThemeColor({}, 'card');
+  const backgroundColor = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({}, 'border');
 
   const slideAnim = React.useRef(new Animated.Value(200)).current;
@@ -268,10 +268,10 @@ interface CookieSettingsModalProps {
 function CookieSettingsModal({ visible, preferences, onSave, onClose }: CookieSettingsModalProps) {
   const router = useRouter();
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({}, 'border');
   const success = useThemeColor({}, 'success');
 

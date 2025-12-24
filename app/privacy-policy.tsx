@@ -14,11 +14,11 @@ export default function PrivacyPolicyScreen() {
   const insets = useSafeAreaInsets();
   
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const borderColor = useThemeColor({}, 'border');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
 
   const lastUpdated = '23 de diciembre de 2024';
 

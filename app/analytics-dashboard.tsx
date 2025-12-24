@@ -28,10 +28,10 @@ export default function AnalyticsDashboardScreen() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const backgroundColor = useThemeColor({}, 'background');
-  const cardBg = useThemeColor({}, 'card');
+  const cardBg = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const primary = useThemeColor({}, 'primary');
+  const primary = useThemeColor({}, 'tint');
   const success = useThemeColor({}, 'success');
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');
