@@ -7,7 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
-import { Platform } from "react-native";
+import { Platform, View, Text } from "react-native";
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,
@@ -22,11 +22,9 @@ import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/manus-runtime";
 import { SnackbarProvider } from "@/components/snackbar";
 import { LanguageProvider } from "@/contexts/language-context";
 import { DistributorProvider } from "@/contexts/distributor-context";
-import { AIAssistant } from "@/components/ai";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
-// Web iframe previewer cannot infer safe-area; default to zero until container sends metrics.
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -40,7 +38,7 @@ export default function RootLayout() {
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
   const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'Arkhip': require('@/assets/fonts/Arkhip.otf'),
     'Montserrat-Regular': require('@/assets/fonts/Montserrat-Regular.otf'),
     'Montserrat-SemiBold': require('@/assets/fonts/Montserrat-SemiBold.otf'),
@@ -49,17 +47,23 @@ export default function RootLayout() {
 
   const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
   const [frame, setFrame] = useState<Rect>(initialFrame);
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
-    // Ocultar splash cuando las fuentes estén cargadas
-    if (fontsLoaded) {
+    // Ocultar splash cuando las fuentes estén cargadas o haya error
+    if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
+      setAppReady(true);
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, fontError]);
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
-    initManusRuntime();
+    try {
+      initManusRuntime();
+    } catch (e) {
+      console.error('Error initializing Manus runtime:', e);
+    }
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
@@ -69,8 +73,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
-    const unsubscribe = subscribeSafeAreaInsets(handleSafeAreaUpdate);
-    return () => unsubscribe();
+    try {
+      const unsubscribe = subscribeSafeAreaInsets(handleSafeAreaUpdate);
+      return () => unsubscribe();
+    } catch (e) {
+      console.error('Error subscribing to safe area:', e);
+    }
   }, [handleSafeAreaUpdate]);
 
   // Create clients once and reuse them
@@ -79,9 +87,7 @@ export default function RootLayout() {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Disable automatic refetching on window focus for mobile
             refetchOnWindowFocus: false,
-            // Retry failed requests once
             retry: 1,
           },
         },
@@ -94,6 +100,20 @@ export default function RootLayout() {
     [initialFrame, initialInsets],
   );
 
+  // Mostrar error si hay problema con las fuentes
+  if (fontError) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <Text style={{ color: 'red' }}>Error loading fonts: {fontError.message}</Text>
+      </View>
+    );
+  }
+
+  // No renderizar hasta que esté listo
+  if (!appReady) {
+    return null;
+  }
+
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -102,19 +122,18 @@ export default function RootLayout() {
             <DistributorProvider>
               <LanguageProvider>
                 <SnackbarProvider>
-                <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="(app)" options={{ headerShown: false }} />
-                <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
-                <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
-                <Stack.Screen name="settings/modules" options={{ title: "Módulos", headerBackTitle: "Atrás" }} />
-                <Stack.Screen name="settings/subscription" options={{ title: "Suscripción", headerBackTitle: "Atrás" }} />
-                <Stack.Screen name="settings/business" options={{ title: "Mi Empresa", headerBackTitle: "Atrás" }} />
-                <Stack.Screen name="settings/einvoicing" options={{ title: "Facturación Electrónica", headerBackTitle: "Atrás" }} />
-                <Stack.Screen name="settings/ai" options={{ title: "Inteligencia Artificial", headerBackTitle: "Atrás" }} />
-                </Stack>
-                <StatusBar style="auto" />
-                <AIAssistant />
+                  <Stack>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen name="(app)" options={{ headerShown: false }} />
+                    <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
+                    <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
+                    <Stack.Screen name="settings/modules" options={{ title: "Módulos", headerBackTitle: "Atrás" }} />
+                    <Stack.Screen name="settings/subscription" options={{ title: "Suscripción", headerBackTitle: "Atrás" }} />
+                    <Stack.Screen name="settings/business" options={{ title: "Mi Empresa", headerBackTitle: "Atrás" }} />
+                    <Stack.Screen name="settings/einvoicing" options={{ title: "Facturación Electrónica", headerBackTitle: "Atrás" }} />
+                    <Stack.Screen name="settings/ai" options={{ title: "Inteligencia Artificial", headerBackTitle: "Atrás" }} />
+                  </Stack>
+                  <StatusBar style="auto" />
                 </SnackbarProvider>
               </LanguageProvider>
             </DistributorProvider>
@@ -123,11 +142,6 @@ export default function RootLayout() {
       </trpc.Provider>
     </GestureHandlerRootView>
   );
-
-  // No renderizar hasta que las fuentes estén cargadas
-  if (!fontsLoaded) {
-    return null;
-  }
 
   const shouldOverrideSafeArea = Platform.OS === "web";
 
