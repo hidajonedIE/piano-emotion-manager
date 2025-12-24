@@ -25,6 +25,7 @@ export interface Supplier {
   phone?: string;
   email?: string;
   website?: string;
+  storeUrl?: string; // URL de la tienda online para pedidos directos
   address?: string;
   city?: string;
   country?: string;

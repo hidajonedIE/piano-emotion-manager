@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 import { IconSymbol } from './ui/icon-symbol';
+import { Supplier } from '@/types/supplier';
 
 // Mapeo de categorías de inventario a categorías de la tienda Piano Emotion
 const CATEGORY_TO_STORE_MAPPING: Record<string, { storeCategory: string; searchTerm: string }> = {
@@ -22,22 +23,52 @@ interface LowStockItem {
   minStock: number;
   unit: string;
   category?: string;
+  supplierId?: string;
 }
 
 interface LowStockAlertProps {
   items: LowStockItem[];
+  suppliers?: Supplier[];
   onItemPress?: (item: LowStockItem) => void;
 }
 
-export function LowStockAlert({ items, onItemPress }: LowStockAlertProps) {
+export function LowStockAlert({ items, suppliers = [], onItemPress }: LowStockAlertProps) {
   if (items.length === 0) return null;
 
-  const openPianoEmotionStore = (item: LowStockItem) => {
-    // Por ahora abre la web principal, cuando la tienda esté lista se puede cambiar
-    // a una URL específica de categoría o búsqueda
-    const mapping = item.category ? CATEGORY_TO_STORE_MAPPING[item.category] : null;
+  // Obtener el proveedor de un item
+  const getSupplier = (supplierId?: string): Supplier | undefined => {
+    if (!supplierId) return undefined;
+    return suppliers.find(s => s.id === supplierId);
+  };
+
+  // Abrir la tienda del proveedor o Piano Emotion Store
+  const openStore = (item: LowStockItem) => {
+    const supplier = getSupplier(item.supplierId);
+    
+    // Si el proveedor tiene URL de tienda, abrir esa
+    if (supplier?.storeUrl) {
+      Linking.openURL(supplier.storeUrl);
+      return;
+    }
+    
+    // Si no, abrir Piano Emotion Store
     const url = 'https://www.pianoemotion.es';
     Linking.openURL(url);
+  };
+
+  // Obtener el texto del botón según el proveedor
+  const getOrderButtonText = (item: LowStockItem): string => {
+    const supplier = getSupplier(item.supplierId);
+    if (supplier?.storeUrl) {
+      return supplier.name.length > 10 ? 'Pedir' : supplier.name;
+    }
+    return 'Pedir';
+  };
+
+  // Verificar si el item tiene proveedor con tienda
+  const hasSupplierStore = (item: LowStockItem): boolean => {
+    const supplier = getSupplier(item.supplierId);
+    return !!supplier?.storeUrl;
   };
 
   return (
@@ -53,26 +84,41 @@ export function LowStockAlert({ items, onItemPress }: LowStockAlertProps) {
       </View>
 
       <View style={styles.itemsList}>
-        {items.slice(0, 5).map((item) => (
-          <View key={item.id} style={styles.itemRow}>
-            <Pressable 
-              style={styles.itemInfo}
-              onPress={() => onItemPress?.(item)}
-            >
-              <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-              <Text style={styles.itemStock}>
-                {item.quantity} / {item.minStock} {item.unit}
-              </Text>
-            </Pressable>
-            <Pressable 
-              style={styles.orderButton}
-              onPress={() => openPianoEmotionStore(item)}
-            >
-              <IconSymbol name="cart.fill" size={14} color="#FFFFFF" />
-              <Text style={styles.orderButtonText}>Pedir</Text>
-            </Pressable>
-          </View>
-        ))}
+        {items.slice(0, 5).map((item) => {
+          const supplier = getSupplier(item.supplierId);
+          const hasStore = hasSupplierStore(item);
+          
+          return (
+            <View key={item.id} style={styles.itemRow}>
+              <Pressable 
+                style={styles.itemInfo}
+                onPress={() => onItemPress?.(item)}
+              >
+                <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                <View style={styles.itemMeta}>
+                  <Text style={styles.itemStock}>
+                    {item.quantity} / {item.minStock} {item.unit}
+                  </Text>
+                  {supplier && (
+                    <Text style={styles.supplierName} numberOfLines={1}>
+                      · {supplier.name}
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+              <Pressable 
+                style={[
+                  styles.orderButton,
+                  hasStore && styles.orderButtonSupplier
+                ]}
+                onPress={() => openStore(item)}
+              >
+                <IconSymbol name="cart.fill" size={14} color="#FFFFFF" />
+                <Text style={styles.orderButtonText}>{getOrderButtonText(item)}</Text>
+              </Pressable>
+            </View>
+          );
+        })}
       </View>
 
       {items.length > 5 && (
@@ -102,25 +148,40 @@ interface OrderButtonProps {
   item: {
     name: string;
     category?: string;
+    supplierId?: string;
   };
+  supplier?: Supplier;
   size?: 'small' | 'medium';
 }
 
-export function OrderFromStoreButton({ item, size = 'medium' }: OrderButtonProps) {
-  const openPianoEmotionStore = () => {
+export function OrderFromStoreButton({ item, supplier, size = 'medium' }: OrderButtonProps) {
+  const openStore = () => {
+    // Si el proveedor tiene URL de tienda, abrir esa
+    if (supplier?.storeUrl) {
+      Linking.openURL(supplier.storeUrl);
+      return;
+    }
+    // Si no, abrir Piano Emotion Store
     Linking.openURL('https://www.pianoemotion.es');
   };
 
   const isSmall = size === 'small';
+  const buttonText = supplier?.storeUrl 
+    ? `Pedir a ${supplier.name}` 
+    : 'Pedir a Piano Emotion';
 
   return (
     <Pressable 
-      style={[styles.orderFromStoreButton, isSmall && styles.orderFromStoreButtonSmall]}
-      onPress={openPianoEmotionStore}
+      style={[
+        styles.orderFromStoreButton, 
+        isSmall && styles.orderFromStoreButtonSmall,
+        supplier?.storeUrl && styles.orderFromStoreButtonSupplier
+      ]}
+      onPress={openStore}
     >
       <IconSymbol name="cart.fill" size={isSmall ? 14 : 16} color="#FFFFFF" />
       <Text style={[styles.orderFromStoreText, isSmall && styles.orderFromStoreTextSmall]}>
-        Pedir a Piano Emotion
+        {buttonText}
       </Text>
     </Pressable>
   );
@@ -184,10 +245,21 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1F2937',
   },
+  itemMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexWrap: 'wrap',
+  },
   itemStock: {
     fontSize: 12,
     color: '#D97706',
     fontWeight: '500',
+  },
+  supplierName: {
+    fontSize: 11,
+    color: '#6B7280',
+    maxWidth: 100,
   },
   orderButton: {
     flexDirection: 'row',
@@ -197,6 +269,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     gap: 4,
+  },
+  orderButtonSupplier: {
+    backgroundColor: '#3B82F6',
   },
   orderButtonText: {
     fontSize: 12,
@@ -253,6 +328,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     gap: 4,
+  },
+  orderFromStoreButtonSupplier: {
+    backgroundColor: '#3B82F6',
   },
   orderFromStoreText: {
     fontSize: 14,

@@ -45,6 +45,9 @@ interface AppSettings {
   // Módulos activos
   activeModules: string[];
   
+  // Inventario
+  defaultMinStock: number; // Umbral de stock bajo por defecto
+  
   // Tienda
   shopEnabled: boolean;
   externalStores: Array<{ name: string; url: string; apiKey?: string }>;
@@ -71,6 +74,7 @@ const defaultSettings: AppSettings = {
   eInvoicingCountry: 'none',
   eInvoicingCredentials: {},
   activeModules: ['clients', 'pianos', 'services', 'calendar', 'invoicing'],
+  defaultMinStock: 5, // Umbral de stock bajo por defecto
   shopEnabled: false,
   externalStores: [],
   purchaseApprovalThreshold: 100,
@@ -374,6 +378,54 @@ export default function SettingsIndexScreen() {
           </View>
           <IconSymbol name="chevron.right" size={20} color={textSecondary} />
         </Pressable>
+
+        {/* ========== INVENTARIO ========== */}
+        <Accordion
+          title="Inventario"
+          icon="shippingbox.fill"
+          iconColor="#F59E0B"
+          defaultOpen={false}
+        >
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <View style={styles.settingRow}>
+              <View style={[styles.settingIcon, { backgroundColor: '#F59E0B15' }]}>
+                <IconSymbol name="exclamationmark.triangle.fill" size={20} color="#F59E0B" />
+              </View>
+              <View style={styles.settingContent}>
+                <ThemedText style={styles.settingLabel}>Umbral de Stock Bajo por Defecto</ThemedText>
+                <ThemedText style={[styles.settingSublabel, { color: textSecondary }]}>
+                  Cantidad mínima antes de mostrar alerta. Cada material puede tener su propio umbral que prevalecerá sobre este valor.
+                </ThemedText>
+              </View>
+            </View>
+            <View style={[styles.inputRow, { marginLeft: 56 }]}>
+              <TextInput
+                style={[styles.input, styles.smallInput, { borderColor, color: useThemeColor({}, 'text') }]}
+                placeholder="5"
+                placeholderTextColor={textSecondary}
+                keyboardType="numeric"
+                value={settings.defaultMinStock.toString()}
+                onChangeText={(text) => updateSettings({ defaultMinStock: parseInt(text) || 0 })}
+              />
+              <ThemedText style={[styles.inputSuffix, { color: textSecondary }]}>unidades</ThemedText>
+            </View>
+            
+            <View style={[styles.infoBox, { backgroundColor: '#F59E0B10', borderColor: '#F59E0B30' }]}>
+              <IconSymbol name="info.circle.fill" size={16} color="#F59E0B" />
+              <ThemedText style={[styles.infoText, { color: '#92400E' }]}>
+                Los materiales sin umbral específico usarán este valor. Si un material tiene su propio umbral configurado, ese será el que se aplique.
+              </ThemedText>
+            </View>
+
+            <Pressable
+              style={[styles.actionButton, { backgroundColor: '#F59E0B', marginTop: Spacing.md }]}
+              onPress={() => router.push('/(tabs)/inventory' as any)}
+            >
+              <IconSymbol name="shippingbox.fill" size={20} color="#FFFFFF" />
+              <ThemedText style={styles.actionButtonText}>Ir al Inventario</ThemedText>
+            </Pressable>
+          </View>
+        </Accordion>
 
         {/* ========== TIENDA ========== */}
         <Accordion
@@ -903,5 +955,32 @@ const styles = StyleSheet.create({
   linkDescription: {
     fontSize: 13,
     marginTop: 2,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  smallInput: {
+    width: 80,
+    textAlign: 'center',
+  },
+  inputSuffix: {
+    fontSize: 14,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 18,
   },
 });

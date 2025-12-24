@@ -164,6 +164,15 @@ export default function SupplierDetailScreen() {
           {renderInput('Sitio Web', form.website, 'website', { keyboardType: 'url' })}
         </View>
 
+        {/* Tienda Online */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={styles.sectionTitle}>Tienda Online</ThemedText>
+          <ThemedText style={[styles.helpText, { color: secondaryText }]}>
+            URL de la tienda para realizar pedidos directamente cuando haya stock bajo
+          </ThemedText>
+          {renderInput('URL de la Tienda', form.storeUrl, 'storeUrl', { keyboardType: 'url' })}
+        </View>
+
         {/* Dirección */}
         <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
           <ThemedText style={styles.sectionTitle}>Dirección</ThemedText>
@@ -263,6 +272,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  helpText: {
+    fontSize: 12,
+    marginBottom: Spacing.sm,
+    lineHeight: 18,
   },
   input: {
     padding: Spacing.md,
