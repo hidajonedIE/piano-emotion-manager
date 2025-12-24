@@ -311,7 +311,7 @@ export default function DashboardScreen() {
           iconColor="#C9A227"
           centerContent
         >
-          <View style={[styles.quickActionsGrid, isDesktop && styles.quickActionsGridDesktop]}>
+          <View style={[styles.quickActionsGrid, isDesktop && styles.quickActionsGridDesktop, { marginLeft: 'auto', marginRight: 'auto' } as any]}>
             {quickActions.map((action) => (
               <Pressable
                 key={action.key}
@@ -413,7 +413,7 @@ export default function DashboardScreen() {
           badgeColor="#EF4444"
           centerContent
         >
-          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop]}>
+          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop, { marginLeft: 'auto', marginRight: 'auto' } as any]}>
             {moduleActions.map((action) => (
               <AnimatedCard
                 key={action.key}
@@ -434,7 +434,7 @@ export default function DashboardScreen() {
           iconColor="#F59E0B"
           centerContent
         >
-          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop]}>
+          <View style={[styles.modulesGrid, isDesktop && styles.quickActionsGridDesktop, { marginLeft: 'auto', marginRight: 'auto' } as any]}>
             {advancedModules.map((action) => (
               <AnimatedCard
                 key={action.key}
