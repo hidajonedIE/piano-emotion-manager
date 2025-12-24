@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import * as Clipboard from 'expo-clipboard';
+import { Share, Platform } from 'react-native';
 
 import { PianoCard } from '@/components/cards';
 import { ThemedText } from '@/components/themed-text';
@@ -20,6 +22,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { useSnackbar } from '@/components/snackbar';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useWhatsApp } from '@/hooks/use-whatsapp';
+import { generatePortalUrl } from '@/hooks/use-client-portal';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Client, ClientType, ClientAddress, Piano, CLIENT_TYPE_LABELS, getClientFullName, getClientFormattedAddress } from '@/types';
@@ -193,6 +196,46 @@ export default function ClientDetailScreen() {
   const hasValidAddress = () => {
     const address = form.address;
     return address && (address.street || address.city);
+  };
+
+  const handleSharePortal = async () => {
+    if (!id || isNew) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    const portalUrl = generatePortalUrl(id);
+    const clientName = form.firstName || 'Cliente';
+    const message = `Hola ${clientName}, aquí tienes acceso a tu portal de cliente donde puedes ver tus pianos, historial de servicios y próximas citas:\n\n${portalUrl}`;
+    
+    try {
+      if (Platform.OS === 'web') {
+        // En web, copiar al portapapeles
+        await Clipboard.setStringAsync(portalUrl);
+        Alert.alert(
+          'Enlace copiado',
+          'El enlace del portal ha sido copiado al portapapeles. Puedes compartirlo con el cliente.',
+          [
+            { text: 'OK' },
+            { 
+              text: 'Enviar por WhatsApp', 
+              onPress: () => {
+                if (form.phone) {
+                  sendCustomMessage(form as Client, message);
+                }
+              }
+            },
+          ]
+        );
+      } else {
+        // En móvil, usar Share nativo
+        await Share.share({
+          message,
+          title: 'Portal del Cliente',
+        });
+      }
+    } catch (err) {
+      showError('No se pudo compartir el enlace');
+    }
   };
 
   const handleAddPiano = () => {
@@ -555,6 +598,18 @@ export default function ClientDetailScreen() {
               <IconSymbol name="map.fill" size={24} color={hasValidAddress() ? '#FFFFFF' : '#FFFFFF80'} />
               <ThemedText style={[styles.actionText, { color: hasValidAddress() ? '#FFFFFF' : '#FFFFFF80' }]}>
                 Cómo llegar
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              style={[styles.actionButton, { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' }]}
+              onPress={handleSharePortal}
+              accessibilityRole="button"
+              accessibilityLabel="Compartir portal del cliente"
+              accessibilityHint="Genera y comparte un enlace para que el cliente acceda a su portal"
+            >
+              <IconSymbol name="link" size={24} color="#FFFFFF" />
+              <ThemedText style={[styles.actionText, { color: '#FFFFFF' }]}>
+                Portal
               </ThemedText>
             </Pressable>
           </View>
