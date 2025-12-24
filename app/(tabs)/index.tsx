@@ -653,6 +653,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   centeredGrid: {
+    width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
