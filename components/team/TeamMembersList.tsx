@@ -17,8 +17,8 @@ import {
   TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../hooks/use-theme';
-import { usePermissions } from '../../hooks/use-permissions';
+import { useTheme } from '@/hooks/use-theme';
+import { usePermissions } from '@/hooks/use-permissions';
 
 // ==========================================
 // TIPOS

@@ -6,7 +6,7 @@
  */
 
 import { Stack } from 'expo-router';
-import { useTheme } from '../../../hooks/use-theme';
+import { useTheme } from '@/hooks/use-theme-color';
 
 export default function TeamLayout() {
   const { colors } = useTheme();

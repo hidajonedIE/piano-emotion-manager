@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../../hooks/use-theme';
+import { useTheme } from '@/hooks/use-theme-color';
 import { useOrganization } from '../../../hooks/use-organization';
 
 // ==========================================

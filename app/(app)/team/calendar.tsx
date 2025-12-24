@@ -14,7 +14,7 @@ import {
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { useTheme } from '../../../hooks/use-theme';
+import { useTheme } from '@/hooks/use-theme-color';
 import { useCurrentOrganization } from '../../../hooks/use-organization';
 import { useTeamMembers, useMyPermissions } from '../../../hooks/use-team-members';
 import { useWorkAssignments } from '../../../hooks/use-work-assignments';
