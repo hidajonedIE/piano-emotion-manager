@@ -132,7 +132,10 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
   },
   contentCentered: {
-    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
   },
   rightSection: {
     flexDirection: 'row',
