@@ -2,6 +2,13 @@
   "buildCommand": "pnpm run build && npx expo export --platform web",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
-  "trailingSlash": false,
-  "cleanUrls": true
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@3.0.0"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

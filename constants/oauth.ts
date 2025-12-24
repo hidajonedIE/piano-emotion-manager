@@ -26,8 +26,8 @@ export const API_BASE_URL = env.apiBaseUrl;
 
 /**
  * Get the API base URL, deriving from current hostname if not set.
- * Metro runs on 8081, API server runs on 3000.
- * URL pattern: https://PORT-sandboxid.region.domain
+ * In production (Vercel), API is at the same origin under /api
+ * In development, Metro runs on 8081, API server runs on 3000.
  */
 export function getApiBaseUrl(): string {
   // If API_BASE_URL is set, use it
@@ -35,10 +35,17 @@ export function getApiBaseUrl(): string {
     return API_BASE_URL.replace(/\/$/, "");
   }
 
-  // On web, derive from current hostname by replacing port 8081 with 3000
+  // On web, check if we're in production or development
   if (ReactNative.Platform.OS === "web" && typeof window !== "undefined" && window.location) {
-    const { protocol, hostname } = window.location;
-    // Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
+    const { protocol, hostname, port } = window.location;
+    
+    // Production: API is at the same origin (Vercel serverless functions)
+    // Check if we're on Vercel or a production domain
+    if (hostname.includes('vercel.app') || !hostname.includes('-') || port === '' || port === '443' || port === '80') {
+      return `${protocol}//${hostname}`;
+    }
+    
+    // Development: Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
     const apiHostname = hostname.replace(/^8081-/, "3000-");
     if (apiHostname !== hostname) {
       return `${protocol}//${apiHostname}`;
