@@ -47,7 +47,7 @@ const PRODUCT_CATEGORIES = [
   {
     id: 'adhesives',
     name: 'Adhesivos y Colas',
-    icon: '🪥',
+    icon: '💧',
     brands: ['Titebond'],
     description: 'Colas profesionales para madera y reparaciones',
     comingSoon: true,
@@ -163,6 +163,7 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
               horizontal 
               showsHorizontalScrollIndicator={false}
               style={styles.categoriesScroll}
+              contentContainerStyle={styles.categoriesScrollContent}
             >
               {PRODUCT_CATEGORIES.map((category) => (
                 <Pressable
@@ -387,6 +388,9 @@ const styles = StyleSheet.create({
   },
   categoriesScroll: {
     // Removed negative margin that caused content clipping
+  },
+  categoriesScrollContent: {
+    paddingRight: 16,
   },
   categoryCard: {
     backgroundColor: '#F8F9FA',
