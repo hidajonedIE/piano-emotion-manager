@@ -332,6 +332,7 @@ export default function DashboardScreen() {
           defaultOpen={false}
           icon="calendar"
           iconColor="#10B981"
+          centerContent
           rightAction={
             <View style={styles.monthNavigation}>
               <Pressable onPress={navigatePreviousMonth} style={styles.monthNavButton}>
