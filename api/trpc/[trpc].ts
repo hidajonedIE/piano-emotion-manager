@@ -4,8 +4,8 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
-import { appRouter } from '../../server/routers';
-import { createContext } from '../../server/_core/context';
+import { appRouter } from '../../server/routers.js';
+import { createContext } from '../../server/_core/context.js';
 
 // Create the tRPC middleware
 const trpcMiddleware = createExpressMiddleware({
