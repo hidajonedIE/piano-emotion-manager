@@ -661,8 +661,8 @@ const styles = StyleSheet.create({
   gridWrapper: {
     width: '100%',
     display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   quickActionsGrid: {
     flexDirection: 'row',
