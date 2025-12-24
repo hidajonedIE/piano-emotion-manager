@@ -15,7 +15,7 @@ import { PianoEmotionStore } from '@/components/piano-emotion-store';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
 import { useWhatsNew } from '@/hooks/use-whats-new';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -39,9 +39,15 @@ export default function DashboardScreen() {
   const { isMobile, isDesktop, horizontalPadding } = useResponsive();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
-  const { clients } = useClients();
-  const { pianos } = usePianos();
-  const { services, getRecentServices } = useServices();
+  const { clients } = useClientsData();
+  const { pianos } = usePianosData();
+  const { services } = useServicesData();
+  // Función para obtener servicios recientes
+  const getRecentServices = useCallback((count: number) => {
+    return [...services]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, count);
+  }, [services]);
   const { urgentCount, pendingCount, getUrgentRecommendations, getPendingRecommendations } = useRecommendations(pianos, services);
   const { hasUnseenUpdates, markAsSeen } = useWhatsNew();
 

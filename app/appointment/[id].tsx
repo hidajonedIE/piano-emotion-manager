@@ -16,8 +16,8 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { useSnackbar } from '@/components/snackbar';
-import { useClients, usePianos } from '@/hooks/use-storage';
-import { useAppointments } from '@/hooks/use-appointments';
+import { useClientsData, usePianosData, useAppointmentsData } from '@/hooks/data';
+
 import { useWhatsApp } from '@/hooks/use-whatsapp';
 import { useCalendarSync } from '@/hooks/use-calendar-sync';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -35,9 +35,9 @@ export default function AppointmentDetailScreen() {
   const insets = useSafeAreaInsets();
   const isNew = id === 'new';
 
-  const { clients, getClient } = useClients();
-  const { pianos, getPiano, getPianosByClient } = usePianos();
-  const { appointments, addAppointment, updateAppointment, deleteAppointment, getAppointment } = useAppointments();
+  const { clients, getClient } = useClientsData();
+  const { pianos, getPiano, getPianosByClient } = usePianosData();
+  const { appointments, addAppointment, updateAppointment, deleteAppointment, getAppointment } = useAppointmentsData();
   const { error: showError } = useSnackbar();
   const { sendAppointmentReminder } = useWhatsApp();
   const { showExportOptions, exportToGoogleCalendar, exportToOutlookCalendar, exportToICS } = useCalendarSync();

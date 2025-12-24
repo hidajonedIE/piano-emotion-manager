@@ -7,7 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { SignaturePad, SignatureDisplay } from '@/components/signature-pad';
-import { useServices, useClients, usePianos } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { Service, Task, getClientFullName, getClientFormattedAddress } from '@/types';
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
@@ -27,9 +27,9 @@ export default function WorkOrderScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const accent = useThemeColor({}, 'accent');
-  const { services, updateService } = useServices();
-  const { clients } = useClients();
-  const { pianos } = usePianos();
+  const { services, updateService } = useServicesData();
+  const { clients } = useClientsData();
+  const { pianos } = usePianosData();
   
   const [service, setService] = useState<Service | null>(null);
   const [client, setClient] = useState<any>(null);

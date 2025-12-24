@@ -17,8 +17,8 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useInvoices, useBusinessInfo } from '@/hooks/use-invoices';
 import { useServiceCatalog } from '@/hooks/use-service-catalog';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
-import { useInventory } from '@/hooks/use-inventory';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
+import { useInventoryData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Invoice, InvoiceItem, calculateInvoiceTotals, DEFAULT_TAX_RATE, INVOICE_STATUS_LABELS } from '@/types/invoice';
@@ -35,10 +35,10 @@ export default function InvoiceDetailScreen() {
   const { invoices, addInvoice, updateInvoice, deleteInvoice, getInvoice, markAsSent, markAsPaid } = useInvoices();
   const { businessInfo } = useBusinessInfo();
   const { rates, getActiveRates } = useServiceCatalog();
-  const { clients } = useClients();
+  const { clients } = useClientsData();
   const { pianos } = usePianos();
-  const { services, getServicesByClient } = useServices();
-  const { materials, getMaterial } = useInventory();
+  const { services, getServicesByClient } = useServicesData();
+  const { materials, getMaterial } = useInventoryData();
 
   const [isEditing, setIsEditing] = useState(isNew);
   const [showServicePicker, setShowServicePicker] = useState(false);

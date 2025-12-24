@@ -14,17 +14,16 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
-import { useClients, usePianos } from '@/hooks/use-storage';
-import { useAppointments } from '@/hooks/use-appointments';
+import { useClientsData, usePianosData, useAppointmentsData } from '@/hooks/data';
 import { Appointment, APPOINTMENT_STATUS_LABELS } from '@/types/business';
 import { formatDate, getClientFullName } from '@/types';
 
 export default function AgendaScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { appointments, loading } = useAppointments();
-  const { getClient } = useClients();
-  const { getPiano } = usePianos();
+  const { appointments, loading } = useAppointmentsData();
+  const { getClient } = useClientsData();
+  const { getPiano } = usePianosData();
 
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');

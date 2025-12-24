@@ -15,18 +15,19 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useInventory } from '@/hooks/use-inventory';
+import { useInventoryData } from '@/hooks/data';
 import { useSuppliers } from '@/hooks/use-suppliers';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { MATERIAL_CATEGORY_LABELS, MaterialCategory } from '@/types/inventory';
-import { InventoryItem } from '@/hooks/use-inventory';
+import type { Material as InventoryItem } from '@/types/inventory';
 
 type FilterType = 'all' | 'low_stock' | MaterialCategory;
 
 export default function InventoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { items, loading, getLowStockItems } = useInventory();
+  const { materials: items, loading, lowStockItems } = useInventoryData();
+  const getLowStockItems = () => lowStockItems;
   const { suppliers } = useSuppliers();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');

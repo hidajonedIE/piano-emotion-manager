@@ -14,8 +14,8 @@ import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
-import { useInventory } from '@/hooks/use-inventory';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
+import { useInventoryData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import {
@@ -47,10 +47,10 @@ export default function ServiceDetailScreen() {
   const insets = useSafeAreaInsets();
   const isNew = id === 'new';
 
-  const { clients, getClient } = useClients();
-  const { pianos, getPiano, getPianosByClient, updatePiano } = usePianos();
-  const { services, addService, updateService, deleteService, getService } = useServices();
-  const { materials, getMaterial, updateMaterial } = useInventory();
+  const { clients, getClient } = useClientsData();
+  const { pianos, getPiano, getPianosByClient, updatePiano } = usePianosData();
+  const { services, addService, updateService, deleteService, getService } = useServicesData();
+  const { materials, getMaterial, updateMaterial } = useInventoryData();
 
   const [isEditing, setIsEditing] = useState(isNew);
   const [form, setForm] = useState<Partial<Service>>({

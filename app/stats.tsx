@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { SERVICE_TYPE_LABELS, CLIENT_TYPE_LABELS, getClientFullName } from '@/types';
@@ -15,9 +15,9 @@ const { width: screenWidth } = Dimensions.get('window');
 
 export default function StatsScreen() {
   const insets = useSafeAreaInsets();
-  const { clients } = useClients();
-  const { pianos } = usePianos();
-  const { services } = useServices();
+  const { clients } = useClientsData();
+  const { pianos } = usePianosData();
+  const { services } = useServicesData();
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');

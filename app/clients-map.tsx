@@ -9,7 +9,7 @@ import { Client } from '@/types';
 
 export default function ClientsMapScreen() {
   const router = useRouter();
-  const { clients } = useClients();
+  const { clients } = useClientsData();
   
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');

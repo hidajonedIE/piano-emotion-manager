@@ -18,7 +18,7 @@ import { ThemedText } from '@/components/themed-text';
 import { OrderFromStoreButton } from '@/components/low-stock-alert';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useInventory } from '@/hooks/use-inventory';
+import { useInventoryData } from '@/hooks/data';
 import { useSuppliers } from '@/hooks/use-suppliers';
 import { useProductCategories } from '@/hooks/use-product-categories';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -31,7 +31,7 @@ export default function InventoryDetailScreen() {
   const insets = useSafeAreaInsets();
   const isNew = id === 'new';
 
-  const { materials, addMaterial, updateMaterial, deleteMaterial, getMaterial } = useInventory();
+  const { materials, addMaterial, updateMaterial, deleteMaterial, getMaterial } = useInventoryData();
   const { suppliers } = useSuppliers();
   const { categories: productCategories } = useProductCategories();
 

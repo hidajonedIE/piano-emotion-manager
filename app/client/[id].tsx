@@ -18,7 +18,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { useSnackbar } from '@/components/snackbar';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useWhatsApp } from '@/hooks/use-whatsapp';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
@@ -31,9 +31,9 @@ export default function ClientDetailScreen() {
   const insets = useSafeAreaInsets();
   const isNew = id === 'new';
 
-  const { clients, addClient, updateClient, deleteClient, getClient } = useClients();
-  const { pianos, getPianosByClient } = usePianos();
-  const { getServicesByClient } = useServices();
+  const { clients, addClient, updateClient, deleteClient, getClient } = useClientsData();
+  const { pianos, getPianosByClient } = usePianosData();
+  const { getServicesByClient } = useServicesData();
   const { error: showError } = useSnackbar();
   const { sendCustomMessage } = useWhatsApp();
 

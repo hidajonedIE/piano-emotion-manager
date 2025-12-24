@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View, Pressable, Dimensions, Platform } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useServices, useClients, usePianos } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useInvoices } from '@/hooks/use-invoices';
 import { getClientFullName } from '@/types';
 
@@ -41,9 +41,9 @@ const CLIENT_TYPE_LABELS: Record<string, string> = {
 export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { services } = useServices();
-  const { clients } = useClients();
-  const { pianos } = usePianos();
+  const { services } = useServicesData();
+  const { clients } = useClientsData();
+  const { pianos } = usePianosData();
   const { invoices } = useInvoices();
   
   const [period, setPeriod] = useState<Period>('month');

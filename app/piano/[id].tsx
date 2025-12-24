@@ -19,7 +19,7 @@ import { ServiceCard } from '@/components/cards';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
@@ -42,9 +42,9 @@ export default function PianoDetailScreen() {
   const insets = useSafeAreaInsets();
   const isNew = id === 'new';
 
-  const { clients, getClient } = useClients();
-  const { pianos, addPiano, updatePiano, deletePiano, getPiano } = usePianos();
-  const { services, getServicesByPiano } = useServices();
+  const { clients, getClient } = useClientsData();
+  const { pianos, addPiano, updatePiano, deletePiano, getPiano } = usePianosData();
+  const { services, getServicesByPiano } = useServicesData();
   const { getRecommendationsForPiano } = useRecommendations(pianos, services);
 
   const [isEditing, setIsEditing] = useState(isNew);

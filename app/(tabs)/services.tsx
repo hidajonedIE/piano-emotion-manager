@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/loading-spinner';
 import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
 import { ThemedText } from '@/components/themed-text';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Service, ServiceType, getClientFullName } from '@/types';
@@ -18,9 +18,9 @@ type FilterType = 'all' | ServiceType;
 
 export default function ServicesScreen() {
   const router = useRouter();
-  const { services, loading, refresh } = useServices();
-  const { getPiano } = usePianos();
-  const { getClient } = useClients();
+  const { services, loading, refresh } = useServicesData();
+  const { getPiano } = usePianosData();
+  const { getClient } = useClientsData();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);

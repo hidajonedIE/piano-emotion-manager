@@ -25,7 +25,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { FAB } from '@/components/fab';
-import { useClients, usePianos, useServices } from '@/hooks/use-storage';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
@@ -55,9 +55,9 @@ export default function CRMScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
-  const { clients } = useClients();
-  const { pianos } = usePianos();
-  const { services } = useServices();
+  const { clients } = useClientsData();
+  const { pianos } = usePianosData();
+  const { services } = useServicesData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSegment, setSelectedSegment] = useState<ClientSegment>('all');

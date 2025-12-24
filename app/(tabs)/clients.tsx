@@ -9,14 +9,14 @@ import { LoadingSpinner } from '@/components/loading-spinner';
 import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
 import { ThemedView } from '@/components/themed-view';
-import { useClients, usePianos } from '@/hooks/use-storage';
+import { useClientsData, usePianosData } from '@/hooks/data';
 import { Spacing } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
 
 export default function ClientsScreen() {
   const router = useRouter();
-  const { clients, loading, refresh } = useClients();
-  const { pianos } = usePianos();
+  const { clients, loading, refresh } = useClientsData();
+  const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
