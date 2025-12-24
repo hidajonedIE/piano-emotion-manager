@@ -256,8 +256,11 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    // Removed marginHorizontal since component is inside Accordion with padding
+    // Use negative margin to extend beyond Accordion's paddingHorizontal (16px)
+    marginHorizontal: -16,
     marginVertical: 8,
+    // Add internal padding to compensate
+    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -322,7 +325,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   content: {
-    padding: 16,
+    // Padding is now handled by container
   },
   banner: {
     borderRadius: 12,
