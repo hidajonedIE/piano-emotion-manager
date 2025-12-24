@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
 
-type SubscriptionPlan = 'free' | 'starter' | 'professional' | 'enterprise';
+type SubscriptionPlan = 'free' | 'professional' | 'enterprise';
 type BillingCycle = 'monthly' | 'yearly';
 
 interface PlanInfo {
@@ -29,44 +29,56 @@ interface PlanInfo {
   yearlyPrice: number;
   features: string[];
   isPopular: boolean;
+  note?: string;
 }
 
 const PLANS: PlanInfo[] = [
   {
     code: 'free',
     name: 'Gratuito',
-    description: 'Para técnicos independientes',
+    description: 'Para todos los técnicos',
     monthlyPrice: 0,
     yearlyPrice: 0,
-    features: ['Gestión básica', '50 clientes', '100 pianos', 'Facturación básica'],
-    isPopular: false,
-  },
-  {
-    code: 'starter',
-    name: 'Inicial',
-    description: 'Para técnicos que crecen',
-    monthlyPrice: 9.99,
-    yearlyPrice: 99.99,
-    features: ['Todo lo anterior', 'Facturación electrónica', 'Tienda online', '200 clientes'],
+    features: [
+      'Gestión de clientes ilimitada',
+      'Gestión de pianos ilimitada',
+      'Agenda y servicios',
+      'Facturación básica',
+      'Acceso a Piano Emotion Store',
+    ],
     isPopular: false,
   },
   {
     code: 'professional',
     name: 'Profesional',
-    description: 'Para empresas con equipos',
-    monthlyPrice: 29.99,
-    yearlyPrice: 299.99,
-    features: ['Todo lo anterior', 'Gestión de equipos', 'Inventario', 'Reportes', 'Ilimitado'],
+    description: 'Para técnicos independientes',
+    monthlyPrice: 9.99,
+    yearlyPrice: 99,
+    features: [
+      'Todo lo del plan Gratuito',
+      'WhatsApp integrado',
+      'Email integrado',
+      'Recordatorios automáticos',
+      'Soporte prioritario',
+    ],
     isPopular: true,
+    note: 'Gratis con mínimo de compra en distribuidor',
   },
   {
     code: 'enterprise',
-    name: 'Empresarial',
-    description: 'Para grandes empresas',
-    monthlyPrice: 99.99,
-    yearlyPrice: 999.99,
-    features: ['Todo lo anterior', 'Usuarios ilimitados', 'Marca blanca', 'API', 'SLA'],
+    name: 'Empresa',
+    description: 'Para equipos de técnicos',
+    monthlyPrice: 9.99,
+    yearlyPrice: 99,
+    features: [
+      'Todo lo del plan Profesional',
+      'Multi-técnico (gestión de equipos)',
+      'Panel de administración',
+      'Reportes de equipo',
+      '+5€/mes por técnico adicional',
+    ],
     isPopular: false,
+    note: 'Gratis con mínimo de compra en distribuidor',
   },
 ];
 
@@ -195,6 +207,9 @@ export default function SubscriptionScreen() {
               <Text style={styles.planName}>{plan.name}</Text>
               <Text style={styles.planDescription}>{plan.description}</Text>
               <Text style={styles.price}>{getPrice(plan)}</Text>
+              {plan.note && (
+                <Text style={styles.planNote}>{plan.note}</Text>
+              )}
               {plan.features.map((f, i) => (
                 <View key={i} style={styles.featureRow}>
                   <Ionicons name="checkmark-circle" size={16} color="#10b981" />
@@ -369,7 +384,14 @@ const styles = StyleSheet.create({
     fontSize: 28, 
     fontWeight: '800', 
     color: '#1f2937', 
-    marginBottom: 16 
+    marginBottom: 8 
+  },
+  planNote: {
+    fontSize: 12,
+    color: '#10b981',
+    fontWeight: '500',
+    marginBottom: 12,
+    fontStyle: 'italic',
   },
   featureRow: { 
     flexDirection: 'row', 
