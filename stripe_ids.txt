@@ -1,0 +1,11 @@
+# Stripe Product and Price IDs (Test Mode)
+
+## Plan Premium IA
+- Product ID: prod_Tfhs42udQYHa6F
+- Price ID: price_1SiMSUDpmJIxYFlvIGnyWiDP
+- Precio: €19.99/mes
+
+## Plan Profesional
+- Product ID: (pendiente de obtener)
+- Price ID: (pendiente de obtener)
+- Precio: €9.99/mes

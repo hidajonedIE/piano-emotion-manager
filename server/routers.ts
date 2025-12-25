@@ -1064,6 +1064,137 @@ export const appRouter = router({
         }
       }),
     }),
+
+    // ============ STRIPE SUBSCRIPTIONS ============
+    subscription: router({
+      /**
+       * Crear sesión de checkout para suscripción
+       */
+      createCheckout: protectedProcedure
+        .input(z.object({
+          plan: z.enum(['PROFESSIONAL', 'PREMIUM_IA']),
+          successUrl: z.string().url(),
+          cancelUrl: z.string().url(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          try {
+            const { createCheckoutSession, STRIPE_PRICES } = await import('./_core/stripe.js');
+            
+            const priceId = input.plan === 'PREMIUM_IA' 
+              ? STRIPE_PRICES.PREMIUM_IA 
+              : STRIPE_PRICES.PROFESSIONAL;
+            
+            const session = await createCheckoutSession({
+              priceId,
+              userId: ctx.user.openId,
+              userEmail: ctx.user.email || '',
+              successUrl: input.successUrl,
+              cancelUrl: input.cancelUrl,
+            });
+            
+            return session;
+          } catch (error) {
+            console.error('Error creating checkout session:', error);
+            throw new Error('No se pudo crear la sesión de pago');
+          }
+        }),
+
+      /**
+       * Obtener el plan actual del usuario
+       */
+      getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+        // Por ahora devolvemos FREE, en producción se consultaría la DB
+        const user = await db.getUserByOpenId(ctx.user.openId);
+        return {
+          plan: (user as any)?.subscriptionPlan || 'FREE',
+          status: (user as any)?.subscriptionStatus || 'inactive',
+          expiresAt: (user as any)?.subscriptionExpiresAt || null,
+        };
+      }),
+
+      /**
+       * Crear portal de gestión de suscripción
+       */
+      createPortal: protectedProcedure
+        .input(z.object({
+          returnUrl: z.string().url(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          try {
+            const { createPortalSession } = await import('./_core/stripe.js');
+            const user = await db.getUserByOpenId(ctx.user.openId);
+            
+            if (!(user as any)?.stripeCustomerId) {
+              throw new Error('No tienes una suscripción activa');
+            }
+            
+            const session = await createPortalSession({
+              customerId: (user as any).stripeCustomerId,
+              returnUrl: input.returnUrl,
+            });
+            
+            return session;
+          } catch (error) {
+            console.error('Error creating portal session:', error);
+            throw new Error('No se pudo acceder al portal de suscripción');
+          }
+        }),
+
+      /**
+       * Obtener los planes disponibles
+       */
+      getPlans: publicProcedure.query(() => {
+        return [
+          {
+            id: 'FREE',
+            name: 'Plan Gratuito',
+            price: 0,
+            currency: 'EUR',
+            interval: 'month',
+            features: [
+              'Hasta 10 clientes',
+              'Hasta 20 pianos',
+              'Gestión básica de servicios',
+              'Facturación simple',
+            ],
+          },
+          {
+            id: 'PROFESSIONAL',
+            name: 'Plan Profesional',
+            price: 9.99,
+            currency: 'EUR',
+            interval: 'month',
+            priceId: 'price_1SiMRRDpmJIxYFlvsWO3zwIB',
+            features: [
+              'Clientes ilimitados',
+              'Pianos ilimitados',
+              'Gestión completa de servicios',
+              'Facturación avanzada',
+              'Comunicaciones (WhatsApp, Email)',
+              'Predicciones con IA local',
+              'Soporte prioritario',
+            ],
+          },
+          {
+            id: 'PREMIUM_IA',
+            name: 'Plan Premium IA',
+            price: 19.99,
+            currency: 'EUR',
+            interval: 'month',
+            priceId: 'price_1SiMSUDpmJIxYFlvIGnyWiDP',
+            features: [
+              'Todo lo del Plan Profesional',
+              'Asistente de chat con IA (Gemini)',
+              'Generación automática de emails',
+              'Informes de servicio con IA',
+              'Análisis predictivo avanzado',
+              'Sugerencias de precios inteligentes',
+              'Soporte premium 24/7',
+            ],
+          },
+        ];
+      }),
+    }),
   }),
 });
 
