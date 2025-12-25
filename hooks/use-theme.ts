@@ -4,7 +4,7 @@
 export { useThemeColor } from './use-theme-color';
 export { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/colors';
+import { Colors } from '@/constants/theme';
 
 // Hook simplificado para obtener el tema actual
 export function useTheme() {
