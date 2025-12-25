@@ -25,6 +25,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
+import { trpc } from '@/lib/trpc';
 
 interface Message {
   id: string;
@@ -74,8 +75,19 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   
   const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Mutation para enviar mensajes al chat de IA
+  const chatMutation = trpc.advanced.chat.sendMessage.useMutation();
+  
+  // Query para verificar disponibilidad de IA
+  const { data: aiStatus } = trpc.advanced.chat.checkAvailability.useQuery(undefined, {
+    retry: false,
+    onSuccess: (data) => setAiAvailable(data.available),
+    onError: () => setAiAvailable(false),
+  });
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -155,7 +167,7 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
     return SAMPLE_RESPONSES['default'];
   };
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const messageText = text || inputText.trim();
     if (!messageText) return;
 
@@ -169,9 +181,28 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Simular respuesta del asistente
-    setTimeout(() => {
+    try {
+      // Intentar usar la IA real
+      const result = await chatMutation.mutateAsync({ message: messageText });
+      
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        text: result.response,
+        timestamp: new Date(),
+        suggestions: result.suggestions,
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Actualizar estado de IA disponible
+      if (result.success) {
+        setAiAvailable(true);
+      }
+    } catch (error) {
+      // Fallback a respuestas predefinidas si hay error
+      console.log('Usando respuestas predefinidas (IA no disponible)');
       const response = findResponse(messageText);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -181,15 +212,14 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
         suggestions: response.suggestions,
       };
       setMessages(prev => [...prev, assistantMessage]);
+      setAiAvailable(false);
+    } finally {
       setIsTyping(false);
-      
       // Scroll al final
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
-    }, 1000 + Math.random() * 500);
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   };
 
   const handleQuickAction = (query: string) => {
@@ -269,8 +299,8 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
               </View>
               <View>
                 <ThemedText style={styles.headerTitle}>Asistente IA</ThemedText>
-                <ThemedText style={[styles.headerSubtitle, { color: textSecondary }]}>
-                  Siempre disponible para ayudarte
+                <ThemedText style={[styles.headerSubtitle, { color: aiAvailable ? '#10B981' : textSecondary }]}>
+                  {aiAvailable === null ? 'Conectando...' : aiAvailable ? '✨ Powered by Gemini AI' : 'Modo básico'}
                 </ThemedText>
               </View>
             </View>

@@ -1003,7 +1003,104 @@ export const appRouter = router({
         return [];
       }),
     }),
+
+    /**
+     * Chat con IA usando Gemini
+     */
+    chat: router({
+      /**
+       * Envía un mensaje al asistente de IA
+       */
+      sendMessage: protectedProcedure
+        .input(z.object({
+          message: z.string().min(1).max(2000),
+          context: z.object({
+            clientCount: z.number().optional(),
+            pendingServices: z.number().optional(),
+          }).optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          try {
+            // Importar dinámicamente para evitar errores si no está configurado
+            const { pianoAssistantChat } = await import('./_core/gemini.js');
+            
+            // Obtener contexto del usuario
+            const clients = await db.getClients(ctx.user.openId);
+            const services = await db.getServices(ctx.user.openId);
+            const pendingServices = services.filter(s => s.status === 'scheduled').length;
+            
+            const response = await pianoAssistantChat(input.message, {
+              userName: ctx.user.name || undefined,
+              clientCount: clients.length,
+              pendingServices,
+            });
+            
+            return {
+              success: true,
+              response,
+              suggestions: generateSuggestions(input.message),
+            };
+          } catch (error) {
+            console.error('Error en chat con Gemini:', error);
+            // Fallback a respuesta predefinida si Gemini falla
+            return {
+              success: false,
+              response: getFallbackResponse(input.message),
+              suggestions: ['Programar cita', 'Ver clientes', 'Crear factura'],
+            };
+          }
+        }),
+
+      /**
+       * Verifica si la IA está disponible
+       */
+      checkAvailability: protectedProcedure.query(async () => {
+        try {
+          const { checkGeminiAvailability } = await import('./_core/gemini.js');
+          const available = await checkGeminiAvailability();
+          return { available, provider: 'gemini' };
+        } catch {
+          return { available: false, provider: 'none' };
+        }
+      }),
+    }),
   }),
 });
+
+// Funciones auxiliares para el chat
+function generateSuggestions(message: string): string[] {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('cliente') || lowerMessage.includes('añadir')) {
+    return ['Ver todos los clientes', 'Importar clientes', 'Tipos de cliente'];
+  }
+  if (lowerMessage.includes('factura') || lowerMessage.includes('cobrar')) {
+    return ['Ver facturas pendientes', 'Crear presupuesto', 'Enviar recordatorio'];
+  }
+  if (lowerMessage.includes('cita') || lowerMessage.includes('servicio')) {
+    return ['Ver calendario', 'Servicios pendientes', 'Historial de servicios'];
+  }
+  if (lowerMessage.includes('piano') || lowerMessage.includes('afinación')) {
+    return ['Consejos de afinación', 'Mantenimiento preventivo', 'Problemas comunes'];
+  }
+  
+  return ['Programar cita', 'Ver clientes', 'Crear factura', 'Ver reportes'];
+}
+
+function getFallbackResponse(message: string): string {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('cita') || lowerMessage.includes('programar')) {
+    return 'Para programar una cita, ve al Calendario desde el menú principal y pulsa el botón + para crear una nueva. Selecciona el cliente, piano, fecha y tipo de servicio.';
+  }
+  if (lowerMessage.includes('factura')) {
+    return 'Para crear una factura, ve a Facturas desde el menú principal y pulsa el botón +. Selecciona el cliente, añade los servicios y guarda o envía directamente.';
+  }
+  if (lowerMessage.includes('cliente')) {
+    return 'Para gestionar clientes, ve a Clientes desde el menú principal. Puedes añadir nuevos clientes, ver su historial y gestionar sus pianos.';
+  }
+  
+  return 'Puedo ayudarte con la gestión de clientes, programación de citas, facturación y más. ¿Sobre qué tema necesitas ayuda?';
+}
 
 export type AppRouter = typeof appRouter;
