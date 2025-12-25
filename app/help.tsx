@@ -373,6 +373,54 @@ const helpSections: HelpSection[] = [
     ],
   },
   {
+    id: 'marketing',
+    title: 'Marketing y Comunicación',
+    icon: 'megaphone.fill',
+    iconColor: '#E91E63',
+    content: [
+      {
+        question: '¿Qué es el módulo de Marketing?',
+        answer: 'El módulo de Marketing te permite enviar mensajes a tus clientes de forma organizada por WhatsApp y Email, usando tu teléfono y correo personal.\n\nIncluye:\n• Plantillas de mensajes editables\n• Campañas de envío por lotes\n• Historial de comunicaciones\n\nAccede desde Herramientas Avanzadas → Marketing.',
+      },
+      {
+        question: '¿Cómo funciona el envío por WhatsApp?',
+        answer: 'El sistema usa tu WhatsApp personal (no requiere WhatsApp Business API):\n\n1. Selecciona los destinatarios de tu campaña\n2. Elige una plantilla de mensaje\n3. Pulsa "Enviar por WhatsApp"\n4. Se abre WhatsApp con el mensaje prellenado\n5. Pulsa enviar en WhatsApp\n6. Marca como enviado y pasa al siguiente\n\nEs semi-automático: tú controlas cada envío.',
+      },
+      {
+        question: '¿Cómo funciona el envío por Email?',
+        answer: 'El sistema usa tu aplicación de correo personal (Gmail, Outlook, etc.):\n\n1. Selecciona los destinatarios\n2. Elige una plantilla de email\n3. Pulsa "Enviar Email"\n4. Se abre tu app de correo con el mensaje y asunto prellenados\n5. Pulsa enviar en tu app de correo\n6. Marca como enviado y pasa al siguiente\n\nNo requiere configuración de servidor SMTP.',
+      },
+      {
+        question: '¿Cómo edito las plantillas de mensajes?',
+        answer: 'Ve a Marketing → Plantillas de Mensajes:\n\n1. Selecciona la pestaña WhatsApp o Email\n2. Toca el tipo de plantilla que quieres editar\n3. Modifica el nombre, asunto (solo email) y contenido\n4. Usa las variables disponibles (ej: {{cliente_nombre}})\n5. Previsualiza el resultado\n6. Guarda la plantilla\n\nLas variables se reemplazan automáticamente con los datos del cliente.',
+      },
+      {
+        question: '¿Qué variables puedo usar en las plantillas?',
+        answer: 'Las variables disponibles dependen del tipo de mensaje:\n\n• {{cliente_nombre}} - Nombre del cliente\n• {{piano_marca}} - Marca del piano\n• {{piano_modelo}} - Modelo del piano\n• {{ultimo_servicio}} - Fecha del último servicio\n• {{fecha_cita}} - Fecha de la cita\n• {{hora_cita}} - Hora de la cita\n• {{nombre_negocio}} - Tu nombre comercial\n• {{telefono_negocio}} - Tu teléfono\n\nAl editar una plantilla, verás todas las variables disponibles.',
+      },
+      {
+        question: '¿Qué tipos de plantillas hay disponibles?',
+        answer: 'Hay 12 tipos de plantillas para WhatsApp y Email:\n\n• Recordatorio de Cita\n• Servicio Completado\n• Recordatorio de Mantenimiento\n• Factura Enviada\n• Bienvenida\n• Cumpleaños\n• Promoción\n• Seguimiento Post-Servicio\n• Reactivación de Clientes\n• Presupuesto\n• Agradecimiento\n• Mensaje Personalizado',
+      },
+      {
+        question: '¿Cómo creo una campaña de marketing?',
+        answer: 'Ve a Marketing → Campañas → Nueva:\n\n1. Nombre: Ponle un nombre descriptivo\n2. Canal: Elige WhatsApp, Email o Ambos\n3. Tipo de mensaje: Selecciona la plantilla\n4. Destinatarios: Filtra por criterio:\n   • Necesitan mantenimiento (sin servicio en 6+ meses)\n   • Clientes inactivos (12+ meses sin actividad)\n   • Servicio reciente (seguimiento)\n   • Todos los clientes\n5. Inicia el envío por lotes',
+      },
+      {
+        question: '¿Cómo funciona el envío por lotes?',
+        answer: 'El envío por lotes te permite contactar muchos clientes rápidamente:\n\n1. Verás el cliente actual con su mensaje prellenado\n2. Pulsa "Enviar por WhatsApp" o "Enviar Email"\n3. Se abre la app correspondiente\n4. Envía el mensaje\n5. Vuelve a Piano Emotion\n6. Pulsa "Ya enviado" o "Saltar"\n7. Automáticamente pasa al siguiente\n\nPuedes pausar y continuar en cualquier momento.',
+      },
+      {
+        question: '¿Puedo enviar a clientes sin email o teléfono?',
+        answer: 'No. El sistema filtra automáticamente:\n\n• Para WhatsApp: Solo clientes con teléfono\n• Para Email: Solo clientes con email\n• Para Ambos: Clientes con ambos datos\n\nSi un cliente no tiene el dato necesario, puedes usar el botón "Saltar" para pasar al siguiente.',
+      },
+      {
+        question: '¿Hay límite de envíos?',
+        answer: 'No hay límite en Piano Emotion Manager.\n\nSin embargo, ten en cuenta las políticas de WhatsApp y tu proveedor de email:\n\n• WhatsApp puede bloquear cuentas que envían muchos mensajes a contactos que no te tienen guardado\n• Algunos proveedores de email limitan envíos diarios\n\nRecomendación: Envía a clientes que ya te conocen y espacia los envíos masivos.',
+      },
+    ],
+  },
+  {
     id: 'tips',
     title: 'Consejos y Trucos',
     icon: 'lightbulb.fill',

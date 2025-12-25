@@ -210,9 +210,6 @@ export default function DashboardScreen() {
       case 'marketing':
         router.push('/marketing' as any);
         break;
-      case 'whatsapp':
-        router.push('/whatsapp-settings' as any);
-        break;
       case 'payments':
         router.push('/payment-settings' as any);
         break;
@@ -271,7 +268,6 @@ export default function DashboardScreen() {
     { key: 'distributor', icon: 'building.columns.fill', label: 'Distribuidor', color: '#BE185D', premium: true },
     { key: 'workflows', icon: 'arrow.triangle.branch', label: 'Workflows', color: '#6366F1', premium: true },
     { key: 'marketing', icon: 'megaphone.fill', label: 'Marketing', color: '#E91E63', premium: false },
-    { key: 'whatsapp', icon: 'message.fill', label: 'WhatsApp API', color: '#25D366', premium: true },
     { key: 'payments', icon: 'creditcard.fill', label: 'Pasarelas Pago', color: '#635BFF', premium: true },
     { key: 'dashboard_editor', icon: 'square.grid.2x2', label: 'Dashboard+', color: '#EC4899', premium: true },
     { key: 'teams', icon: 'person.3.sequence.fill', label: 'Equipos', color: '#14B8A6', premium: true },
