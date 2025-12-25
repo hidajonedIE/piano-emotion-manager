@@ -64,6 +64,8 @@ export default function ServiceDetailScreen() {
     notes: '',
     cost: undefined,
     pianoConditionAfter: undefined,
+    humidity: undefined,
+    temperature: undefined,
   });
 
   // Estado para modal de añadir material
@@ -625,6 +627,57 @@ export default function ServiceDetailScreen() {
           </View>
         )}
 
+        {/* Condiciones Ambientales */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.sectionTitle, { color: textColor }]}>Condiciones Ambientales</ThemedText>
+          <View style={styles.environmentalRow}>
+            <View style={styles.environmentalField}>
+              <ThemedText style={[styles.label, { color: textSecondary }]}>Humedad (%)</ThemedText>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                  value={form.humidity?.toString() || ''}
+                  onChangeText={(text) => setForm({ ...form, humidity: text ? parseFloat(text) : undefined })}
+                  placeholder="45-70%"
+                  placeholderTextColor={textSecondary}
+                  keyboardType="numeric"
+                />
+              ) : (
+                <ThemedText style={styles.value}>
+                  {form.humidity ? `${form.humidity}%` : '-'}
+                </ThemedText>
+              )}
+            </View>
+            <View style={styles.environmentalField}>
+              <ThemedText style={[styles.label, { color: textSecondary }]}>Temperatura (°C)</ThemedText>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                  value={form.temperature?.toString() || ''}
+                  onChangeText={(text) => setForm({ ...form, temperature: text ? parseFloat(text) : undefined })}
+                  placeholder="18-22°C"
+                  placeholderTextColor={textSecondary}
+                  keyboardType="numeric"
+                />
+              ) : (
+                <ThemedText style={styles.value}>
+                  {form.temperature ? `${form.temperature}°C` : '-'}
+                </ThemedText>
+              )}
+            </View>
+          </View>
+          {(form.humidity || form.temperature) && !isEditing && (
+            <View style={[styles.environmentalWarning, { backgroundColor: form.humidity && (form.humidity < 40 || form.humidity > 60) ? '#FFF3CD' : '#D4EDDA' }]}>
+              <IconSymbol name={form.humidity && (form.humidity < 40 || form.humidity > 60) ? 'exclamationmark.triangle.fill' : 'checkmark.circle.fill'} size={16} color={form.humidity && (form.humidity < 40 || form.humidity > 60) ? '#856404' : '#155724'} />
+              <ThemedText style={{ color: form.humidity && (form.humidity < 40 || form.humidity > 60) ? '#856404' : '#155724', marginLeft: 8, flex: 1 }}>
+                {form.humidity && (form.humidity < 40 || form.humidity > 60) 
+                  ? 'Humedad fuera del rango óptimo (40-60%). Recomendar humidificador/deshumidificador.'
+                  : 'Condiciones ambientales óptimas para el piano.'}
+              </ThemedText>
+            </View>
+          )}
+        </View>
+
         {/* Notas */}
         <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
           <ThemedText style={[styles.label, { color: textSecondary }]}>Notas</ThemedText>
@@ -911,5 +964,25 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  environmentalRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  environmentalField: {
+    flex: 1,
+    gap: 4,
+  },
+  environmentalWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.sm,
   },
 });

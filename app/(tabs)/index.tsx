@@ -222,6 +222,12 @@ export default function DashboardScreen() {
       case 'teams':
         router.push('/teams' as any);
         break;
+      case 'import':
+        router.push('/import' as any);
+        break;
+      case 'routes':
+        router.push('/routes' as any);
+        break;
     }
   };
 
@@ -253,6 +259,8 @@ export default function DashboardScreen() {
     { key: 'reminders', icon: 'bell.badge.fill', label: 'Recordatorios', color: '#F59E0B' },
     { key: 'contracts', icon: 'doc.badge.clock.fill', label: 'Contratos', color: '#059669' },
     { key: 'predictions', icon: 'brain.head.profile', label: 'Predicciones IA', color: '#8B5CF6' },
+    { key: 'import', icon: 'square.and.arrow.down.fill', label: 'Importar', color: '#22C55E' },
+    { key: 'routes', icon: 'map.fill', label: 'Rutas', color: '#F97316' },
     { key: 'settings', icon: 'gearshape.fill', label: 'Configuración', color: '#64748B' },
   ];
 

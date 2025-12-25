@@ -13,6 +13,10 @@ import { useClientsData, usePianosData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
 import { Spacing } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
+import { Pressable, ScrollView } from 'react-native';
+import { ThemedText } from '@/components/themed-text';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { BorderRadius } from '@/constants/theme';
 
 export default function ClientsScreen() {
   const router = useRouter();
@@ -21,18 +25,57 @@ export default function ClientsScreen() {
   const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Filtrar clientes por búsqueda
+  const accent = useThemeColor({}, 'accent');
+  const cardBg = useThemeColor({}, 'cardBackground');
+  const borderColor = useThemeColor({}, 'border');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+
+  // Obtener regiones y rutas únicas
+  const regions = useMemo(() => {
+    const uniqueRegions = [...new Set(clients.map(c => c.region).filter(Boolean))];
+    return uniqueRegions.sort();
+  }, [clients]);
+
+  const routeGroups = useMemo(() => {
+    const uniqueRoutes = [...new Set(clients.map(c => c.routeGroup).filter(Boolean))];
+    return uniqueRoutes.sort();
+  }, [clients]);
+
+  // Filtrar clientes por búsqueda, región y ruta
   const filteredClients = useMemo(() => {
-    if (!search.trim()) return clients;
-    const searchLower = search.toLowerCase();
-    return clients.filter(
-      (c) =>
-        getClientFullName(c).toLowerCase().includes(searchLower) ||
-        c.phone.includes(search) ||
-        c.email?.toLowerCase().includes(searchLower)
-    );
-  }, [clients, search]);
+    let filtered = clients;
+    
+    // Filtrar por región
+    if (selectedRegion) {
+      filtered = filtered.filter(c => c.region === selectedRegion);
+    }
+    
+    // Filtrar por grupo de ruta
+    if (selectedRoute) {
+      filtered = filtered.filter(c => c.routeGroup === selectedRoute);
+    }
+    
+    // Filtrar por búsqueda
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (c) =>
+          getClientFullName(c).toLowerCase().includes(searchLower) ||
+          c.phone?.includes(search) ||
+          c.email?.toLowerCase().includes(searchLower) ||
+          c.city?.toLowerCase().includes(searchLower) ||
+          c.region?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    return filtered;
+  }, [clients, search, selectedRegion, selectedRoute]);
+
+  const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
 
   // Contar pianos por cliente
   const getPianoCount = useCallback(
@@ -104,12 +147,78 @@ export default function ClientsScreen() {
       />
 
       <View style={styles.searchContainer}>
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t('common.search') + '...'}
-          accessibilityLabel={t('common.search') + ' ' + t('navigation.clients').toLowerCase()}
-        />
+        <View style={styles.searchRow}>
+          <View style={{ flex: 1 }}>
+            <SearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t('common.search') + '...'}
+              accessibilityLabel={t('common.search') + ' ' + t('navigation.clients').toLowerCase()}
+            />
+          </View>
+          <Pressable
+            style={[styles.filterButton, { backgroundColor: cardBg, borderColor }, activeFiltersCount > 0 && { backgroundColor: accent }]}
+            onPress={() => setShowFilters(!showFilters)}
+          >
+            <ThemedText style={{ color: activeFiltersCount > 0 ? '#FFFFFF' : textSecondary }}>
+              {activeFiltersCount > 0 ? activeFiltersCount : ''} ⚙️
+            </ThemedText>
+          </Pressable>
+        </View>
+        
+        {showFilters && (regions.length > 0 || routeGroups.length > 0) && (
+          <View style={[styles.filtersContainer, { backgroundColor: cardBg, borderColor }]}>
+            {regions.length > 0 && (
+              <View style={styles.filterSection}>
+                <ThemedText style={[styles.filterLabel, { color: textSecondary }]}>Región:</ThemedText>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.filterChips}>
+                    <Pressable
+                      style={[styles.filterChip, { borderColor }, !selectedRegion && { backgroundColor: accent }]}
+                      onPress={() => setSelectedRegion(null)}
+                    >
+                      <ThemedText style={{ color: !selectedRegion ? '#FFFFFF' : textSecondary, fontSize: 12 }}>Todas</ThemedText>
+                    </Pressable>
+                    {regions.map(region => (
+                      <Pressable
+                        key={region}
+                        style={[styles.filterChip, { borderColor }, selectedRegion === region && { backgroundColor: accent }]}
+                        onPress={() => setSelectedRegion(selectedRegion === region ? null : region)}
+                      >
+                        <ThemedText style={{ color: selectedRegion === region ? '#FFFFFF' : textSecondary, fontSize: 12 }}>{region}</ThemedText>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
+            
+            {routeGroups.length > 0 && (
+              <View style={styles.filterSection}>
+                <ThemedText style={[styles.filterLabel, { color: textSecondary }]}>Ruta:</ThemedText>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.filterChips}>
+                    <Pressable
+                      style={[styles.filterChip, { borderColor }, !selectedRoute && { backgroundColor: accent }]}
+                      onPress={() => setSelectedRoute(null)}
+                    >
+                      <ThemedText style={{ color: !selectedRoute ? '#FFFFFF' : textSecondary, fontSize: 12 }}>Todas</ThemedText>
+                    </Pressable>
+                    {routeGroups.map(route => (
+                      <Pressable
+                        key={route}
+                        style={[styles.filterChip, { borderColor }, selectedRoute === route && { backgroundColor: accent }]}
+                        onPress={() => setSelectedRoute(selectedRoute === route ? null : route)}
+                      >
+                        <ThemedText style={{ color: selectedRoute === route ? '#FFFFFF' : textSecondary, fontSize: 12 }}>{route}</ThemedText>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       {filteredClients.length === 0 ? (
@@ -166,6 +275,43 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.md,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  filterButton: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filtersContainer: {
+    marginTop: Spacing.sm,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  filterSection: {
+    gap: 4,
+  },
+  filterLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  filterChips: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+  },
+  filterChip: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
   },
   list: {
     paddingHorizontal: Spacing.md,

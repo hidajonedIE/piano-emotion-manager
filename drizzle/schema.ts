@@ -37,6 +37,12 @@ export const clients = mysqlTable("clients", {
     "concert_hall"
   ]).default("particular").notNull(),
   notes: text("notes"),
+  region: varchar("region", { length: 100 }),
+  city: varchar("city", { length: 100 }),
+  postalCode: varchar("postalCode", { length: 20 }),
+  latitude: decimal("latitude", { precision: 10, scale: 7 }),
+  longitude: decimal("longitude", { precision: 10, scale: 7 }),
+  routeGroup: varchar("routeGroup", { length: 50 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -97,6 +103,8 @@ export const services = mysqlTable("services", {
   photosBefore: json("photosBefore").$type<string[]>(),
   photosAfter: json("photosAfter").$type<string[]>(),
   clientSignature: text("clientSignature"),
+  humidity: decimal("humidity", { precision: 5, scale: 2 }),
+  temperature: decimal("temperature", { precision: 5, scale: 2 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
