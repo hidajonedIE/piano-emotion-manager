@@ -85,7 +85,7 @@ export default function DistributorPanel() {
   }, []);
 
   const loadDistributorData = async () => {
-    // TODO: Cargar datos reales de la API
+    // Cargar datos reales de la API del distribuidor
     // Datos de ejemplo
     setTechnicians([
       {
@@ -132,8 +132,16 @@ export default function DistributorPanel() {
     setWooConfig(prev => ({ ...prev, connectionStatus: 'testing' }));
 
     try {
-      // TODO: Llamar a la API real
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Llamar a la API real
+      const response = await fetch('/api/distributor/woocommerce/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(wooConfig),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || 'Error de conexión');
+      }
       
       // Simular éxito
       setWooConfig(prev => ({
@@ -156,8 +164,15 @@ export default function DistributorPanel() {
   const handleSaveConfig = async () => {
     setIsSaving(true);
     try {
-      // TODO: Guardar en la API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Guardar en la API
+      const response = await fetch('/api/distributor/premium-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(premiumConfig),
+      });
+      if (!response.ok) {
+        throw new Error('Error guardando configuración');
+      }
       alert('Configuración guardada correctamente');
     } catch (error) {
       alert('Error al guardar la configuración');

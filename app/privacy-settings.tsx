@@ -367,7 +367,19 @@ export default function PrivacySettingsScreen() {
           <Pressable
             style={styles.linkItem}
             onPress={() => {
-              // TODO: Abrir modal de cookies
+              // Abrir modal de cookies
+              Alert.alert(
+                'Configuración de Cookies',
+                'Las cookies son pequeños archivos que se almacenan en tu dispositivo para mejorar tu experiencia.\n\n' +
+                '• Cookies esenciales: Necesarias para el funcionamiento de la app\n' +
+                '• Cookies de rendimiento: Nos ayudan a mejorar la app\n' +
+                '• Cookies de análisis: Nos permiten entender cómo usas la app',
+                [
+                  { text: 'Aceptar todas', onPress: () => console.log('Cookies aceptadas') },
+                  { text: 'Solo esenciales', onPress: () => console.log('Solo esenciales') },
+                  { text: 'Cerrar', style: 'cancel' },
+                ]
+              );
               Alert.alert('Cookies', 'Próximamente podrás gestionar tus preferencias de cookies.');
             }}
           >

@@ -199,20 +199,28 @@ async function saveVerificationLog(log: any): Promise<void> {
       purchasesFound: log.purchasesFound,
     });
     
-    // TODO: Crear tabla verification_logs y guardar
-    // await db.insert(verificationLogs).values({
-    //   id: log.id,
-    //   technicianId: log.technicianId,
-    //   verificationDate: log.verificationDate,
-    //   purchasesFound: log.purchasesFound,
-    //   minimumRequired: log.minimumRequired,
-    //   meetsMinimum: log.meetsMinimum,
-    //   previousTier: log.previousTier,
-    //   newTier: log.newTier,
-    //   tierChanged: log.tierChanged,
-    //   status: log.status,
-    //   errorMessage: log.errorMessage,
-    // });
+    // Guardar en tabla verification_logs
+    try {
+      const { purchaseVerificationLogs } = await import('@/drizzle/distributor-schema');
+      
+      await db.insert(purchaseVerificationLogs).values({
+        logId: log.id,
+        userId: parseInt(log.technicianId),
+        distributorId: log.distributorId || 1,
+        verificationDate: new Date(log.verificationDate),
+        purchasesFound: log.purchasesFound.toString(),
+        minimumRequired: log.minimumRequired.toString(),
+        meetsMinimum: log.meetsMinimum,
+        previousTier: log.previousTier as 'trial' | 'basic' | 'premium' | undefined,
+        newTier: log.newTier as 'trial' | 'basic' | 'premium' | undefined,
+        tierChanged: log.tierChanged,
+        ordersCount: log.ordersCount || 0,
+        status: log.status as 'success' | 'error' | 'skipped',
+        errorMessage: log.errorMessage,
+      });
+    } catch (dbError) {
+      console.error('Error guardando log de verificación:', dbError);
+    }
   } catch (error) {
     console.error(`[DB] Error guardando log de verificación:`, error);
   }

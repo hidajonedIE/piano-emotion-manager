@@ -354,8 +354,20 @@ export function calculateAllAnalytics(
     topClients: getTopClients(clients, services, pianos),
     pianoDistribution: calculatePianoDistribution(pianos),
     upcomingAppointments,
-    pendingInvoices: 0, // TODO: Implementar cuando se añadan facturas
+    pendingInvoices: calculatePendingInvoices(services),
   };
+}
+
+/**
+ * Calcula el número de facturas pendientes basado en servicios completados sin facturar
+ */
+function calculatePendingInvoices(services: Service[]): number {
+  // Contar servicios completados que no tienen factura asociada
+  const completedServices = services.filter(s => 
+    s.status === 'completed' && !s.invoiceId
+  );
+  
+  return completedServices.length;
 }
 
 /**

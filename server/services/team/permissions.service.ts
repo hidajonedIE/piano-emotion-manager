@@ -284,8 +284,36 @@ export class PermissionsService {
       case 'all':
         return true;
       case 'team':
-        // TODO: Implementar lógica de equipo/zona
-        return true;
+        // Verificar si el usuario pertenece al mismo equipo/zona que el recurso objetivo
+        if (!targetOwnerId) return true;
+        
+        try {
+          // Obtener zonas del usuario actual
+          const userZones = await this.getUserZones(userId, organizationId);
+          
+          // Obtener zonas del propietario del recurso
+          const targetZones = await this.getUserZones(targetOwnerId, organizationId);
+          
+          // Verificar si hay intersección de zonas
+          const hasCommonZone = userZones.some(uz => 
+            targetZones.some(tz => tz.id === uz.id)
+          );
+          
+          if (hasCommonZone) return true;
+          
+          // Verificar si están en el mismo equipo
+          const userTeams = await this.getUserTeams(userId, organizationId);
+          const targetTeams = await this.getUserTeams(targetOwnerId, organizationId);
+          
+          const hasCommonTeam = userTeams.some(ut =>
+            targetTeams.some(tt => tt.id === ut.id)
+          );
+          
+          return hasCommonTeam;
+        } catch (error) {
+          console.error('Error verificando permisos de equipo/zona:', error);
+          return false;
+        }
       case 'own':
         return targetOwnerId === undefined || targetOwnerId === userId;
       default:
@@ -412,6 +440,63 @@ export class PermissionsService {
   }
   
   // ==========================================
+  /**
+   * Obtiene las zonas asignadas a un usuario
+   */
+  private async getUserZones(userId: number, organizationId: number): Promise<{ id: number; name: string }[]> {
+    try {
+      const { serviceZones, technicianZoneAssignments } = await import('@/drizzle/team-schema');
+      
+      const zones = await db
+        .select({
+          id: serviceZones.id,
+          name: serviceZones.name,
+        })
+        .from(technicianZoneAssignments)
+        .innerJoin(serviceZones, eq(serviceZones.id, technicianZoneAssignments.zoneId))
+        .where(and(
+          eq(technicianZoneAssignments.technicianId, userId),
+          eq(serviceZones.organizationId, organizationId)
+        ));
+      
+      return zones;
+    } catch (error) {
+      console.error('Error obteniendo zonas del usuario:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtiene los equipos a los que pertenece un usuario
+   */
+  private async getUserTeams(userId: number, organizationId: number): Promise<{ id: number; name: string }[]> {
+    try {
+      const { organizationMembers } = await import('@/drizzle/team-schema');
+      
+      // Por ahora, todos los miembros de una organización están en el mismo "equipo"
+      // En el futuro se puede implementar una tabla de equipos separada
+      const [member] = await db
+        .select({
+          id: organizationMembers.id,
+          role: organizationMembers.role,
+        })
+        .from(organizationMembers)
+        .where(and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.organizationId, organizationId)
+        ));
+      
+      if (member) {
+        return [{ id: organizationId, name: 'Equipo Principal' }];
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('Error obteniendo equipos del usuario:', error);
+      return [];
+    }
+  }
+
   // MÉTODOS PRIVADOS
   // ==========================================
   

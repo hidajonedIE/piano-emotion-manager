@@ -641,23 +641,69 @@ export const appRouter = router({
   // ============ MODULES ============
   modules: router({
     // Obtener módulos con estado
-    getModulesWithStatus: publicProcedure.query(async (): Promise<ModuleInfo[]> => {
-      // TODO: Obtener el plan actual del usuario cuando se implemente la BD
-      return getModulesForPlan('free');
+    getModulesWithStatus: publicProcedure.query(async ({ ctx }): Promise<ModuleInfo[]> => {
+      // Obtener el plan actual del usuario desde la BD
+      let userPlan: 'free' | 'premium' | 'enterprise' = 'free';
+      
+      try {
+        if (ctx?.userId) {
+          const [user] = await db
+            .select({ plan: users.subscriptionPlan, planExpiresAt: users.planExpiresAt })
+            .from(users)
+            .where(eq(users.id, ctx.userId));
+          
+          if (user?.plan) {
+            // Verificar si el plan no ha expirado
+            if (!user.planExpiresAt || new Date(user.planExpiresAt) > new Date()) {
+              userPlan = user.plan as 'free' | 'premium' | 'enterprise';
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error obteniendo plan del usuario:', error);
+      }
+      
+      return getModulesForPlan(userPlan);
     }),
 
     // Obtener suscripción actual
-    getCurrentSubscription: protectedProcedure.query(async () => {
-      return {
-        plan: 'free',
-        status: 'active',
-        expiresAt: null,
-      };
+    getCurrentSubscription: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const [user] = await db
+          .select({ 
+            plan: users.subscriptionPlan, 
+            status: users.subscriptionStatus,
+            expiresAt: users.planExpiresAt 
+          })
+          .from(users)
+          .where(eq(users.id, ctx.userId));
+        
+        return {
+          plan: user?.plan || 'free',
+          status: user?.status || 'active',
+          expiresAt: user?.expiresAt || null,
+        };
+      } catch (error) {
+        console.error('Error obteniendo suscripción:', error);
+        return {
+          plan: 'free',
+          status: 'active',
+          expiresAt: null,
+        };
+      }
     }),
 
     // Obtener plan actual
-    getCurrentPlan: protectedProcedure.query(async () => {
-      return 'free';
+    getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const [user] = await db
+          .select({ plan: users.subscriptionPlan })
+          .from(users)
+          .where(eq(users.id, ctx.userId));
+        
+        return user?.plan || 'free';
+      } catch (error) {
+        return 'free';
     }),
 
     // Obtener planes disponibles

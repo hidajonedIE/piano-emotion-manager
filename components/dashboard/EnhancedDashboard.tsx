@@ -296,7 +296,32 @@ export const EnhancedDashboard: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
   // Simplificado: verificar permisos sin organización específica
-  const hasPermission = (permission: string) => true; // TODO: Implementar verificación real
+  const hasPermission = (permission: string) => {
+    // Verificar permisos basados en el rol del usuario y su plan de suscripción
+    const userPlan = user?.subscriptionPlan || 'free';
+    const userRole = user?.role || 'user';
+    
+    // Permisos por plan
+    const planPermissions: Record<string, string[]> = {
+      free: ['view_dashboard', 'view_clients', 'view_pianos', 'view_services'],
+      premium: ['view_dashboard', 'view_clients', 'view_pianos', 'view_services', 'view_analytics', 'view_reports', 'export_data'],
+      enterprise: ['view_dashboard', 'view_clients', 'view_pianos', 'view_services', 'view_analytics', 'view_reports', 'export_data', 'manage_team', 'api_access'],
+    };
+    
+    // Permisos por rol
+    const rolePermissions: Record<string, string[]> = {
+      admin: ['*'],
+      manager: ['manage_team', 'view_all_data'],
+      user: [],
+    };
+    
+    // Verificar si tiene el permiso
+    const userPlanPerms = planPermissions[userPlan] || [];
+    const userRolePerms = rolePermissions[userRole] || [];
+    
+    if (userRolePerms.includes('*')) return true;
+    return userPlanPerms.includes(permission) || userRolePerms.includes(permission);
+  };
   const { hasModuleAccess, isPremiumModule } = useModuleAccess();
 
   const handleToolPress = (tool: ToolCard) => {

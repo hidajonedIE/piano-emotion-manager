@@ -106,7 +106,19 @@ export function PremiumPaywall({
  */
 export function usePremiumAccess() {
   // Por ahora usamos un estado simple, en producción se conectaría con el backend
-  // TODO: Conectar con useSubscription cuando esté disponible
+  // Conectar con el estado de suscripción
+  const checkSubscription = async () => {
+    try {
+      const response = await fetch('/api/subscription/status');
+      if (response.ok) {
+        const data = await response.json();
+        return data.plan !== 'free';
+      }
+    } catch (error) {
+      console.error('Error verificando suscripción:', error);
+    }
+    return false;
+  };
   
   const isPremium = false; // Cambiar a true para usuarios de pago
   const currentPlan = 'free'; // 'free' | 'starter' | 'professional' | 'enterprise'

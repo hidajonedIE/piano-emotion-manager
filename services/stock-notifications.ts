@@ -251,14 +251,37 @@ export async function sendStockEmailNotification(
   }
   
   try {
-    // TODO: Integrar con servicio de email real (SendGrid, AWS SES, etc.)
-    // Por ahora, simulamos el envío
+    // Integrar con servicio de email
+    const { emailService } = await import('@/server/services/email/email.service');
+    
+    await emailService.send({
+      to: email,
+      subject: subject,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #f0f0f0;">
+            <div style="font-size: 24px; font-weight: bold; color: #2563eb;">🎹 Piano Emotion</div>
+          </div>
+          <div style="padding: 30px 0;">
+            <h2 style="color: #333; margin-bottom: 20px;">${subject}</h2>
+            <div style="color: #555; line-height: 1.6;">
+              ${message.replace(/\n/g, '<br>')}
+            </div>
+          </div>
+          <div style="text-align: center; padding: 20px 0; border-top: 1px solid #f0f0f0; color: #666; font-size: 14px;">
+            <p>Este email fue enviado por Piano Emotion Manager.</p>
+          </div>
+        </div>
+      `,
+      text: message,
+    });
     
     // Incrementar contador de uso
     await incrementNotificationUsage('email');
     
     return { success: true };
   } catch (error) {
+    console.error('Error enviando email de stock:', error);
     return { success: false, error: 'Error al enviar el email' };
   }
 }

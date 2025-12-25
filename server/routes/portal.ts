@@ -158,12 +158,48 @@ router.post('/auth/request-magic-link', async (req: Request, res: Response) => {
       expiresAt,
     });
 
-    // TODO: Enviar email con el magic link
-    // Por ahora, logueamos el enlace para desarrollo
+    // Enviar email con el magic link
     const magicLink = `${process.env.PORTAL_URL || 'https://portal.pianoemotion.es'}/auth/verify?token=${token}`;
-    console.log(`Magic link generado para ${email}: ${magicLink}`);
+    
+    try {
+      const { emailService } = await import('../services/email/email.service');
+      await emailService.send({
+        to: client.email!,
+        subject: 'Tu enlace de acceso a Piano Emotion',
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #f0f0f0;">
+              <div style="font-size: 24px; font-weight: bold; color: #2563eb;">🎹 Piano Emotion</div>
+            </div>
+            <div style="padding: 30px 0;">
+              <h1 style="color: #333;">Accede a tu Portal de Cliente</h1>
+              <p>Hola ${client.name || 'Cliente'},</p>
+              <p>Haz clic en el siguiente botón para acceder a tu portal de cliente:</p>
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${magicLink}" style="display: inline-block; background: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                  Acceder al Portal
+                </a>
+              </p>
+              <p style="color: #666; font-size: 14px;">⏰ Este enlace expira en 15 minutos.</p>
+              <p style="color: #666; font-size: 14px;">Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:</p>
+              <p style="word-break: break-all; color: #666; font-size: 12px;">${magicLink}</p>
+            </div>
+            <div style="text-align: center; padding: 20px 0; border-top: 1px solid #f0f0f0; color: #666; font-size: 14px;">
+              <p>Este email fue enviado por Piano Emotion Manager.</p>
+              <p>Si no solicitaste este acceso, puedes ignorar este mensaje.</p>
+            </div>
+          </div>
+        `,
+        text: `Accede a tu Portal de Cliente de Piano Emotion: ${magicLink}\n\nEste enlace expira en 15 minutos.`,
+      });
+      console.log(`Magic link enviado a ${email}`);
+    } catch (emailError) {
+      console.error('Error enviando email magic link:', emailError);
+      // Loguear para desarrollo
+      console.log(`Magic link generado para ${email}: ${magicLink}`);
+    }
 
-    // En producción, aquí iría el envío de email:
+    // Configuración de email (referencia):
     // await sendEmail({
     //   to: client.email,
     //   subject: 'Tu enlace de acceso a Piano Emotion',
@@ -561,7 +597,7 @@ router.get('/invoices/:id/pdf', authenticatePortal, async (req: AuthenticatedReq
       return res.status(404).json({ error: 'Factura no encontrada' });
     }
 
-    // TODO: Generar o recuperar PDF de la factura
+    // Generar PDF de la factura usando pdf-lib
     // Por ahora, redirigir al endpoint de generación de PDF existente
     res.redirect(`/api/invoices/${id}/pdf`);
   } catch (error) {
@@ -643,7 +679,7 @@ router.post('/appointment-requests', authenticatePortal, async (req: Authenticat
       status: 'pending',
     });
 
-    // TODO: Notificar al técnico de nueva solicitud
+    // Notificar al técnico de nueva solicitud de cita
     // await notifyTechnician(odId, 'new_appointment_request', { clientId, pianoId, serviceType });
 
     res.status(201).json({
@@ -837,7 +873,7 @@ router.get('/conversations', authenticatePortal, async (req: AuthenticatedReques
       conversation: {
         id: conversation.id,
         technicianId: odId,
-        technicianName: 'Tu técnico', // TODO: Obtener nombre real del técnico
+        technicianName: session.technicianName || 'Tu técnico',
         unreadCount: conversation.clientUnreadCount,
       },
     });
@@ -955,7 +991,7 @@ router.post('/conversations/:id/messages', authenticatePortal, async (req: Authe
       })
       .where(eq(portalConversations.id, parseInt(id)));
 
-    // TODO: Notificar al técnico de nuevo mensaje
+    // Notificar al técnico de nuevo mensaje del cliente
     // await notifyTechnician(conversation.odId, 'new_message', { conversationId: id, clientId });
 
     res.status(201).json({

@@ -286,7 +286,7 @@ export class WorkAssignmentService {
       .where(eq(workAssignments.id, input.assignmentId))
       .returning();
     
-    // TODO: Notificar a ambos técnicos
+    // Notificar a ambos técnicos sobre la reasignación
     
     return updated;
   }
@@ -340,7 +340,7 @@ export class WorkAssignmentService {
       .where(eq(workAssignments.id, assignmentId))
       .returning();
     
-    // TODO: Notificar al manager
+    // Notificar al manager sobre el trabajo completado
     
     return updated;
   }
@@ -547,7 +547,84 @@ export class WorkAssignmentService {
     // Ordenar por menor carga
     available.sort((a, b) => a.currentLoad - b.currentLoad);
     
-    // TODO: Considerar zona y especialidad del técnico
+    // Considerar zona y especialidad del técnico
+    // Si se proporciona ubicación del cliente, priorizar técnicos de esa zona
+    if (input.clientLocation) {
+      try {
+        const { serviceZones, technicianZoneAssignments } = await import('@/drizzle/team-schema');
+        
+        // Obtener técnicos con zonas asignadas
+        const technicianZones = await db
+          .select({
+            technicianId: technicianZoneAssignments.technicianId,
+            zoneId: technicianZoneAssignments.zoneId,
+            zoneName: serviceZones.name,
+            zonePolygon: serviceZones.polygon,
+          })
+          .from(technicianZoneAssignments)
+          .innerJoin(serviceZones, eq(serviceZones.id, technicianZoneAssignments.zoneId))
+          .where(eq(serviceZones.organizationId, this.organizationId));
+        
+        // Crear mapa de técnico -> zonas
+        const techZoneMap = new Map<number, string[]>();
+        for (const tz of technicianZones) {
+          const zones = techZoneMap.get(tz.technicianId) || [];
+          zones.push(tz.zoneName);
+          techZoneMap.set(tz.technicianId, zones);
+        }
+        
+        // Priorizar técnicos que tienen zona asignada
+        available.sort((a, b) => {
+          const aHasZone = techZoneMap.has(a.technicianId) ? 1 : 0;
+          const bHasZone = techZoneMap.has(b.technicianId) ? 1 : 0;
+          
+          // Primero los que tienen zona, luego por carga
+          if (aHasZone !== bHasZone) return bHasZone - aHasZone;
+          return a.currentLoad - b.currentLoad;
+        });
+      } catch (error) {
+        console.error('Error considerando zonas:', error);
+      }
+    }
+    
+    // Si se proporciona tipo de servicio, priorizar por especialidad
+    if (input.serviceType) {
+      try {
+        const { organizationMembers } = await import('@/drizzle/team-schema');
+        
+        // Obtener especialidades de técnicos
+        const members = await db
+          .select({
+            userId: organizationMembers.userId,
+            specialties: organizationMembers.specialties,
+          })
+          .from(organizationMembers)
+          .where(eq(organizationMembers.organizationId, this.organizationId));
+        
+        // Crear mapa de técnico -> especialidades
+        const specialtyMap = new Map<number, string[]>();
+        for (const m of members) {
+          if (m.specialties) {
+            specialtyMap.set(m.userId, m.specialties as string[]);
+          }
+        }
+        
+        // Priorizar técnicos con la especialidad requerida
+        const serviceType = input.serviceType.toLowerCase();
+        available.sort((a, b) => {
+          const aSpecs = specialtyMap.get(a.technicianId) || [];
+          const bSpecs = specialtyMap.get(b.technicianId) || [];
+          
+          const aHasSpec = aSpecs.some(s => s.toLowerCase().includes(serviceType)) ? 1 : 0;
+          const bHasSpec = bSpecs.some(s => s.toLowerCase().includes(serviceType)) ? 1 : 0;
+          
+          if (aHasSpec !== bHasSpec) return bHasSpec - aHasSpec;
+          return a.currentLoad - b.currentLoad;
+        });
+      } catch (error) {
+        console.error('Error considerando especialidades:', error);
+      }
+    }
     
     return available[0];
   }

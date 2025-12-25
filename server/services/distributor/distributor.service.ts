@@ -7,8 +7,15 @@
  */
 
 import { db } from '@/drizzle/db';
-import { eq, and, desc, gte, sql } from 'drizzle-orm';
+import { eq, and, desc, gte, sql, lte } from 'drizzle-orm';
 import { users } from '@/drizzle/schema';
+import { 
+  distributors,
+  distributorWooCommerceConfig,
+  distributorPremiumConfig,
+  technicianAccountStatus,
+  purchaseVerificationLogs,
+} from '@/drizzle/distributor-schema';
 
 // ============================================================================
 // Types
@@ -72,34 +79,87 @@ export class DistributorService {
    * Obtiene la configuración de WooCommerce
    */
   async getWooCommerceConfig(): Promise<WooCommerceConfig | null> {
-    // TODO: Implementar con tabla real de configuración
-    // Por ahora retornamos configuración por defecto
-    return {
-      url: '',
-      consumerKey: '',
-      consumerSecret: '',
-      enabled: false,
-      connectionStatus: 'disconnected',
-    };
+    try {
+      const [config] = await db
+        .select()
+        .from(distributorWooCommerceConfig)
+        .where(eq(distributorWooCommerceConfig.distributorId, this.distributorId));
+
+      if (!config) {
+        return {
+          url: '',
+          consumerKey: '',
+          consumerSecret: '',
+          enabled: false,
+          connectionStatus: 'disconnected',
+        };
+      }
+
+      return {
+        url: config.url,
+        consumerKey: config.consumerKey,
+        consumerSecret: config.consumerSecret,
+        enabled: config.enabled ?? false,
+        connectionStatus: config.connectionStatus ?? 'disconnected',
+        lastTestDate: config.lastTestDate?.toISOString(),
+        errorMessage: config.errorMessage ?? undefined,
+      };
+    } catch (error) {
+      console.error('Error obteniendo configuración WooCommerce:', error);
+      return null;
+    }
   }
 
   /**
    * Guarda la configuración de WooCommerce
    */
   async saveWooCommerceConfig(config: Partial<WooCommerceConfig>): Promise<WooCommerceConfig> {
-    // TODO: Guardar en base de datos
     // Validar que los campos requeridos estén presentes
     if (!config.url || !config.consumerKey || !config.consumerSecret) {
       throw new Error('Faltan campos requeridos para la configuración de WooCommerce');
     }
 
-    return {
-      url: config.url,
-      consumerKey: config.consumerKey,
-      consumerSecret: config.consumerSecret,
-      enabled: config.enabled ?? false,
-      connectionStatus: 'disconnected',
-    };
+    try {
+      // Verificar si ya existe configuración
+      const [existing] = await db
+        .select({ id: distributorWooCommerceConfig.id })
+        .from(distributorWooCommerceConfig)
+        .where(eq(distributorWooCommerceConfig.distributorId, this.distributorId));
+
+      const configData = {
+        url: config.url,
+        consumerKey: config.consumerKey,
+        consumerSecret: config.consumerSecret,
+        enabled: config.enabled ?? false,
+        connectionStatus: config.connectionStatus ?? 'disconnected',
+        updatedAt: new Date(),
+      };
+
+      if (existing) {
+        // Actualizar
+        await db
+          .update(distributorWooCommerceConfig)
+          .set(configData)
+          .where(eq(distributorWooCommerceConfig.id, existing.id));
+      } else {
+        // Insertar
+        await db.insert(distributorWooCommerceConfig).values({
+          ...configData,
+          distributorId: this.distributorId,
+        });
+      }
+
+      return {
+        url: config.url,
+        consumerKey: config.consumerKey,
+        consumerSecret: config.consumerSecret,
+        enabled: config.enabled ?? false,
+        connectionStatus: config.connectionStatus ?? 'disconnected',
+      };
+    } catch (error) {
+      console.error('Error guardando configuración WooCommerce:', error);
+      throw error;
+    }
   }
 
   /**
@@ -115,6 +175,15 @@ export class DistributorService {
     };
   }> {
     try {
+      // Actualizar estado a testing
+      await db
+        .update(distributorWooCommerceConfig)
+        .set({ 
+          connectionStatus: 'testing',
+          lastTestDate: new Date(),
+        })
+        .where(eq(distributorWooCommerceConfig.distributorId, this.distributorId));
+
       // Construir URL de la API de WooCommerce
       const apiUrl = `${config.url}/wp-json/wc/v3/system_status`;
       
@@ -131,6 +200,16 @@ export class DistributorService {
 
       if (!response.ok) {
         const errorText = await response.text();
+        
+        // Actualizar estado a error
+        await db
+          .update(distributorWooCommerceConfig)
+          .set({ 
+            connectionStatus: 'error',
+            errorMessage: `Error ${response.status}: ${errorText}`,
+          })
+          .where(eq(distributorWooCommerceConfig.distributorId, this.distributorId));
+
         return {
           success: false,
           message: `Error de conexión: ${response.status} - ${errorText}`,
@@ -155,6 +234,15 @@ export class DistributorService {
       });
       const totalProducts = productsResponse.headers.get('X-WP-Total') || '0';
 
+      // Actualizar estado a connected
+      await db
+        .update(distributorWooCommerceConfig)
+        .set({ 
+          connectionStatus: 'connected',
+          errorMessage: null,
+        })
+        .where(eq(distributorWooCommerceConfig.distributorId, this.distributorId));
+
       return {
         success: true,
         message: 'Conexión exitosa',
@@ -165,6 +253,15 @@ export class DistributorService {
         },
       };
     } catch (error) {
+      // Actualizar estado a error
+      await db
+        .update(distributorWooCommerceConfig)
+        .set({ 
+          connectionStatus: 'error',
+          errorMessage: error instanceof Error ? error.message : 'Error desconocido',
+        })
+        .where(eq(distributorWooCommerceConfig.distributorId, this.distributorId));
+
       return {
         success: false,
         message: `Error de conexión: ${error instanceof Error ? error.message : 'Error desconocido'}`,
@@ -180,28 +277,86 @@ export class DistributorService {
    * Obtiene la configuración Premium
    */
   async getPremiumConfig(): Promise<PremiumConfig> {
-    // TODO: Implementar con tabla real
-    return {
-      minimumPurchaseAmount: 100,
-      trialPeriodDays: 30,
-      gracePeriodDays: 7,
-      whatsappEnabled: true,
-      portalEnabled: true,
-      autoRemindersEnabled: true,
-    };
+    try {
+      const [config] = await db
+        .select()
+        .from(distributorPremiumConfig)
+        .where(eq(distributorPremiumConfig.distributorId, this.distributorId));
+
+      if (!config) {
+        // Retornar valores por defecto
+        return {
+          minimumPurchaseAmount: 100,
+          trialPeriodDays: 30,
+          gracePeriodDays: 7,
+          whatsappEnabled: true,
+          portalEnabled: true,
+          autoRemindersEnabled: true,
+        };
+      }
+
+      return {
+        minimumPurchaseAmount: parseFloat(config.minimumPurchaseAmount ?? '100'),
+        trialPeriodDays: config.trialPeriodDays ?? 30,
+        gracePeriodDays: config.gracePeriodDays ?? 7,
+        whatsappEnabled: config.whatsappEnabled ?? true,
+        portalEnabled: config.portalEnabled ?? true,
+        autoRemindersEnabled: config.autoRemindersEnabled ?? true,
+      };
+    } catch (error) {
+      console.error('Error obteniendo configuración Premium:', error);
+      return {
+        minimumPurchaseAmount: 100,
+        trialPeriodDays: 30,
+        gracePeriodDays: 7,
+        whatsappEnabled: true,
+        portalEnabled: true,
+        autoRemindersEnabled: true,
+      };
+    }
   }
 
   /**
    * Guarda la configuración Premium
    */
   async savePremiumConfig(config: Partial<PremiumConfig>): Promise<PremiumConfig> {
-    // TODO: Guardar en base de datos
-    const currentConfig = await this.getPremiumConfig();
-    
-    return {
-      ...currentConfig,
-      ...config,
-    };
+    try {
+      const currentConfig = await this.getPremiumConfig();
+      const newConfig = { ...currentConfig, ...config };
+
+      // Verificar si ya existe configuración
+      const [existing] = await db
+        .select({ id: distributorPremiumConfig.id })
+        .from(distributorPremiumConfig)
+        .where(eq(distributorPremiumConfig.distributorId, this.distributorId));
+
+      const configData = {
+        minimumPurchaseAmount: newConfig.minimumPurchaseAmount.toString(),
+        trialPeriodDays: newConfig.trialPeriodDays,
+        gracePeriodDays: newConfig.gracePeriodDays,
+        whatsappEnabled: newConfig.whatsappEnabled,
+        portalEnabled: newConfig.portalEnabled,
+        autoRemindersEnabled: newConfig.autoRemindersEnabled,
+        updatedAt: new Date(),
+      };
+
+      if (existing) {
+        await db
+          .update(distributorPremiumConfig)
+          .set(configData)
+          .where(eq(distributorPremiumConfig.id, existing.id));
+      } else {
+        await db.insert(distributorPremiumConfig).values({
+          ...configData,
+          distributorId: this.distributorId,
+        });
+      }
+
+      return newConfig;
+    } catch (error) {
+      console.error('Error guardando configuración Premium:', error);
+      throw error;
+    }
   }
 
   // ============================================================================
@@ -212,58 +367,70 @@ export class DistributorService {
    * Obtiene la lista de técnicos asociados al distribuidor
    */
   async getTechnicians(): Promise<TechnicianSummary[]> {
-    // Obtener usuarios que tienen al distribuidor como referencia
-    const technicians = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .orderBy(desc(users.createdAt));
+    try {
+      // Obtener técnicos con su estado de cuenta
+      const technicians = await db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          createdAt: users.createdAt,
+          accountTier: technicianAccountStatus.accountTier,
+          purchasesLast30Days: technicianAccountStatus.purchasesLast30Days,
+          lastPurchaseDate: technicianAccountStatus.lastPurchaseDate,
+          trialEndsAt: technicianAccountStatus.trialEndsAt,
+        })
+        .from(users)
+        .leftJoin(
+          technicianAccountStatus,
+          eq(users.id, technicianAccountStatus.userId)
+        )
+        .where(
+          eq(technicianAccountStatus.distributorId, this.distributorId)
+        )
+        .orderBy(desc(users.createdAt));
 
-    // TODO: Implementar lógica real de compras y tiers
-    // Por ahora, calculamos el tier basado en datos simulados
-    const premiumConfig = await this.getPremiumConfig();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const premiumConfig = await this.getPremiumConfig();
 
-    return technicians.map((tech) => {
-      // Simular datos de compras (TODO: obtener de WooCommerce)
-      const purchasesLast30Days = Math.random() * 300;
-      const registrationDate = new Date(tech.createdAt);
-      const daysSinceRegistration = Math.floor(
-        (Date.now() - registrationDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      return technicians.map((tech) => {
+        const registrationDate = new Date(tech.createdAt);
+        const daysSinceRegistration = Math.floor(
+          (Date.now() - registrationDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
 
-      let tier: 'trial' | 'basic' | 'premium';
-      let trialEndsAt: string | undefined;
+        // Determinar tier
+        let tier: 'trial' | 'basic' | 'premium' = tech.accountTier ?? 'trial';
+        let trialEndsAt: string | undefined;
 
-      if (daysSinceRegistration <= premiumConfig.trialPeriodDays) {
-        tier = 'trial';
-        const trialEnd = new Date(registrationDate);
-        trialEnd.setDate(trialEnd.getDate() + premiumConfig.trialPeriodDays);
-        trialEndsAt = trialEnd.toISOString().split('T')[0];
-      } else if (purchasesLast30Days >= premiumConfig.minimumPurchaseAmount) {
-        tier = 'premium';
-      } else {
-        tier = 'basic';
-      }
+        // Si no hay estado de cuenta, calcular basado en fecha de registro
+        if (!tech.accountTier) {
+          if (daysSinceRegistration <= premiumConfig.trialPeriodDays) {
+            tier = 'trial';
+            const trialEnd = new Date(registrationDate);
+            trialEnd.setDate(trialEnd.getDate() + premiumConfig.trialPeriodDays);
+            trialEndsAt = trialEnd.toISOString().split('T')[0];
+          } else {
+            tier = 'basic';
+          }
+        } else if (tech.trialEndsAt) {
+          trialEndsAt = tech.trialEndsAt.toISOString().split('T')[0];
+        }
 
-      return {
-        id: tech.id.toString(),
-        name: tech.name || 'Sin nombre',
-        email: tech.email || '',
-        tier,
-        purchasesLast30Days: Math.round(purchasesLast30Days * 100) / 100,
-        lastPurchaseDate: purchasesLast30Days > 0 
-          ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          : undefined,
-        registrationDate: registrationDate.toISOString().split('T')[0],
-        trialEndsAt,
-      };
-    });
+        return {
+          id: tech.id.toString(),
+          name: tech.name || 'Sin nombre',
+          email: tech.email || '',
+          tier,
+          purchasesLast30Days: parseFloat(tech.purchasesLast30Days ?? '0'),
+          lastPurchaseDate: tech.lastPurchaseDate?.toISOString().split('T')[0],
+          registrationDate: registrationDate.toISOString().split('T')[0],
+          trialEndsAt,
+        };
+      });
+    } catch (error) {
+      console.error('Error obteniendo técnicos:', error);
+      return [];
+    }
   }
 
   /**
@@ -279,17 +446,192 @@ export class DistributorService {
    */
   async updateTechnicianTier(
     technicianId: string, 
-    tier: 'trial' | 'basic' | 'premium'
+    tier: 'trial' | 'basic' | 'premium',
+    reason?: string
   ): Promise<TechnicianSummary | null> {
-    // TODO: Implementar actualización en base de datos
-    // Por ahora retornamos el técnico con el tier actualizado
-    const technician = await this.getTechnician(technicianId);
-    if (!technician) return null;
+    try {
+      const userId = parseInt(technicianId);
+      
+      // Obtener estado actual
+      const [currentStatus] = await db
+        .select()
+        .from(technicianAccountStatus)
+        .where(and(
+          eq(technicianAccountStatus.userId, userId),
+          eq(technicianAccountStatus.distributorId, this.distributorId)
+        ));
 
-    return {
-      ...technician,
-      tier,
-    };
+      const now = new Date();
+
+      if (currentStatus) {
+        // Actualizar
+        await db
+          .update(technicianAccountStatus)
+          .set({
+            previousTier: currentStatus.accountTier,
+            accountTier: tier,
+            tierChangedAt: now,
+            manualOverride: true,
+            manualOverrideReason: reason || 'Cambio manual por distribuidor',
+            updatedAt: now,
+          })
+          .where(eq(technicianAccountStatus.id, currentStatus.id));
+      } else {
+        // Crear nuevo registro
+        await db.insert(technicianAccountStatus).values({
+          userId,
+          distributorId: this.distributorId,
+          accountTier: tier,
+          tierChangedAt: now,
+          manualOverride: true,
+          manualOverrideReason: reason || 'Cambio manual por distribuidor',
+        });
+      }
+
+      return await this.getTechnician(technicianId);
+    } catch (error) {
+      console.error('Error actualizando tier de técnico:', error);
+      return null;
+    }
+  }
+
+  // ============================================================================
+  // WooCommerce Purchase Sync
+  // ============================================================================
+
+  /**
+   * Sincroniza compras de un técnico desde WooCommerce
+   */
+  async syncTechnicianPurchases(technicianEmail: string): Promise<{
+    success: boolean;
+    purchasesLast30Days: number;
+    ordersCount: number;
+  }> {
+    try {
+      const wcConfig = await this.getWooCommerceConfig();
+      if (!wcConfig || !wcConfig.enabled || wcConfig.connectionStatus !== 'connected') {
+        return { success: false, purchasesLast30Days: 0, ordersCount: 0 };
+      }
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const dateAfter = thirtyDaysAgo.toISOString().split('T')[0];
+
+      const auth = Buffer.from(`${wcConfig.consumerKey}:${wcConfig.consumerSecret}`).toString('base64');
+      
+      // Obtener pedidos del cliente
+      const ordersUrl = `${wcConfig.url}/wp-json/wc/v3/orders?customer=${encodeURIComponent(technicianEmail)}&after=${dateAfter}&status=completed`;
+      
+      const response = await fetch(ordersUrl, {
+        headers: {
+          'Authorization': `Basic ${auth}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Error obteniendo pedidos de WooCommerce');
+        return { success: false, purchasesLast30Days: 0, ordersCount: 0 };
+      }
+
+      const orders = await response.json();
+      
+      let totalPurchases = 0;
+      for (const order of orders) {
+        totalPurchases += parseFloat(order.total || '0');
+      }
+
+      return {
+        success: true,
+        purchasesLast30Days: totalPurchases,
+        ordersCount: orders.length,
+      };
+    } catch (error) {
+      console.error('Error sincronizando compras:', error);
+      return { success: false, purchasesLast30Days: 0, ordersCount: 0 };
+    }
+  }
+
+  /**
+   * Sincroniza todos los técnicos con WooCommerce
+   */
+  async syncAllTechnicians(): Promise<{
+    synced: number;
+    errors: number;
+    tierChanges: number;
+  }> {
+    const technicians = await this.getTechnicians();
+    const premiumConfig = await this.getPremiumConfig();
+    
+    let synced = 0;
+    let errors = 0;
+    let tierChanges = 0;
+
+    for (const tech of technicians) {
+      try {
+        const result = await this.syncTechnicianPurchases(tech.email);
+        
+        if (result.success) {
+          synced++;
+
+          // Determinar nuevo tier
+          let newTier: 'trial' | 'basic' | 'premium' = 'basic';
+          const registrationDate = new Date(tech.registrationDate);
+          const daysSinceRegistration = Math.floor(
+            (Date.now() - registrationDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          if (daysSinceRegistration <= premiumConfig.trialPeriodDays) {
+            newTier = 'trial';
+          } else if (result.purchasesLast30Days >= premiumConfig.minimumPurchaseAmount) {
+            newTier = 'premium';
+          }
+
+          // Actualizar si cambió el tier
+          if (newTier !== tech.tier) {
+            await this.updateTechnicianTier(tech.id, newTier, 'Actualización automática por sincronización WooCommerce');
+            tierChanges++;
+          }
+
+          // Actualizar compras
+          const userId = parseInt(tech.id);
+          await db
+            .update(technicianAccountStatus)
+            .set({
+              purchasesLast30Days: result.purchasesLast30Days.toString(),
+              lastPurchaseCheck: new Date(),
+              lastPurchaseDate: result.ordersCount > 0 ? new Date() : undefined,
+              updatedAt: new Date(),
+            })
+            .where(and(
+              eq(technicianAccountStatus.userId, userId),
+              eq(technicianAccountStatus.distributorId, this.distributorId)
+            ));
+
+          // Registrar log
+          await db.insert(purchaseVerificationLogs).values({
+            logId: crypto.randomUUID(),
+            userId,
+            distributorId: this.distributorId,
+            verificationDate: new Date(),
+            purchasesFound: result.purchasesLast30Days.toString(),
+            minimumRequired: premiumConfig.minimumPurchaseAmount.toString(),
+            meetsMinimum: result.purchasesLast30Days >= premiumConfig.minimumPurchaseAmount,
+            previousTier: tech.tier,
+            newTier,
+            tierChanged: newTier !== tech.tier,
+            ordersCount: result.ordersCount,
+            status: 'success',
+          });
+        } else {
+          errors++;
+        }
+      } catch (error) {
+        errors++;
+        console.error(`Error sincronizando técnico ${tech.id}:`, error);
+      }
+    }
+
+    return { synced, errors, tierChanges };
   }
 
   // ============================================================================
@@ -337,139 +679,10 @@ export class DistributorService {
 
     return stats;
   }
-
-  /**
-   * Obtiene compras de WooCommerce para un técnico
-   */
-  async getWooCommercePurchases(
-    technicianEmail: string,
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<{
-    orders: Array<{
-      id: number;
-      date: string;
-      total: number;
-      status: string;
-      items: Array<{ name: string; quantity: number; total: number }>;
-    }>;
-    totalAmount: number;
-  }> {
-    const config = await this.getWooCommerceConfig();
-    
-    if (!config || !config.enabled || config.connectionStatus !== 'connected') {
-      return { orders: [], totalAmount: 0 };
-    }
-
-    try {
-      const auth = Buffer.from(`${config.consumerKey}:${config.consumerSecret}`).toString('base64');
-      
-      let url = `${config.url}/wp-json/wc/v3/orders?customer=${encodeURIComponent(technicianEmail)}&per_page=100`;
-      
-      if (startDate) {
-        url += `&after=${startDate.toISOString()}`;
-      }
-      if (endDate) {
-        url += `&before=${endDate.toISOString()}`;
-      }
-
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Basic ${auth}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error al obtener pedidos: ${response.status}`);
-      }
-
-      const orders = await response.json();
-
-      const formattedOrders = orders.map((order: any) => ({
-        id: order.id,
-        date: order.date_created,
-        total: parseFloat(order.total),
-        status: order.status,
-        items: order.line_items.map((item: any) => ({
-          name: item.name,
-          quantity: item.quantity,
-          total: parseFloat(item.total),
-        })),
-      }));
-
-      const totalAmount = formattedOrders.reduce(
-        (sum: number, order: any) => sum + order.total,
-        0
-      );
-
-      return { orders: formattedOrders, totalAmount };
-    } catch (error) {
-      console.error('Error fetching WooCommerce purchases:', error);
-      return { orders: [], totalAmount: 0 };
-    }
-  }
-
-  /**
-   * Sincroniza el estado de todos los técnicos con WooCommerce
-   */
-  async syncTechniciansWithWooCommerce(): Promise<{
-    synced: number;
-    errors: number;
-    details: Array<{ email: string; status: 'success' | 'error'; message?: string }>;
-  }> {
-    const config = await this.getWooCommerceConfig();
-    
-    if (!config || !config.enabled || config.connectionStatus !== 'connected') {
-      return { synced: 0, errors: 0, details: [] };
-    }
-
-    const technicians = await this.getTechnicians();
-    const premiumConfig = await this.getPremiumConfig();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const results = {
-      synced: 0,
-      errors: 0,
-      details: [] as Array<{ email: string; status: 'success' | 'error'; message?: string }>,
-    };
-
-    for (const tech of technicians) {
-      try {
-        const purchases = await this.getWooCommercePurchases(tech.email, thirtyDaysAgo);
-        
-        // Determinar nuevo tier basado en compras reales
-        let newTier: 'trial' | 'basic' | 'premium' = 'basic';
-        
-        if (tech.trialEndsAt && new Date(tech.trialEndsAt) > new Date()) {
-          newTier = 'trial';
-        } else if (purchases.totalAmount >= premiumConfig.minimumPurchaseAmount) {
-          newTier = 'premium';
-        }
-
-        // Actualizar tier si cambió
-        if (newTier !== tech.tier) {
-          await this.updateTechnicianTier(tech.id, newTier);
-        }
-
-        results.synced++;
-        results.details.push({ email: tech.email, status: 'success' });
-      } catch (error) {
-        results.errors++;
-        results.details.push({
-          email: tech.email,
-          status: 'error',
-          message: error instanceof Error ? error.message : 'Error desconocido',
-        });
-      }
-    }
-
-    return results;
-  }
 }
 
 // ============================================================================
-// Factory function
+// Factory
 // ============================================================================
 
 export function createDistributorService(distributorId: number): DistributorService {

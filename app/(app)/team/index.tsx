@@ -124,9 +124,11 @@ export default function TeamIndexPage() {
         ['assigned', 'accepted', 'in_progress'].includes(a.status)
       ).length, 0
     ) ?? 0,
-    totalRevenueMonth: 0, // TODO: Calcular desde servicios
-    totalServicesMonth: 0, // TODO: Calcular desde servicios
-    averageRatingMonth: 0, // TODO: Calcular desde valoraciones
+    totalRevenueMonth: teamMembers.reduce((acc, m) => acc + (m.stats?.revenueMonth || 0), 0),
+    totalServicesMonth: teamMembers.reduce((acc, m) => acc + (m.stats?.servicesMonth || 0), 0),
+    averageRatingMonth: teamMembers.length > 0 
+      ? teamMembers.reduce((acc, m) => acc + (m.stats?.averageRating || 0), 0) / teamMembers.length 
+      : 0,
   };
   
   // Calculate technician metrics
@@ -147,11 +149,11 @@ export default function TeamIndexPage() {
         totalWorkMinutes: assignments
           .filter(a => a.status === 'completed')
           .reduce((sum, a) => sum + (a.actualDuration ?? a.estimatedDuration ?? 60), 0),
-        totalRevenue: 0, // TODO: Calcular desde servicios
-        averageRating: 4.5, // TODO: Calcular desde valoraciones
-        ratingsCount: 10, // TODO: Calcular desde valoraciones
-        onTimeArrivals: 8, // TODO: Calcular desde asignaciones
-        lateArrivals: 2, // TODO: Calcular desde asignaciones
+        totalRevenue: member.services?.reduce((acc: number, s: any) => acc + (s.price || 0), 0) || 0,
+        averageRating: member.ratings?.length > 0 ? member.ratings.reduce((acc: number, r: any) => acc + r.value, 0) / member.ratings.length : 0,
+        ratingsCount: member.ratings?.length || 0,
+        onTimeArrivals: member.assignments?.filter((a: any) => a.arrivedOnTime).length || 0,
+        lateArrivals: member.assignments?.filter((a: any) => !a.arrivedOnTime).length || 0,
       };
     });
   

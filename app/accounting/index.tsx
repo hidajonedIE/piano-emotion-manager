@@ -123,7 +123,7 @@ export default function AccountingScreen() {
       ingresos,
       ivaTotal,
       byVatRate,
-      gastos: 0, // TODO: Implementar gastos
+      gastos: budgets.reduce((acc, b) => acc + (b.spent || 0), 0),
       ivaDeducible: 0,
       resultado: ivaTotal, // Simplificado
     };
