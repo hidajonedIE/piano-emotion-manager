@@ -1,5 +1,5 @@
 /**
- * Página de Suscripción
+ * Página de Suscripción con Stripe
  * Piano Emotion Manager
  */
 
@@ -11,399 +11,329 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Pressable,
+  Linking,
+  Platform,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
 
-type SubscriptionPlan = 'free' | 'professional_basic' | 'professional_advanced' | 'enterprise_basic' | 'enterprise_advanced';
-type BillingCycle = 'monthly' | 'yearly';
-
-interface PlanInfo {
-  code: SubscriptionPlan;
-  name: string;
-  description: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  features: string[];
-  isPopular: boolean;
-  note?: string;
-  limits?: string;
-}
-
-const PLANS: PlanInfo[] = [
-  {
-    code: 'free',
-    name: 'Gratuito',
-    description: 'Para todos los técnicos',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    features: [
-      'Gestión de clientes ilimitada',
-      'Gestión de pianos ilimitada',
-      'Agenda y calendario',
-      'Gestión de servicios',
-      'Facturación básica',
-      'Acceso a Piano Emotion Store',
-      'Historial de intervenciones',
-    ],
-    isPopular: false,
-  },
-  {
-    code: 'professional_basic',
-    name: 'Profesional Básico',
-    description: 'Para técnicos independientes',
-    monthlyPrice: 9.99,
-    yearlyPrice: 99,
-    features: [
-      'Todo lo del plan Gratuito',
-      'WhatsApp Business integrado',
-      'Email integrado',
-      'Recordatorios automáticos a clientes',
-      'Confirmaciones de cita',
-      'Marketing automatizado',
-      'Soporte prioritario',
-    ],
-    limits: '50 WhatsApp + 100 Emails/mes',
-    isPopular: true,
-    note: 'Gratis con mínimo de compra en distribuidor',
-  },
-  {
-    code: 'professional_advanced',
-    name: 'Profesional Avanzado',
-    description: 'Para técnicos con alto volumen',
-    monthlyPrice: 14.99,
-    yearlyPrice: 149,
-    features: [
-      'Todo lo del plan Profesional Básico',
-      'Mayor capacidad de mensajes',
-      'Campañas de marketing avanzadas',
-      'Plantillas personalizadas ilimitadas',
-      'Soporte premium',
-    ],
-    limits: '100 WhatsApp + 200 Emails/mes',
-    isPopular: false,
-    note: 'Gratis con mínimo de compra en distribuidor',
-  },
-  {
-    code: 'enterprise_basic',
-    name: 'Empresa Básico',
-    description: 'Para equipos de técnicos',
-    monthlyPrice: 9.99,
-    yearlyPrice: 99,
-    features: [
-      'Todo lo del plan Profesional Básico',
-      'Multi-técnico (gestión de equipos)',
-      'Panel de administración centralizado',
-      'Asignación de clientes por técnico',
-      'Reportes de equipo',
-      '+5€/mes por técnico adicional',
-    ],
-    limits: '50 WA + 100 Emails por técnico/mes',
-    isPopular: false,
-    note: 'Gratis con mínimo de compra en distribuidor',
-  },
-  {
-    code: 'enterprise_advanced',
-    name: 'Empresa Avanzado',
-    description: 'Para equipos con alto volumen',
-    monthlyPrice: 14.99,
-    yearlyPrice: 149,
-    features: [
-      'Todo lo del plan Empresa Básico',
-      'Mayor capacidad de mensajes por técnico',
-      'Campañas avanzadas por técnico',
-      'Estadísticas detalladas por técnico',
-      '+7€/mes por técnico adicional',
-    ],
-    limits: '100 WA + 200 Emails por técnico/mes',
-    isPopular: false,
-    note: 'Gratis con mínimo de compra en distribuidor',
-  },
-];
+type PlanId = 'FREE' | 'PROFESSIONAL' | 'PREMIUM_IA';
 
 export default function SubscriptionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('yearly');
-  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>('free');
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Modal state
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<PlanInfo | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<PlanId | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // tRPC mutation for changing plan
-  const changePlanMutation = trpc.subscription.changePlan.useMutation({
-    onSuccess: () => {
-      // Success handled after mutation
+  // Obtener planes disponibles
+  const { data: plans, isLoading: plansLoading } = trpc.subscription.getPlans.useQuery();
+  
+  // Obtener plan actual del usuario
+  const { data: currentPlan, isLoading: currentPlanLoading } = trpc.subscription.getCurrentPlan.useQuery();
+
+  // Mutation para crear checkout
+  const createCheckout = trpc.subscription.createCheckout.useMutation({
+    onSuccess: async (data) => {
+      if (data.url) {
+        // Abrir Stripe Checkout en el navegador
+        if (Platform.OS === 'web') {
+          window.location.href = data.url;
+        } else {
+          await Linking.openURL(data.url);
+        }
+      }
+      setIsProcessing(false);
     },
     onError: (error) => {
+      console.error('Error creating checkout:', error);
+      setIsProcessing(false);
+      alert('Error al procesar el pago. Por favor, inténtalo de nuevo.');
     },
   });
 
-  const handleSelectPlan = (plan: PlanInfo) => {
-    if (plan.code === currentPlan) return;
+  // Mutation para abrir portal de gestión
+  const createPortal = trpc.subscription.createPortal.useMutation({
+    onSuccess: async (data) => {
+      if (data.url) {
+        if (Platform.OS === 'web') {
+          window.location.href = data.url;
+        } else {
+          await Linking.openURL(data.url);
+        }
+      }
+      setIsProcessing(false);
+    },
+    onError: (error) => {
+      console.error('Error creating portal:', error);
+      setIsProcessing(false);
+    },
+  });
+
+  const handleSelectPlan = async (planId: PlanId) => {
+    if (planId === 'FREE' || planId === currentPlan?.plan) return;
     
-    setSelectedPlan(plan);
-    setShowConfirmModal(true);
-  };
-  
-  const handleConfirmPlanChange = () => {
-    if (!selectedPlan) return;
-    
-    const newPlan = selectedPlan.code;
-    
-    // Update UI immediately
-    setCurrentPlan(newPlan);
-    setShowConfirmModal(false);
-    setSelectedPlan(null);
-    
-    // Try to sync with backend (non-blocking)
-    changePlanMutation.mutate({
-      planCode: newPlan,
-      billingCycle: billingCycle,
+    setSelectedPlan(planId);
+    setIsProcessing(true);
+
+    const baseUrl = Platform.OS === 'web' 
+      ? window.location.origin 
+      : 'https://piano-emotion-manager.vercel.app';
+
+    createCheckout.mutate({
+      plan: planId as 'PROFESSIONAL' | 'PREMIUM_IA',
+      successUrl: `${baseUrl}/settings/subscription?success=true`,
+      cancelUrl: `${baseUrl}/settings/subscription?canceled=true`,
     });
   };
-  
-  const handleCancelPlanChange = () => {
-    setShowConfirmModal(false);
-    setSelectedPlan(null);
+
+  const handleManageSubscription = () => {
+    setIsProcessing(true);
+    const baseUrl = Platform.OS === 'web' 
+      ? window.location.origin 
+      : 'https://piano-emotion-manager.vercel.app';
+    
+    createPortal.mutate({
+      returnUrl: `${baseUrl}/settings/subscription`,
+    });
   };
 
-  const getPrice = (plan: PlanInfo) => {
-    if (plan.monthlyPrice === 0) return 'Gratis';
-    const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
-    return `${price.toFixed(2)}€/${billingCycle === 'yearly' ? 'año' : 'mes'}`;
-  };
-  
-  const getConfirmMessage = () => {
-    if (!selectedPlan) return '';
-    const price = billingCycle === 'yearly' ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
-    const priceText = price === 0 ? 'Gratis' : `${price.toFixed(2)}€/${billingCycle === 'yearly' ? 'año' : 'mes'}`;
-    return `¿Deseas cambiar tu plan a ${selectedPlan.name}?\n\nPrecio: ${priceText}`;
-  };
+  const isLoading = plansLoading || currentPlanLoading;
+
+  if (isLoading) {
+    return (
+      <>
+        <Stack.Screen options={{ title: 'Suscripción' }} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text style={styles.loadingText}>Cargando planes...</Text>
+        </View>
+      </>
+    );
+  }
 
   return (
     <>
       <Stack.Screen options={{ title: 'Suscripción' }} />
       
-      <View style={styles.wrapper}>
-        <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
-          {/* Current Plan Banner */}
-          <View style={styles.currentPlanBanner}>
-            <View style={styles.currentPlanInfo}>
-              <Text style={styles.currentPlanLabel}>Tu plan actual</Text>
-              <Text style={styles.currentPlanName}>
-                {PLANS.find(p => p.code === currentPlan)?.name || 'Gratuito'}
-              </Text>
-            </View>
-            <Ionicons name="checkmark-circle" size={28} color="#10b981" />
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
+        {/* Banner del plan actual */}
+        <View style={styles.currentPlanBanner}>
+          <View style={styles.currentPlanInfo}>
+            <Text style={styles.currentPlanLabel}>Tu plan actual</Text>
+            <Text style={styles.currentPlanName}>
+              {plans?.find(p => p.id === currentPlan?.plan)?.name || 'Plan Gratuito'}
+            </Text>
           </View>
-
-          <View style={styles.billingToggle}>
-            <TouchableOpacity
-              style={[styles.toggleButton, billingCycle === 'monthly' && styles.toggleButtonActive]}
-              onPress={() => setBillingCycle('monthly')}
+          {currentPlan?.plan !== 'FREE' && (
+            <TouchableOpacity 
+              style={styles.manageButton}
+              onPress={handleManageSubscription}
+              disabled={isProcessing}
             >
-              <Text style={[styles.toggleText, billingCycle === 'monthly' && styles.toggleTextActive]}>Mensual</Text>
+              <Text style={styles.manageButtonText}>Gestionar</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.toggleButton, billingCycle === 'yearly' && styles.toggleButtonActive]}
-              onPress={() => setBillingCycle('yearly')}
-            >
-              <Text style={[styles.toggleText, billingCycle === 'yearly' && styles.toggleTextActive]}>Anual -17%</Text>
-            </TouchableOpacity>
-          </View>
-
-          {isLoading && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#3b82f6" />
-              <Text style={styles.loadingText}>Actualizando plan...</Text>
-            </View>
           )}
+        </View>
 
-          {PLANS.map((plan) => (
+        {/* Lista de planes */}
+        {plans?.map((plan) => {
+          const isCurrentPlan = plan.id === currentPlan?.plan;
+          const isPremium = plan.id === 'PREMIUM_IA';
+          
+          return (
             <View 
-              key={plan.code} 
+              key={plan.id} 
               style={[
-                styles.planCard, 
-                plan.isPopular && styles.planCardPopular, 
-                plan.code === currentPlan && styles.planCardCurrent
+                styles.planCard,
+                isPremium && styles.planCardPremium,
+                isCurrentPlan && styles.planCardCurrent,
               ]}
             >
-              {plan.isPopular && (
-                <View style={styles.popularBadge}>
-                  <Text style={styles.popularBadgeText}>Popular</Text>
+              {isPremium && (
+                <View style={styles.recommendedBadge}>
+                  <Ionicons name="star" size={12} color="#fff" />
+                  <Text style={styles.recommendedText}>Recomendado</Text>
                 </View>
               )}
-              {plan.code === currentPlan && (
+              
+              {isCurrentPlan && (
                 <View style={styles.currentBadge}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                  <Text style={styles.currentBadgeText}>Actual</Text>
+                  <Ionicons name="checkmark-circle" size={14} color="#10b981" />
+                  <Text style={styles.currentBadgeText}>Plan actual</Text>
                 </View>
               )}
+
               <Text style={styles.planName}>{plan.name}</Text>
-              <Text style={styles.planDescription}>{plan.description}</Text>
-              <Text style={styles.price}>{getPrice(plan)}</Text>
-              {plan.limits && (
-                <View style={styles.limitsContainer}>
-                  <Ionicons name="speedometer" size={14} color="#3b82f6" />
-                  <Text style={styles.limitsText}>{plan.limits}</Text>
-                </View>
-              )}
-              {plan.note && (
-                <Text style={styles.planNote}>{plan.note}</Text>
-              )}
-              {plan.features.map((f, i) => (
-                <View key={i} style={styles.featureRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                  <Text style={styles.featureText}>{f}</Text>
-                </View>
-              ))}
+              
+              <View style={styles.priceContainer}>
+                <Text style={styles.price}>
+                  {plan.price === 0 ? 'Gratis' : `€${plan.price}`}
+                </Text>
+                {plan.price > 0 && (
+                  <Text style={styles.priceInterval}>/año</Text>
+                )}
+              </View>
+
+              <View style={styles.featuresContainer}>
+                {plan.features.map((feature, index) => (
+                  <View key={index} style={styles.featureRow}>
+                    <Ionicons 
+                      name="checkmark-circle" 
+                      size={16} 
+                      color={isPremium ? '#8B5CF6' : '#10b981'} 
+                    />
+                    <Text style={styles.featureText}>{feature}</Text>
+                  </View>
+                ))}
+              </View>
+
               <TouchableOpacity
                 style={[
-                  styles.selectButton, 
-                  plan.code === currentPlan && styles.selectButtonCurrent
+                  styles.selectButton,
+                  isCurrentPlan && styles.selectButtonCurrent,
+                  isPremium && !isCurrentPlan && styles.selectButtonPremium,
+                  plan.id === 'FREE' && styles.selectButtonFree,
                 ]}
-                onPress={() => handleSelectPlan(plan)}
-                disabled={plan.code === currentPlan || isLoading}
+                onPress={() => handleSelectPlan(plan.id as PlanId)}
+                disabled={isCurrentPlan || plan.id === 'FREE' || isProcessing}
               >
-                <Text style={[
-                  styles.selectButtonText,
-                  plan.code === currentPlan && styles.selectButtonTextCurrent
-                ]}>
-                  {plan.code === currentPlan ? 'Plan actual' : 'Seleccionar'}
-                </Text>
+                {isProcessing && selectedPlan === plan.id ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={[
+                    styles.selectButtonText,
+                    isCurrentPlan && styles.selectButtonTextCurrent,
+                    plan.id === 'FREE' && styles.selectButtonTextFree,
+                  ]}>
+                    {isCurrentPlan 
+                      ? 'Plan actual' 
+                      : plan.id === 'FREE' 
+                        ? 'Plan base' 
+                        : 'Suscribirse'}
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
-          ))}
-        </ScrollView>
-        
-        {/* Inline Modal Overlay */}
-        {showConfirmModal && (
-          <View style={styles.modalOverlay}>
-            <Pressable style={styles.modalBackdrop} onPress={handleCancelPlanChange} />
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>
-                {selectedPlan ? `Cambiar a ${selectedPlan.name}` : ''}
-              </Text>
-              <Text style={styles.modalMessage}>{getConfirmMessage()}</Text>
-              <View style={styles.modalButtons}>
-                <Pressable style={styles.cancelButton} onPress={handleCancelPlanChange}>
-                  <Text style={styles.cancelButtonText}>Cancelar</Text>
-                </Pressable>
-                <Pressable style={styles.confirmButton} onPress={handleConfirmPlanChange}>
-                  <Text style={styles.confirmButtonText}>Confirmar</Text>
-                </Pressable>
-              </View>
-            </View>
+          );
+        })}
+
+        {/* Información adicional */}
+        <View style={styles.infoSection}>
+          <Text style={styles.infoTitle}>Información importante</Text>
+          <View style={styles.infoRow}>
+            <Ionicons name="shield-checkmark" size={20} color="#3b82f6" />
+            <Text style={styles.infoText}>Pago seguro con Stripe</Text>
           </View>
-        )}
-      </View>
+          <View style={styles.infoRow}>
+            <Ionicons name="refresh" size={20} color="#3b82f6" />
+            <Text style={styles.infoText}>Cancela cuando quieras</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Ionicons name="card" size={20} color="#3b82f6" />
+            <Text style={styles.infoText}>Sin compromisos de permanencia</Text>
+          </View>
+        </View>
+      </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     flex: 1,
-    position: 'relative',
+    backgroundColor: '#f0f4f8',
   },
-  container: { 
-    flex: 1, 
-    backgroundColor: '#f9fafb', 
-    padding: 16 
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f4f8',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#64748b',
   },
   currentPlanBanner: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f0fdf4',
-    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    margin: 16,
     padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#10b981',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   currentPlanInfo: {
     flex: 1,
   },
   currentPlanLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#64748b',
     marginBottom: 4,
   },
   currentPlanName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#10b981',
+    color: '#1e293b',
   },
-  billingToggle: { 
-    flexDirection: 'row', 
-    backgroundColor: '#e5e7eb', 
-    borderRadius: 12, 
-    padding: 4, 
-    marginBottom: 24 
+  manageButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
-  toggleButton: { 
-    flex: 1, 
-    alignItems: 'center', 
-    paddingVertical: 12, 
-    borderRadius: 10 
-  },
-  toggleButtonActive: { 
-    backgroundColor: '#fff' 
-  },
-  toggleText: { 
-    fontSize: 14, 
-    fontWeight: '500', 
-    color: '#6b7280' 
-  },
-  toggleTextActive: { 
-    color: '#1f2937', 
-    fontWeight: '600' 
-  },
-  loadingOverlay: {
-    alignItems: 'center',
-    padding: 20,
-    marginBottom: 16,
-  },
-  loadingText: {
-    marginTop: 8,
+  manageButtonText: {
+    color: '#fff',
+    fontWeight: '600',
     fontSize: 14,
-    color: '#6b7280',
   },
-  planCard: { 
-    backgroundColor: '#fff', 
-    borderRadius: 16, 
-    padding: 20, 
-    marginBottom: 16, 
-    borderWidth: 2, 
-    borderColor: '#e5e7eb' 
+  planCard: {
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    position: 'relative',
   },
-  planCardPopular: { 
-    borderColor: '#3b82f6' 
+  planCardPremium: {
+    borderWidth: 2,
+    borderColor: '#8B5CF6',
   },
-  planCardCurrent: { 
-    borderColor: '#10b981', 
-    backgroundColor: '#f0fdf4' 
+  planCardCurrent: {
+    borderWidth: 2,
+    borderColor: '#10b981',
   },
-  popularBadge: { 
-    position: 'absolute', 
-    top: -10, 
-    right: 16, 
-    backgroundColor: '#3b82f6', 
-    paddingHorizontal: 10, 
-    paddingVertical: 4, 
-    borderRadius: 12 
+  recommendedBadge: {
+    position: 'absolute',
+    top: -10,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
   },
-  popularBadgeText: { 
-    fontSize: 11, 
-    fontWeight: '600', 
-    color: '#fff' 
+  recommendedText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   currentBadge: {
     flexDirection: 'row',
@@ -412,148 +342,91 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   currentBadgeText: {
+    color: '#10b981',
     fontSize: 12,
     fontWeight: '600',
-    color: '#10b981',
   },
-  planName: { 
-    fontSize: 22, 
-    fontWeight: '700', 
-    color: '#1f2937' 
-  },
-  planDescription: { 
-    fontSize: 13, 
-    color: '#6b7280', 
-    marginTop: 4, 
-    marginBottom: 12 
-  },
-  price: { 
-    fontSize: 28, 
-    fontWeight: '800', 
-    color: '#1f2937', 
-    marginBottom: 8 
-  },
-  planNote: {
-    fontSize: 12,
-    color: '#10b981',
-    fontWeight: '500',
-    marginBottom: 12,
-    fontStyle: 'italic',
-  },
-  limitsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#eff6ff',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginBottom: 8,
-    alignSelf: 'flex-start',
-  },
-  limitsText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#3b82f6',
-  },
-  featureRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 8, 
-    marginBottom: 8 
-  },
-  featureText: { 
-    fontSize: 14, 
-    color: '#374151' 
-  },
-  selectButton: { 
-    backgroundColor: '#1f2937', 
-    paddingVertical: 14, 
-    borderRadius: 10, 
-    alignItems: 'center', 
-    marginTop: 12 
-  },
-  selectButtonCurrent: { 
-    backgroundColor: '#d1fae5' 
-  },
-  selectButtonText: { 
-    fontSize: 15, 
-    fontWeight: '600', 
-    color: '#fff' 
-  },
-  selectButtonTextCurrent: {
-    color: '#10b981',
-  },
-  // Modal styles
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  modalBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-    zIndex: 1001,
-  },
-  modalTitle: {
+  planName: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 16,
+  },
+  price: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#1e293b',
+  },
+  priceInterval: {
+    fontSize: 16,
+    color: '#64748b',
+    marginLeft: 4,
+  },
+  featuresContainer: {
+    marginBottom: 16,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  featureText: {
+    fontSize: 14,
+    color: '#475569',
+    flex: 1,
+  },
+  selectButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  selectButtonPremium: {
+    backgroundColor: '#8B5CF6',
+  },
+  selectButtonCurrent: {
+    backgroundColor: '#e2e8f0',
+  },
+  selectButtonFree: {
+    backgroundColor: '#e2e8f0',
+  },
+  selectButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  selectButtonTextCurrent: {
+    color: '#64748b',
+  },
+  selectButtonTextFree: {
+    color: '#64748b',
+  },
+  infoSection: {
+    backgroundColor: '#fff',
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
     marginBottom: 12,
   },
-  modalMessage: {
-    fontSize: 15,
-    color: '#6b7280',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  modalButtons: {
+  infoRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
+    marginBottom: 8,
   },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: '#f3f4f6',
-  },
-  cancelButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-  confirmButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: '#10b981',
-  },
-  confirmButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
+  infoText: {
+    fontSize: 14,
+    color: '#475569',
   },
 });
