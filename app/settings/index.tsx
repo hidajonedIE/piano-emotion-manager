@@ -374,7 +374,7 @@ export default function SettingsIndexScreen() {
               'Activar Facturación Electrónica',
               'Genera facturas en formato electrónico oficial',
               settings.eInvoicingEnabled,
-              () => {
+              async () => {
                 // Verificar si es premium antes de activar
                 const isPremium = await checkPremiumStatus();
                 if (!isPremium) {
