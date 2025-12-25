@@ -13,6 +13,12 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  // Stripe subscription fields
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  subscriptionPlan: mysqlEnum("subscriptionPlan", ["free", "professional", "premium_ia"]).default("free").notNull(),
+  subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "canceled", "past_due", "trialing", "none"]).default("none").notNull(),
+  subscriptionId: varchar("subscriptionId", { length: 255 }),
+  subscriptionEndDate: timestamp("subscriptionEndDate"),
 });
 
 export type User = typeof users.$inferSelect;

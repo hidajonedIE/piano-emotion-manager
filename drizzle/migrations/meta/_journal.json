@@ -15,6 +15,13 @@
       "when": 1766584529966,
       "tag": "0001_hesitant_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1766700629531,
+      "tag": "0002_youthful_blonde_phantom",
+      "breakpoints": true
     }
   ]
 }
