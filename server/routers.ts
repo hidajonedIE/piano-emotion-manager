@@ -704,6 +704,7 @@ export const appRouter = router({
         return user?.plan || 'free';
       } catch (error) {
         return 'free';
+      }
     }),
 
     // Obtener planes disponibles
