@@ -5,10 +5,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-12-18.acacia',
 });
 
-// Stripe Price IDs (Test Mode)
+// Stripe Price IDs (Test Mode) - PRECIOS ANUALES
 export const STRIPE_PRICES = {
-  PROFESSIONAL: 'price_1SiMRRDpmJIxYFlvsWO3zwIB',
-  PREMIUM_IA: 'price_1SiMSUDpmJIxYFlvIGnyWiDP',
+  PROFESSIONAL: 'price_1SiMs5DpmJIxYFlvtjusxQdp', // €25/año
+  PREMIUM_IA: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',   // €50/año
 } as const;
 
 export type SubscriptionPlan = 'FREE' | 'PROFESSIONAL' | 'PREMIUM_IA';

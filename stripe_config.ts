@@ -1,31 +1,32 @@
 // Stripe Configuration - Test Mode
-// These IDs are for the sandbox environment
+// Actualizado: Planes ANUALES
 
 export const STRIPE_CONFIG = {
-  // Plan Profesional - €9.99/mes
+  // Plan Profesional - €25/año
   PROFESSIONAL: {
     productId: 'prod_TfhreYCI7tYvIX',
-    priceId: 'price_1SiMRRDpmJIxYFlvsWO3zwIB',
-    price: 9.99,
+    priceId: 'price_1SiMs5DpmJIxYFlvtjusxQdp',
+    price: 25,
     currency: 'EUR',
-    interval: 'month',
+    interval: 'year',
     name: 'Plan Profesional',
     features: [
       'Gestión de clientes ilimitada',
-      'Gestión de pianos',
-      'Servicios y facturación',
+      'Gestión de pianos ilimitada',
+      'Servicios y facturación completa',
       'Comunicaciones (WhatsApp, Email)',
       'Predicciones con IA local',
+      'Soporte prioritario',
     ],
   },
   
-  // Plan Premium IA - €19.99/mes
+  // Plan Premium IA - €50/año
   PREMIUM_IA: {
     productId: 'prod_Tfhs42udQYHa6F',
-    priceId: 'price_1SiMSUDpmJIxYFlvIGnyWiDP',
-    price: 19.99,
+    priceId: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',
+    price: 50,
     currency: 'EUR',
-    interval: 'month',
+    interval: 'year',
     name: 'Plan Premium IA',
     features: [
       'Todo lo del Plan Profesional',
@@ -34,6 +35,7 @@ export const STRIPE_CONFIG = {
       'Informes de servicio con IA',
       'Análisis predictivo avanzado',
       'Sugerencias de precios inteligentes',
+      'Soporte premium 24/7',
     ],
   },
 } as const;

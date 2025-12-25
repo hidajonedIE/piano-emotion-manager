@@ -175,7 +175,7 @@ export default function SubscriptionStripeScreen() {
                   {plan.price === 0 ? 'Gratis' : `€${plan.price.toFixed(2)}`}
                 </Text>
                 {plan.price > 0 && (
-                  <Text style={styles.priceInterval}>/mes</Text>
+                  <Text style={styles.priceInterval}>/año</Text>
                 )}
               </View>
 

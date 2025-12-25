@@ -1150,7 +1150,7 @@ export const appRouter = router({
             name: 'Plan Gratuito',
             price: 0,
             currency: 'EUR',
-            interval: 'month',
+            interval: 'year',
             features: [
               'Hasta 10 clientes',
               'Hasta 20 pianos',
@@ -1161,10 +1161,10 @@ export const appRouter = router({
           {
             id: 'PROFESSIONAL',
             name: 'Plan Profesional',
-            price: 9.99,
+            price: 25,
             currency: 'EUR',
-            interval: 'month',
-            priceId: 'price_1SiMRRDpmJIxYFlvsWO3zwIB',
+            interval: 'year',
+            priceId: 'price_1SiMs5DpmJIxYFlvtjusxQdp',
             features: [
               'Clientes ilimitados',
               'Pianos ilimitados',
@@ -1178,10 +1178,10 @@ export const appRouter = router({
           {
             id: 'PREMIUM_IA',
             name: 'Plan Premium IA',
-            price: 19.99,
+            price: 50,
             currency: 'EUR',
-            interval: 'month',
-            priceId: 'price_1SiMSUDpmJIxYFlvIGnyWiDP',
+            interval: 'year',
+            priceId: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',
             features: [
               'Todo lo del Plan Profesional',
               'Asistente de chat con IA (Gemini)',
