@@ -172,7 +172,7 @@ export default function SubscriptionStripeScreen() {
               
               <View style={styles.priceContainer}>
                 <Text style={styles.price}>
-                  {plan.price === 0 ? 'Gratis' : `€${plan.price.toFixed(2)}`}
+                  {plan.price === 0 ? 'Gratis' : `€${plan.price}`}
                 </Text>
                 {plan.price > 0 && (
                   <Text style={styles.priceInterval}>/año</Text>

@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 
 // Stripe Price IDs (Test Mode) - PRECIOS ANUALES
 export const STRIPE_PRICES = {
-  PROFESSIONAL: 'price_1SiMs5DpmJIxYFlvtjusxQdp', // €25/año
+  PROFESSIONAL: 'price_1SiNNrDpmJIxYFlvPsgsL3iX', // €30/año
   PREMIUM_IA: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',   // €50/año
 } as const;
 
