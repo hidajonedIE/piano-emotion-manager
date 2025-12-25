@@ -38,6 +38,7 @@
     "esbuild": "^0.25.0",
     "expo": "~54.0.29",
     "expo-camera": "^17.0.10",
+    "expo-clipboard": "^8.0.8",
     "expo-constants": "~18.0.12",
     "expo-crypto": "^15.0.8",
     "expo-document-picker": "^14.0.8",
