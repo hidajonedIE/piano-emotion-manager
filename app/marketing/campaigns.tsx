@@ -33,11 +33,19 @@ const campaignTemplates = [
   { id: 'custom', name: 'Mensaje Personalizado', icon: 'create-outline' },
 ];
 
+// Canales de comunicación
+const channelOptions = [
+  { id: 'whatsapp', name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366', description: 'Enviar mensajes por WhatsApp personal' },
+  { id: 'email', name: 'Email', icon: 'mail-outline', color: '#EA4335', description: 'Enviar emails desde tu correo personal' },
+  { id: 'both', name: 'Ambos', icon: 'layers-outline', color: '#6366F1', description: 'Enviar por WhatsApp y Email' },
+];
+
 interface Campaign {
   id: number;
   name: string;
   status: 'draft' | 'in_progress' | 'completed' | 'paused';
   templateType: string;
+  channel: 'whatsapp' | 'email' | 'both';
   totalRecipients: number;
   sentCount: number;
   createdAt: string;
@@ -55,7 +63,8 @@ export default function CampaignsScreen() {
   const [campaignName, setCampaignName] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
-  const [step, setStep] = useState(1); // 1: Name, 2: Template, 3: Filter, 4: Preview
+  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email' | 'both'>('whatsapp');
+  const [step, setStep] = useState(1); // 1: Name+Channel, 2: Template, 3: Filter
   
   useEffect(() => {
     loadCampaigns();
@@ -72,6 +81,7 @@ export default function CampaignsScreen() {
           name: 'Recordatorio Mantenimiento Enero',
           status: 'completed',
           templateType: 'maintenance_reminder',
+          channel: 'whatsapp',
           totalRecipients: 45,
           sentCount: 45,
           createdAt: '2025-01-15',
@@ -81,6 +91,7 @@ export default function CampaignsScreen() {
           name: 'Reactivación Clientes Inactivos',
           status: 'in_progress',
           templateType: 'reactivation',
+          channel: 'email',
           totalRecipients: 23,
           sentCount: 12,
           createdAt: '2025-01-20',
@@ -127,7 +138,26 @@ export default function CampaignsScreen() {
     setCampaignName('');
     setSelectedTemplate(null);
     setSelectedFilter(null);
+    setSelectedChannel('whatsapp');
     setStep(1);
+  };
+  
+  const getChannelIcon = (channel: string) => {
+    switch (channel) {
+      case 'whatsapp': return 'logo-whatsapp';
+      case 'email': return 'mail-outline';
+      case 'both': return 'layers-outline';
+      default: return 'chatbubble-outline';
+    }
+  };
+  
+  const getChannelColor = (channel: string) => {
+    switch (channel) {
+      case 'whatsapp': return '#25D366';
+      case 'email': return '#EA4335';
+      case 'both': return '#6366F1';
+      default: return colors.textSecondary;
+    }
   };
   
   const openCampaign = (campaign: Campaign) => {
@@ -453,6 +483,32 @@ export default function CampaignsScreen() {
               placeholder="Ej: Recordatorio Mantenimiento Febrero"
               placeholderTextColor={colors.textSecondary}
             />
+            
+            <Text style={styles.inputLabel}>Canal de envío</Text>
+            {channelOptions.map((channel) => (
+              <TouchableOpacity
+                key={channel.id}
+                style={[
+                  styles.optionCard,
+                  selectedChannel === channel.id && {
+                    borderColor: channel.color,
+                    backgroundColor: channel.color + '10',
+                  }
+                ]}
+                onPress={() => setSelectedChannel(channel.id as 'whatsapp' | 'email' | 'both')}
+              >
+                <View style={[styles.optionIcon, { backgroundColor: channel.color + '20' }]}>
+                  <Ionicons name={channel.icon as any} size={24} color={channel.color} />
+                </View>
+                <View style={styles.optionInfo}>
+                  <Text style={styles.optionName}>{channel.name}</Text>
+                  <Text style={styles.optionDescription}>{channel.description}</Text>
+                </View>
+                {selectedChannel === channel.id && (
+                  <Ionicons name="checkmark-circle" size={24} color={channel.color} />
+                )}
+              </TouchableOpacity>
+            ))}
           </>
         );
       
@@ -596,6 +652,12 @@ export default function CampaignsScreen() {
               </View>
               
               <View style={styles.campaignStats}>
+                <View style={styles.statItem}>
+                  <Ionicons name={getChannelIcon(campaign.channel) as any} size={18} color={getChannelColor(campaign.channel)} />
+                  <Text style={[styles.statText, { color: getChannelColor(campaign.channel) }]}>
+                    {campaign.channel === 'both' ? 'WhatsApp + Email' : campaign.channel === 'whatsapp' ? 'WhatsApp' : 'Email'}
+                  </Text>
+                </View>
                 <View style={styles.statItem}>
                   <Ionicons name="people-outline" size={18} color={colors.textSecondary} />
                   <Text style={styles.statText}>{campaign.totalRecipients} destinatarios</Text>

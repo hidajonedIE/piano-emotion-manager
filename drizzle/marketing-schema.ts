@@ -21,6 +21,12 @@ export const messageTemplateTypes = [
 export type MessageTemplateType = typeof messageTemplateTypes[number];
 
 /**
+ * Canales de comunicación disponibles
+ */
+export const messageChannels = ['whatsapp', 'email', 'both'] as const;
+export type MessageChannel = typeof messageChannels[number];
+
+/**
  * Plantillas de mensajes configurables por el usuario
  */
 export const messageTemplates = mysqlTable('message_templates', {
@@ -30,16 +36,25 @@ export const messageTemplates = mysqlTable('message_templates', {
   // Tipo de plantilla
   type: varchar('type', { length: 50 }).notNull(),
   
+  // Canal: whatsapp, email, o both (ambos)
+  channel: varchar('channel', { length: 20 }).default('whatsapp'),
+  
   // Nombre descriptivo de la plantilla
   name: varchar('name', { length: 100 }).notNull(),
+  
+  // Asunto del email (solo para canal email)
+  emailSubject: varchar('email_subject', { length: 200 }),
   
   // Contenido del mensaje con variables {{variable}}
   content: text('content').notNull(),
   
+  // Contenido HTML para email (opcional, si no se usa content como texto plano)
+  htmlContent: text('html_content'),
+  
   // Variables disponibles para esta plantilla (JSON array)
   availableVariables: json('available_variables').$type<string[]>(),
   
-  // Si es la plantilla por defecto para este tipo
+  // Si es la plantilla por defecto para este tipo y canal
   isDefault: boolean('is_default').default(false),
   
   // Si está activa

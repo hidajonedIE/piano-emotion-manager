@@ -21,7 +21,10 @@ interface Recipient {
   firstName: string;
   lastName: string;
   phone: string;
-  message: string;
+  email: string;
+  whatsappMessage: string;
+  emailSubject: string;
+  emailMessage: string;
   status: 'pending' | 'sent' | 'skipped';
   pianoInfo?: string;
   lastService?: string;
@@ -35,7 +38,8 @@ const mockRecipients: Recipient[] = [
     firstName: 'María',
     lastName: 'García López',
     phone: '+34612345678',
-    message: `Hola María,
+    email: 'maria.garcia@email.com',
+    whatsappMessage: `Hola María,
 
 Su piano *Yamaha U3* podría necesitar mantenimiento.
 
@@ -48,6 +52,25 @@ Para mantener su piano en óptimas condiciones, recomendamos una afinación cada
 
 Un saludo,
 Piano Emotion`,
+    emailSubject: 'Su piano podría necesitar mantenimiento - Piano Emotion',
+    emailMessage: `Estimada María,
+
+Le escribimos para recordarle que su piano Yamaha U3 podría necesitar mantenimiento.
+
+INFORMACIÓN DEL ÚLTIMO SERVICIO
+───────────────────────────────
+Fecha: Junio 2024
+Tiempo transcurrido: 7 meses
+
+Para mantener su piano en óptimas condiciones, recomendamos realizar una afinación cada 6-12 meses.
+
+¿Le gustaría programar una cita? Puede responder a este email o llamarnos.
+
+Atentamente,
+
+Piano Emotion
+Tel: +34 612 345 678
+Email: info@pianoemotion.com`,
     status: 'pending',
     pianoInfo: 'Yamaha U3',
     lastService: 'Junio 2024',
@@ -58,18 +81,29 @@ Piano Emotion`,
     firstName: 'Carlos',
     lastName: 'Martínez',
     phone: '+34623456789',
-    message: `Hola Carlos,
+    email: 'carlos.martinez@email.com',
+    whatsappMessage: `Hola Carlos,
 
 Su piano *Steinway Model B* podría necesitar mantenimiento.
 
 📅 *Último servicio:* Mayo 2024
 ⏰ *Hace:* 8 meses
 
-Para mantener su piano en óptimas condiciones, recomendamos una afinación cada 6-12 meses.
-
 ¿Le gustaría programar una cita?
 
 Un saludo,
+Piano Emotion`,
+    emailSubject: 'Su piano podría necesitar mantenimiento - Piano Emotion',
+    emailMessage: `Estimado Carlos,
+
+Le escribimos para recordarle que su piano Steinway Model B podría necesitar mantenimiento.
+
+Último servicio: Mayo 2024
+Tiempo transcurrido: 8 meses
+
+¿Le gustaría programar una cita?
+
+Atentamente,
 Piano Emotion`,
     status: 'pending',
     pianoInfo: 'Steinway Model B',
@@ -81,18 +115,29 @@ Piano Emotion`,
     firstName: 'Ana',
     lastName: 'Rodríguez',
     phone: '+34634567890',
-    message: `Hola Ana,
+    email: 'ana.rodriguez@email.com',
+    whatsappMessage: `Hola Ana,
 
 Su piano *Kawai K-500* podría necesitar mantenimiento.
 
 📅 *Último servicio:* Abril 2024
 ⏰ *Hace:* 9 meses
 
-Para mantener su piano en óptimas condiciones, recomendamos una afinación cada 6-12 meses.
-
 ¿Le gustaría programar una cita?
 
 Un saludo,
+Piano Emotion`,
+    emailSubject: 'Su piano podría necesitar mantenimiento - Piano Emotion',
+    emailMessage: `Estimada Ana,
+
+Le escribimos para recordarle que su piano Kawai K-500 podría necesitar mantenimiento.
+
+Último servicio: Abril 2024
+Tiempo transcurrido: 9 meses
+
+¿Le gustaría programar una cita?
+
+Atentamente,
 Piano Emotion`,
     status: 'pending',
     pianoInfo: 'Kawai K-500',
@@ -104,18 +149,29 @@ Piano Emotion`,
     firstName: 'Pedro',
     lastName: 'Sánchez Ruiz',
     phone: '+34645678901',
-    message: `Hola Pedro,
+    email: 'pedro.sanchez@email.com',
+    whatsappMessage: `Hola Pedro,
 
 Su piano *Boston GP-178* podría necesitar mantenimiento.
 
 📅 *Último servicio:* Marzo 2024
 ⏰ *Hace:* 10 meses
 
-Para mantener su piano en óptimas condiciones, recomendamos una afinación cada 6-12 meses.
-
 ¿Le gustaría programar una cita?
 
 Un saludo,
+Piano Emotion`,
+    emailSubject: 'Su piano podría necesitar mantenimiento - Piano Emotion',
+    emailMessage: `Estimado Pedro,
+
+Le escribimos para recordarle que su piano Boston GP-178 podría necesitar mantenimiento.
+
+Último servicio: Marzo 2024
+Tiempo transcurrido: 10 meses
+
+¿Le gustaría programar una cita?
+
+Atentamente,
 Piano Emotion`,
     status: 'pending',
     pianoInfo: 'Boston GP-178',
@@ -127,18 +183,29 @@ Piano Emotion`,
     firstName: 'Laura',
     lastName: 'Fernández',
     phone: '+34656789012',
-    message: `Hola Laura,
+    email: 'laura.fernandez@email.com',
+    whatsappMessage: `Hola Laura,
 
 Su piano *Bechstein A-124* podría necesitar mantenimiento.
 
 📅 *Último servicio:* Febrero 2024
 ⏰ *Hace:* 11 meses
 
-Para mantener su piano en óptimas condiciones, recomendamos una afinación cada 6-12 meses.
-
 ¿Le gustaría programar una cita?
 
 Un saludo,
+Piano Emotion`,
+    emailSubject: 'Su piano podría necesitar mantenimiento - Piano Emotion',
+    emailMessage: `Estimada Laura,
+
+Le escribimos para recordarle que su piano Bechstein A-124 podría necesitar mantenimiento.
+
+Último servicio: Febrero 2024
+Tiempo transcurrido: 11 meses
+
+¿Le gustaría programar una cita?
+
+Atentamente,
 Piano Emotion`,
     status: 'pending',
     pianoInfo: 'Bechstein A-124',
@@ -155,6 +222,7 @@ export default function BatchSendScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email'>('whatsapp');
   
   // Animation
   const slideAnim = useState(new Animated.Value(0))[0];
@@ -167,10 +235,6 @@ export default function BatchSendScreen() {
     setIsLoading(true);
     try {
       // TODO: Cargar desde la API según el tipo o campaignId
-      // const type = params.type;
-      // const campaignId = params.campaignId;
-      
-      // Por ahora usar datos de ejemplo
       setRecipients(mockRecipients);
       
       // Encontrar el primer pendiente
@@ -196,7 +260,7 @@ export default function BatchSendScreen() {
     if (!currentRecipient) return;
     
     const phone = currentRecipient.phone.replace(/[^0-9]/g, '');
-    const message = encodeURIComponent(currentRecipient.message);
+    const message = encodeURIComponent(currentRecipient.whatsappMessage);
     
     let url: string;
     if (Platform.OS === 'web') {
@@ -209,6 +273,29 @@ export default function BatchSendScreen() {
         await Linking.openURL(url);
       } else {
         Alert.alert('Error', 'No se pudo abrir WhatsApp');
+        return;
+      }
+    }
+  }, [currentRecipient]);
+  
+  const openEmail = useCallback(async () => {
+    if (!currentRecipient) return;
+    
+    const email = currentRecipient.email;
+    const subject = encodeURIComponent(currentRecipient.emailSubject);
+    const body = encodeURIComponent(currentRecipient.emailMessage);
+    
+    let url: string;
+    if (Platform.OS === 'web') {
+      url = `mailto:${email}?subject=${subject}&body=${body}`;
+      window.open(url, '_blank');
+    } else {
+      url = `mailto:${email}?subject=${subject}&body=${body}`;
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'No se pudo abrir la aplicación de correo');
         return;
       }
     }
@@ -281,18 +368,22 @@ export default function BatchSendScreen() {
   }, [currentIndex, recipients, sentCount, skippedCount]);
   
   const sendAndNext = useCallback(async () => {
-    await openWhatsApp();
+    if (selectedChannel === 'whatsapp') {
+      await openWhatsApp();
+    } else {
+      await openEmail();
+    }
     
     // Mostrar confirmación
     Alert.alert(
       '¿Mensaje enviado?',
-      'Confirma que has enviado el mensaje en WhatsApp',
+      `Confirma que has enviado el ${selectedChannel === 'whatsapp' ? 'mensaje de WhatsApp' : 'email'}`,
       [
         { text: 'Sí, enviado', onPress: markAsSent },
         { text: 'No lo envié', style: 'cancel' },
       ]
     );
-  }, [openWhatsApp, markAsSent]);
+  }, [selectedChannel, openWhatsApp, openEmail, markAsSent]);
   
   const skipRecipient = useCallback(() => {
     Alert.alert(
@@ -300,12 +391,12 @@ export default function BatchSendScreen() {
       '¿Por qué quieres saltar este contacto?',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Número incorrecto', onPress: () => markAsSkipped('Número incorrecto') },
+        { text: selectedChannel === 'email' ? 'Email incorrecto' : 'Número incorrecto', onPress: () => markAsSkipped('Contacto incorrecto') },
         { text: 'Ya contactado', onPress: () => markAsSkipped('Ya contactado') },
         { text: 'Otro motivo', onPress: () => markAsSkipped('Otro') },
       ]
     );
-  }, [markAsSkipped]);
+  }, [markAsSkipped, selectedChannel]);
   
   const styles = StyleSheet.create({
     container: {
@@ -334,6 +425,49 @@ export default function BatchSendScreen() {
     },
     pauseButton: {
       padding: 8,
+    },
+    // Channel selector
+    channelSelector: {
+      flexDirection: 'row',
+      padding: 12,
+      backgroundColor: colors.card,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    channelButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 10,
+      borderRadius: 8,
+      marginHorizontal: 4,
+      backgroundColor: colors.background,
+      borderWidth: 2,
+      borderColor: colors.border,
+    },
+    channelButtonActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + '10',
+    },
+    channelButtonWhatsApp: {
+      borderColor: '#25D366',
+      backgroundColor: '#25D36610',
+    },
+    channelButtonEmail: {
+      borderColor: '#EA4335',
+      backgroundColor: '#EA433510',
+    },
+    channelIcon: {
+      marginRight: 8,
+    },
+    channelText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    channelTextActive: {
+      color: colors.primary,
     },
     // Progress section
     progressSection: {
@@ -413,7 +547,7 @@ export default function BatchSendScreen() {
       fontWeight: 'bold',
       color: colors.text,
     },
-    recipientPhone: {
+    recipientContact: {
       fontSize: 14,
       color: colors.textSecondary,
       marginTop: 2,
@@ -421,6 +555,7 @@ export default function BatchSendScreen() {
     recipientMeta: {
       flexDirection: 'row',
       marginTop: 4,
+      flexWrap: 'wrap',
     },
     metaTag: {
       backgroundColor: colors.primary + '20',
@@ -428,6 +563,7 @@ export default function BatchSendScreen() {
       paddingVertical: 2,
       borderRadius: 4,
       marginRight: 8,
+      marginTop: 4,
     },
     metaText: {
       fontSize: 12,
@@ -446,6 +582,15 @@ export default function BatchSendScreen() {
       color: colors.textSecondary,
       marginBottom: 8,
     },
+    messageSubject: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
+      marginBottom: 8,
+      paddingBottom: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
     messageText: {
       fontSize: 14,
       color: colors.text,
@@ -460,13 +605,18 @@ export default function BatchSendScreen() {
       borderTopColor: colors.border,
     },
     mainButton: {
-      backgroundColor: '#25D366', // WhatsApp green
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       padding: 18,
       borderRadius: 12,
       marginBottom: 12,
+    },
+    mainButtonWhatsApp: {
+      backgroundColor: '#25D366',
+    },
+    mainButtonEmail: {
+      backgroundColor: '#EA4335',
     },
     mainButtonText: {
       color: '#fff',
@@ -562,12 +712,6 @@ export default function BatchSendScreen() {
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    queueItemCurrent: {
-      backgroundColor: colors.primary + '10',
-      marginHorizontal: -16,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-    },
     queueAvatar: {
       width: 32,
       height: 32,
@@ -586,9 +730,6 @@ export default function BatchSendScreen() {
       flex: 1,
       fontSize: 14,
       color: colors.text,
-    },
-    queueStatus: {
-      marginLeft: 8,
     },
   });
   
@@ -649,6 +790,51 @@ export default function BatchSendScreen() {
         </TouchableOpacity>
       </View>
       
+      {/* Channel Selector */}
+      <View style={styles.channelSelector}>
+        <TouchableOpacity 
+          style={[
+            styles.channelButton, 
+            selectedChannel === 'whatsapp' && styles.channelButtonWhatsApp
+          ]}
+          onPress={() => setSelectedChannel('whatsapp')}
+        >
+          <Ionicons 
+            name="logo-whatsapp" 
+            size={20} 
+            color={selectedChannel === 'whatsapp' ? '#25D366' : colors.textSecondary} 
+            style={styles.channelIcon}
+          />
+          <Text style={[
+            styles.channelText, 
+            selectedChannel === 'whatsapp' && { color: '#25D366' }
+          ]}>
+            WhatsApp
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[
+            styles.channelButton, 
+            selectedChannel === 'email' && styles.channelButtonEmail
+          ]}
+          onPress={() => setSelectedChannel('email')}
+        >
+          <Ionicons 
+            name="mail" 
+            size={20} 
+            color={selectedChannel === 'email' ? '#EA4335' : colors.textSecondary} 
+            style={styles.channelIcon}
+          />
+          <Text style={[
+            styles.channelText, 
+            selectedChannel === 'email' && { color: '#EA4335' }
+          ]}>
+            Email
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
       {/* Progress */}
       <View style={styles.progressSection}>
         <View style={styles.progressStats}>
@@ -692,7 +878,10 @@ export default function BatchSendScreen() {
             ]}
           >
             <View style={styles.recipientHeader}>
-              <View style={styles.avatar}>
+              <View style={[
+                styles.avatar, 
+                { backgroundColor: selectedChannel === 'whatsapp' ? '#25D366' : '#EA4335' }
+              ]}>
                 <Text style={styles.avatarText}>
                   {currentRecipient.firstName.charAt(0)}
                 </Text>
@@ -701,7 +890,12 @@ export default function BatchSendScreen() {
                 <Text style={styles.recipientName}>
                   {currentRecipient.firstName} {currentRecipient.lastName}
                 </Text>
-                <Text style={styles.recipientPhone}>{currentRecipient.phone}</Text>
+                <Text style={styles.recipientContact}>
+                  {selectedChannel === 'whatsapp' 
+                    ? currentRecipient.phone 
+                    : currentRecipient.email
+                  }
+                </Text>
                 <View style={styles.recipientMeta}>
                   {currentRecipient.pianoInfo && (
                     <View style={styles.metaTag}>
@@ -718,8 +912,20 @@ export default function BatchSendScreen() {
             </View>
             
             <View style={styles.messagePreview}>
-              <Text style={styles.messagePreviewTitle}>MENSAJE A ENVIAR</Text>
-              <Text style={styles.messageText}>{currentRecipient.message}</Text>
+              <Text style={styles.messagePreviewTitle}>
+                {selectedChannel === 'whatsapp' ? 'MENSAJE WHATSAPP' : 'EMAIL'}
+              </Text>
+              {selectedChannel === 'email' && (
+                <Text style={styles.messageSubject}>
+                  Asunto: {currentRecipient.emailSubject}
+                </Text>
+              )}
+              <Text style={styles.messageText}>
+                {selectedChannel === 'whatsapp' 
+                  ? currentRecipient.whatsappMessage 
+                  : currentRecipient.emailMessage
+                }
+              </Text>
             </View>
           </Animated.View>
           
@@ -744,9 +950,21 @@ export default function BatchSendScreen() {
       
       {/* Action Buttons */}
       <View style={styles.actionSection}>
-        <TouchableOpacity style={styles.mainButton} onPress={sendAndNext}>
-          <Ionicons name="logo-whatsapp" size={24} color="#fff" />
-          <Text style={styles.mainButtonText}>Enviar por WhatsApp</Text>
+        <TouchableOpacity 
+          style={[
+            styles.mainButton, 
+            selectedChannel === 'whatsapp' ? styles.mainButtonWhatsApp : styles.mainButtonEmail
+          ]} 
+          onPress={sendAndNext}
+        >
+          <Ionicons 
+            name={selectedChannel === 'whatsapp' ? 'logo-whatsapp' : 'mail'} 
+            size={24} 
+            color="#fff" 
+          />
+          <Text style={styles.mainButtonText}>
+            {selectedChannel === 'whatsapp' ? 'Enviar por WhatsApp' : 'Enviar Email'}
+          </Text>
         </TouchableOpacity>
         
         <View style={styles.secondaryButtons}>
