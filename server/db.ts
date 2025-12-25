@@ -102,6 +102,8 @@ import {
   serviceRates, ServiceRate, InsertServiceRate,
   businessInfo, BusinessInfo, InsertBusinessInfo,
   reminders, Reminder, InsertReminder,
+  quotes, Quote, InsertQuote,
+  quoteTemplates, QuoteTemplate, InsertQuoteTemplate,
 } from "../drizzle/schema.js";
 
 // ============ CLIENTS ============
@@ -407,4 +409,86 @@ export async function deleteReminder(odId: string, id: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(reminders).where(and(eq(reminders.odId, odId), eq(reminders.id, id)));
+}
+
+
+// ============ QUOTES (PRESUPUESTOS) ============
+
+export async function getQuotes(odId: string): Promise<Quote[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(quotes).where(eq(quotes.odId, odId)).orderBy(desc(quotes.date));
+}
+
+export async function getQuote(odId: string, id: number): Promise<Quote | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(quotes).where(and(eq(quotes.odId, odId), eq(quotes.id, id)));
+  return result[0];
+}
+
+export async function getQuotesByClient(odId: string, clientId: number): Promise<Quote[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(quotes).where(and(eq(quotes.odId, odId), eq(quotes.clientId, clientId))).orderBy(desc(quotes.date));
+}
+
+export async function createQuote(data: InsertQuote): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(quotes).values(data);
+  return result[0].insertId;
+}
+
+export async function updateQuote(odId: string, id: number, data: Partial<InsertQuote>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(quotes).set(data).where(and(eq(quotes.odId, odId), eq(quotes.id, id)));
+}
+
+export async function deleteQuote(odId: string, id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(quotes).where(and(eq(quotes.odId, odId), eq(quotes.id, id)));
+}
+
+export async function getNextQuoteNumber(odId: string): Promise<number> {
+  const db = await getDb();
+  if (!db) return 1;
+  const result = await db.select().from(quotes).where(eq(quotes.odId, odId)).orderBy(desc(quotes.id)).limit(1);
+  return result.length > 0 ? result[0].id + 1 : 1;
+}
+
+// ============ QUOTE TEMPLATES ============
+
+export async function getQuoteTemplates(odId: string): Promise<QuoteTemplate[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(quoteTemplates).where(eq(quoteTemplates.odId, odId)).orderBy(quoteTemplates.name);
+}
+
+export async function getQuoteTemplate(odId: string, id: number): Promise<QuoteTemplate | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(quoteTemplates).where(and(eq(quoteTemplates.odId, odId), eq(quoteTemplates.id, id)));
+  return result[0];
+}
+
+export async function createQuoteTemplate(data: InsertQuoteTemplate): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(quoteTemplates).values(data);
+  return result[0].insertId;
+}
+
+export async function updateQuoteTemplate(odId: string, id: number, data: Partial<InsertQuoteTemplate>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(quoteTemplates).set(data).where(and(eq(quoteTemplates.odId, odId), eq(quoteTemplates.id, id)));
+}
+
+export async function deleteQuoteTemplate(odId: string, id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(quoteTemplates).where(and(eq(quoteTemplates.odId, odId), eq(quoteTemplates.id, id)));
 }

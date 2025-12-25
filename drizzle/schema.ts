@@ -264,3 +264,88 @@ export const reminders = mysqlTable("reminders", {
 
 export type Reminder = typeof reminders.$inferSelect;
 export type InsertReminder = typeof reminders.$inferInsert;
+
+
+/**
+ * Quotes table - Stores budget/quote records for clients
+ */
+export const quotes = mysqlTable("quotes", {
+  id: int("id").autoincrement().primaryKey(),
+  odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  quoteNumber: varchar("quoteNumber", { length: 50 }).notNull(),
+  clientId: int("clientId").notNull(),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  clientEmail: varchar("clientEmail", { length: 320 }),
+  clientAddress: text("clientAddress"),
+  pianoId: int("pianoId"),
+  pianoDescription: varchar("pianoDescription", { length: 255 }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  date: timestamp("date").notNull(),
+  validUntil: timestamp("validUntil").notNull(),
+  status: mysqlEnum("status", ["draft", "sent", "accepted", "rejected", "expired", "converted"]).default("draft").notNull(),
+  items: json("items").$type<{ 
+    id: string;
+    type: 'service' | 'part' | 'labor' | 'travel' | 'other';
+    name: string;
+    description?: string;
+    quantity: number;
+    unitPrice: number;
+    discount: number;
+    taxRate: number;
+    subtotal: number;
+    total: number;
+  }[]>(),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  totalDiscount: decimal("totalDiscount", { precision: 10, scale: 2 }).default("0").notNull(),
+  taxAmount: decimal("taxAmount", { precision: 10, scale: 2 }).notNull(),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("EUR").notNull(),
+  notes: text("notes"),
+  termsAndConditions: text("termsAndConditions"),
+  sentAt: timestamp("sentAt"),
+  acceptedAt: timestamp("acceptedAt"),
+  rejectedAt: timestamp("rejectedAt"),
+  convertedToInvoiceId: int("convertedToInvoiceId"),
+  businessInfo: json("businessInfo").$type<{
+    name: string;
+    taxId: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    phone: string;
+    email: string;
+    bankAccount: string;
+  }>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Quote = typeof quotes.$inferSelect;
+export type InsertQuote = typeof quotes.$inferInsert;
+
+/**
+ * Quote Templates table - Stores reusable quote templates
+ */
+export const quoteTemplates = mysqlTable("quoteTemplates", {
+  id: int("id").autoincrement().primaryKey(),
+  odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: mysqlEnum("category", ["tuning", "repair", "restoration", "maintenance", "moving", "evaluation", "custom"]).default("custom").notNull(),
+  items: json("items").$type<{
+    type: 'service' | 'part' | 'labor' | 'travel' | 'other';
+    name: string;
+    description?: string;
+    quantity: number;
+    unitPrice: number;
+    discount: number;
+    taxRate: number;
+  }[]>(),
+  isDefault: boolean("isDefault").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type QuoteTemplate = typeof quoteTemplates.$inferSelect;
+export type InsertQuoteTemplate = typeof quoteTemplates.$inferInsert;
