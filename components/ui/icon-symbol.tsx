@@ -100,6 +100,44 @@ const MAPPING = {
   "wrench.and.screwdriver.fill": "handyman",
   "folder.fill": "folder",
   "arrow.clockwise.icloud.fill": "cloud-sync",
+  
+  // Analytics & Charts
+  "chart.xyaxis.line": "show-chart",
+  "chart.line.uptrend.xyaxis": "trending-up",
+  
+  // Documents
+  "doc.plaintext": "receipt",
+  "doc.badge.clock.fill": "pending-actions",
+  "list.clipboard.fill": "assignment",
+  
+  // Finance
+  "dollarsign.circle.fill": "attach-money",
+  
+  // AI & Brain
+  "brain.head.profile": "psychology",
+  
+  // Import/Export
+  "square.and.arrow.down.fill": "file-download",
+  "square.and.arrow.up.fill": "file-upload",
+  
+  // Notifications
+  "bell.badge.fill": "notifications-active",
+  
+  // Users
+  "person.fill.questionmark": "help-outline",
+  "person.3.fill": "groups",
+  "person.3.sequence.fill": "group-work",
+  
+  // Buildings
+  "building.columns.fill": "account-balance",
+  
+  // Misc
+  "globe": "language",
+  "calculator": "calculate",
+  "megaphone.fill": "campaign",
+  "creditcard.fill": "credit-card",
+  "arrow.triangle.branch": "account-tree",
+  "square.grid.2x2": "dashboard",
 } as IconMapping;
 
 /**
