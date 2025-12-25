@@ -126,7 +126,20 @@ export class WorkAssignmentService {
       longitude: input.longitude,
     }).returning();
     
-    // TODO: Enviar notificación al técnico
+    // Enviar notificación al técnico
+    try {
+      const { notificationService } = await import('../notifications/notification.service');
+      await notificationService.notifyNewAssignment(technicianId, {
+        clientName: input.clientName || 'Cliente',
+        serviceType: input.serviceType || 'Servicio',
+        scheduledDate: input.scheduledDate,
+        priority: input.priority || 'normal',
+        assignmentId: assignment.id,
+        organizationId: this.organizationId,
+      });
+    } catch (notifyError) {
+      console.error('Error enviando notificación de asignación:', notifyError);
+    }
     
     return assignment;
   }

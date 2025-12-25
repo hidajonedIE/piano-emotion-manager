@@ -150,7 +150,7 @@ class NotificationService {
   private async savePushToken(userId: number, token: string): Promise<void> {
     const platform = Platform.OS as 'ios' | 'android' | 'web';
     
-    const pushToken: PushToken = {
+    const pushTokenData: PushToken = {
       userId,
       token,
       platform,
@@ -158,20 +158,51 @@ class NotificationService {
       lastUsedAt: new Date(),
     };
     
-    // Guardar en memoria (en producción, guardar en BD)
+    // Guardar en memoria
     const userTokens = this.pushTokens.get(userId) || [];
     const existingIndex = userTokens.findIndex(t => t.token === token);
     
     if (existingIndex >= 0) {
       userTokens[existingIndex].lastUsedAt = new Date();
     } else {
-      userTokens.push(pushToken);
+      userTokens.push(pushTokenData);
     }
     
     this.pushTokens.set(userId, userTokens);
     
-    // TODO: Guardar en base de datos
-    // await db.insert(pushTokens).values(pushToken).onConflictDoUpdate(...);
+    // Guardar en base de datos
+    try {
+      const { db } = await import('@/drizzle/db');
+      const { pushTokens: pushTokensTable } = await import('@/drizzle/notifications-schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      // Verificar si ya existe
+      const [existing] = await db
+        .select()
+        .from(pushTokensTable)
+        .where(and(
+          eq(pushTokensTable.userId, userId),
+          eq(pushTokensTable.token, token)
+        ));
+      
+      if (existing) {
+        // Actualizar lastUsedAt
+        await db
+          .update(pushTokensTable)
+          .set({ lastUsedAt: new Date(), isActive: true })
+          .where(eq(pushTokensTable.id, existing.id));
+      } else {
+        // Insertar nuevo token
+        await db.insert(pushTokensTable).values({
+          userId,
+          token,
+          platform,
+          isActive: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error saving push token to database:', error);
+    }
   }
   
   /**
@@ -182,7 +213,21 @@ class NotificationService {
     const filtered = userTokens.filter(t => t.token !== token);
     this.pushTokens.set(userId, filtered);
     
-    // TODO: Eliminar de base de datos
+    // Eliminar de base de datos
+    try {
+      const { db } = await import('@/drizzle/db');
+      const { pushTokens: pushTokensTable } = await import('@/drizzle/notifications-schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      await db
+        .delete(pushTokensTable)
+        .where(and(
+          eq(pushTokensTable.userId, userId),
+          eq(pushTokensTable.token, token)
+        ));
+    } catch (error) {
+      console.error('Error removing push token from database:', error);
+    }
   }
   
   // ==========================================
@@ -333,7 +378,24 @@ class NotificationService {
     
     this.notifications.push(notification);
     
-    // TODO: Guardar en base de datos
+    // Guardar en base de datos
+    try {
+      const { db } = await import('@/drizzle/db');
+      const { storedNotifications } = await import('@/drizzle/notifications-schema');
+      
+      await db.insert(storedNotifications).values({
+        notificationId: notification.id,
+        userId: notification.userId,
+        organizationId: notification.organizationId,
+        type: notification.type as any,
+        title: notification.title,
+        body: notification.body,
+        data: notification.data,
+        isRead: false,
+      });
+    } catch (error) {
+      console.error('Error storing notification in database:', error);
+    }
     
     return notification;
   }
@@ -383,7 +445,22 @@ class NotificationService {
       notification.readAt = new Date();
     }
     
-    // TODO: Actualizar en base de datos
+    // Actualizar en base de datos
+    try {
+      const { db } = await import('@/drizzle/db');
+      const { storedNotifications } = await import('@/drizzle/notifications-schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      await db
+        .update(storedNotifications)
+        .set({ isRead: true, readAt: new Date() })
+        .where(and(
+          eq(storedNotifications.notificationId, notificationId),
+          eq(storedNotifications.userId, userId)
+        ));
+    } catch (error) {
+      console.error('Error marking notification as read in database:', error);
+    }
   }
   
   /**
@@ -397,7 +474,28 @@ class NotificationService {
         n.readAt = new Date();
       });
     
-    // TODO: Actualizar en base de datos
+    // Actualizar en base de datos
+    try {
+      const { db } = await import('@/drizzle/db');
+      const { storedNotifications } = await import('@/drizzle/notifications-schema');
+      const { eq, and, isNull } = await import('drizzle-orm');
+      
+      const conditions = [
+        eq(storedNotifications.userId, userId),
+        eq(storedNotifications.isRead, false),
+      ];
+      
+      if (organizationId) {
+        conditions.push(eq(storedNotifications.organizationId, organizationId));
+      }
+      
+      await db
+        .update(storedNotifications)
+        .set({ isRead: true, readAt: new Date() })
+        .where(and(...conditions));
+    } catch (error) {
+      console.error('Error marking all notifications as read in database:', error);
+    }
   }
   
   /**

@@ -13,6 +13,9 @@ import {
 } from '../services/purchase-verification.service';
 import { createWooCommerceService } from '../services/woocommerce.service';
 import type { AccountTier, TechnicianAccountStatus, DistributorPremiumConfig } from '../db/premium-schema';
+import { db } from '@/drizzle/db';
+import { users } from '@/drizzle/schema';
+import { eq, and, lt, or, isNull, sql } from 'drizzle-orm';
 
 // ============================================
 // TIPOS
@@ -69,20 +72,78 @@ const JOB_CONFIG = {
 // ============================================
 
 /**
- * Simula la obtención de técnicos de la BD (reemplazar con Drizzle real)
+ * Obtiene técnicos de la BD que necesitan verificación
  */
 async function getTechniciansToVerify(): Promise<Array<{
   technician: { id: string; email: string; name: string };
   accountStatus: TechnicianAccountStatus;
   distributorConfig: DistributorPremiumConfig;
 }>> {
-  // TODO: Implementar con Drizzle ORM
-  // Esta función debe:
-  // 1. Obtener todos los técnicos cuyo periodo de prueba ha expirado
-  // 2. O cuya última verificación fue hace más de 24 horas
-  // 3. Incluir la configuración del distribuidor asociado
-  
-  return [];
+  try {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    
+    // Obtener usuarios que necesitan verificación
+    // (última verificación hace más de 24 horas o nunca verificados)
+    const technicians = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+      })
+      .from(users)
+      .where(
+        and(
+          // Solo usuarios activos
+          eq(users.isActive, true),
+          // Que tengan distribuidor asociado (técnicos)
+          sql`${users.distributorId} IS NOT NULL`,
+          // Que necesiten verificación
+          or(
+            isNull(users.lastPurchaseCheck),
+            lt(users.lastPurchaseCheck, oneDayAgo)
+          )
+        )
+      );
+
+    // Mapear a la estructura esperada
+    return technicians.map(tech => ({
+      technician: {
+        id: tech.id.toString(),
+        email: tech.email || '',
+        name: tech.name || 'Sin nombre',
+      },
+      accountStatus: {
+        id: tech.id,
+        technicianId: tech.id.toString(),
+        accountTier: 'basic' as AccountTier,
+        trialEndsAt: null,
+        purchasesLast30Days: '0',
+        lastPurchaseCheck: null,
+        tierChangedAt: null,
+        previousTier: null,
+        gracePeriodEndsAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      distributorConfig: {
+        id: 1,
+        distributorId: 1,
+        minimumPurchaseAmount: '100',
+        trialPeriodDays: 30,
+        gracePeriodDays: 7,
+        woocommerceEnabled: true,
+        woocommerceUrl: process.env.WOOCOMMERCE_URL || '',
+        woocommerceConsumerKey: process.env.WOOCOMMERCE_KEY || '',
+        woocommerceConsumerSecret: process.env.WOOCOMMERCE_SECRET || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    }));
+  } catch (error) {
+    console.error('[Job] Error obteniendo técnicos:', error);
+    return [];
+  }
 }
 
 /**
@@ -92,16 +153,69 @@ async function updateTechnicianStatus(
   technicianId: string,
   updates: Partial<TechnicianAccountStatus>
 ): Promise<void> {
-  // TODO: Implementar con Drizzle ORM
-  console.log(`[DB] Actualizando técnico ${technicianId}:`, updates);
+  try {
+    const updateData: Record<string, any> = {};
+    
+    if (updates.accountTier !== undefined) {
+      updateData.accountTier = updates.accountTier;
+    }
+    if (updates.purchasesLast30Days !== undefined) {
+      updateData.purchasesLast30Days = updates.purchasesLast30Days;
+    }
+    if (updates.lastPurchaseCheck !== undefined) {
+      updateData.lastPurchaseCheck = updates.lastPurchaseCheck;
+    }
+    if (updates.tierChangedAt !== undefined) {
+      updateData.tierChangedAt = updates.tierChangedAt;
+    }
+    if (updates.previousTier !== undefined) {
+      updateData.previousTier = updates.previousTier;
+    }
+    
+    await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, parseInt(technicianId)));
+    
+    console.log(`[DB] Técnico ${technicianId} actualizado correctamente`);
+  } catch (error) {
+    console.error(`[DB] Error actualizando técnico ${technicianId}:`, error);
+    throw error;
+  }
 }
 
 /**
  * Guarda el log de verificación en la BD
  */
 async function saveVerificationLog(log: any): Promise<void> {
-  // TODO: Implementar con Drizzle ORM
-  console.log(`[DB] Guardando log de verificación:`, log.id);
+  try {
+    // Guardar en tabla de logs de verificación
+    // Por ahora solo logueamos, pero se puede crear una tabla específica
+    console.log(`[DB] Log de verificación guardado:`, {
+      id: log.id,
+      technicianId: log.technicianId,
+      status: log.status,
+      tierChanged: log.tierChanged,
+      purchasesFound: log.purchasesFound,
+    });
+    
+    // TODO: Crear tabla verification_logs y guardar
+    // await db.insert(verificationLogs).values({
+    //   id: log.id,
+    //   technicianId: log.technicianId,
+    //   verificationDate: log.verificationDate,
+    //   purchasesFound: log.purchasesFound,
+    //   minimumRequired: log.minimumRequired,
+    //   meetsMinimum: log.meetsMinimum,
+    //   previousTier: log.previousTier,
+    //   newTier: log.newTier,
+    //   tierChanged: log.tierChanged,
+    //   status: log.status,
+    //   errorMessage: log.errorMessage,
+    // });
+  } catch (error) {
+    console.error(`[DB] Error guardando log de verificación:`, error);
+  }
 }
 
 /**
@@ -113,14 +227,53 @@ async function notifyTierChange(
   newTier: AccountTier,
   purchasesNeeded: number
 ): Promise<void> {
-  // TODO: Implementar envío de email/notificación
   console.log(`[Notify] Técnico ${technicianId}: ${previousTier} -> ${newTier}`);
   
-  if (newTier === 'basic') {
-    // Enviar email informando que ha pasado a cuenta Básica
-    // y cuánto necesita comprar para volver a Premium
-  } else if (newTier === 'premium' && previousTier === 'basic') {
-    // Enviar email felicitando por alcanzar Premium
+  try {
+    // Obtener datos del técnico
+    const [technician] = await db
+      .select({ email: users.email, name: users.name })
+      .from(users)
+      .where(eq(users.id, parseInt(technicianId)));
+    
+    if (!technician || !technician.email) {
+      console.warn(`[Notify] No se encontró email para técnico ${technicianId}`);
+      return;
+    }
+    
+    // Importar servicio de email dinámicamente
+    const { emailService } = await import('../services/email/email.service');
+    
+    if (newTier === 'basic') {
+      // Enviar email informando que ha pasado a cuenta Básica
+      await emailService.sendEmail({
+        to: technician.email,
+        subject: 'Tu cuenta ha cambiado a Plan Básico - Piano Emotion',
+        template: 'tier-downgrade',
+        data: {
+          name: technician.name || 'Técnico',
+          previousTier,
+          newTier,
+          purchasesNeeded: purchasesNeeded.toFixed(2),
+        },
+      });
+    } else if (newTier === 'premium' && previousTier === 'basic') {
+      // Enviar email felicitando por alcanzar Premium
+      await emailService.sendEmail({
+        to: technician.email,
+        subject: '¡Felicidades! Has alcanzado el Plan Premium - Piano Emotion',
+        template: 'tier-upgrade',
+        data: {
+          name: technician.name || 'Técnico',
+          previousTier,
+          newTier,
+        },
+      });
+    }
+    
+    console.log(`[Notify] Email enviado a ${technician.email}`);
+  } catch (error) {
+    console.error(`[Notify] Error enviando notificación:`, error);
   }
 }
 

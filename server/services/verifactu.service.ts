@@ -336,11 +336,53 @@ class VerifactuService {
    * Consulta el estado de una factura en la AEAT
    */
   async checkInvoiceStatus(serieFactura: string, numeroFactura: string, fechaExpedicion: Date): Promise<VerifactuResponse> {
-    // TODO: Implementar consulta de estado
-    return {
-      success: false,
-      error: 'Función no implementada',
-    };
+    try {
+      const fechaExpedicionStr = this.formatDate(fechaExpedicion);
+      
+      // Generar XML de consulta
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                  xmlns:sist="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SistemaFacturacion.xsd">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <sist:ConsultaFactura>
+      <sist:Cabecera>
+        <sist:ObligadoEmision>
+          <sist:NombreRazon>${this.escapeXml(verifactuConfig.nombreTitular)}</sist:NombreRazon>
+          <sist:NIF>${verifactuConfig.nifTitular}</sist:NIF>
+        </sist:ObligadoEmision>
+      </sist:Cabecera>
+      <sist:IDFactura>
+        <sist:IDEmisorFactura>${verifactuConfig.nifTitular}</sist:IDEmisorFactura>
+        <sist:NumSerieFactura>${serieFactura}${numeroFactura}</sist:NumSerieFactura>
+        <sist:FechaExpedicionFactura>${fechaExpedicionStr}</sist:FechaExpedicionFactura>
+      </sist:IDFactura>
+    </sist:ConsultaFactura>
+  </soapenv:Body>
+</soapenv:Envelope>`;
+
+      // Firmar XML
+      const signResult = await digitalSignatureService.signXml(xml);
+      if (!signResult.success || !signResult.signedXml) {
+        return {
+          success: false,
+          error: `Error al firmar consulta: ${signResult.error}`,
+        };
+      }
+
+      // Enviar consulta a la AEAT
+      const response = await this.sendToAeat(signResult.signedXml);
+      
+      return {
+        ...response,
+        xmlEnviado: signResult.signedXml,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido en consulta',
+      };
+    }
   }
 
   /**
@@ -349,15 +391,84 @@ class VerifactuService {
   async getStatus(): Promise<VerifactuStatus> {
     const certInfo = digitalSignatureService.getCertificateInfo();
     
+    // Verificar conexión real con la AEAT
+    let connected = false;
+    try {
+      const url = new URL(getAeatUrl());
+      const testConnection = await new Promise<boolean>((resolve) => {
+        const req = https.request({
+          hostname: url.hostname,
+          port: 443,
+          path: '/',
+          method: 'HEAD',
+          timeout: 5000,
+        }, (res) => {
+          resolve(res.statusCode !== undefined);
+        });
+        req.on('error', () => resolve(false));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(false);
+        });
+        req.end();
+      });
+      connected = testConnection;
+    } catch {
+      connected = false;
+    }
+
+    // Contar facturas pendientes y enviadas hoy
+    const { pendingInvoices, sentToday } = await this.getInvoiceCounts();
+    
     return {
-      connected: true, // TODO: Verificar conexión real
+      connected,
       environment: verifactuConfig.environment,
       lastCheck: new Date().toISOString(),
       certificateValid: certInfo?.isValid || false,
-      certificateExpiry: certInfo?.validTo.toISOString(),
-      pendingInvoices: 0, // TODO: Contar facturas pendientes
-      sentToday: 0, // TODO: Contar facturas enviadas hoy
+      certificateExpiry: certInfo?.validTo?.toISOString(),
+      pendingInvoices,
+      sentToday,
     };
+  }
+
+  /**
+   * Obtiene contadores de facturas desde la base de datos
+   */
+  private async getInvoiceCounts(): Promise<{ pendingInvoices: number; sentToday: number }> {
+    try {
+      // Importar db y schema dinámicamente para evitar dependencias circulares
+      const { db } = await import('@/drizzle/db');
+      const { invoices } = await import('@/drizzle/schema');
+      const { eq, and, gte, sql } = await import('drizzle-orm');
+
+      // Contar facturas pendientes de envío a VeriFactu (estado draft)
+      const [pendingResult] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(invoices)
+        .where(eq(invoices.status, 'draft'));
+
+      // Contar facturas enviadas hoy
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const [sentTodayResult] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(invoices)
+        .where(
+          and(
+            eq(invoices.status, 'sent'),
+            gte(invoices.createdAt, today)
+          )
+        );
+
+      return {
+        pendingInvoices: pendingResult?.count || 0,
+        sentToday: sentTodayResult?.count || 0,
+      };
+    } catch (error) {
+      console.error('Error al obtener contadores de facturas:', error);
+      return { pendingInvoices: 0, sentToday: 0 };
+    }
   }
 
   /**
