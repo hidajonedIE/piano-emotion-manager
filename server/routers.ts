@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "../shared/const.js";
+import { storageRouter } from "./routers/storage/index.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { systemRouter } from "./_core/systemRouter.js";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc.js";
@@ -1064,6 +1065,9 @@ export const appRouter = router({
         }
       }),
     }),
+
+    // ============ CLOUD STORAGE ============
+    storage: storageRouter,
 
     // ============ STRIPE SUBSCRIPTIONS ============
     subscription: router({

@@ -22,6 +22,7 @@ import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/manus-runtime";
 import { SnackbarProvider } from "@/components/snackbar";
 import { LanguageProvider } from "@/contexts/language-context";
 import { DistributorProvider } from "@/contexts/distributor-context";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -119,8 +120,9 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
             <DistributorProvider>
-              <LanguageProvider>
-                <SnackbarProvider>
+              <SubscriptionProvider>
+                <LanguageProvider>
+                  <SnackbarProvider>
                   <Stack>
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                     <Stack.Screen name="(app)" options={{ headerShown: false }} />
@@ -152,8 +154,9 @@ export default function RootLayout() {
                   </Stack>
                   <StatusBar style="auto" />
                   <AIAssistant />
-                </SnackbarProvider>
-              </LanguageProvider>
+                  </SnackbarProvider>
+                </LanguageProvider>
+              </SubscriptionProvider>
             </DistributorProvider>
           </ThemeProvider>
         </QueryClientProvider>
