@@ -37,7 +37,8 @@ const campaignTemplates = [
 const channelOptions = [
   { id: 'whatsapp', name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366', description: 'Enviar mensajes por WhatsApp personal' },
   { id: 'email', name: 'Email', icon: 'mail-outline', color: '#EA4335', description: 'Enviar emails desde tu correo personal' },
-  { id: 'both', name: 'Ambos', icon: 'layers-outline', color: '#6366F1', description: 'Enviar por WhatsApp y Email' },
+  { id: 'sms', name: 'SMS', icon: 'chatbubble-outline', color: '#3B82F6', description: 'Enviar SMS desde tu móvil personal' },
+  { id: 'both', name: 'Todos', icon: 'layers-outline', color: '#6366F1', description: 'Enviar por WhatsApp, Email y SMS' },
 ];
 
 interface Campaign {
@@ -45,7 +46,7 @@ interface Campaign {
   name: string;
   status: 'draft' | 'in_progress' | 'completed' | 'paused';
   templateType: string;
-  channel: 'whatsapp' | 'email' | 'both';
+  channel: 'whatsapp' | 'email' | 'sms' | 'both';
   totalRecipients: number;
   sentCount: number;
   createdAt: string;
@@ -63,7 +64,7 @@ export default function CampaignsScreen() {
   const [campaignName, setCampaignName] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
-  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email' | 'both'>('whatsapp');
+  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email' | 'sms' | 'both'>('whatsapp');
   const [step, setStep] = useState(1); // 1: Name+Channel, 2: Template, 3: Filter
   
   useEffect(() => {
@@ -146,6 +147,7 @@ export default function CampaignsScreen() {
     switch (channel) {
       case 'whatsapp': return 'logo-whatsapp';
       case 'email': return 'mail-outline';
+      case 'sms': return 'chatbubble-outline';
       case 'both': return 'layers-outline';
       default: return 'chatbubble-outline';
     }
@@ -155,6 +157,7 @@ export default function CampaignsScreen() {
     switch (channel) {
       case 'whatsapp': return '#25D366';
       case 'email': return '#EA4335';
+      case 'sms': return '#3B82F6';
       case 'both': return '#6366F1';
       default: return colors.textSecondary;
     }
@@ -495,7 +498,7 @@ export default function CampaignsScreen() {
                     backgroundColor: channel.color + '10',
                   }
                 ]}
-                onPress={() => setSelectedChannel(channel.id as 'whatsapp' | 'email' | 'both')}
+                onPress={() => setSelectedChannel(channel.id as 'whatsapp' | 'email' | 'sms' | 'both')}
               >
                 <View style={[styles.optionIcon, { backgroundColor: channel.color + '20' }]}>
                   <Ionicons name={channel.icon as any} size={24} color={channel.color} />

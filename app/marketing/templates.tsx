@@ -35,6 +35,7 @@ const templateTypes = [
 const channels = [
   { id: 'whatsapp', name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366' },
   { id: 'email', name: 'Email', icon: 'mail-outline', color: '#EA4335' },
+  { id: 'sms', name: 'SMS', icon: 'chatbubble-outline', color: '#3B82F6' },
 ];
 
 // Variables disponibles por tipo de plantilla
@@ -105,7 +106,7 @@ const defaultEmailSubjects: Record<string, string> = {
 interface Template {
   id: number;
   type: string;
-  channel: 'whatsapp' | 'email';
+  channel: 'whatsapp' | 'email' | 'sms';
   name: string;
   emailSubject?: string;
   content: string;
@@ -119,11 +120,11 @@ export default function MessageTemplatesScreen() {
   
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email'>('whatsapp');
+  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email' | 'sms'>('whatsapp');
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'whatsapp' | 'email'>('whatsapp');
+  const [activeTab, setActiveTab] = useState<'whatsapp' | 'email' | 'sms'>('whatsapp');
   
   // Form state
   const [formName, setFormName] = useState('');
@@ -148,7 +149,7 @@ export default function MessageTemplatesScreen() {
     }
   };
   
-  const openEditor = (type: string, channel: 'whatsapp' | 'email', template?: Template) => {
+  const openEditor = (type: string, channel: 'whatsapp' | 'email' | 'sms', template?: Template) => {
     setSelectedType(type);
     setSelectedChannel(channel);
     if (template) {
@@ -160,7 +161,7 @@ export default function MessageTemplatesScreen() {
     } else {
       setEditingTemplate(null);
       const typeInfo = templateTypes.find(t => t.id === type);
-      setFormName(`${typeInfo?.name || ''} - ${channel === 'email' ? 'Email' : 'WhatsApp'}`);
+      setFormName(`${typeInfo?.name || ''} - ${channel === 'email' ? 'Email' : channel === 'sms' ? 'SMS' : 'WhatsApp'}`);
       setFormSubject(channel === 'email' ? defaultEmailSubjects[type] || '' : '');
       setFormContent(getDefaultContent(type, channel));
       setFormIsDefault(true);
@@ -168,7 +169,7 @@ export default function MessageTemplatesScreen() {
     setIsModalVisible(true);
   };
   
-  const getDefaultContent = (type: string, channel: 'whatsapp' | 'email'): string => {
+  const getDefaultContent = (type: string, channel: 'whatsapp' | 'email' | 'sms'): string => {
     const whatsappDefaults: Record<string, string> = {
       appointment_reminder: `Hola {{cliente_nombre}},
 
@@ -495,7 +496,25 @@ Atentamente,
 {{nombre_negocio}}`,
     };
     
-    return channel === 'email' ? (emailDefaults[type] || '') : (whatsappDefaults[type] || '');
+    // Plantillas SMS (más cortas que WhatsApp)
+    const smsDefaults: Record<string, string> = {
+      appointment_reminder: `{{nombre_negocio}}: Recordatorio cita {{fecha_cita}} {{hora_cita}}. {{tipo_servicio}}. Info: {{telefono_negocio}}`,
+      service_completed: `{{nombre_negocio}}: Servicio {{tipo_servicio}} completado. Importe: {{importe}}. Gracias por su confianza.`,
+      maintenance_reminder: `{{nombre_negocio}}: Su piano {{piano_marca}} necesita mantenimiento. Último servicio: {{ultimo_servicio}}. Llámenos: {{telefono_negocio}}`,
+      invoice_sent: `{{nombre_negocio}}: Factura {{numero_factura}} por {{importe}}. Vence: {{fecha_vencimiento}}`,
+      welcome: `Bienvenido/a a {{nombre_negocio}}! Contacto: {{telefono_negocio}}`,
+      birthday: `{{nombre_negocio}} le desea Feliz Cumpleaños! {{descuento_cumple}} en su próximo servicio.`,
+      promotion: `{{nombre_negocio}}: {{nombre_promocion}} - {{descuento}} dto. Válido hasta {{fecha_validez}}`,
+      follow_up: `{{nombre_negocio}}: ¿Satisfecho con el servicio de {{tipo_servicio}}? Estamos a su disposición.`,
+      reactivation: `{{nombre_negocio}}: Le echamos de menos! {{oferta_reactivacion}}. Llámenos: {{telefono_negocio}}`,
+      quote: `{{nombre_negocio}}: Presupuesto {{numero_presupuesto}} por {{importe_total}}. Válido {{validez_dias}} días.`,
+      thank_you: `Gracias por confiar en {{nombre_negocio}}! Valoramos su opinión.`,
+      custom: `{{nombre_negocio}}: [Su mensaje]`,
+    };
+    
+    if (channel === 'email') return emailDefaults[type] || '';
+    if (channel === 'sms') return smsDefaults[type] || '';
+    return whatsappDefaults[type] || '';
   };
   
   const saveTemplate = async () => {
@@ -527,7 +546,7 @@ Atentamente,
     setFormSubject(prev => prev + variable);
   };
   
-  const getTemplatesForType = (type: string, channel: 'whatsapp' | 'email') => {
+  const getTemplatesForType = (type: string, channel: 'whatsapp' | 'email' | 'sms') => {
     return templates.filter(t => t.type === type && t.channel === channel);
   };
   
@@ -861,6 +880,21 @@ Atentamente,
             Email
           </Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'sms' && styles.tabActive]}
+          onPress={() => setActiveTab('sms')}
+        >
+          <Ionicons 
+            name="chatbubble" 
+            size={20} 
+            color={activeTab === 'sms' ? '#3B82F6' : colors.textSecondary} 
+            style={styles.tabIcon}
+          />
+          <Text style={[styles.tabText, activeTab === 'sms' && styles.tabTextActive]}>
+            SMS
+          </Text>
+        </TouchableOpacity>
       </View>
       
       {/* Content */}
@@ -868,14 +902,16 @@ Atentamente,
         {/* Info Card */}
         <View style={styles.infoCard}>
           <Ionicons 
-            name={activeTab === 'whatsapp' ? 'logo-whatsapp' : 'mail-outline'} 
+            name={activeTab === 'whatsapp' ? 'logo-whatsapp' : activeTab === 'sms' ? 'chatbubble' : 'mail-outline'} 
             size={24} 
-            color={activeTab === 'whatsapp' ? '#25D366' : '#EA4335'} 
+            color={activeTab === 'whatsapp' ? '#25D366' : activeTab === 'sms' ? '#3B82F6' : '#EA4335'} 
             style={styles.infoIcon}
           />
           <Text style={styles.infoText}>
             {activeTab === 'whatsapp' 
               ? 'Las plantillas de WhatsApp se abrirán en tu aplicación de WhatsApp personal con el mensaje prellenado.'
+              : activeTab === 'sms'
+              ? 'Las plantillas de SMS se abrirán en tu aplicación de mensajes con el texto prellenado. Los SMS deben ser cortos (máx. 160 caracteres).'
               : 'Las plantillas de email se abrirán en tu aplicación de correo predeterminada con el mensaje y asunto prellenados.'
             }
           </Text>

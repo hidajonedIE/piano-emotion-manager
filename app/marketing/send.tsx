@@ -23,6 +23,7 @@ interface Recipient {
   phone: string;
   email: string;
   whatsappMessage: string;
+  smsMessage: string;
   emailSubject: string;
   emailMessage: string;
   status: 'pending' | 'sent' | 'skipped';
@@ -222,7 +223,7 @@ export default function BatchSendScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email'>('whatsapp');
+  const [selectedChannel, setSelectedChannel] = useState<'whatsapp' | 'email' | 'sms'>('whatsapp');
   
   // Animation
   const slideAnim = useState(new Animated.Value(0))[0];
@@ -301,6 +302,40 @@ export default function BatchSendScreen() {
     }
   }, [currentRecipient]);
   
+  const openSMS = useCallback(async () => {
+    if (!currentRecipient) return;
+    
+    const phone = currentRecipient.phone.replace(/[^0-9]/g, '');
+    const message = encodeURIComponent(currentRecipient.smsMessage || currentRecipient.whatsappMessage.substring(0, 160));
+    
+    let url: string;
+    if (Platform.OS === 'web') {
+      // En web, intentamos abrir con el protocolo sms:
+      url = `sms:${phone}?body=${message}`;
+      window.open(url, '_blank');
+    } else if (Platform.OS === 'ios') {
+      // iOS usa & en lugar de ?
+      url = `sms:${phone}&body=${message}`;
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'No se pudo abrir la aplicación de mensajes');
+        return;
+      }
+    } else {
+      // Android
+      url = `sms:${phone}?body=${message}`;
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'No se pudo abrir la aplicación de mensajes');
+        return;
+      }
+    }
+  }, [currentRecipient]);
+  
   const markAsSent = useCallback(() => {
     if (!currentRecipient) return;
     
@@ -370,20 +405,23 @@ export default function BatchSendScreen() {
   const sendAndNext = useCallback(async () => {
     if (selectedChannel === 'whatsapp') {
       await openWhatsApp();
+    } else if (selectedChannel === 'sms') {
+      await openSMS();
     } else {
       await openEmail();
     }
     
     // Mostrar confirmación
+    const channelName = selectedChannel === 'whatsapp' ? 'mensaje de WhatsApp' : selectedChannel === 'sms' ? 'SMS' : 'email';
     Alert.alert(
       '¿Mensaje enviado?',
-      `Confirma que has enviado el ${selectedChannel === 'whatsapp' ? 'mensaje de WhatsApp' : 'email'}`,
+      `Confirma que has enviado el ${channelName}`,
       [
         { text: 'Sí, enviado', onPress: markAsSent },
         { text: 'No lo envié', style: 'cancel' },
       ]
     );
-  }, [selectedChannel, openWhatsApp, openEmail, markAsSent]);
+  }, [selectedChannel, openWhatsApp, openEmail, openSMS, markAsSent]);
   
   const skipRecipient = useCallback(() => {
     Alert.alert(
@@ -391,7 +429,7 @@ export default function BatchSendScreen() {
       '¿Por qué quieres saltar este contacto?',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: selectedChannel === 'email' ? 'Email incorrecto' : 'Número incorrecto', onPress: () => markAsSkipped('Contacto incorrecto') },
+        { text: selectedChannel === 'email' ? 'Email incorrecto' : 'Número incorrecto', onPress: () => markAsSkipped(selectedChannel === 'email' ? 'Email incorrecto' : 'Número incorrecto') },
         { text: 'Ya contactado', onPress: () => markAsSkipped('Ya contactado') },
         { text: 'Otro motivo', onPress: () => markAsSkipped('Otro') },
       ]
@@ -457,6 +495,10 @@ export default function BatchSendScreen() {
     channelButtonEmail: {
       borderColor: '#EA4335',
       backgroundColor: '#EA433510',
+    },
+    channelButtonSMS: {
+      borderColor: '#3B82F6',
+      backgroundColor: '#3B82F610',
     },
     channelIcon: {
       marginRight: 8,
@@ -831,6 +873,27 @@ export default function BatchSendScreen() {
             selectedChannel === 'email' && { color: '#EA4335' }
           ]}>
             Email
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[
+            styles.channelButton, 
+            selectedChannel === 'sms' && styles.channelButtonSMS
+          ]}
+          onPress={() => setSelectedChannel('sms')}
+        >
+          <Ionicons 
+            name="chatbubble" 
+            size={20} 
+            color={selectedChannel === 'sms' ? '#3B82F6' : colors.textSecondary} 
+            style={styles.channelIcon}
+          />
+          <Text style={[
+            styles.channelText, 
+            selectedChannel === 'sms' && { color: '#3B82F6' }
+          ]}>
+            SMS
           </Text>
         </TouchableOpacity>
       </View>

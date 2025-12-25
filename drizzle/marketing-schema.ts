@@ -23,7 +23,7 @@ export type MessageTemplateType = typeof messageTemplateTypes[number];
 /**
  * Canales de comunicación disponibles
  */
-export const messageChannels = ['whatsapp', 'email', 'both'] as const;
+export const messageChannels = ['whatsapp', 'email', 'sms', 'all'] as const;
 export type MessageChannel = typeof messageChannels[number];
 
 /**
