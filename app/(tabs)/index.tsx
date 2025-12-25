@@ -380,55 +380,48 @@ export default function DashboardScreen() {
           </Pressable>
         )}
 
-        {/* Tarjeta de Predicciones IA - Siempre visible */}
-        <Pressable
-          style={[styles.predictionsCard, { backgroundColor: cardBg, borderColor }]}
-          onPress={() => router.push('/predictions' as any)}
+        {/* Predicciones IA - Acordeón colapsado por defecto */}
+        <Accordion 
+          title="Predicciones IA" 
+          defaultOpen={false}
+          icon="brain.head.profile"
+          iconColor="#8B5CF6"
+          rightAction={
+            <Pressable 
+              onPress={() => router.push('/predictions' as any)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <ThemedText style={{ fontSize: 13, color: '#8B5CF6' }}>Ver todo</ThemedText>
+              <IconSymbol name="chevron.right" size={14} color="#8B5CF6" />
+            </Pressable>
+          }
         >
-          <LinearGradient
-            colors={['#8B5CF6', '#A78BFA', '#C4B5FD']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.predictionsHeader}
-          >
-            <View style={styles.predictionsHeaderContent}>
-              <IconSymbol name="brain.head.profile" size={24} color="#FFFFFF" />
-              <ThemedText style={styles.predictionsTitle}>Predicciones IA</ThemedText>
+          <View style={styles.predictionsGrid}>
+            <View style={styles.predictionItem}>
+              <View style={[styles.predictionIcon, { backgroundColor: '#22C55E20' }]}>
+                <IconSymbol name="chart.line.uptrend.xyaxis" size={18} color="#22C55E" />
+              </View>
+              <ThemedText style={[styles.predictionValue, { color: '#22C55E' }]}>+12%</ThemedText>
+              <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Ingresos prev.</ThemedText>
             </View>
-            <View style={styles.predictionsHeaderRight}>
-              <ThemedText style={styles.predictionsViewAll}>Ver todo</ThemedText>
-              <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
+            
+            <View style={styles.predictionItem}>
+              <View style={[styles.predictionIcon, { backgroundColor: '#F59E0B20' }]}>
+                <IconSymbol name="person.fill.questionmark" size={18} color="#F59E0B" />
+              </View>
+              <ThemedText style={[styles.predictionValue, { color: '#F59E0B' }]}>3</ThemedText>
+              <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Clientes riesgo</ThemedText>
             </View>
-          </LinearGradient>
-          
-          <View style={styles.predictionsContent}>
-            <View style={styles.predictionsGrid}>
-              <View style={styles.predictionItem}>
-                <View style={[styles.predictionIcon, { backgroundColor: '#22C55E20' }]}>
-                  <IconSymbol name="chart.line.uptrend.xyaxis" size={18} color="#22C55E" />
-                </View>
-                <ThemedText style={[styles.predictionValue, { color: '#22C55E' }]}>+12%</ThemedText>
-                <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Ingresos prev.</ThemedText>
+            
+            <View style={styles.predictionItem}>
+              <View style={[styles.predictionIcon, { backgroundColor: '#8B5CF620' }]}>
+                <IconSymbol name="wrench.and.screwdriver.fill" size={18} color="#8B5CF6" />
               </View>
-              
-              <View style={styles.predictionItem}>
-                <View style={[styles.predictionIcon, { backgroundColor: '#F59E0B20' }]}>
-                  <IconSymbol name="person.fill.questionmark" size={18} color="#F59E0B" />
-                </View>
-                <ThemedText style={[styles.predictionValue, { color: '#F59E0B' }]}>3</ThemedText>
-                <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Clientes riesgo</ThemedText>
-              </View>
-              
-              <View style={styles.predictionItem}>
-                <View style={[styles.predictionIcon, { backgroundColor: '#8B5CF620' }]}>
-                  <IconSymbol name="wrench.and.screwdriver.fill" size={18} color="#8B5CF6" />
-                </View>
-                <ThemedText style={[styles.predictionValue, { color: '#8B5CF6' }]}>5</ThemedText>
-                <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Mant. próximo</ThemedText>
-              </View>
+              <ThemedText style={[styles.predictionValue, { color: '#8B5CF6' }]}>5</ThemedText>
+              <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Mant. próximo</ThemedText>
             </View>
           </View>
-        </Pressable>
+        </Accordion>
 
         {/* Acciones rápidas */}
         <Accordion 
