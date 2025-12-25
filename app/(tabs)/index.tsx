@@ -138,6 +138,9 @@ export default function DashboardScreen() {
       case 'settings':
         router.push('/settings' as any);
         break;
+      case 'quotes':
+        router.push('/quotes' as any);
+        break;
       case 'invoices':
         router.push('/invoices' as any);
         break;
@@ -194,6 +197,7 @@ export default function DashboardScreen() {
     { key: 'dashboard', icon: 'chart.pie.fill', label: 'Panel Control', color: '#2D5A27' },
     { key: 'inventory', icon: 'shippingbox.fill', label: 'Inventario', color: '#F59E0B' },
     { key: 'stats', icon: 'chart.bar.fill', label: 'Estadísticas', color: '#10B981' },
+    { key: 'quotes', icon: 'doc.plaintext', label: 'Presupuestos', color: '#9333EA' },
     { key: 'invoices', icon: 'doc.text.fill', label: 'Facturas', color: '#3B82F6' },
     { key: 'rates', icon: 'list.bullet', label: 'Tarifas', color: '#EC4899' },
     { key: 'business', icon: 'person.fill', label: 'Datos Fiscales', color: '#6B7280' },

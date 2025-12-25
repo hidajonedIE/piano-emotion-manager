@@ -201,6 +201,34 @@ const helpSections: HelpSection[] = [
     ],
   },
   {
+    id: 'quotes',
+    title: 'Presupuestos',
+    icon: 'doc.plaintext',
+    iconColor: '#9333EA',
+    content: [
+      {
+        question: '¿Cómo creo un presupuesto?',
+        answer: 'Ve a Módulos → Presupuestos → "+"\n\n1. Selecciona el cliente\n2. Opcionalmente selecciona el piano\n3. Usa una plantilla predefinida o añade conceptos manualmente\n4. Revisa los totales y condiciones\n5. Guarda el presupuesto\n\nEl presupuesto se genera con número correlativo y fecha de validez.',
+      },
+      {
+        question: '¿Qué plantillas de presupuesto hay disponibles?',
+        answer: 'Incluimos plantillas predefinidas para:\n\n• Afinación Estándar\n• Afinación + Regulación\n• Reparación Menor\n• Mantenimiento Completo\n• Evaluación / Peritaje\n• Transporte de Piano\n\nPuedes crear tus propias plantillas personalizadas.',
+      },
+      {
+        question: '¿Cómo envío un presupuesto al cliente?',
+        answer: 'Desde la ficha del presupuesto:\n\n1. Pulsa "Marcar como enviado"\n2. El estado cambiará a "Enviado"\n3. Puedes generar PDF para enviar por email o WhatsApp\n\nEl cliente podrá revisar el presupuesto con todos los detalles.',
+      },
+      {
+        question: '¿Qué estados puede tener un presupuesto?',
+        answer: '• Borrador: En preparación\n• Enviado: Pendiente de respuesta del cliente\n• Aceptado: Cliente ha aceptado\n• Rechazado: Cliente ha declinado\n• Expirado: Ha pasado la fecha de validez\n• Convertido: Se ha generado factura\n\nPuedes cambiar el estado desde la ficha del presupuesto.',
+      },
+      {
+        question: '¿Cómo convierto un presupuesto en factura?',
+        answer: 'Cuando el cliente acepta el presupuesto:\n\n1. Marca el presupuesto como "Aceptado"\n2. Pulsa "Convertir a Factura"\n3. Se creará automáticamente una factura con todos los conceptos\n4. El presupuesto quedará marcado como "Convertido"\n\nLa factura mantendrá la referencia al presupuesto original.',
+      },
+    ],
+  },
+  {
     id: 'invoices',
     title: 'Facturación',
     icon: 'doc.text.fill',
