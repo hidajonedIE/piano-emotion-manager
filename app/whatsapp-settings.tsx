@@ -206,8 +206,13 @@ export default function WhatsAppSettingsScreen() {
           onChangeText={(text) => setConfig(prev => ({ ...prev, accessToken: text }))}
           placeholder="Token de acceso permanente"
           placeholderTextColor={textSecondary}
-          secureTextEntry
+          secureTextEntry={true}
+          autoComplete="off"
+          textContentType="none"
         />
+        <ThemedText style={[styles.securityNote, { color: '#F59E0B' }]}>
+          ⚠️ Este token se almacenará de forma encriptada
+        </ThemedText>
       </View>
 
       <View style={styles.inputGroup}>

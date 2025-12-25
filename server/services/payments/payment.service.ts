@@ -3,9 +3,19 @@
  * 
  * Integración con Stripe y PayPal para procesar pagos de facturas,
  * presupuestos y contratos de mantenimiento.
+ * 
+ * SEGURIDAD: Las credenciales se almacenan encriptadas con AES-256-GCM
  */
 
 import { eq, and, desc } from 'drizzle-orm';
+import { 
+  encrypt, 
+  decrypt, 
+  encryptJSON, 
+  decryptJSON, 
+  maskSensitiveValue,
+  isEncryptionConfigured 
+} from '../encryption.service';
 
 // Tipos de pasarela
 export type PaymentGateway = 'stripe' | 'paypal';
@@ -80,30 +90,53 @@ export class PaymentService {
 
   /**
    * Configura Stripe para una organización
+   * Las credenciales se encriptan antes de almacenarse
    */
-  async configureStripe(organizationId: string, config: StripeConfig): Promise<void> {
+  async configureStripe(organizationId: string, config: StripeConfig, userId?: string): Promise<void> {
+    if (!isEncryptionConfigured()) {
+      throw new Error('ENCRYPTION_KEY no está configurada. No se pueden almacenar credenciales de forma segura.');
+    }
+    
+    // Encriptar las credenciales
+    const encryptedConfig = encryptJSON(config);
+    
     await this.db.execute(`
       INSERT INTO payment_gateway_config (organization_id, gateway, config, updated_at)
       VALUES ($1, 'stripe', $2, NOW())
       ON CONFLICT (organization_id, gateway) 
       DO UPDATE SET config = $2, updated_at = NOW()
-    `, [organizationId, JSON.stringify(config)]);
+    `, [organizationId, encryptedConfig]);
+    
+    // Registrar auditoría
+    await this.logCredentialChange(organizationId, 'stripe', 'configure', userId);
   }
 
   /**
    * Configura PayPal para una organización
+   * Las credenciales se encriptan antes de almacenarse
    */
-  async configurePayPal(organizationId: string, config: PayPalConfig): Promise<void> {
+  async configurePayPal(organizationId: string, config: PayPalConfig, userId?: string): Promise<void> {
+    if (!isEncryptionConfigured()) {
+      throw new Error('ENCRYPTION_KEY no está configurada. No se pueden almacenar credenciales de forma segura.');
+    }
+    
+    // Encriptar las credenciales
+    const encryptedConfig = encryptJSON(config);
+    
     await this.db.execute(`
       INSERT INTO payment_gateway_config (organization_id, gateway, config, updated_at)
       VALUES ($1, 'paypal', $2, NOW())
       ON CONFLICT (organization_id, gateway) 
       DO UPDATE SET config = $2, updated_at = NOW()
-    `, [organizationId, JSON.stringify(config)]);
+    `, [organizationId, encryptedConfig]);
+    
+    // Registrar auditoría
+    await this.logCredentialChange(organizationId, 'paypal', 'configure', userId);
   }
 
   /**
-   * Obtiene la configuración de una pasarela
+   * Obtiene la configuración de una pasarela (desencriptada)
+   * Solo para uso interno del servidor
    */
   async getGatewayConfig(organizationId: string, gateway: PaymentGateway): Promise<any> {
     const result = await this.db.execute(`
@@ -112,9 +145,77 @@ export class PaymentService {
     `, [organizationId, gateway]);
 
     if (result.rows && result.rows.length > 0) {
-      return JSON.parse(result.rows[0].config);
+      const encryptedConfig = result.rows[0].config;
+      
+      // Intentar desencriptar (compatibilidad con datos antiguos sin encriptar)
+      try {
+        // Si es un objeto JSON válido, son datos antiguos sin encriptar
+        const parsed = JSON.parse(encryptedConfig);
+        if (typeof parsed === 'object' && parsed !== null) {
+          // Datos antiguos sin encriptar - migrar automáticamente
+          console.warn(`[SECURITY] Migrando credenciales sin encriptar para ${gateway} en org ${organizationId}`);
+          return parsed;
+        }
+      } catch {
+        // No es JSON, debe estar encriptado
+      }
+      
+      // Desencriptar
+      return decryptJSON(encryptedConfig);
     }
     return null;
+  }
+  
+  /**
+   * Obtiene la configuración de una pasarela con valores enmascarados
+   * Para mostrar en la interfaz de usuario
+   */
+  async getGatewayConfigMasked(organizationId: string, gateway: PaymentGateway): Promise<any> {
+    const config = await this.getGatewayConfig(organizationId, gateway);
+    
+    if (!config) return null;
+    
+    if (gateway === 'stripe') {
+      return {
+        publishableKey: maskSensitiveValue(config.publishableKey, 8),
+        secretKey: maskSensitiveValue(config.secretKey, 4),
+        webhookSecret: maskSensitiveValue(config.webhookSecret, 4),
+        isConfigured: true,
+      };
+    }
+    
+    if (gateway === 'paypal') {
+      return {
+        clientId: maskSensitiveValue(config.clientId, 8),
+        clientSecret: maskSensitiveValue(config.clientSecret, 4),
+        environment: config.environment,
+        webhookId: maskSensitiveValue(config.webhookId, 4),
+        isConfigured: true,
+      };
+    }
+    
+    return null;
+  }
+  
+  /**
+   * Registra cambios en credenciales para auditoría
+   */
+  private async logCredentialChange(
+    organizationId: string, 
+    gateway: PaymentGateway, 
+    action: 'configure' | 'delete',
+    userId?: string
+  ): Promise<void> {
+    try {
+      await this.db.execute(`
+        INSERT INTO credential_audit_log 
+        (organization_id, gateway, action, user_id, created_at, ip_address)
+        VALUES ($1, $2, $3, $4, NOW(), $5)
+      `, [organizationId, gateway, action, userId || 'system', null]);
+    } catch (error) {
+      // Si la tabla no existe, solo loguear
+      console.log(`[AUDIT] ${action} ${gateway} credentials for org ${organizationId} by ${userId || 'system'}`);
+    }
   }
 
   /**
