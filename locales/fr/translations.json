@@ -250,7 +250,15 @@
     "orderFromStore": "Commander à la boutique",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet article ?",
     "noItems": "Aucun article dans l'inventaire",
-    "addFirstItem": "Ajoutez votre premier article"
+    "addFirstItem": "Ajoutez votre premier article",
+    "stockControl": "Contrôle du Stock",
+    "stockCurrent": "Stock actuel",
+    "stockMin": "Stock minimum",
+    "lowStockWarning": "Stock bas - Envisager le réapprovisionnement",
+    "selectCategory": "Sélectionner la Catégorie",
+    "selectSupplier": "Sélectionner le Fournisseur",
+    "orderMaterial": "Commande de",
+    "nameRequired": "Le nom du matériel est obligatoire"
   },
   "invoices": {
     "title": "Factures",
@@ -453,5 +461,60 @@
     "fr": "Français",
     "de": "Deutsch",
     "da": "Dansk"
+  },
+  "teams": {
+    "title": "Gestion des Équipes",
+    "members": "Membres",
+    "assignments": "Affectations",
+    "zones": "Zones",
+    "absences": "Absences",
+    "active": "Actifs",
+    "today": "Aujourd'hui",
+    "unassigned": "Non assigné",
+    "inviteMember": "Inviter un membre",
+    "assignWork": "Assigner le travail",
+    "assignTechnician": "Assigner un technicien",
+    "addZone": "Ajouter une zone",
+    "approve": "Approuver",
+    "reject": "Rejeter"
+  },
+  "quotes": {
+    "title": "Devis",
+    "newQuote": "Nouveau Devis",
+    "editQuote": "Modifier le Devis",
+    "quoteDetails": "Détails du Devis",
+    "quoteNumber": "Numéro de devis",
+    "validUntil": "Valide jusqu'au",
+    "convertToInvoice": "Convertir en facture",
+    "sendToClient": "Envoyer au client",
+    "noQuotes": "Aucun devis",
+    "addFirstQuote": "Créez votre premier devis"
+  },
+  "reminders": {
+    "title": "Rappels",
+    "automatic": "Automatiques",
+    "manual": "Manuels",
+    "maintenanceReminder": "Rappel de maintenance"
+  },
+  "workflows": {
+    "title": "Automatisations",
+    "newWorkflow": "Nouvelle Automatisation",
+    "trigger": "Déclencheur",
+    "action": "Action"
+  },
+  "contracts": {
+    "title": "Contrats de Maintenance",
+    "newContract": "Nouveau Contrat",
+    "noContracts": "Aucun contrat",
+    "addFirstContract": "Créez votre premier contrat"
+  },
+  "payments": {
+    "title": "Paiements",
+    "payNow": "Payer maintenant",
+    "paymentLink": "Lien de paiement"
+  },
+  "analytics": {
+    "predictions": "Prédictions",
+    "demandForecast": "Prévision de la demande"
   }
 }

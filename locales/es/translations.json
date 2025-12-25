@@ -250,7 +250,15 @@
     "orderFromStore": "Pedir a la tienda",
     "deleteConfirm": "¿Estás seguro de que deseas eliminar este artículo?",
     "noItems": "No hay artículos en el inventario",
-    "addFirstItem": "Añade tu primer artículo"
+    "addFirstItem": "Añade tu primer artículo",
+    "stockControl": "Control de Stock",
+    "stockCurrent": "Stock actual",
+    "stockMin": "Stock mínimo",
+    "lowStockWarning": "Stock bajo - Considerar reposición",
+    "selectCategory": "Seleccionar Categoría",
+    "selectSupplier": "Seleccionar Proveedor",
+    "orderMaterial": "Pedido de",
+    "nameRequired": "El nombre del material es obligatorio"
   },
   "invoices": {
     "title": "Facturas",
@@ -481,5 +489,169 @@
     "included": "Incluido",
     "notIncluded": "No incluido",
     "requiresPremium": "Requiere plan premium"
+  },
+  "teams": {
+    "title": "Gestión de Equipos",
+    "members": "Miembros",
+    "assignments": "Asignaciones",
+    "zones": "Zonas",
+    "absences": "Ausencias",
+    "active": "Activos",
+    "today": "Hoy",
+    "unassigned": "Sin asignar",
+    "inviteMember": "Invitar miembro",
+    "assignWork": "Asignar trabajo",
+    "assignTechnician": "Asignar técnico",
+    "addZone": "Añadir zona",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Administrador",
+      "manager": "Gerente",
+      "senior_tech": "Técnico Senior",
+      "technician": "Técnico",
+      "apprentice": "Aprendiz",
+      "receptionist": "Recepcionista",
+      "accountant": "Contable",
+      "viewer": "Visor"
+    },
+    "memberStatus": {
+      "active": "Activo",
+      "pending_invitation": "Invitación pendiente",
+      "suspended": "Suspendido",
+      "inactive": "Inactivo"
+    },
+    "assignmentStatus": {
+      "unassigned": "Sin asignar",
+      "assigned": "Asignado",
+      "accepted": "Aceptado",
+      "in_progress": "En progreso",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "priority": {
+      "low": "Baja",
+      "normal": "Normal",
+      "high": "Alta",
+      "urgent": "Urgente"
+    },
+    "absenceTypes": {
+      "vacation": "Vacaciones",
+      "sick_leave": "Baja médica",
+      "personal": "Asuntos personales",
+      "training": "Formación",
+      "other": "Otro"
+    },
+    "absenceStatus": {
+      "pending": "Pendiente",
+      "approved": "Aprobada",
+      "rejected": "Rechazada"
+    }
+  },
+  "quotes": {
+    "title": "Presupuestos",
+    "newQuote": "Nuevo Presupuesto",
+    "editQuote": "Editar Presupuesto",
+    "quoteDetails": "Detalles del Presupuesto",
+    "quoteNumber": "Número de presupuesto",
+    "validUntil": "Válido hasta",
+    "status": "Estado",
+    "statuses": {
+      "draft": "Borrador",
+      "sent": "Enviado",
+      "accepted": "Aceptado",
+      "rejected": "Rechazado",
+      "expired": "Expirado"
+    },
+    "convertToInvoice": "Convertir a factura",
+    "sendToClient": "Enviar al cliente",
+    "duplicate": "Duplicar",
+    "termsAndConditions": "Términos y condiciones",
+    "noQuotes": "No hay presupuestos",
+    "addFirstQuote": "Crea tu primer presupuesto"
+  },
+  "reminders": {
+    "title": "Recordatorios",
+    "newReminder": "Nuevo Recordatorio",
+    "automatic": "Automáticos",
+    "manual": "Manuales",
+    "maintenanceReminder": "Recordatorio de mantenimiento",
+    "followUpReminder": "Recordatorio de seguimiento",
+    "warrantyExpiry": "Vencimiento de garantía",
+    "appointmentReminder": "Recordatorio de cita",
+    "daysBeforeService": "Días antes del servicio",
+    "daysAfterService": "Días después del servicio",
+    "enabled": "Activado",
+    "disabled": "Desactivado"
+  },
+  "workflows": {
+    "title": "Automatizaciones",
+    "newWorkflow": "Nueva Automatización",
+    "trigger": "Disparador",
+    "action": "Acción",
+    "condition": "Condición",
+    "triggers": {
+      "newClient": "Nuevo cliente",
+      "newAppointment": "Nueva cita",
+      "serviceCompleted": "Servicio completado",
+      "invoicePaid": "Factura pagada",
+      "lowStock": "Stock bajo"
+    },
+    "actions": {
+      "sendEmail": "Enviar email",
+      "sendSms": "Enviar SMS",
+      "sendWhatsapp": "Enviar WhatsApp",
+      "createTask": "Crear tarea",
+      "updateField": "Actualizar campo"
+    }
+  },
+  "contracts": {
+    "title": "Contratos de Mantenimiento",
+    "newContract": "Nuevo Contrato",
+    "contractDetails": "Detalles del Contrato",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin",
+    "renewalDate": "Fecha de renovación",
+    "frequency": "Frecuencia",
+    "frequencies": {
+      "monthly": "Mensual",
+      "quarterly": "Trimestral",
+      "biannual": "Semestral",
+      "annual": "Anual"
+    },
+    "status": "Estado",
+    "statuses": {
+      "active": "Activo",
+      "pending": "Pendiente",
+      "expired": "Expirado",
+      "cancelled": "Cancelado"
+    },
+    "autoRenewal": "Renovación automática",
+    "servicesIncluded": "Servicios incluidos",
+    "noContracts": "No hay contratos",
+    "addFirstContract": "Crea tu primer contrato"
+  },
+  "payments": {
+    "title": "Pagos",
+    "payNow": "Pagar ahora",
+    "paymentLink": "Enlace de pago",
+    "stripe": "Stripe",
+    "paypal": "PayPal",
+    "bankTransfer": "Transferencia bancaria",
+    "paymentReceived": "Pago recibido",
+    "paymentPending": "Pago pendiente",
+    "paymentFailed": "Pago fallido",
+    "refund": "Reembolso"
+  },
+  "analytics": {
+    "title": "Analíticas",
+    "predictions": "Predicciones",
+    "demandForecast": "Previsión de demanda",
+    "revenueProjection": "Proyección de ingresos",
+    "busyPeriods": "Períodos de alta demanda",
+    "slowPeriods": "Períodos de baja demanda",
+    "recommendations": "Recomendaciones",
+    "trends": "Tendencias"
   }
 }

@@ -198,6 +198,30 @@ export default function DashboardScreen() {
       case 'distributor':
         router.push('/distributor-panel' as any);
         break;
+      case 'reminders':
+        router.push('/reminders' as any);
+        break;
+      case 'workflows':
+        router.push('/workflows' as any);
+        break;
+      case 'contracts':
+        router.push('/contracts' as any);
+        break;
+      case 'whatsapp':
+        router.push('/whatsapp-settings' as any);
+        break;
+      case 'payments':
+        router.push('/payment-settings' as any);
+        break;
+      case 'dashboard_editor':
+        router.push('/dashboard-editor' as any);
+        break;
+      case 'predictions':
+        router.push('/predictions' as any);
+        break;
+      case 'teams':
+        router.push('/teams' as any);
+        break;
     }
   };
 
@@ -226,6 +250,9 @@ export default function DashboardScreen() {
     { key: 'service_catalog', icon: 'list.clipboard.fill', label: 'Catálogo Serv.', color: '#7C3AED' },
     { key: 'clients_map', icon: 'map.fill', label: 'Mapa Clientes', color: '#DC2626' },
     { key: 'business', icon: 'person.fill', label: 'Datos Fiscales', color: '#6B7280' },
+    { key: 'reminders', icon: 'bell.badge.fill', label: 'Recordatorios', color: '#F59E0B' },
+    { key: 'contracts', icon: 'doc.badge.clock.fill', label: 'Contratos', color: '#059669' },
+    { key: 'predictions', icon: 'brain.head.profile', label: 'Predicciones IA', color: '#8B5CF6' },
     { key: 'settings', icon: 'gearshape.fill', label: 'Configuración', color: '#64748B' },
   ];
 
@@ -239,6 +266,11 @@ export default function DashboardScreen() {
     { key: 'shop', icon: 'cart.fill', label: 'Tienda', color: '#84CC16', premium: true },
     { key: 'client_portal', icon: 'globe', label: 'Portal Clientes', color: '#0891B2', premium: true },
     { key: 'distributor', icon: 'building.columns.fill', label: 'Distribuidor', color: '#BE185D', premium: true },
+    { key: 'workflows', icon: 'arrow.triangle.branch', label: 'Workflows', color: '#6366F1', premium: true },
+    { key: 'whatsapp', icon: 'message.fill', label: 'WhatsApp API', color: '#25D366', premium: true },
+    { key: 'payments', icon: 'creditcard.fill', label: 'Pasarelas Pago', color: '#635BFF', premium: true },
+    { key: 'dashboard_editor', icon: 'square.grid.2x2', label: 'Dashboard+', color: '#EC4899', premium: true },
+    { key: 'teams', icon: 'person.3.sequence.fill', label: 'Equipos', color: '#14B8A6', premium: true },
     { key: 'modules', icon: 'creditcard.fill', label: 'Gestionar Plan', color: '#8B5CF6' },
   ];
 

@@ -250,7 +250,15 @@
     "orderFromStore": "Im Shop bestellen",
     "deleteConfirm": "Sind Sie sicher, dass Sie diesen Artikel löschen möchten?",
     "noItems": "Keine Artikel im Inventar",
-    "addFirstItem": "Fügen Sie Ihren ersten Artikel hinzu"
+    "addFirstItem": "Fügen Sie Ihren ersten Artikel hinzu",
+    "stockControl": "Bestandskontrolle",
+    "stockCurrent": "Aktueller Bestand",
+    "stockMin": "Mindestbestand",
+    "lowStockWarning": "Niedriger Bestand - Nachbestellung erwägen",
+    "selectCategory": "Kategorie auswählen",
+    "selectSupplier": "Lieferant auswählen",
+    "orderMaterial": "Bestellung für",
+    "nameRequired": "Materialname ist erforderlich"
   },
   "invoices": {
     "title": "Rechnungen",
@@ -453,5 +461,41 @@
     "fr": "Français",
     "de": "Deutsch",
     "da": "Dansk"
+  },
+  "teams": {
+    "title": "Teamverwaltung",
+    "members": "Mitglieder",
+    "assignments": "Zuweisungen",
+    "zones": "Zonen",
+    "absences": "Abwesenheiten",
+    "active": "Aktiv",
+    "today": "Heute",
+    "unassigned": "Nicht zugewiesen"
+  },
+  "quotes": {
+    "title": "Angebote",
+    "newQuote": "Neues Angebot",
+    "noQuotes": "Keine Angebote",
+    "addFirstQuote": "Erstellen Sie Ihr erstes Angebot"
+  },
+  "reminders": {
+    "title": "Erinnerungen",
+    "automatic": "Automatisch",
+    "manual": "Manuell"
+  },
+  "workflows": {
+    "title": "Automatisierungen",
+    "newWorkflow": "Neue Automatisierung"
+  },
+  "contracts": {
+    "title": "Wartungsverträge",
+    "newContract": "Neuer Vertrag"
+  },
+  "payments": {
+    "title": "Zahlungen",
+    "payNow": "Jetzt bezahlen"
+  },
+  "analytics": {
+    "predictions": "Vorhersagen"
   }
 }

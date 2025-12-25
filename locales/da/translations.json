@@ -250,7 +250,15 @@
     "orderFromStore": "Bestil fra butikken",
     "deleteConfirm": "Er du sikker på, at du vil slette denne vare?",
     "noItems": "Ingen varer på lager",
-    "addFirstItem": "Tilføj din første vare"
+    "addFirstItem": "Tilføj din første vare",
+    "stockControl": "Lagerkontrol",
+    "stockCurrent": "Nuværende lager",
+    "stockMin": "Minimum lager",
+    "lowStockWarning": "Lavt lager - Overvej genbestilling",
+    "selectCategory": "Vælg Kategori",
+    "selectSupplier": "Vælg Leverandør",
+    "orderMaterial": "Bestilling af",
+    "nameRequired": "Materialenavn er påkrævet"
   },
   "invoices": {
     "title": "Fakturaer",
@@ -453,5 +461,33 @@
     "fr": "Français",
     "de": "Deutsch",
     "da": "Dansk"
+  },
+  "teams": {
+    "title": "Teamadministration",
+    "members": "Medlemmer",
+    "assignments": "Tildelinger",
+    "zones": "Zoner",
+    "absences": "Fravær"
+  },
+  "quotes": {
+    "title": "Tilbud",
+    "newQuote": "Nyt Tilbud",
+    "noQuotes": "Ingen tilbud",
+    "addFirstQuote": "Opret dit første tilbud"
+  },
+  "reminders": {
+    "title": "Påmindelser"
+  },
+  "workflows": {
+    "title": "Automatiseringer"
+  },
+  "contracts": {
+    "title": "Vedligeholdelseskontrakter"
+  },
+  "payments": {
+    "title": "Betalinger"
+  },
+  "analytics": {
+    "predictions": "Forudsigelser"
   }
 }

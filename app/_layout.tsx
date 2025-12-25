@@ -126,6 +126,28 @@ export default function RootLayout() {
                     <Stack.Screen name="settings" options={{ headerShown: false }} />
                     <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
                     <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
+                    <Stack.Screen name="portal" options={{ headerShown: false }} />
+                    <Stack.Screen name="quote" options={{ headerShown: false }} />
+                    <Stack.Screen name="client" options={{ headerShown: false }} />
+                    <Stack.Screen name="piano" options={{ headerShown: false }} />
+                    <Stack.Screen name="service" options={{ headerShown: false }} />
+                    <Stack.Screen name="invoice" options={{ headerShown: false }} />
+                    <Stack.Screen name="appointment" options={{ headerShown: false }} />
+                    <Stack.Screen name="supplier" options={{ headerShown: false }} />
+                    <Stack.Screen name="rate" options={{ headerShown: false }} />
+                    <Stack.Screen name="inventory" options={{ headerShown: false }} />
+                    <Stack.Screen name="analytics" options={{ headerShown: false }} />
+                    <Stack.Screen name="accounting" options={{ headerShown: false }} />
+                    <Stack.Screen name="work-order" options={{ headerShown: false }} />
+                    <Stack.Screen name="teams" options={{ headerShown: false }} />
+                    <Stack.Screen name="quotes" options={{ headerShown: false }} />
+                    <Stack.Screen name="reminders" options={{ headerShown: false }} />
+                    <Stack.Screen name="workflows" options={{ headerShown: false }} />
+                    <Stack.Screen name="contracts" options={{ headerShown: false }} />
+                    <Stack.Screen name="whatsapp-settings" options={{ headerShown: false }} />
+                    <Stack.Screen name="payment-settings" options={{ headerShown: false }} />
+                    <Stack.Screen name="dashboard-editor" options={{ headerShown: false }} />
+                    <Stack.Screen name="predictions" options={{ headerShown: false }} />
                   </Stack>
                   <StatusBar style="auto" />
                 </SnackbarProvider>

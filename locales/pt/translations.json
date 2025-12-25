@@ -250,7 +250,15 @@
     "orderFromStore": "Encomendar à loja",
     "deleteConfirm": "Tem a certeza de que deseja eliminar este artigo?",
     "noItems": "Não há artigos no inventário",
-    "addFirstItem": "Adicione o seu primeiro artigo"
+    "addFirstItem": "Adicione o seu primeiro artigo",
+    "stockControl": "Controlo de Stock",
+    "stockCurrent": "Stock atual",
+    "stockMin": "Stock mínimo",
+    "lowStockWarning": "Stock baixo - Considerar reposição",
+    "selectCategory": "Selecionar Categoria",
+    "selectSupplier": "Selecionar Fornecedor",
+    "orderMaterial": "Encomenda de",
+    "nameRequired": "O nome do material é obrigatório"
   },
   "invoices": {
     "title": "Faturas",
@@ -453,5 +461,33 @@
     "fr": "Français",
     "de": "Deutsch",
     "da": "Dansk"
+  },
+  "teams": {
+    "title": "Gestão de Equipas",
+    "members": "Membros",
+    "assignments": "Atribuições",
+    "zones": "Zonas",
+    "absences": "Ausências"
+  },
+  "quotes": {
+    "title": "Orçamentos",
+    "newQuote": "Novo Orçamento",
+    "noQuotes": "Sem orçamentos",
+    "addFirstQuote": "Crie o seu primeiro orçamento"
+  },
+  "reminders": {
+    "title": "Lembretes"
+  },
+  "workflows": {
+    "title": "Automatizações"
+  },
+  "contracts": {
+    "title": "Contratos de Manutenção"
+  },
+  "payments": {
+    "title": "Pagamentos"
+  },
+  "analytics": {
+    "predictions": "Previsões"
   }
 }

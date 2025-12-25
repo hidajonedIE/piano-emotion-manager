@@ -250,7 +250,15 @@
     "orderFromStore": "Order from store",
     "deleteConfirm": "Are you sure you want to delete this item?",
     "noItems": "No items in inventory",
-    "addFirstItem": "Add your first item"
+    "addFirstItem": "Add your first item",
+    "stockControl": "Stock Control",
+    "stockCurrent": "Current stock",
+    "stockMin": "Minimum stock",
+    "lowStockWarning": "Low stock - Consider reordering",
+    "selectCategory": "Select Category",
+    "selectSupplier": "Select Supplier",
+    "orderMaterial": "Order for",
+    "nameRequired": "Material name is required"
   },
   "invoices": {
     "title": "Invoices",
@@ -491,5 +499,169 @@
     "absences": "Absences",
     "holidays": "Holidays",
     "sickLeave": "Sick leave"
+  },
+  "teams": {
+    "title": "Team Management",
+    "members": "Members",
+    "assignments": "Assignments",
+    "zones": "Zones",
+    "absences": "Absences",
+    "active": "Active",
+    "today": "Today",
+    "unassigned": "Unassigned",
+    "inviteMember": "Invite member",
+    "assignWork": "Assign work",
+    "assignTechnician": "Assign technician",
+    "addZone": "Add zone",
+    "approve": "Approve",
+    "reject": "Reject",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Administrator",
+      "manager": "Manager",
+      "senior_tech": "Senior Technician",
+      "technician": "Technician",
+      "apprentice": "Apprentice",
+      "receptionist": "Receptionist",
+      "accountant": "Accountant",
+      "viewer": "Viewer"
+    },
+    "memberStatus": {
+      "active": "Active",
+      "pending_invitation": "Pending invitation",
+      "suspended": "Suspended",
+      "inactive": "Inactive"
+    },
+    "assignmentStatus": {
+      "unassigned": "Unassigned",
+      "assigned": "Assigned",
+      "accepted": "Accepted",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "absenceTypes": {
+      "vacation": "Vacation",
+      "sick_leave": "Sick leave",
+      "personal": "Personal",
+      "training": "Training",
+      "other": "Other"
+    },
+    "absenceStatus": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    }
+  },
+  "quotes": {
+    "title": "Quotes",
+    "newQuote": "New Quote",
+    "editQuote": "Edit Quote",
+    "quoteDetails": "Quote Details",
+    "quoteNumber": "Quote number",
+    "validUntil": "Valid until",
+    "status": "Status",
+    "statuses": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
+    "convertToInvoice": "Convert to invoice",
+    "sendToClient": "Send to client",
+    "duplicate": "Duplicate",
+    "termsAndConditions": "Terms and conditions",
+    "noQuotes": "No quotes",
+    "addFirstQuote": "Create your first quote"
+  },
+  "reminders": {
+    "title": "Reminders",
+    "newReminder": "New Reminder",
+    "automatic": "Automatic",
+    "manual": "Manual",
+    "maintenanceReminder": "Maintenance reminder",
+    "followUpReminder": "Follow-up reminder",
+    "warrantyExpiry": "Warranty expiry",
+    "appointmentReminder": "Appointment reminder",
+    "daysBeforeService": "Days before service",
+    "daysAfterService": "Days after service",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
+  "workflows": {
+    "title": "Automations",
+    "newWorkflow": "New Automation",
+    "trigger": "Trigger",
+    "action": "Action",
+    "condition": "Condition",
+    "triggers": {
+      "newClient": "New client",
+      "newAppointment": "New appointment",
+      "serviceCompleted": "Service completed",
+      "invoicePaid": "Invoice paid",
+      "lowStock": "Low stock"
+    },
+    "actions": {
+      "sendEmail": "Send email",
+      "sendSms": "Send SMS",
+      "sendWhatsapp": "Send WhatsApp",
+      "createTask": "Create task",
+      "updateField": "Update field"
+    }
+  },
+  "contracts": {
+    "title": "Maintenance Contracts",
+    "newContract": "New Contract",
+    "contractDetails": "Contract Details",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "renewalDate": "Renewal date",
+    "frequency": "Frequency",
+    "frequencies": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "biannual": "Biannual",
+      "annual": "Annual"
+    },
+    "status": "Status",
+    "statuses": {
+      "active": "Active",
+      "pending": "Pending",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    },
+    "autoRenewal": "Auto renewal",
+    "servicesIncluded": "Services included",
+    "noContracts": "No contracts",
+    "addFirstContract": "Create your first contract"
+  },
+  "payments": {
+    "title": "Payments",
+    "payNow": "Pay now",
+    "paymentLink": "Payment link",
+    "stripe": "Stripe",
+    "paypal": "PayPal",
+    "bankTransfer": "Bank transfer",
+    "paymentReceived": "Payment received",
+    "paymentPending": "Payment pending",
+    "paymentFailed": "Payment failed",
+    "refund": "Refund"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "predictions": "Predictions",
+    "demandForecast": "Demand forecast",
+    "revenueProjection": "Revenue projection",
+    "busyPeriods": "Busy periods",
+    "slowPeriods": "Slow periods",
+    "recommendations": "Recommendations",
+    "trends": "Trends"
   }
 }
