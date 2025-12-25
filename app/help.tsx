@@ -373,6 +373,150 @@ const helpSections: HelpSection[] = [
     ],
   },
   {
+    id: 'contracts',
+    title: 'Contratos de Mantenimiento',
+    icon: 'doc.badge.clock.fill',
+    iconColor: '#059669',
+    content: [
+      {
+        question: '¿Qué son los contratos de mantenimiento?',
+        answer: 'Los contratos de mantenimiento son acuerdos con tus clientes para realizar servicios periódicos a sus pianos.\n\nBeneficios:\n• Ingresos recurrentes garantizados\n• Fidelización de clientes\n• Planificación de trabajo a largo plazo\n• Recordatorios automáticos de vencimiento',
+      },
+      {
+        question: '¿Cómo creo un contrato?',
+        answer: 'Ve a Módulos → Contratos → Nuevo:\n\n1. Selecciona el cliente\n2. Selecciona el/los piano(s) incluidos\n3. Define la duración (6 meses, 1 año, etc.)\n4. Establece la frecuencia de servicios\n5. Indica el precio del contrato\n6. Añade condiciones especiales si las hay\n7. Guarda el contrato',
+      },
+      {
+        question: '¿Cómo gestiono las renovaciones?',
+        answer: 'El sistema te avisa automáticamente cuando un contrato está próximo a vencer.\n\nOpciones de renovación:\n• Renovar con las mismas condiciones\n• Renovar con nuevas condiciones\n• No renovar (el contrato pasa a "Finalizado")\n\nPuedes configurar cuántos días antes quieres recibir el aviso.',
+      },
+      {
+        question: '¿Qué estados puede tener un contrato?',
+        answer: '• Borrador: En preparación\n• Activo: Vigente y en curso\n• Próximo a vencer: A punto de finalizar\n• Vencido: Pendiente de renovación\n• Finalizado: Terminado sin renovación\n• Cancelado: Anulado antes de tiempo',
+      },
+    ],
+  },
+  {
+    id: 'predictions',
+    title: 'Predicciones con IA',
+    icon: 'brain.head.profile',
+    iconColor: '#8B5CF6',
+    content: [
+      {
+        question: '¿Qué son las predicciones con IA?',
+        answer: 'El módulo de Predicciones usa inteligencia artificial para analizar tus datos históricos y predecir:\n\n• Ingresos futuros estimados\n• Clientes con riesgo de abandono\n• Pianos que necesitarán servicio pronto\n• Mejores momentos para campañas\n• Tendencias de tu negocio',
+      },
+      {
+        question: '¿Cómo funcionan las predicciones?',
+        answer: 'El sistema analiza:\n\n• Historial de servicios realizados\n• Frecuencia de mantenimiento por cliente\n• Patrones estacionales de tu negocio\n• Comportamiento de pago de clientes\n\nCuantos más datos tengas registrados, más precisas serán las predicciones.',
+      },
+      {
+        question: '¿Qué es el "riesgo de abandono"?',
+        answer: 'Es una puntuación que indica la probabilidad de que un cliente deje de usar tus servicios.\n\nSe calcula basándose en:\n• Tiempo desde el último servicio\n• Frecuencia histórica de servicios\n• Cambios en el patrón de contratación\n\nTe ayuda a identificar clientes que necesitan atención especial.',
+      },
+      {
+        question: '¿Necesito configurar algo?',
+        answer: 'No. Las predicciones se generan automáticamente con los datos que ya tienes en la app.\n\nPara mejores resultados:\n• Registra todos los servicios realizados\n• Mantén actualizados los datos de clientes\n• Usa la app durante al menos 3-6 meses\n\nLas predicciones mejoran con el tiempo.',
+      },
+    ],
+  },
+  {
+    id: 'rates',
+    title: 'Tarifas y Precios',
+    icon: 'list.bullet',
+    iconColor: '#EC4899',
+    content: [
+      {
+        question: '¿Para qué sirve el módulo de Tarifas?',
+        answer: 'El módulo de Tarifas te permite definir tus precios estándar para cada tipo de servicio.\n\nVentajas:\n• Precios consistentes en presupuestos y facturas\n• Cálculo automático de importes\n• Diferentes tarifas por tipo de cliente\n• Historial de cambios de precios',
+      },
+      {
+        question: '¿Cómo configuro mis tarifas?',
+        answer: 'Ve a Módulos → Tarifas:\n\n1. Toca "Nueva Tarifa" o edita una existente\n2. Selecciona el tipo de servicio\n3. Indica el precio base\n4. Opcionalmente, define precios especiales para:\n   • Estudiantes\n   • Escuelas\n   • Conservatorios\n5. Guarda la tarifa',
+      },
+      {
+        question: '¿Puedo tener diferentes precios por zona?',
+        answer: 'Sí. Puedes crear tarifas específicas por:\n\n• Código postal\n• Ciudad\n• Distancia desde tu ubicación\n\nEl sistema aplicará automáticamente la tarifa correcta según la dirección del cliente.',
+      },
+      {
+        question: '¿Cómo aplico descuentos?',
+        answer: 'Hay varias formas de aplicar descuentos:\n\n• En la tarifa: Define un % de descuento para ciertos tipos de cliente\n• En el presupuesto: Aplica descuento manual al crear\n• En el contrato: Incluye descuento por fidelidad\n\nLos descuentos se reflejan automáticamente en facturas.',
+      },
+    ],
+  },
+  {
+    id: 'business_data',
+    title: 'Datos Fiscales',
+    icon: 'person.fill',
+    iconColor: '#6B7280',
+    content: [
+      {
+        question: '¿Por qué debo configurar mis datos fiscales?',
+        answer: 'Tus datos fiscales aparecen en:\n\n• Facturas emitidas\n• Presupuestos\n• Contratos\n• Emails enviados a clientes\n\nEs obligatorio para emitir facturas legales en España.',
+      },
+      {
+        question: '¿Qué datos debo introducir?',
+        answer: 'Ve a Módulos → Datos Fiscales y completa:\n\n• Nombre o razón social\n• NIF/CIF\n• Dirección fiscal completa\n• Código postal y ciudad\n• Teléfono de contacto\n• Email profesional\n• Logo (opcional pero recomendado)',
+      },
+      {
+        question: '¿Cómo añado mi logo?',
+        answer: 'En Datos Fiscales, toca el área del logo:\n\n1. Selecciona una imagen de tu galería\n2. Ajusta el recorte si es necesario\n3. Guarda los cambios\n\nFormatos recomendados: PNG o JPG\nTamaño recomendado: 500x500 píxeles mínimo',
+      },
+      {
+        question: '¿Puedo tener varios perfiles fiscales?',
+        answer: 'Actualmente solo se soporta un perfil fiscal por cuenta.\n\nSi trabajas con varias razones sociales, te recomendamos crear cuentas separadas para cada una.',
+      },
+    ],
+  },
+  {
+    id: 'reminders',
+    title: 'Recordatorios',
+    icon: 'bell.badge.fill',
+    iconColor: '#F59E0B',
+    content: [
+      {
+        question: '¿Qué tipos de recordatorios hay?',
+        answer: 'Piano Emotion Manager genera recordatorios automáticos para:\n\n• Citas programadas (antes del servicio)\n• Mantenimiento de pianos (según frecuencia configurada)\n• Vencimiento de contratos\n• Stock bajo de materiales\n• Facturas pendientes de cobro\n• Cumpleaños de clientes',
+      },
+      {
+        question: '¿Cómo configuro los recordatorios?',
+        answer: 'Ve a Módulos → Recordatorios o Configuración → Notificaciones:\n\n• Activa/desactiva cada tipo de recordatorio\n• Configura cuánto tiempo antes quieres el aviso\n• Elige el canal (notificación push, email, ambos)\n\nLos recordatorios de mantenimiento se configuran en cada piano.',
+      },
+      {
+        question: '¿Cómo funciona el recordatorio de mantenimiento?',
+        answer: 'Para cada piano puedes definir un intervalo de mantenimiento (ej: cada 6 meses).\n\nEl sistema:\n1. Registra la fecha del último servicio\n2. Calcula cuándo toca el próximo\n3. Te avisa cuando se acerca la fecha\n4. Opcionalmente, avisa también al cliente\n\nConfigúralo en la ficha de cada piano.',
+      },
+      {
+        question: '¿Puedo crear recordatorios personalizados?',
+        answer: 'Sí. Ve a Módulos → Recordatorios → Nuevo:\n\n1. Escribe el título del recordatorio\n2. Selecciona la fecha y hora\n3. Opcionalmente, vincúlalo a un cliente o piano\n4. Configura si se repite\n5. Guarda\n\nRecibirás una notificación en el momento indicado.',
+      },
+    ],
+  },
+  {
+    id: 'settings',
+    title: 'Configuración General',
+    icon: 'gearshape.fill',
+    iconColor: '#64748B',
+    content: [
+      {
+        question: '¿Qué puedo configurar en la app?',
+        answer: 'En Configuración encontrarás:\n\n• Perfil: Tu nombre y datos de usuario\n• Notificaciones: Qué avisos recibir\n• Apariencia: Tema claro/oscuro\n• Idioma: Español, inglés, etc.\n• Privacidad: Permisos y datos\n• Copia de seguridad: Exportar/importar datos\n• Cuenta: Gestión de suscripción',
+      },
+      {
+        question: '¿Cómo cambio el tema de la app?',
+        answer: 'Ve a Configuración → Apariencia:\n\n• Claro: Fondo blanco, ideal para exteriores\n• Oscuro: Fondo negro, ahorra batería en OLED\n• Automático: Sigue la configuración del sistema\n\nEl cambio se aplica inmediatamente.',
+      },
+      {
+        question: '¿Cómo gestiono mi suscripción?',
+        answer: 'Ve a Configuración → Cuenta o Gestionar Plan:\n\n• Ver tu plan actual\n• Fecha de renovación\n• Cambiar de plan\n• Cancelar suscripción\n• Ver historial de pagos\n\nLos cambios de plan se aplican en el siguiente ciclo de facturación.',
+      },
+      {
+        question: '¿Cómo elimino mi cuenta?',
+        answer: 'Ve a Configuración → Cuenta → Eliminar cuenta:\n\n⚠️ Esta acción es irreversible y eliminará:\n• Todos tus clientes\n• Todos los pianos\n• Todo el historial de servicios\n• Todas las facturas\n\nTe recomendamos hacer una copia de seguridad antes.',
+      },
+    ],
+  },
+  {
     id: 'marketing',
     title: 'Marketing y Comunicación',
     icon: 'megaphone.fill',
@@ -417,6 +561,246 @@ const helpSections: HelpSection[] = [
       {
         question: '¿Hay límite de envíos?',
         answer: 'No hay límite en Piano Emotion Manager.\n\nSin embargo, ten en cuenta las políticas de WhatsApp y tu proveedor de email:\n\n• WhatsApp puede bloquear cuentas que envían muchos mensajes a contactos que no te tienen guardado\n• Algunos proveedores de email limitan envíos diarios\n\nRecomendación: Envía a clientes que ya te conocen y espacia los envíos masivos.',
+      },
+    ],
+  },
+  {
+    id: 'crm',
+    title: 'CRM (Gestión de Relaciones)',
+    icon: 'heart.fill',
+    iconColor: '#EF4444',
+    content: [
+      {
+        question: '¿Qué es el CRM?',
+        answer: 'El CRM (Customer Relationship Management) te ayuda a gestionar las relaciones con tus clientes de forma avanzada.\n\nIncluye:\n• Historial de interacciones\n• Notas y seguimientos\n• Etiquetas personalizadas\n• Puntuación de clientes\n• Oportunidades de venta\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo registro una interacción?',
+        answer: 'Desde la ficha del cliente, toca "Nueva Interacción":\n\n• Llamada: Registro de llamadas telefónicas\n• Email: Correos enviados/recibidos\n• Visita: Visitas presenciales\n• WhatsApp: Conversaciones\n• Nota: Observaciones generales\n\nCada interacción queda registrada con fecha y hora.',
+      },
+      {
+        question: '¿Qué son las etiquetas de cliente?',
+        answer: 'Las etiquetas te permiten clasificar clientes:\n\n• VIP: Clientes prioritarios\n• Potencial: Interesados sin cerrar\n• Inactivo: Sin actividad reciente\n• Moroso: Con pagos pendientes\n\nPuedes crear etiquetas personalizadas y filtrar por ellas.',
+      },
+      {
+        question: '¿Cómo creo una oportunidad de venta?',
+        answer: 'Las oportunidades representan posibles ventas futuras:\n\n1. Ve a CRM → Oportunidades → Nueva\n2. Selecciona el cliente\n3. Describe el servicio potencial\n4. Estima el valor\n5. Asigna una probabilidad de cierre\n6. Programa seguimientos\n\nEl embudo de ventas te muestra el estado de todas las oportunidades.',
+      },
+    ],
+  },
+  {
+    id: 'calendar_plus',
+    title: 'Calendario+ (Avanzado)',
+    icon: 'calendar.badge.clock',
+    iconColor: '#A855F7',
+    content: [
+      {
+        question: '¿Qué ofrece Calendario+?',
+        answer: 'Calendario+ es la versión avanzada del calendario con:\n\n• Sincronización con Google Calendar\n• Sincronización con Outlook\n• Vista de múltiples técnicos\n• Planificación de rutas\n• Disponibilidad online\n• Reservas automáticas\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo sincronizo con Google Calendar?',
+        answer: 'Ve a Calendario+ → Configuración → Google Calendar:\n\n1. Pulsa "Conectar con Google"\n2. Inicia sesión en tu cuenta de Google\n3. Autoriza el acceso\n4. Selecciona qué calendarios sincronizar\n\nLas citas se sincronizarán en ambas direcciones.',
+      },
+      {
+        question: '¿Qué es la disponibilidad online?',
+        answer: 'Puedes compartir un enlace donde los clientes ven tu disponibilidad y reservan citas:\n\n1. Configura tus horarios de trabajo\n2. Define la duración de cada tipo de servicio\n3. Comparte el enlace con clientes\n4. Recibe notificaciones de nuevas reservas\n\nEvita llamadas y mensajes para coordinar citas.',
+      },
+      {
+        question: '¿Cómo funciona la planificación de rutas?',
+        answer: 'El sistema optimiza el orden de tus visitas del día:\n\n1. Ve a Calendario+ → Ruta del día\n2. El sistema calcula la ruta óptima\n3. Muestra tiempos de desplazamiento\n4. Puedes ajustar manualmente\n5. Exporta a Google Maps o Waze\n\nAhorra tiempo y combustible.',
+      },
+    ],
+  },
+  {
+    id: 'reports',
+    title: 'Reportes Avanzados',
+    icon: 'chart.pie.fill',
+    iconColor: '#06B6D4',
+    content: [
+      {
+        question: '¿Qué reportes puedo generar?',
+        answer: 'El módulo de Reportes incluye:\n\n• Informe de actividad mensual/anual\n• Análisis de rentabilidad por cliente\n• Comparativa de períodos\n• Reporte de impuestos (IVA)\n• Informe de productividad\n• Análisis de cartera de clientes\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo exporto un reporte?',
+        answer: 'Cada reporte puede exportarse en varios formatos:\n\n• PDF: Para imprimir o enviar\n• Excel: Para análisis adicional\n• CSV: Para importar en otros sistemas\n\nToca el botón de exportar y selecciona el formato deseado.',
+      },
+      {
+        question: '¿Puedo programar reportes automáticos?',
+        answer: 'Sí. Ve a Reportes → Programados:\n\n1. Selecciona el tipo de reporte\n2. Configura la frecuencia (semanal, mensual)\n3. Indica el email de destino\n4. Activa la programación\n\nRecibirás el reporte automáticamente en tu correo.',
+      },
+      {
+        question: '¿Qué es el reporte de IVA?',
+        answer: 'El reporte de IVA resume:\n\n• IVA repercutido (en tus facturas)\n• IVA soportado (en tus gastos)\n• Resultado a declarar\n• Desglose por trimestre\n\nÚtil para preparar las declaraciones trimestrales de IVA.',
+      },
+    ],
+  },
+  {
+    id: 'accounting',
+    title: 'Contabilidad',
+    icon: 'calculator',
+    iconColor: '#F97316',
+    content: [
+      {
+        question: '¿Qué incluye el módulo de Contabilidad?',
+        answer: 'El módulo de Contabilidad ofrece:\n\n• Registro de gastos\n• Categorización automática\n• Balance de ingresos y gastos\n• Libro de facturas emitidas\n• Libro de facturas recibidas\n• Exportación para gestoría\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo registro un gasto?',
+        answer: 'Ve a Contabilidad → Gastos → Nuevo:\n\n1. Introduce el importe\n2. Selecciona la categoría (combustible, materiales, etc.)\n3. Añade el proveedor\n4. Adjunta foto del ticket/factura\n5. Indica si tiene IVA deducible\n6. Guarda\n\nPuedes escanear tickets con la cámara.',
+      },
+      {
+        question: '¿Qué categorías de gasto hay?',
+        answer: 'Categorías predefinidas:\n\n• Combustible y desplazamientos\n• Materiales y repuestos\n• Herramientas\n• Formación\n• Seguros\n• Teléfono e internet\n• Software y suscripciones\n• Otros gastos\n\nPuedes crear categorías personalizadas.',
+      },
+      {
+        question: '¿Cómo exporto para mi gestor?',
+        answer: 'Ve a Contabilidad → Exportar:\n\n1. Selecciona el período (mes, trimestre, año)\n2. Elige el formato (Excel, CSV, PDF)\n3. Incluye o excluye adjuntos\n4. Descarga o envía por email\n\nEl formato es compatible con la mayoría de programas de contabilidad.',
+      },
+    ],
+  },
+  {
+    id: 'shop',
+    title: 'Tienda Online',
+    icon: 'cart.fill',
+    iconColor: '#84CC16',
+    content: [
+      {
+        question: '¿Qué es la Tienda Online?',
+        answer: 'La Tienda te permite vender productos y servicios online:\n\n• Catálogo de productos\n• Servicios con reserva\n• Pagos online\n• Gestión de pedidos\n• Integración con inventario\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo añado productos?',
+        answer: 'Ve a Tienda → Productos → Nuevo:\n\n1. Nombre y descripción\n2. Precio\n3. Fotos del producto\n4. Stock disponible\n5. Categoría\n6. Opciones de envío\n\nLos productos se sincronizan con tu inventario.',
+      },
+      {
+        question: '¿Cómo recibo pagos?',
+        answer: 'Configura una pasarela de pago (ver sección Pasarelas de Pago):\n\n• Stripe: Tarjetas de crédito/débito\n• PayPal: Cuenta PayPal o tarjeta\n\nLos pagos se depositan en tu cuenta automáticamente.',
+      },
+      {
+        question: '¿Cómo comparto mi tienda?',
+        answer: 'Tu tienda tiene una URL única que puedes compartir:\n\n• En tu web o redes sociales\n• Por WhatsApp a clientes\n• En tu firma de email\n• Con código QR\n\nLos clientes pueden comprar sin necesidad de registrarse.',
+      },
+    ],
+  },
+  {
+    id: 'workflows',
+    title: 'Workflows (Automatizaciones)',
+    icon: 'arrow.triangle.branch',
+    iconColor: '#6366F1',
+    content: [
+      {
+        question: '¿Qué son los Workflows?',
+        answer: 'Los Workflows son automatizaciones que ejecutan acciones cuando ocurren eventos:\n\n• Nuevo cliente → Enviar bienvenida\n• Servicio completado → Pedir reseña\n• 6 meses sin servicio → Recordatorio\n• Factura vencida → Aviso de pago\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo creo un workflow?',
+        answer: 'Ve a Workflows → Nuevo:\n\n1. Nombre del workflow\n2. Disparador: ¿Cuándo se activa?\n3. Condiciones: ¿Qué debe cumplirse?\n4. Acciones: ¿Qué hacer?\n5. Activa el workflow\n\nPuedes combinar múltiples condiciones y acciones.',
+      },
+      {
+        question: '¿Qué acciones puedo automatizar?',
+        answer: 'Acciones disponibles:\n\n• Enviar email\n• Enviar WhatsApp (abre la app)\n• Crear recordatorio\n• Crear tarea\n• Cambiar etiqueta de cliente\n• Actualizar campo\n• Notificación interna\n\nMás acciones se añaden regularmente.',
+      },
+      {
+        question: '¿Puedo ver el historial de ejecuciones?',
+        answer: 'Sí. En cada workflow verás:\n\n• Últimas ejecuciones\n• Estado (exitoso, fallido)\n• Detalles de cada paso\n• Errores si los hubo\n\nÚtil para depurar y optimizar tus automatizaciones.',
+      },
+    ],
+  },
+  {
+    id: 'payments',
+    title: 'Pasarelas de Pago',
+    icon: 'creditcard.fill',
+    iconColor: '#635BFF',
+    content: [
+      {
+        question: '¿Qué son las pasarelas de pago?',
+        answer: 'Las pasarelas de pago te permiten cobrar online:\n\n• Stripe: Líder mundial en pagos\n• PayPal: Muy conocido por clientes\n\nPuedes usar una o ambas según preferencia.\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo configuro Stripe?',
+        answer: 'Ve a Herramientas Avanzadas → Pasarelas de Pago → Stripe:\n\n1. Crea una cuenta en stripe.com si no tienes\n2. Obtén tus claves API (Dashboard de Stripe)\n3. Introduce la clave pública\n4. Introduce la clave secreta\n5. Guarda y prueba la conexión\n\nLas credenciales se almacenan de forma segura y encriptada.',
+      },
+      {
+        question: '¿Cómo configuro PayPal?',
+        answer: 'Ve a Herramientas Avanzadas → Pasarelas de Pago → PayPal:\n\n1. Crea una cuenta Business en paypal.com\n2. Ve a Developer Dashboard\n3. Crea una aplicación\n4. Copia el Client ID y Secret\n5. Introdúcelos en Piano Emotion\n6. Guarda y prueba\n\nPuedes usar modo Sandbox para pruebas.',
+      },
+      {
+        question: '¿Qué comisiones tienen?',
+        answer: 'Las comisiones las cobra cada plataforma, no Piano Emotion:\n\n• Stripe: ~1.4% + 0.25€ (Europa)\n• PayPal: ~2.9% + 0.35€\n\nConsulta las tarifas actualizadas en sus webs oficiales. Piano Emotion no cobra comisión adicional.',
+      },
+    ],
+  },
+  {
+    id: 'dashboard_plus',
+    title: 'Dashboard+ (Personalizable)',
+    icon: 'square.grid.2x2',
+    iconColor: '#EC4899',
+    content: [
+      {
+        question: '¿Qué es Dashboard+?',
+        answer: 'Dashboard+ te permite personalizar completamente tu pantalla principal:\n\n• Añadir/quitar widgets\n• Reorganizar secciones\n• Elegir qué estadísticas ver\n• Crear accesos rápidos personalizados\n• Múltiples layouts\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo personalizo el dashboard?',
+        answer: 'Ve a Herramientas Avanzadas → Dashboard+:\n\n1. Entra en modo edición\n2. Arrastra widgets para reorganizar\n3. Toca + para añadir nuevos widgets\n4. Toca X para eliminar widgets\n5. Guarda los cambios\n\nPuedes volver al layout por defecto en cualquier momento.',
+      },
+      {
+        question: '¿Qué widgets hay disponibles?',
+        answer: 'Widgets disponibles:\n\n• Resumen del mes\n• Próximas citas\n• Clientes recientes\n• Gráfico de ingresos\n• Tareas pendientes\n• Recordatorios\n• Stock bajo\n• Facturas pendientes\n• Calendario mini\n• Accesos rápidos\n\nMás widgets se añaden en actualizaciones.',
+      },
+      {
+        question: '¿Puedo tener varios dashboards?',
+        answer: 'Sí. Puedes crear múltiples layouts:\n\n• Vista diaria: Enfocada en citas del día\n• Vista financiera: Enfocada en facturación\n• Vista general: Balance de todo\n\nCambia entre ellos con un toque.',
+      },
+    ],
+  },
+  {
+    id: 'teams',
+    title: 'Equipos (Multi-usuario)',
+    icon: 'person.3.sequence.fill',
+    iconColor: '#14B8A6',
+    content: [
+      {
+        question: '¿Qué es el módulo de Equipos?',
+        answer: 'El módulo de Equipos permite trabajar con varios técnicos:\n\n• Cuentas de usuario separadas\n• Asignación de clientes\n• Calendario compartido\n• Permisos por rol\n• Estadísticas por técnico\n\nFunción Premium.',
+      },
+      {
+        question: '¿Cómo añado un técnico?',
+        answer: 'Ve a Equipos → Miembros → Invitar:\n\n1. Introduce el email del técnico\n2. Selecciona su rol (Técnico, Admin)\n3. Define sus permisos\n4. Envía la invitación\n\nEl técnico recibirá un email para crear su cuenta.',
+      },
+      {
+        question: '¿Qué roles existen?',
+        answer: '• Propietario: Control total, facturación\n• Administrador: Todo excepto facturación\n• Técnico: Solo sus clientes y servicios\n• Visualizador: Solo lectura\n\nPuedes personalizar permisos específicos para cada rol.',
+      },
+      {
+        question: '¿Cómo asigno clientes a técnicos?',
+        answer: 'Hay varias formas:\n\n• Al crear cliente: Selecciona el técnico asignado\n• Desde la ficha: Cambia el técnico asignado\n• Por zona: Asignación automática por código postal\n• Balanceo: Distribución equitativa automática\n\nCada técnico solo ve sus clientes asignados.',
+      },
+    ],
+  },
+  {
+    id: 'subscription',
+    title: 'Planes y Suscripción',
+    icon: 'creditcard.fill',
+    iconColor: '#8B5CF6',
+    content: [
+      {
+        question: '¿Qué planes hay disponibles?',
+        answer: 'Piano Emotion Manager ofrece:\n\n• Plan Gratuito: Funciones básicas sin límite de tiempo\n• Plan Premium: Todas las funciones avanzadas\n\nEl plan gratuito incluye gestión de clientes, pianos, servicios, facturas y marketing.',
+      },
+      {
+        question: '¿Qué incluye el Plan Premium?',
+        answer: 'El Plan Premium añade:\n\n• CRM avanzado\n• Calendario+ con sincronización\n• Reportes avanzados\n• Contabilidad\n• Tienda online\n• Workflows\n• Pasarelas de pago\n• Dashboard personalizable\n• Equipos multi-usuario\n• Soporte prioritario',
+      },
+      {
+        question: '¿Cómo me suscribo a Premium?',
+        answer: 'Ve a Gestionar Plan o Configuración → Cuenta:\n\n1. Selecciona Plan Premium\n2. Elige facturación mensual o anual\n3. Introduce método de pago\n4. Confirma la suscripción\n\nLas funciones Premium se activan inmediatamente.',
+      },
+      {
+        question: '¿Puedo cancelar en cualquier momento?',
+        answer: 'Sí. La suscripción se puede cancelar cuando quieras:\n\n• Mantienes acceso hasta fin del período pagado\n• Tus datos se conservan\n• Puedes reactivar en cualquier momento\n• Las funciones Premium se desactivan al vencer\n\nNo hay permanencia ni penalización.',
       },
     ],
   },
