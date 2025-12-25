@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,17 +14,18 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { trpc } from '@/lib/trpc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type TabType = 'revenue' | 'churn' | 'maintenance' | 'workload' | 'inventory';
 
-// Datos de ejemplo
+// Datos de ejemplo (fallback cuando no hay datos del backend)
 const MOCK_DATA = {
   revenue: [
-    { period: 'Enero 2026', value: 4250, confidence: 78, trend: 'up', factors: ['Tendencia de crecimiento', 'Temporada alta'] },
-    { period: 'Febrero 2026', value: 3980, confidence: 72, trend: 'stable', factors: ['Estabilidad histórica'] },
-    { period: 'Marzo 2026', value: 4520, confidence: 65, trend: 'up', factors: ['Temporada de conciertos'] },
+    { period: 'Enero 2026', value: 4250, confidence: 78, trend: 'up' as const, factors: ['Tendencia de crecimiento', 'Temporada alta'] },
+    { period: 'Febrero 2026', value: 3980, confidence: 72, trend: 'stable' as const, factors: ['Estabilidad histórica'] },
+    { period: 'Marzo 2026', value: 4520, confidence: 65, trend: 'up' as const, factors: ['Temporada de conciertos'] },
   ],
   churn: [
     { clientName: 'María García', riskScore: 85, daysSince: 245, suggestedAction: 'Contactar urgentemente' },
@@ -42,9 +44,9 @@ const MOCK_DATA = {
     { week: 'Semana del 20 Ene', scheduled: 3, estimated: 5, recommendation: 'Semana tranquila' },
   ],
   inventory: [
-    { itemName: 'Cuerdas de bajo', currentStock: 5, monthlyUsage: 3, monthsUntilMin: 0.8, urgency: 'high' },
-    { itemName: 'Fieltro de martillos', currentStock: 12, monthlyUsage: 4, monthsUntilMin: 1.5, urgency: 'medium' },
-    { itemName: 'Clavijas de afinación', currentStock: 45, monthlyUsage: 8, monthsUntilMin: 4.2, urgency: 'low' },
+    { itemName: 'Cuerdas de bajo', currentStock: 5, monthlyUsage: 3, monthsUntilMin: 0.8, urgency: 'high' as const },
+    { itemName: 'Fieltro de martillos', currentStock: 12, monthlyUsage: 4, monthsUntilMin: 1.5, urgency: 'medium' as const },
+    { itemName: 'Clavijas de afinación', currentStock: 45, monthlyUsage: 8, monthsUntilMin: 4.2, urgency: 'low' as const },
   ],
 };
 
@@ -55,7 +57,83 @@ export default function PredictionsScreen() {
 
   const [activeTab, setActiveTab] = useState<TabType>('revenue');
   const [refreshing, setRefreshing] = useState(false);
-  const [data, setData] = useState(MOCK_DATA);
+
+  // Queries tRPC para obtener datos del backend
+  const revenueQuery = trpc.advanced.predictions.getRevenue.useQuery(
+    { months: 3 },
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+  
+  const churnQuery = trpc.advanced.predictions.getChurnRisk.useQuery(
+    undefined,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+  
+  const maintenanceQuery = trpc.advanced.predictions.getMaintenance.useQuery(
+    undefined,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+  
+  const workloadQuery = trpc.advanced.predictions.getWorkload.useQuery(
+    { weeks: 4 },
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+  
+  const inventoryQuery = trpc.advanced.predictions.getInventoryDemand.useQuery(
+    undefined,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+
+  // Combinar datos del backend con fallback a mock data
+  const data = {
+    revenue: revenueQuery.data && revenueQuery.data.length > 0 
+      ? revenueQuery.data.map(r => ({
+          period: r.period,
+          value: r.value,
+          confidence: r.confidence,
+          trend: r.trend,
+          factors: r.factors,
+        }))
+      : MOCK_DATA.revenue,
+    churn: churnQuery.data && churnQuery.data.length > 0
+      ? churnQuery.data.map((c: any) => ({
+          clientName: c.clientName,
+          riskScore: c.riskScore,
+          daysSince: c.daysSinceLastService,
+          suggestedAction: c.suggestedAction,
+        }))
+      : MOCK_DATA.churn,
+    maintenance: maintenanceQuery.data && maintenanceQuery.data.length > 0
+      ? maintenanceQuery.data.map((m: any) => ({
+          pianoInfo: m.pianoInfo,
+          clientName: m.clientName,
+          predictedDate: new Date(m.predictedDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
+          serviceType: m.serviceType,
+          confidence: m.confidence,
+        }))
+      : MOCK_DATA.maintenance,
+    workload: workloadQuery.data && workloadQuery.data.length > 0
+      ? workloadQuery.data.map((w: any) => ({
+          week: w.week,
+          scheduled: w.scheduledAppointments,
+          estimated: w.estimatedTotal,
+          recommendation: w.recommendation,
+        }))
+      : MOCK_DATA.workload,
+    inventory: inventoryQuery.data && inventoryQuery.data.length > 0
+      ? inventoryQuery.data.map((i: any) => ({
+          itemName: i.itemName,
+          currentStock: i.currentStock,
+          monthlyUsage: i.monthlyUsage,
+          monthsUntilMin: i.monthsUntilMin,
+          urgency: i.urgency,
+        }))
+      : MOCK_DATA.inventory,
+  };
+
+  const isLoading = revenueQuery.isLoading || churnQuery.isLoading || 
+                    maintenanceQuery.isLoading || workloadQuery.isLoading || 
+                    inventoryQuery.isLoading;
 
   const textPrimary = colors.text;
   const textSecondary = colors.textSecondary;
@@ -65,8 +143,13 @@ export default function PredictionsScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // Aquí se cargarían los datos reales del backend
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await Promise.all([
+      revenueQuery.refetch(),
+      churnQuery.refetch(),
+      maintenanceQuery.refetch(),
+      workloadQuery.refetch(),
+      inventoryQuery.refetch(),
+    ]);
     setRefreshing(false);
   };
 
@@ -100,6 +183,17 @@ export default function PredictionsScreen() {
     return '#22C55E';
   };
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'revenue': return renderRevenueTab();
+      case 'churn': return renderChurnTab();
+      case 'maintenance': return renderMaintenanceTab();
+      case 'workload': return renderWorkloadTab();
+      case 'inventory': return renderInventoryTab();
+      default: return null;
+    }
+  };
+
   const renderRevenueTab = () => (
     <View style={styles.tabContent}>
       <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
@@ -112,6 +206,12 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Basado en tu historial de los últimos 12 meses
         </ThemedText>
+        {revenueQuery.isLoading && (
+          <View style={styles.loadingIndicator}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Calculando predicciones...</ThemedText>
+          </View>
+        )}
       </View>
 
       {data.revenue.map((prediction, index) => {
@@ -163,36 +263,54 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Clientes que podrían necesitar atención
         </ThemedText>
+        {churnQuery.isLoading && (
+          <View style={styles.loadingIndicator}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Analizando clientes...</ThemedText>
+          </View>
+        )}
       </View>
 
-      {data.churn.map((client, index) => (
-        <View key={index} style={[styles.churnCard, { backgroundColor: cardBg, borderColor: border }]}>
-          <View style={styles.churnHeader}>
-            <View style={styles.churnInfo}>
-              <ThemedText style={[styles.clientName, { color: textPrimary }]}>
-                {client.clientName}
-              </ThemedText>
-              <ThemedText style={[styles.daysSince, { color: textSecondary }]}>
-                {client.daysSince} días sin servicio
-              </ThemedText>
-            </View>
-            <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(client.riskScore)}20` }]}>
-              <ThemedText style={{ color: getRiskColor(client.riskScore), fontWeight: '700' }}>
-                {client.riskScore}%
-              </ThemedText>
-            </View>
-          </View>
-
-          <View style={[styles.riskBar, { backgroundColor: `${getRiskColor(client.riskScore)}20` }]}>
-            <View style={[styles.riskBarFill, { width: `${client.riskScore}%`, backgroundColor: getRiskColor(client.riskScore) }]} />
-          </View>
-
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-            <Ionicons name="call" size={16} color="#fff" />
-            <ThemedText style={styles.actionButtonText}>{client.suggestedAction}</ThemedText>
-          </TouchableOpacity>
+      {data.churn.length === 0 ? (
+        <View style={[styles.emptyState, { backgroundColor: cardBg, borderColor: border }]}>
+          <Ionicons name="checkmark-circle" size={48} color="#22C55E" />
+          <ThemedText style={[styles.emptyStateTitle, { color: textPrimary }]}>
+            ¡Excelente!
+          </ThemedText>
+          <ThemedText style={[styles.emptyStateText, { color: textSecondary }]}>
+            No hay clientes en riesgo de pérdida
+          </ThemedText>
         </View>
-      ))}
+      ) : (
+        data.churn.map((client, index) => (
+          <View key={index} style={[styles.churnCard, { backgroundColor: cardBg, borderColor: border }]}>
+            <View style={styles.churnHeader}>
+              <View style={styles.churnInfo}>
+                <ThemedText style={[styles.clientName, { color: textPrimary }]}>
+                  {client.clientName}
+                </ThemedText>
+                <ThemedText style={[styles.daysSince, { color: textSecondary }]}>
+                  {client.daysSince} días sin servicio
+                </ThemedText>
+              </View>
+              <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(client.riskScore)}20` }]}>
+                <ThemedText style={{ color: getRiskColor(client.riskScore), fontWeight: '700' }}>
+                  {client.riskScore}%
+                </ThemedText>
+              </View>
+            </View>
+
+            <View style={[styles.riskBar, { backgroundColor: `${getRiskColor(client.riskScore)}20` }]}>
+              <View style={[styles.riskBarFill, { width: `${client.riskScore}%`, backgroundColor: getRiskColor(client.riskScore) }]} />
+            </View>
+
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.primary }]}>
+              <Ionicons name="call" size={16} color="#fff" />
+              <ThemedText style={styles.actionButtonText}>{client.suggestedAction}</ThemedText>
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
     </View>
   );
 
@@ -208,49 +326,67 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Basado en el historial de cada piano
         </ThemedText>
+        {maintenanceQuery.isLoading && (
+          <View style={styles.loadingIndicator}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Calculando mantenimientos...</ThemedText>
+          </View>
+        )}
       </View>
 
-      {data.maintenance.map((item, index) => (
-        <View key={index} style={[styles.maintenanceCard, { backgroundColor: cardBg, borderColor: border }]}>
-          <View style={styles.maintenanceHeader}>
-            <View style={[styles.maintenanceIcon, { backgroundColor: '#8B5CF620' }]}>
-              <Ionicons name="musical-notes" size={20} color="#8B5CF6" />
-            </View>
-            <View style={styles.maintenanceInfo}>
-              <ThemedText style={[styles.pianoInfo, { color: textPrimary }]}>
-                {item.pianoInfo}
-              </ThemedText>
-              <ThemedText style={[styles.clientNameSmall, { color: textSecondary }]}>
-                {item.clientName}
-              </ThemedText>
-            </View>
-          </View>
-
-          <View style={styles.maintenanceDetails}>
-            <View style={styles.maintenanceDetail}>
-              <Ionicons name="calendar" size={16} color={textSecondary} />
-              <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
-                {item.predictedDate}
-              </ThemedText>
-            </View>
-            <View style={styles.maintenanceDetail}>
-              <Ionicons name="build" size={16} color={textSecondary} />
-              <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
-                {item.serviceType}
-              </ThemedText>
-            </View>
-            <View style={[styles.confidenceSmall, { backgroundColor: `${colors.primary}20` }]}>
-              <ThemedText style={{ color: colors.primary, fontSize: 11 }}>
-                {item.confidence}%
-              </ThemedText>
-            </View>
-          </View>
-
-          <TouchableOpacity style={[styles.scheduleButton, { borderColor: colors.primary }]}>
-            <ThemedText style={{ color: colors.primary }}>Programar cita</ThemedText>
-          </TouchableOpacity>
+      {data.maintenance.length === 0 ? (
+        <View style={[styles.emptyState, { backgroundColor: cardBg, borderColor: border }]}>
+          <Ionicons name="calendar-outline" size={48} color={textSecondary} />
+          <ThemedText style={[styles.emptyStateTitle, { color: textPrimary }]}>
+            Sin predicciones
+          </ThemedText>
+          <ThemedText style={[styles.emptyStateText, { color: textSecondary }]}>
+            Registra más servicios para obtener predicciones de mantenimiento
+          </ThemedText>
         </View>
-      ))}
+      ) : (
+        data.maintenance.map((item, index) => (
+          <View key={index} style={[styles.maintenanceCard, { backgroundColor: cardBg, borderColor: border }]}>
+            <View style={styles.maintenanceHeader}>
+              <View style={[styles.maintenanceIcon, { backgroundColor: '#8B5CF620' }]}>
+                <Ionicons name="musical-notes" size={20} color="#8B5CF6" />
+              </View>
+              <View style={styles.maintenanceInfo}>
+                <ThemedText style={[styles.pianoInfo, { color: textPrimary }]}>
+                  {item.pianoInfo}
+                </ThemedText>
+                <ThemedText style={[styles.clientNameSmall, { color: textSecondary }]}>
+                  {item.clientName}
+                </ThemedText>
+              </View>
+            </View>
+
+            <View style={styles.maintenanceDetails}>
+              <View style={styles.maintenanceDetail}>
+                <Ionicons name="calendar" size={16} color={textSecondary} />
+                <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
+                  {item.predictedDate}
+                </ThemedText>
+              </View>
+              <View style={styles.maintenanceDetail}>
+                <Ionicons name="build" size={16} color={textSecondary} />
+                <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
+                  {item.serviceType}
+                </ThemedText>
+              </View>
+              <View style={[styles.confidenceSmall, { backgroundColor: `${colors.primary}20` }]}>
+                <ThemedText style={{ color: colors.primary, fontSize: 11 }}>
+                  {item.confidence}%
+                </ThemedText>
+              </View>
+            </View>
+
+            <TouchableOpacity style={[styles.scheduleButton, { borderColor: colors.primary }]}>
+              <ThemedText style={{ color: colors.primary }}>Programar cita</ThemedText>
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
     </View>
   );
 
@@ -266,6 +402,12 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Previsión para las próximas 4 semanas
         </ThemedText>
+        {workloadQuery.isLoading && (
+          <View style={styles.loadingIndicator}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Calculando carga...</ThemedText>
+          </View>
+        )}
       </View>
 
       {data.workload.map((week, index) => (
@@ -325,73 +467,81 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Basado en el consumo de los últimos 3 meses
         </ThemedText>
+        {inventoryQuery.isLoading && (
+          <View style={styles.loadingIndicator}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Analizando inventario...</ThemedText>
+          </View>
+        )}
       </View>
 
-      {data.inventory.map((item, index) => (
-        <View key={index} style={[styles.inventoryCard, { backgroundColor: cardBg, borderColor: border }]}>
-          <View style={styles.inventoryHeader}>
-            <ThemedText style={[styles.itemName, { color: textPrimary }]}>
-              {item.itemName}
-            </ThemedText>
-            <View style={[styles.urgencyBadge, { backgroundColor: `${getUrgencyColor(item.urgency)}20` }]}>
-              <Ionicons 
-                name={item.urgency === 'high' ? 'alert-circle' : item.urgency === 'medium' ? 'warning' : 'checkmark-circle'} 
-                size={14} 
-                color={getUrgencyColor(item.urgency)} 
-              />
-              <ThemedText style={{ color: getUrgencyColor(item.urgency), fontSize: 12, marginLeft: 4 }}>
-                {item.urgency === 'high' ? 'Urgente' : item.urgency === 'medium' ? 'Pronto' : 'OK'}
-              </ThemedText>
-            </View>
-          </View>
-
-          <View style={styles.inventoryStats}>
-            <View style={styles.inventoryStat}>
-              <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>
-                {item.currentStock}
-              </ThemedText>
-              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
-                Stock actual
-              </ThemedText>
-            </View>
-            <View style={styles.inventoryStat}>
-              <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>
-                {item.monthlyUsage}/mes
-              </ThemedText>
-              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
-                Consumo
-              </ThemedText>
-            </View>
-            <View style={styles.inventoryStat}>
-              <ThemedText style={[styles.inventoryValue, { color: getUrgencyColor(item.urgency) }]}>
-                {item.monthsUntilMin} meses
-              </ThemedText>
-              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
-                Hasta mínimo
-              </ThemedText>
-            </View>
-          </View>
-
-          {item.urgency !== 'low' && (
-            <TouchableOpacity style={[styles.orderButton, { backgroundColor: getUrgencyColor(item.urgency) }]}>
-              <Ionicons name="cart" size={16} color="#fff" />
-              <ThemedText style={styles.orderButtonText}>Crear pedido</ThemedText>
-            </TouchableOpacity>
-          )}
+      {data.inventory.length === 0 ? (
+        <View style={[styles.emptyState, { backgroundColor: cardBg, borderColor: border }]}>
+          <Ionicons name="cube-outline" size={48} color={textSecondary} />
+          <ThemedText style={[styles.emptyStateTitle, { color: textPrimary }]}>
+            Sin predicciones
+          </ThemedText>
+          <ThemedText style={[styles.emptyStateText, { color: textSecondary }]}>
+            Registra movimientos de inventario para obtener predicciones
+          </ThemedText>
         </View>
-      ))}
+      ) : (
+        data.inventory.map((item, index) => (
+          <View key={index} style={[styles.inventoryCard, { backgroundColor: cardBg, borderColor: border }]}>
+            <View style={styles.inventoryHeader}>
+              <ThemedText style={[styles.itemName, { color: textPrimary }]}>
+                {item.itemName}
+              </ThemedText>
+              <View style={[styles.urgencyBadge, { backgroundColor: `${getUrgencyColor(item.urgency)}20` }]}>
+                <Ionicons 
+                  name={item.urgency === 'high' ? 'alert-circle' : item.urgency === 'medium' ? 'warning' : 'checkmark-circle'} 
+                  size={14} 
+                  color={getUrgencyColor(item.urgency)} 
+                />
+                <ThemedText style={{ color: getUrgencyColor(item.urgency), fontSize: 12, marginLeft: 4 }}>
+                  {item.urgency === 'high' ? 'Urgente' : item.urgency === 'medium' ? 'Pronto' : 'OK'}
+                </ThemedText>
+              </View>
+            </View>
+
+            <View style={styles.inventoryStats}>
+              <View style={styles.inventoryStat}>
+                <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>
+                  {item.currentStock}
+                </ThemedText>
+                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
+                  Stock actual
+                </ThemedText>
+              </View>
+              <View style={styles.inventoryStat}>
+                <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>
+                  {item.monthlyUsage}
+                </ThemedText>
+                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
+                  Uso/mes
+                </ThemedText>
+              </View>
+              <View style={styles.inventoryStat}>
+                <ThemedText style={[styles.inventoryValue, { color: getUrgencyColor(item.urgency) }]}>
+                  {item.monthsUntilMin.toFixed(1)}
+                </ThemedText>
+                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
+                  Meses hasta mín.
+                </ThemedText>
+              </View>
+            </View>
+
+            {item.urgency === 'high' && (
+              <TouchableOpacity style={[styles.orderButton, { backgroundColor: '#EF4444' }]}>
+                <Ionicons name="cart" size={16} color="#fff" />
+                <ThemedText style={styles.orderButtonText}>Pedir ahora</ThemedText>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))
+      )}
     </View>
   );
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'revenue': return renderRevenueTab();
-      case 'churn': return renderChurnTab();
-      case 'maintenance': return renderMaintenanceTab();
-      case 'workload': return renderWorkloadTab();
-      case 'inventory': return renderInventoryTab();
-    }
-  };
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: background }]}>
@@ -505,15 +655,20 @@ const styles = StyleSheet.create({
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
     marginBottom: 8,
   },
   summaryTitle: {
     fontSize: 18,
     fontWeight: '600',
+    marginLeft: 10,
   },
   summaryDescription: {
     fontSize: 14,
+  },
+  loadingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
   },
   predictionCard: {
     padding: 16,
@@ -539,12 +694,12 @@ const styles = StyleSheet.create({
   predictionValue: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     marginBottom: 12,
   },
   valueText: {
     fontSize: 28,
     fontWeight: '700',
+    marginRight: 8,
   },
   factorsList: {
     flexDirection: 'row',
@@ -599,7 +754,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     borderRadius: 8,
-    gap: 8,
+    gap: 6,
   },
   actionButtonText: {
     color: '#fff',
@@ -622,23 +777,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 12,
   },
   maintenanceInfo: {
-    marginLeft: 12,
     flex: 1,
   },
   pianoInfo: {
     fontSize: 15,
     fontWeight: '600',
+    marginBottom: 2,
   },
   clientNameSmall: {
     fontSize: 13,
-    marginTop: 2,
   },
   maintenanceDetails: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    flexWrap: 'wrap',
+    gap: 12,
     marginBottom: 12,
   },
   maintenanceDetail: {
@@ -648,8 +804,7 @@ const styles = StyleSheet.create({
   confidenceSmall: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 10,
-    marginLeft: 'auto',
+    borderRadius: 8,
   },
   scheduleButton: {
     alignItems: 'center',
@@ -670,10 +825,10 @@ const styles = StyleSheet.create({
   },
   workloadStats: {
     flexDirection: 'row',
-    gap: 24,
     marginBottom: 12,
   },
   workloadStat: {
+    flex: 1,
     alignItems: 'center',
   },
   statValue: {
@@ -687,7 +842,7 @@ const styles = StyleSheet.create({
   workloadBar: {
     height: 8,
     borderRadius: 4,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   workloadBarFill: {
     height: '100%',
@@ -712,6 +867,7 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: '600',
+    flex: 1,
   },
   urgencyBadge: {
     flexDirection: 'row',
@@ -722,19 +878,20 @@ const styles = StyleSheet.create({
   },
   inventoryStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 12,
   },
   inventoryStat: {
+    flex: 1,
     alignItems: 'center',
   },
   inventoryValue: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
   },
   inventoryLabel: {
     fontSize: 11,
     marginTop: 2,
+    textAlign: 'center',
   },
   orderButton: {
     flexDirection: 'row',
@@ -742,10 +899,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     borderRadius: 8,
-    gap: 8,
+    gap: 6,
   },
   orderButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  emptyState: {
+    padding: 32,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

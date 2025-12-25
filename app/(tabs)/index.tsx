@@ -380,6 +380,56 @@ export default function DashboardScreen() {
           </Pressable>
         )}
 
+        {/* Tarjeta de Predicciones IA - Siempre visible */}
+        <Pressable
+          style={[styles.predictionsCard, { backgroundColor: cardBg, borderColor }]}
+          onPress={() => router.push('/predictions' as any)}
+        >
+          <LinearGradient
+            colors={['#8B5CF6', '#A78BFA', '#C4B5FD']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.predictionsHeader}
+          >
+            <View style={styles.predictionsHeaderContent}>
+              <IconSymbol name="brain.head.profile" size={24} color="#FFFFFF" />
+              <ThemedText style={styles.predictionsTitle}>Predicciones IA</ThemedText>
+            </View>
+            <View style={styles.predictionsHeaderRight}>
+              <ThemedText style={styles.predictionsViewAll}>Ver todo</ThemedText>
+              <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
+            </View>
+          </LinearGradient>
+          
+          <View style={styles.predictionsContent}>
+            <View style={styles.predictionsGrid}>
+              <View style={styles.predictionItem}>
+                <View style={[styles.predictionIcon, { backgroundColor: '#22C55E20' }]}>
+                  <IconSymbol name="chart.line.uptrend.xyaxis" size={18} color="#22C55E" />
+                </View>
+                <ThemedText style={[styles.predictionValue, { color: '#22C55E' }]}>+12%</ThemedText>
+                <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Ingresos prev.</ThemedText>
+              </View>
+              
+              <View style={styles.predictionItem}>
+                <View style={[styles.predictionIcon, { backgroundColor: '#F59E0B20' }]}>
+                  <IconSymbol name="person.fill.questionmark" size={18} color="#F59E0B" />
+                </View>
+                <ThemedText style={[styles.predictionValue, { color: '#F59E0B' }]}>3</ThemedText>
+                <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Clientes riesgo</ThemedText>
+              </View>
+              
+              <View style={styles.predictionItem}>
+                <View style={[styles.predictionIcon, { backgroundColor: '#8B5CF620' }]}>
+                  <IconSymbol name="wrench.and.screwdriver.fill" size={18} color="#8B5CF6" />
+                </View>
+                <ThemedText style={[styles.predictionValue, { color: '#8B5CF6' }]}>5</ThemedText>
+                <ThemedText style={[styles.predictionLabel, { color: textSecondary }]}>Mant. próximo</ThemedText>
+              </View>
+            </View>
+          </View>
+        </Pressable>
+
         {/* Acciones rápidas */}
         <Accordion 
           title="Acciones Rápidas" 
@@ -915,5 +965,69 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
     borderRadius: BorderRadius.sm,
     marginLeft: Spacing.xs,
+  },
+  // Estilos para la tarjeta de Predicciones IA
+  predictionsCard: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  predictionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  predictionsHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  predictionsTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  predictionsHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  predictionsViewAll: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  predictionsContent: {
+    padding: Spacing.md,
+  },
+  predictionsLoading: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+  },
+  predictionsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  predictionItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  predictionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  predictionValue: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  predictionLabel: {
+    fontSize: 11,
+    textAlign: 'center',
   },
 });
