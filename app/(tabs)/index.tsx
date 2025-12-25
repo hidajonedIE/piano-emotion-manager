@@ -177,6 +177,27 @@ export default function DashboardScreen() {
       case 'modules':
         router.push('/settings/modules' as any);
         break;
+      case 'analytics':
+        router.push('/analytics-dashboard' as any);
+        break;
+      case 'clients_map':
+        router.push('/clients-map' as any);
+        break;
+      case 'billing_summary':
+        router.push('/billing-summary' as any);
+        break;
+      case 'service_catalog':
+        router.push('/service-catalog' as any);
+        break;
+      case 'service_categories':
+        router.push('/service-categories' as any);
+        break;
+      case 'client_portal':
+        router.push('/portal' as any);
+        break;
+      case 'distributor':
+        router.push('/distributor-panel' as any);
+        break;
     }
   };
 
@@ -197,9 +218,13 @@ export default function DashboardScreen() {
     { key: 'dashboard', icon: 'chart.pie.fill', label: 'Panel Control', color: '#2D5A27' },
     { key: 'inventory', icon: 'shippingbox.fill', label: 'Inventario', color: '#F59E0B' },
     { key: 'stats', icon: 'chart.bar.fill', label: 'Estadísticas', color: '#10B981' },
+    { key: 'analytics', icon: 'chart.xyaxis.line', label: 'Analíticas', color: '#0EA5E9' },
     { key: 'quotes', icon: 'doc.plaintext', label: 'Presupuestos', color: '#9333EA' },
     { key: 'invoices', icon: 'doc.text.fill', label: 'Facturas', color: '#3B82F6' },
+    { key: 'billing_summary', icon: 'dollarsign.circle.fill', label: 'Resumen Fact.', color: '#059669' },
     { key: 'rates', icon: 'list.bullet', label: 'Tarifas', color: '#EC4899' },
+    { key: 'service_catalog', icon: 'list.clipboard.fill', label: 'Catálogo Serv.', color: '#7C3AED' },
+    { key: 'clients_map', icon: 'map.fill', label: 'Mapa Clientes', color: '#DC2626' },
     { key: 'business', icon: 'person.fill', label: 'Datos Fiscales', color: '#6B7280' },
     { key: 'settings', icon: 'gearshape.fill', label: 'Configuración', color: '#64748B' },
   ];
@@ -212,6 +237,8 @@ export default function DashboardScreen() {
     { key: 'reports', icon: 'chart.pie.fill', label: 'Reportes', color: '#06B6D4', premium: true },
     { key: 'accounting', icon: 'calculator', label: 'Contabilidad', color: '#F97316', premium: true },
     { key: 'shop', icon: 'cart.fill', label: 'Tienda', color: '#84CC16', premium: true },
+    { key: 'client_portal', icon: 'globe', label: 'Portal Clientes', color: '#0891B2', premium: true },
+    { key: 'distributor', icon: 'building.columns.fill', label: 'Distribuidor', color: '#BE185D', premium: true },
     { key: 'modules', icon: 'creditcard.fill', label: 'Gestionar Plan', color: '#8B5CF6' },
   ];
 

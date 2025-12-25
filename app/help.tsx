@@ -277,6 +277,102 @@ const helpSections: HelpSection[] = [
     ],
   },
   {
+    id: 'analytics',
+    title: 'Analíticas',
+    icon: 'chart.xyaxis.line',
+    iconColor: '#0EA5E9',
+    content: [
+      {
+        question: '¿Qué puedo ver en el Dashboard de Analíticas?',
+        answer: 'El Dashboard de Analíticas te ofrece:\n\n• Gráficos de ingresos mensuales\n• Evolución de servicios realizados\n• Análisis de clientes activos\n• Comparativas entre períodos\n• Tendencias y proyecciones\n\nPuedes filtrar por mes, trimestre o año.',
+      },
+      {
+        question: '¿Cómo accedo a las analíticas detalladas?',
+        answer: 'Desde el Dashboard principal, pulsa en "Analíticas". Encontrarás secciones para:\n\n• Analíticas de Clientes\n• Analíticas de Servicios\n• Analíticas de Ingresos\n• Generador de Reportes\n\nCada sección ofrece métricas específicas y visualizaciones.',
+      },
+    ],
+  },
+  {
+    id: 'clients_map',
+    title: 'Mapa de Clientes',
+    icon: 'map.fill',
+    iconColor: '#DC2626',
+    content: [
+      {
+        question: '¿Qué es el Mapa de Clientes?',
+        answer: 'El Mapa de Clientes muestra la ubicación geográfica de todos tus clientes en un mapa interactivo.\n\nPuedes:\n• Ver la distribución de tu cartera\n• Planificar rutas de visita\n• Identificar zonas con más clientes\n• Acceder a la ficha del cliente tocando su marcador',
+      },
+      {
+        question: '¿Cómo aparecen mis clientes en el mapa?',
+        answer: 'Los clientes aparecen automáticamente si tienen dirección registrada.\n\nPara añadir ubicación:\n1. Ve a la ficha del cliente\n2. Completa los campos de dirección\n3. El sistema geocodifica la dirección\n\nAsegúrate de incluir ciudad y código postal para mayor precisión.',
+      },
+    ],
+  },
+  {
+    id: 'billing_summary',
+    title: 'Resumen de Facturación',
+    icon: 'dollarsign.circle.fill',
+    iconColor: '#059669',
+    content: [
+      {
+        question: '¿Qué información muestra el Resumen de Facturación?',
+        answer: 'El Resumen de Facturación ofrece una vista consolidada de:\n\n• Total facturado por mes/año\n• Facturas pendientes de cobro\n• Facturas cobradas\n• Comparativa con períodos anteriores\n• Desglose por tipo de servicio\n\nIdeal para controlar la salud financiera de tu negocio.',
+      },
+      {
+        question: '¿Cómo cambio entre vista mensual y anual?',
+        answer: 'En la parte superior del Resumen encontrarás los botones para alternar entre:\n\n• Vista Mensual: Detalle día a día\n• Vista Anual: Resumen mes a mes\n\nTambién puedes navegar entre meses y años con las flechas.',
+      },
+    ],
+  },
+  {
+    id: 'service_catalog',
+    title: 'Catálogo de Servicios',
+    icon: 'list.clipboard.fill',
+    iconColor: '#7C3AED',
+    content: [
+      {
+        question: '¿Para qué sirve el Catálogo de Servicios?',
+        answer: 'El Catálogo de Servicios te permite definir todos los servicios que ofreces con:\n\n• Nombre y descripción\n• Precio base\n• Duración estimada\n• Categoría\n\nAl crear presupuestos o facturas, puedes seleccionar servicios del catálogo para agilizar el proceso.',
+      },
+      {
+        question: '¿Cómo organizo mis servicios en categorías?',
+        answer: 'Ve a Categorías de Servicios para crear y gestionar categorías como:\n\n• Afinación\n• Reparación\n• Mantenimiento\n• Restauración\n\nLuego asigna cada servicio a su categoría correspondiente.',
+      },
+    ],
+  },
+  {
+    id: 'client_portal',
+    title: 'Portal de Clientes',
+    icon: 'globe',
+    iconColor: '#0891B2',
+    content: [
+      {
+        question: '¿Qué es el Portal de Clientes?',
+        answer: 'El Portal de Clientes es una página web donde tus clientes pueden:\n\n• Ver sus pianos registrados\n• Consultar historial de servicios\n• Ver próximas citas programadas\n• Solicitar nuevos servicios\n\nCada cliente accede con un enlace único y seguro.',
+      },
+      {
+        question: '¿Cómo comparto el portal con un cliente?',
+        answer: 'Desde la ficha del cliente:\n\n1. Pulsa "Compartir Portal"\n2. Se genera un enlace único\n3. Envíalo por WhatsApp o email\n\nEl cliente podrá acceder sin necesidad de registrarse.',
+      },
+    ],
+  },
+  {
+    id: 'distributor',
+    title: 'Panel de Distribuidor',
+    icon: 'building.columns.fill',
+    iconColor: '#BE185D',
+    content: [
+      {
+        question: '¿Qué es el Panel de Distribuidor?',
+        answer: 'El Panel de Distribuidor es una herramienta para gestionar:\n\n• Conexión con WooCommerce\n• Configuración de planes Premium\n• Gestión de técnicos asociados\n• Estadísticas de compras\n\nEsta función está disponible para distribuidores autorizados.',
+      },
+      {
+        question: '¿Cómo conecto mi tienda WooCommerce?',
+        answer: 'En el Panel de Distribuidor:\n\n1. Introduce la URL de tu tienda\n2. Añade las claves API de WooCommerce\n3. Pulsa "Probar Conexión"\n\nUna vez conectado, podrás gestionar los planes de los técnicos automáticamente.',
+      },
+    ],
+  },
+  {
     id: 'tips',
     title: 'Consejos y Trucos',
     icon: 'lightbulb.fill',
