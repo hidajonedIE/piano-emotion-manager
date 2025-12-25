@@ -7,8 +7,19 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { eq, and, gte, lte, desc, sql, between } from "drizzle-orm";
 import { protectedProcedure, router } from "../_core/trpc";
 import { permissionsService } from "../services/team/permissions.service";
+import { db } from "../db";
+import {
+  organizationMembers,
+  memberAbsences,
+  serviceZones,
+  technicianZones,
+  technicianMetrics,
+  workAssignments,
+} from "../../drizzle/team-schema";
+import { services, appointments } from "../../drizzle/schema";
 
 // ==========================================
 // SCHEMAS DE VALIDACIÓN
@@ -347,11 +358,10 @@ export const zonesRouter = router({
       );
       
       if (!hasPermission) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "No tienes permiso para editar zonas" });
+        throw new TRPCError({ code: "FORBIDDEN", message: "No tienes permiso para actualizar zonas" });
       }
       
-      const { zoneId, organizationId, ...data } = input;
-      return updateServiceZone(zoneId, data);
+      return updateServiceZone(input.zoneId, input);
     }),
 
   /**
@@ -367,7 +377,7 @@ export const zonesRouter = router({
         ctx.user.id,
         input.organizationId,
         "organization",
-        "update"
+        "delete"
       );
       
       if (!hasPermission) {
@@ -382,9 +392,9 @@ export const zonesRouter = router({
    */
   assignTechnician: protectedProcedure
     .input(z.object({
-      organizationId: z.number(),
       zoneId: z.number(),
       memberId: z.number(),
+      organizationId: z.number(),
       isPrimary: z.boolean().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -399,17 +409,17 @@ export const zonesRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "No tienes permiso para asignar zonas" });
       }
       
-      return assignTechnicianToZone(input.zoneId, input.memberId, input.isPrimary);
+      return assignTechnicianToZone(input.zoneId, input.memberId, input.organizationId, input.isPrimary);
     }),
 
   /**
-   * Quitar técnico de zona
+   * Desasignar técnico de zona
    */
-  removeTechnician: protectedProcedure
+  unassignTechnician: protectedProcedure
     .input(z.object({
-      organizationId: z.number(),
       zoneId: z.number(),
       memberId: z.number(),
+      organizationId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
       const hasPermission = await permissionsService.hasPermission(
@@ -428,115 +438,563 @@ export const zonesRouter = router({
 });
 
 // ==========================================
-// FUNCIONES AUXILIARES (STUBS)
+// FUNCIONES AUXILIARES IMPLEMENTADAS
 // ==========================================
 
-// Estas funciones deben implementarse con las queries reales a la BD
-
+/**
+ * Obtener miembro por userId y organizationId
+ */
 async function getMemberByUserId(userId: number, organizationId: number) {
-  // TODO: Implementar query real
-  return null;
+  const [member] = await db
+    .select()
+    .from(organizationMembers)
+    .where(
+      and(
+        eq(organizationMembers.userId, userId),
+        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.status, "active")
+      )
+    )
+    .limit(1);
+  
+  return member || null;
 }
 
+/**
+ * Obtener ausencias de un miembro
+ */
 async function getAbsencesByMember(memberId: number, startDate?: string, endDate?: string) {
-  // TODO: Implementar query real
-  return [];
+  let query = db
+    .select()
+    .from(memberAbsences)
+    .where(eq(memberAbsences.memberId, memberId))
+    .orderBy(desc(memberAbsences.startDate));
+
+  if (startDate && endDate) {
+    query = db
+      .select()
+      .from(memberAbsences)
+      .where(
+        and(
+          eq(memberAbsences.memberId, memberId),
+          gte(memberAbsences.startDate, new Date(startDate)),
+          lte(memberAbsences.endDate, new Date(endDate))
+        )
+      )
+      .orderBy(desc(memberAbsences.startDate));
+  }
+
+  return query;
 }
 
+/**
+ * Obtener ausencias de toda la organización
+ */
 async function getOrganizationAbsences(
   organizationId: number,
   startDate: Date,
   endDate: Date,
   status?: string
 ) {
-  // TODO: Implementar query real
-  return [];
+  const conditions = [
+    eq(memberAbsences.organizationId, organizationId),
+    gte(memberAbsences.startDate, startDate),
+    lte(memberAbsences.endDate, endDate),
+  ];
+
+  if (status) {
+    conditions.push(eq(memberAbsences.status, status as any));
+  }
+
+  const absences = await db
+    .select({
+      absence: memberAbsences,
+      member: organizationMembers,
+    })
+    .from(memberAbsences)
+    .leftJoin(organizationMembers, eq(memberAbsences.memberId, organizationMembers.id))
+    .where(and(...conditions))
+    .orderBy(desc(memberAbsences.startDate));
+
+  return absences.map(({ absence, member }) => ({
+    ...absence,
+    memberName: member?.displayName || 'Desconocido',
+  }));
 }
 
-async function createAbsenceRequest(data: any) {
-  // TODO: Implementar mutation real
-  return { id: 1, ...data };
+/**
+ * Crear solicitud de ausencia
+ */
+async function createAbsenceRequest(data: {
+  memberId: number;
+  organizationId: number;
+  absenceType: string;
+  startDate: Date;
+  endDate: Date;
+  reason?: string;
+}) {
+  const [result] = await db.insert(memberAbsences).values({
+    memberId: data.memberId,
+    organizationId: data.organizationId,
+    absenceType: data.absenceType as any,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    notes: data.reason,
+    status: "pending",
+  });
+
+  return { id: result.insertId, ...data, status: "pending" };
 }
 
+/**
+ * Aprobar ausencia
+ */
 async function approveAbsence(absenceId: number, approvedBy: number) {
-  // TODO: Implementar mutation real
+  await db
+    .update(memberAbsences)
+    .set({
+      status: "approved",
+      approvedBy,
+      approvedAt: new Date(),
+    })
+    .where(eq(memberAbsences.id, absenceId));
+
   return { id: absenceId, status: "approved" };
 }
 
+/**
+ * Rechazar ausencia
+ */
 async function rejectAbsence(absenceId: number, rejectedBy: number, reason: string) {
-  // TODO: Implementar mutation real
+  await db
+    .update(memberAbsences)
+    .set({
+      status: "rejected",
+      approvedBy: rejectedBy,
+      approvedAt: new Date(),
+      rejectionReason: reason,
+    })
+    .where(eq(memberAbsences.id, absenceId));
+
   return { id: absenceId, status: "rejected", rejectionReason: reason };
 }
 
+/**
+ * Cancelar ausencia
+ */
 async function cancelAbsence(absenceId: number, cancelledBy: number) {
-  // TODO: Implementar mutation real
+  // Verificar que la ausencia pertenece al usuario
+  const [absence] = await db
+    .select()
+    .from(memberAbsences)
+    .where(eq(memberAbsences.id, absenceId))
+    .limit(1);
+
+  if (!absence) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Ausencia no encontrada" });
+  }
+
+  // Obtener el miembro para verificar
+  const [member] = await db
+    .select()
+    .from(organizationMembers)
+    .where(eq(organizationMembers.id, absence.memberId))
+    .limit(1);
+
+  if (!member || member.userId !== cancelledBy) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "No puedes cancelar esta ausencia" });
+  }
+
+  // Solo se pueden cancelar ausencias pendientes
+  if (absence.status !== "pending") {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Solo se pueden cancelar ausencias pendientes" });
+  }
+
+  await db.delete(memberAbsences).where(eq(memberAbsences.id, absenceId));
+
   return { id: absenceId, status: "cancelled" };
 }
 
+/**
+ * Calcular fechas según período
+ */
+function getDateRangeForPeriod(period: string): { startDate: Date; endDate: Date } {
+  const now = new Date();
+  const endDate = new Date(now);
+  let startDate = new Date(now);
+
+  switch (period) {
+    case "day":
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    case "week":
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case "month":
+      startDate.setMonth(now.getMonth() - 1);
+      break;
+    case "quarter":
+      startDate.setMonth(now.getMonth() - 3);
+      break;
+    case "year":
+      startDate.setFullYear(now.getFullYear() - 1);
+      break;
+  }
+
+  return { startDate, endDate };
+}
+
+/**
+ * Obtener métricas de un técnico
+ */
 async function getTechnicianMetrics(organizationId: number, technicianId: number, period: string) {
-  // TODO: Implementar query real
+  const { startDate, endDate } = getDateRangeForPeriod(period);
+
+  // Obtener métricas agregadas del período
+  const metrics = await db
+    .select({
+      servicesCompleted: sql<number>`SUM(${technicianMetrics.servicesCompleted})`,
+      totalRevenue: sql<number>`SUM(${technicianMetrics.totalRevenue})`,
+      averageRating: sql<number>`AVG(${technicianMetrics.averageRating})`,
+      totalWorkMinutes: sql<number>`SUM(${technicianMetrics.totalWorkMinutes})`,
+      onTimeArrivals: sql<number>`SUM(${technicianMetrics.onTimeArrivals})`,
+      lateArrivals: sql<number>`SUM(${technicianMetrics.lateArrivals})`,
+    })
+    .from(technicianMetrics)
+    .where(
+      and(
+        eq(technicianMetrics.organizationId, organizationId),
+        eq(technicianMetrics.memberId, technicianId),
+        between(technicianMetrics.date, startDate, endDate)
+      )
+    );
+
+  const result = metrics[0] || {};
+  const totalArrivals = (result.onTimeArrivals || 0) + (result.lateArrivals || 0);
+
   return {
-    servicesCompleted: 0,
-    totalRevenue: 0,
-    averageRating: 0,
-    punctualityRate: 0,
-    hoursWorked: 0,
+    servicesCompleted: result.servicesCompleted || 0,
+    totalRevenue: result.totalRevenue || 0,
+    averageRating: result.averageRating || 0,
+    punctualityRate: totalArrivals > 0 ? ((result.onTimeArrivals || 0) / totalArrivals) * 100 : 100,
+    hoursWorked: Math.round((result.totalWorkMinutes || 0) / 60),
   };
 }
 
+/**
+ * Obtener métricas de la organización
+ */
 async function getOrganizationMetrics(organizationId: number, period: string) {
-  // TODO: Implementar query real
+  const { startDate, endDate } = getDateRangeForPeriod(period);
+
+  // Métricas agregadas de todos los técnicos
+  const metrics = await db
+    .select({
+      totalServices: sql<number>`SUM(${technicianMetrics.servicesCompleted})`,
+      totalRevenue: sql<number>`SUM(${technicianMetrics.totalRevenue})`,
+      averageRating: sql<number>`AVG(${technicianMetrics.averageRating})`,
+    })
+    .from(technicianMetrics)
+    .where(
+      and(
+        eq(technicianMetrics.organizationId, organizationId),
+        between(technicianMetrics.date, startDate, endDate)
+      )
+    );
+
+  // Contar miembros activos
+  const [activeMembers] = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(organizationMembers)
+    .where(
+      and(
+        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.status, "active")
+      )
+    );
+
+  // Contar asignaciones pendientes
+  const [pendingAssignments] = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(workAssignments)
+    .where(
+      and(
+        eq(workAssignments.organizationId, organizationId),
+        eq(workAssignments.status, "assigned")
+      )
+    );
+
+  const result = metrics[0] || {};
+
   return {
-    totalServices: 0,
-    totalRevenue: 0,
-    averageRating: 0,
-    activeMembers: 0,
-    pendingAssignments: 0,
+    totalServices: result.totalServices || 0,
+    totalRevenue: result.totalRevenue || 0,
+    averageRating: result.averageRating || 0,
+    activeMembers: activeMembers?.count || 0,
+    pendingAssignments: pendingAssignments?.count || 0,
   };
 }
 
+/**
+ * Obtener ranking de técnicos
+ */
 async function getTechnicianRanking(organizationId: number, period: string, metric: string) {
-  // TODO: Implementar query real
-  return [];
+  const { startDate, endDate } = getDateRangeForPeriod(period);
+
+  let orderByColumn;
+  switch (metric) {
+    case "services":
+      orderByColumn = sql`SUM(${technicianMetrics.servicesCompleted})`;
+      break;
+    case "revenue":
+      orderByColumn = sql`SUM(${technicianMetrics.totalRevenue})`;
+      break;
+    case "rating":
+      orderByColumn = sql`AVG(${technicianMetrics.averageRating})`;
+      break;
+    case "punctuality":
+      orderByColumn = sql`SUM(${technicianMetrics.onTimeArrivals}) / NULLIF(SUM(${technicianMetrics.onTimeArrivals}) + SUM(${technicianMetrics.lateArrivals}), 0)`;
+      break;
+    default:
+      orderByColumn = sql`SUM(${technicianMetrics.servicesCompleted})`;
+  }
+
+  const ranking = await db
+    .select({
+      memberId: technicianMetrics.memberId,
+      memberName: organizationMembers.displayName,
+      servicesCompleted: sql<number>`SUM(${technicianMetrics.servicesCompleted})`,
+      totalRevenue: sql<number>`SUM(${technicianMetrics.totalRevenue})`,
+      averageRating: sql<number>`AVG(${technicianMetrics.averageRating})`,
+      onTimeArrivals: sql<number>`SUM(${technicianMetrics.onTimeArrivals})`,
+      lateArrivals: sql<number>`SUM(${technicianMetrics.lateArrivals})`,
+    })
+    .from(technicianMetrics)
+    .leftJoin(organizationMembers, eq(technicianMetrics.memberId, organizationMembers.id))
+    .where(
+      and(
+        eq(technicianMetrics.organizationId, organizationId),
+        between(technicianMetrics.date, startDate, endDate)
+      )
+    )
+    .groupBy(technicianMetrics.memberId, organizationMembers.displayName)
+    .orderBy(desc(orderByColumn))
+    .limit(10);
+
+  return ranking.map((r, index) => ({
+    rank: index + 1,
+    memberId: r.memberId,
+    memberName: r.memberName || 'Técnico',
+    servicesCompleted: r.servicesCompleted || 0,
+    totalRevenue: r.totalRevenue || 0,
+    averageRating: r.averageRating || 0,
+    punctualityRate: (r.onTimeArrivals || 0) + (r.lateArrivals || 0) > 0
+      ? ((r.onTimeArrivals || 0) / ((r.onTimeArrivals || 0) + (r.lateArrivals || 0))) * 100
+      : 100,
+  }));
 }
 
+/**
+ * Obtener estadísticas del dashboard
+ */
 async function getDashboardStats(organizationId: number) {
-  // TODO: Implementar query real
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  // Citas de hoy
+  const [todayAppointmentsResult] = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(workAssignments)
+    .where(
+      and(
+        eq(workAssignments.organizationId, organizationId),
+        between(workAssignments.scheduledDate, today, tomorrow)
+      )
+    );
+
+  // Asignaciones pendientes
+  const [pendingResult] = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(workAssignments)
+    .where(
+      and(
+        eq(workAssignments.organizationId, organizationId),
+        eq(workAssignments.status, "assigned")
+      )
+    );
+
+  // Miembros activos
+  const [activeMembersResult] = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(organizationMembers)
+    .where(
+      and(
+        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.status, "active")
+      )
+    );
+
+  // Ingresos del mes
+  const [monthlyRevenueResult] = await db
+    .select({ total: sql<number>`SUM(${technicianMetrics.totalRevenue})` })
+    .from(technicianMetrics)
+    .where(
+      and(
+        eq(technicianMetrics.organizationId, organizationId),
+        gte(technicianMetrics.date, startOfMonth)
+      )
+    );
+
   return {
-    todayAppointments: 0,
-    pendingAssignments: 0,
-    activeMembers: 0,
-    monthlyRevenue: 0,
+    todayAppointments: todayAppointmentsResult?.count || 0,
+    pendingAssignments: pendingResult?.count || 0,
+    activeMembers: activeMembersResult?.count || 0,
+    monthlyRevenue: monthlyRevenueResult?.total || 0,
   };
 }
 
+/**
+ * Obtener zonas de servicio
+ */
 async function getServiceZones(organizationId: number) {
-  // TODO: Implementar query real
-  return [];
+  const zones = await db
+    .select()
+    .from(serviceZones)
+    .where(eq(serviceZones.organizationId, organizationId))
+    .orderBy(serviceZones.name);
+
+  // Obtener técnicos asignados a cada zona
+  const zonesWithTechnicians = await Promise.all(
+    zones.map(async (zone) => {
+      const technicians = await db
+        .select({
+          memberId: technicianZones.memberId,
+          isPrimary: technicianZones.isPrimary,
+          memberName: organizationMembers.displayName,
+        })
+        .from(technicianZones)
+        .leftJoin(organizationMembers, eq(technicianZones.memberId, organizationMembers.id))
+        .where(eq(technicianZones.zoneId, zone.id));
+
+      return {
+        ...zone,
+        technicians,
+      };
+    })
+  );
+
+  return zonesWithTechnicians;
 }
 
-async function createServiceZone(data: any) {
-  // TODO: Implementar mutation real
-  return { id: 1, ...data };
+/**
+ * Crear zona de servicio
+ */
+async function createServiceZone(data: {
+  organizationId: number;
+  name: string;
+  description?: string;
+  postalCodes: string[];
+  color?: string;
+}) {
+  const [result] = await db.insert(serviceZones).values({
+    organizationId: data.organizationId,
+    name: data.name,
+    description: data.description,
+    postalCodes: data.postalCodes,
+    color: data.color || '#3B82F6',
+    isActive: true,
+  });
+
+  return { id: result.insertId, ...data };
 }
 
+/**
+ * Actualizar zona de servicio
+ */
 async function updateServiceZone(zoneId: number, data: any) {
-  // TODO: Implementar mutation real
-  return { id: zoneId, ...data };
+  const updateData: any = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.postalCodes !== undefined) updateData.postalCodes = data.postalCodes;
+  if (data.color !== undefined) updateData.color = data.color;
+  if (data.isActive !== undefined) updateData.isActive = data.isActive;
+
+  await db
+    .update(serviceZones)
+    .set(updateData)
+    .where(eq(serviceZones.id, zoneId));
+
+  return { id: zoneId, ...updateData };
 }
 
+/**
+ * Eliminar zona de servicio
+ */
 async function deleteServiceZone(zoneId: number) {
-  // TODO: Implementar mutation real
+  // Primero eliminar asignaciones de técnicos
+  await db.delete(technicianZones).where(eq(technicianZones.zoneId, zoneId));
+  
+  // Luego eliminar la zona
+  await db.delete(serviceZones).where(eq(serviceZones.id, zoneId));
+
   return { success: true };
 }
 
-async function assignTechnicianToZone(zoneId: number, memberId: number, isPrimary?: boolean) {
-  // TODO: Implementar mutation real
-  return { zoneId, memberId, isPrimary };
+/**
+ * Asignar técnico a zona
+ */
+async function assignTechnicianToZone(zoneId: number, memberId: number, organizationId: number, isPrimary?: boolean) {
+  // Verificar si ya existe la asignación
+  const [existing] = await db
+    .select()
+    .from(technicianZones)
+    .where(
+      and(
+        eq(technicianZones.zoneId, zoneId),
+        eq(technicianZones.memberId, memberId)
+      )
+    )
+    .limit(1);
+
+  if (existing) {
+    // Actualizar si ya existe
+    await db
+      .update(technicianZones)
+      .set({ isPrimary: isPrimary || false })
+      .where(eq(technicianZones.id, existing.id));
+    
+    return { zoneId, memberId, isPrimary: isPrimary || false };
+  }
+
+  // Crear nueva asignación
+  await db.insert(technicianZones).values({
+    organizationId,
+    zoneId,
+    memberId,
+    isPrimary: isPrimary || false,
+  });
+
+  return { zoneId, memberId, isPrimary: isPrimary || false };
 }
 
+/**
+ * Desasignar técnico de zona
+ */
 async function removeTechnicianFromZone(zoneId: number, memberId: number) {
-  // TODO: Implementar mutation real
+  await db
+    .delete(technicianZones)
+    .where(
+      and(
+        eq(technicianZones.zoneId, zoneId),
+        eq(technicianZones.memberId, memberId)
+      )
+    );
+
   return { success: true };
 }
 

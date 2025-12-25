@@ -3,10 +3,105 @@
  * Endpoints para autenticación, citas, valoraciones y mensajes
  */
 
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { randomBytes } from 'crypto';
+import jwt from 'jsonwebtoken';
+import { eq, and, desc, lt, isNull } from 'drizzle-orm';
+import { db } from '../db';
+import {
+  portalMagicLinks,
+  portalSessions,
+  portalAppointmentRequests,
+  serviceRatings,
+  portalConversations,
+  portalMessages,
+  portalNotifications,
+} from '../../drizzle/portal-schema';
+import { clients, pianos, services, invoices, appointments } from '../../drizzle/schema';
 
 const router = Router();
+
+// JWT Secret - En producción usar variable de entorno
+const JWT_SECRET = process.env.PORTAL_JWT_SECRET || 'portal-secret-key-change-in-production';
+const JWT_EXPIRES_IN = '7d';
+const MAGIC_LINK_EXPIRES_MINUTES = 15;
+
+// ==========================================
+// TIPOS
+// ==========================================
+
+interface PortalUser {
+  clientId: number;
+  email: string;
+  odId: string; // Owner (technician) ID
+}
+
+interface AuthenticatedRequest extends Request {
+  portalUser?: PortalUser;
+}
+
+// ==========================================
+// MIDDLEWARE DE AUTENTICACIÓN
+// ==========================================
+
+/**
+ * Middleware para verificar autenticación del portal
+ */
+const authenticatePortal = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Token de autenticación requerido' });
+    }
+
+    const token = authHeader.substring(7);
+
+    // Verificar JWT
+    const decoded = jwt.verify(token, JWT_SECRET) as PortalUser;
+
+    // Verificar que la sesión existe y no ha expirado
+    const [session] = await db
+      .select()
+      .from(portalSessions)
+      .where(
+        and(
+          eq(portalSessions.clientId, decoded.clientId),
+          eq(portalSessions.token, token)
+        )
+      )
+      .limit(1);
+
+    if (!session) {
+      return res.status(401).json({ error: 'Sesión inválida o expirada' });
+    }
+
+    if (new Date(session.expiresAt) < new Date()) {
+      // Eliminar sesión expirada
+      await db.delete(portalSessions).where(eq(portalSessions.id, session.id));
+      return res.status(401).json({ error: 'Sesión expirada' });
+    }
+
+    // Actualizar última actividad
+    await db
+      .update(portalSessions)
+      .set({ lastActivityAt: new Date() })
+      .where(eq(portalSessions.id, session.id));
+
+    req.portalUser = decoded;
+    next();
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+    console.error('Error en autenticación del portal:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
 
 // ==========================================
 // AUTENTICACIÓN
@@ -24,20 +119,63 @@ router.post('/auth/request-magic-link', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email es requerido' });
     }
 
-    // TODO: Verificar que el email pertenece a un cliente existente
-    // TODO: Generar token único
+    // Verificar que el email pertenece a un cliente existente
+    const [client] = await db
+      .select()
+      .from(clients)
+      .where(eq(clients.email, email.toLowerCase().trim()))
+      .limit(1);
+
+    // Por seguridad, siempre respondemos igual aunque no exista el cliente
+    if (!client) {
+      console.log(`Magic link solicitado para email no registrado: ${email}`);
+      return res.json({ 
+        success: true, 
+        message: 'Si el email está registrado, recibirás un enlace de acceso.' 
+      });
+    }
+
+    // Generar token único
     const token = randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+    const expiresAt = new Date(Date.now() + MAGIC_LINK_EXPIRES_MINUTES * 60 * 1000);
 
-    // TODO: Guardar en base de datos
+    // Invalidar tokens anteriores del mismo cliente
+    await db
+      .update(portalMagicLinks)
+      .set({ usedAt: new Date() })
+      .where(
+        and(
+          eq(portalMagicLinks.clientId, client.id),
+          isNull(portalMagicLinks.usedAt)
+        )
+      );
+
+    // Guardar nuevo token en base de datos
+    await db.insert(portalMagicLinks).values({
+      clientId: client.id,
+      email: client.email!,
+      token,
+      expiresAt,
+    });
+
     // TODO: Enviar email con el magic link
+    // Por ahora, logueamos el enlace para desarrollo
+    const magicLink = `${process.env.PORTAL_URL || 'https://portal.pianoemotion.es'}/auth/verify?token=${token}`;
+    console.log(`Magic link generado para ${email}: ${magicLink}`);
 
-    // Por ahora, simulamos el envío
-    console.log(`Magic link generado para ${email}: ${token}`);
+    // En producción, aquí iría el envío de email:
+    // await sendEmail({
+    //   to: client.email,
+    //   subject: 'Tu enlace de acceso a Piano Emotion',
+    //   template: 'magic-link',
+    //   data: { name: client.name, link: magicLink, expiresIn: MAGIC_LINK_EXPIRES_MINUTES }
+    // });
 
     res.json({ 
       success: true, 
-      message: 'Si el email está registrado, recibirás un enlace de acceso.' 
+      message: 'Si el email está registrado, recibirás un enlace de acceso.',
+      // Solo en desarrollo:
+      ...(process.env.NODE_ENV === 'development' && { debugLink: magicLink })
     });
   } catch (error) {
     console.error('Error al solicitar magic link:', error);
@@ -57,19 +195,72 @@ router.post('/auth/verify-magic-link', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Token es requerido' });
     }
 
-    // TODO: Verificar token en base de datos
-    // TODO: Marcar como usado
-    // TODO: Generar token de sesión JWT
+    // Verificar token en base de datos
+    const [magicLink] = await db
+      .select()
+      .from(portalMagicLinks)
+      .where(eq(portalMagicLinks.token, token))
+      .limit(1);
 
-    // Por ahora, simulamos la verificación
+    if (!magicLink) {
+      return res.status(400).json({ error: 'Enlace inválido o expirado' });
+    }
+
+    // Verificar que no ha sido usado
+    if (magicLink.usedAt) {
+      return res.status(400).json({ error: 'Este enlace ya ha sido utilizado' });
+    }
+
+    // Verificar que no ha expirado
+    if (new Date(magicLink.expiresAt) < new Date()) {
+      return res.status(400).json({ error: 'Este enlace ha expirado' });
+    }
+
+    // Marcar como usado
+    await db
+      .update(portalMagicLinks)
+      .set({ usedAt: new Date() })
+      .where(eq(portalMagicLinks.id, magicLink.id));
+
+    // Obtener datos del cliente
+    const [client] = await db
+      .select()
+      .from(clients)
+      .where(eq(clients.id, magicLink.clientId))
+      .limit(1);
+
+    if (!client) {
+      return res.status(400).json({ error: 'Cliente no encontrado' });
+    }
+
+    // Generar token de sesión JWT
+    const payload: PortalUser = {
+      clientId: client.id,
+      email: client.email!,
+      odId: client.odId,
+    };
+
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+    // Guardar sesión en base de datos
+    const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días
+    await db.insert(portalSessions).values({
+      clientId: client.id,
+      token: accessToken,
+      expiresAt: sessionExpiresAt,
+      userAgent: req.headers['user-agent'] || null,
+      ipAddress: req.ip || null,
+    });
+
     res.json({
       success: true,
       user: {
-        id: 'user-1',
-        email: 'cliente@example.com',
-        clientId: 'client-1',
+        id: client.id,
+        email: client.email,
+        clientId: client.id,
+        name: client.name,
       },
-      accessToken: 'jwt-token-simulado',
+      accessToken,
     });
   } catch (error) {
     console.error('Error al verificar magic link:', error);
@@ -81,22 +272,51 @@ router.post('/auth/verify-magic-link', async (req: Request, res: Response) => {
  * GET /api/portal/auth/me
  * Obtiene información del usuario autenticado
  */
-router.get('/auth/me', async (req: Request, res: Response) => {
+router.get('/auth/me', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // TODO: Verificar token JWT del header Authorization
-    // TODO: Obtener usuario de la base de datos
+    const { clientId } = req.portalUser!;
+
+    const [client] = await db
+      .select()
+      .from(clients)
+      .where(eq(clients.id, clientId))
+      .limit(1);
+
+    if (!client) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
 
     res.json({
-      id: 'user-1',
-      email: 'cliente@example.com',
-      clientId: 'client-1',
+      id: client.id,
+      email: client.email,
+      clientId: client.id,
       client: {
-        name: 'Juan Pérez',
-        phone: '+34 600 123 456',
+        name: client.name,
+        phone: client.phone,
+        address: client.address,
+        clientType: client.clientType,
       },
     });
   } catch (error) {
     console.error('Error al obtener usuario:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+/**
+ * POST /api/portal/auth/logout
+ * Cierra la sesión actual
+ */
+router.post('/auth/logout', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader!.substring(7);
+
+    await db.delete(portalSessions).where(eq(portalSessions.token, token));
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
@@ -109,26 +329,43 @@ router.get('/auth/me', async (req: Request, res: Response) => {
  * GET /api/portal/pianos
  * Lista los pianos del cliente
  */
-router.get('/pianos', async (req: Request, res: Response) => {
+router.get('/pianos', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // TODO: Obtener clientId del token JWT
-    // TODO: Consultar pianos del cliente
+    const { clientId, odId } = req.portalUser!;
 
-    res.json({
-      pianos: [
-        {
-          id: '1',
-          brand: 'Yamaha',
-          model: 'U3',
-          serialNumber: 'J2345678',
-          year: 2015,
-          category: 'vertical',
-          location: 'Salón principal',
-          lastMaintenanceDate: '2024-12-10',
-          nextMaintenanceDate: '2025-06-10',
-        },
-      ],
-    });
+    const clientPianos = await db
+      .select()
+      .from(pianos)
+      .where(
+        and(
+          eq(pianos.clientId, clientId),
+          eq(pianos.odId, odId)
+        )
+      )
+      .orderBy(desc(pianos.createdAt));
+
+    // Obtener último servicio de cada piano
+    const pianosWithLastService = await Promise.all(
+      clientPianos.map(async (piano) => {
+        const [lastService] = await db
+          .select()
+          .from(services)
+          .where(eq(services.pianoId, piano.id))
+          .orderBy(desc(services.date))
+          .limit(1);
+
+        return {
+          ...piano,
+          lastMaintenanceDate: lastService?.date || null,
+          // Calcular próximo mantenimiento (6 meses después del último)
+          nextMaintenanceDate: lastService?.date
+            ? new Date(new Date(lastService.date).setMonth(new Date(lastService.date).getMonth() + 6)).toISOString()
+            : null,
+        };
+      })
+    );
+
+    res.json({ pianos: pianosWithLastService });
   } catch (error) {
     console.error('Error al obtener pianos:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -139,20 +376,38 @@ router.get('/pianos', async (req: Request, res: Response) => {
  * GET /api/portal/pianos/:id
  * Obtiene detalle de un piano
  */
-router.get('/pianos/:id', async (req: Request, res: Response) => {
+router.get('/pianos/:id', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    // TODO: Verificar que el piano pertenece al cliente
-    // TODO: Obtener piano con historial de servicios
+    const { clientId, odId } = req.portalUser!;
+
+    // Verificar que el piano pertenece al cliente
+    const [piano] = await db
+      .select()
+      .from(pianos)
+      .where(
+        and(
+          eq(pianos.id, parseInt(id)),
+          eq(pianos.clientId, clientId),
+          eq(pianos.odId, odId)
+        )
+      )
+      .limit(1);
+
+    if (!piano) {
+      return res.status(404).json({ error: 'Piano no encontrado' });
+    }
+
+    // Obtener historial de servicios del piano
+    const pianoServices = await db
+      .select()
+      .from(services)
+      .where(eq(services.pianoId, piano.id))
+      .orderBy(desc(services.date));
 
     res.json({
-      piano: {
-        id,
-        brand: 'Yamaha',
-        model: 'U3',
-        // ... más datos
-      },
-      services: [],
+      piano,
+      services: pianoServices,
     });
   } catch (error) {
     console.error('Error al obtener piano:', error);
@@ -168,12 +423,30 @@ router.get('/pianos/:id', async (req: Request, res: Response) => {
  * GET /api/portal/services
  * Lista los servicios del cliente
  */
-router.get('/services', async (req: Request, res: Response) => {
+router.get('/services', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // TODO: Obtener servicios del cliente
+    const { clientId, odId } = req.portalUser!;
+
+    const clientServices = await db
+      .select({
+        service: services,
+        piano: pianos,
+      })
+      .from(services)
+      .leftJoin(pianos, eq(services.pianoId, pianos.id))
+      .where(
+        and(
+          eq(services.clientId, clientId),
+          eq(services.odId, odId)
+        )
+      )
+      .orderBy(desc(services.date));
 
     res.json({
-      services: [],
+      services: clientServices.map(({ service, piano }) => ({
+        ...service,
+        piano: piano ? { brand: piano.brand, model: piano.model } : null,
+      })),
     });
   } catch (error) {
     console.error('Error al obtener servicios:', error);
@@ -185,16 +458,46 @@ router.get('/services', async (req: Request, res: Response) => {
  * GET /api/portal/services/:id
  * Obtiene detalle de un servicio
  */
-router.get('/services/:id', async (req: Request, res: Response) => {
+router.get('/services/:id', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    // TODO: Verificar que el servicio pertenece al cliente
+    const { clientId, odId } = req.portalUser!;
+
+    // Verificar que el servicio pertenece al cliente
+    const [service] = await db
+      .select()
+      .from(services)
+      .where(
+        and(
+          eq(services.id, parseInt(id)),
+          eq(services.clientId, clientId),
+          eq(services.odId, odId)
+        )
+      )
+      .limit(1);
+
+    if (!service) {
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+
+    // Obtener valoración si existe
+    const [rating] = await db
+      .select()
+      .from(serviceRatings)
+      .where(eq(serviceRatings.serviceId, service.id))
+      .limit(1);
+
+    // Obtener piano
+    const [piano] = await db
+      .select()
+      .from(pianos)
+      .where(eq(pianos.id, service.pianoId))
+      .limit(1);
 
     res.json({
-      service: {
-        id,
-        // ... datos del servicio
-      },
+      service,
+      piano,
+      rating: rating || null,
     });
   } catch (error) {
     console.error('Error al obtener servicio:', error);
@@ -210,11 +513,22 @@ router.get('/services/:id', async (req: Request, res: Response) => {
  * GET /api/portal/invoices
  * Lista las facturas del cliente
  */
-router.get('/invoices', async (req: Request, res: Response) => {
+router.get('/invoices', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    res.json({
-      invoices: [],
-    });
+    const { clientId, odId } = req.portalUser!;
+
+    const clientInvoices = await db
+      .select()
+      .from(invoices)
+      .where(
+        and(
+          eq(invoices.clientId, clientId),
+          eq(invoices.odId, odId)
+        )
+      )
+      .orderBy(desc(invoices.date));
+
+    res.json({ invoices: clientInvoices });
   } catch (error) {
     console.error('Error al obtener facturas:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -225,12 +539,31 @@ router.get('/invoices', async (req: Request, res: Response) => {
  * GET /api/portal/invoices/:id/pdf
  * Descarga PDF de una factura
  */
-router.get('/invoices/:id/pdf', async (req: Request, res: Response) => {
+router.get('/invoices/:id/pdf', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    // TODO: Generar o recuperar PDF de la factura
+    const { clientId, odId } = req.portalUser!;
 
-    res.status(501).json({ error: 'No implementado' });
+    // Verificar que la factura pertenece al cliente
+    const [invoice] = await db
+      .select()
+      .from(invoices)
+      .where(
+        and(
+          eq(invoices.id, parseInt(id)),
+          eq(invoices.clientId, clientId),
+          eq(invoices.odId, odId)
+        )
+      )
+      .limit(1);
+
+    if (!invoice) {
+      return res.status(404).json({ error: 'Factura no encontrada' });
+    }
+
+    // TODO: Generar o recuperar PDF de la factura
+    // Por ahora, redirigir al endpoint de generación de PDF existente
+    res.redirect(`/api/invoices/${id}/pdf`);
   } catch (error) {
     console.error('Error al descargar factura:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -245,11 +578,22 @@ router.get('/invoices/:id/pdf', async (req: Request, res: Response) => {
  * GET /api/portal/appointments
  * Lista las citas del cliente
  */
-router.get('/appointments', async (req: Request, res: Response) => {
+router.get('/appointments', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    res.json({
-      appointments: [],
-    });
+    const { clientId, odId } = req.portalUser!;
+
+    const clientAppointments = await db
+      .select()
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clientId, clientId),
+          eq(appointments.odId, odId)
+        )
+      )
+      .orderBy(desc(appointments.date));
+
+    res.json({ appointments: clientAppointments });
   } catch (error) {
     console.error('Error al obtener citas:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -260,9 +604,10 @@ router.get('/appointments', async (req: Request, res: Response) => {
  * POST /api/portal/appointment-requests
  * Crea una solicitud de cita
  */
-router.post('/appointment-requests', async (req: Request, res: Response) => {
+router.post('/appointment-requests', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { pianoId, serviceType, preferredDates, preferredTimeSlot, notes } = req.body;
+    const { clientId, odId } = req.portalUser!;
 
     if (!pianoId || !serviceType || !preferredDates?.length) {
       return res.status(400).json({ 
@@ -270,13 +615,41 @@ router.post('/appointment-requests', async (req: Request, res: Response) => {
       });
     }
 
-    // TODO: Crear solicitud en base de datos
-    // TODO: Notificar al técnico
+    // Verificar que el piano pertenece al cliente
+    const [piano] = await db
+      .select()
+      .from(pianos)
+      .where(
+        and(
+          eq(pianos.id, pianoId),
+          eq(pianos.clientId, clientId)
+        )
+      )
+      .limit(1);
+
+    if (!piano) {
+      return res.status(400).json({ error: 'Piano no válido' });
+    }
+
+    // Crear solicitud en base de datos
+    const [result] = await db.insert(portalAppointmentRequests).values({
+      odId,
+      clientId,
+      pianoId,
+      serviceType,
+      preferredDates,
+      preferredTimeSlot: preferredTimeSlot || 'any',
+      notes,
+      status: 'pending',
+    });
+
+    // TODO: Notificar al técnico de nueva solicitud
+    // await notifyTechnician(odId, 'new_appointment_request', { clientId, pianoId, serviceType });
 
     res.status(201).json({
       success: true,
       request: {
-        id: 'request-1',
+        id: result.insertId,
         status: 'pending',
         createdAt: new Date().toISOString(),
       },
@@ -291,11 +664,22 @@ router.post('/appointment-requests', async (req: Request, res: Response) => {
  * GET /api/portal/appointment-requests
  * Lista las solicitudes de cita del cliente
  */
-router.get('/appointment-requests', async (req: Request, res: Response) => {
+router.get('/appointment-requests', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    res.json({
-      requests: [],
-    });
+    const { clientId, odId } = req.portalUser!;
+
+    const requests = await db
+      .select()
+      .from(portalAppointmentRequests)
+      .where(
+        and(
+          eq(portalAppointmentRequests.clientId, clientId),
+          eq(portalAppointmentRequests.odId, odId)
+        )
+      )
+      .orderBy(desc(portalAppointmentRequests.createdAt));
+
+    res.json({ requests });
   } catch (error) {
     console.error('Error al obtener solicitudes:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -306,11 +690,33 @@ router.get('/appointment-requests', async (req: Request, res: Response) => {
  * DELETE /api/portal/appointment-requests/:id
  * Cancela una solicitud de cita
  */
-router.delete('/appointment-requests/:id', async (req: Request, res: Response) => {
+router.delete('/appointment-requests/:id', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    // TODO: Verificar que la solicitud pertenece al cliente y está pendiente
-    // TODO: Cancelar solicitud
+    const { clientId } = req.portalUser!;
+
+    // Verificar que la solicitud pertenece al cliente y está pendiente
+    const [request] = await db
+      .select()
+      .from(portalAppointmentRequests)
+      .where(
+        and(
+          eq(portalAppointmentRequests.id, parseInt(id)),
+          eq(portalAppointmentRequests.clientId, clientId),
+          eq(portalAppointmentRequests.status, 'pending')
+        )
+      )
+      .limit(1);
+
+    if (!request) {
+      return res.status(404).json({ error: 'Solicitud no encontrada o no se puede cancelar' });
+    }
+
+    // Cancelar solicitud
+    await db
+      .update(portalAppointmentRequests)
+      .set({ status: 'cancelled' })
+      .where(eq(portalAppointmentRequests.id, parseInt(id)));
 
     res.json({ success: true });
   } catch (error) {
@@ -327,24 +733,57 @@ router.delete('/appointment-requests/:id', async (req: Request, res: Response) =
  * POST /api/portal/services/:id/rating
  * Añade una valoración a un servicio
  */
-router.post('/services/:id/rating', async (req: Request, res: Response) => {
+router.post('/services/:id/rating', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { rating, comment } = req.body;
+    const { clientId, odId } = req.portalUser!;
 
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ error: 'Valoración debe ser entre 1 y 5' });
     }
 
-    // TODO: Verificar que el servicio pertenece al cliente
-    // TODO: Verificar que no existe valoración previa
-    // TODO: Crear valoración
+    // Verificar que el servicio pertenece al cliente
+    const [service] = await db
+      .select()
+      .from(services)
+      .where(
+        and(
+          eq(services.id, parseInt(id)),
+          eq(services.clientId, clientId)
+        )
+      )
+      .limit(1);
+
+    if (!service) {
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+
+    // Verificar que no existe valoración previa
+    const [existingRating] = await db
+      .select()
+      .from(serviceRatings)
+      .where(eq(serviceRatings.serviceId, parseInt(id)))
+      .limit(1);
+
+    if (existingRating) {
+      return res.status(400).json({ error: 'Este servicio ya tiene una valoración' });
+    }
+
+    // Crear valoración
+    const [result] = await db.insert(serviceRatings).values({
+      odId,
+      serviceId: parseInt(id),
+      clientId,
+      rating,
+      comment: comment || null,
+    });
 
     res.status(201).json({
       success: true,
       rating: {
-        id: 'rating-1',
-        serviceId: id,
+        id: result.insertId,
+        serviceId: parseInt(id),
         rating,
         comment,
         createdAt: new Date().toISOString(),
@@ -364,15 +803,42 @@ router.post('/services/:id/rating', async (req: Request, res: Response) => {
  * GET /api/portal/conversations
  * Obtiene la conversación del cliente con su técnico
  */
-router.get('/conversations', async (req: Request, res: Response) => {
+router.get('/conversations', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const { clientId, odId } = req.portalUser!;
+
+    // Buscar o crear conversación
+    let [conversation] = await db
+      .select()
+      .from(portalConversations)
+      .where(
+        and(
+          eq(portalConversations.clientId, clientId),
+          eq(portalConversations.odId, odId)
+        )
+      )
+      .limit(1);
+
+    if (!conversation) {
+      // Crear nueva conversación
+      const [result] = await db.insert(portalConversations).values({
+        odId,
+        clientId,
+      });
+      
+      [conversation] = await db
+        .select()
+        .from(portalConversations)
+        .where(eq(portalConversations.id, result.insertId))
+        .limit(1);
+    }
+
     res.json({
       conversation: {
-        id: 'conv-1',
-        technicianId: 'tech-1',
-        technicianName: 'Carlos García',
-        lastMessageAt: new Date().toISOString(),
-        unreadCount: 0,
+        id: conversation.id,
+        technicianId: odId,
+        technicianName: 'Tu técnico', // TODO: Obtener nombre real del técnico
+        unreadCount: conversation.clientUnreadCount,
       },
     });
   } catch (error) {
@@ -385,16 +851,55 @@ router.get('/conversations', async (req: Request, res: Response) => {
  * GET /api/portal/conversations/:id/messages
  * Lista los mensajes de una conversación
  */
-router.get('/conversations/:id/messages', async (req: Request, res: Response) => {
+router.get('/conversations/:id/messages', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { before, limit = 50 } = req.query;
+    const { clientId } = req.portalUser!;
+    const { before, limit = '50' } = req.query;
 
-    // TODO: Obtener mensajes paginados
+    // Verificar que la conversación pertenece al cliente
+    const [conversation] = await db
+      .select()
+      .from(portalConversations)
+      .where(
+        and(
+          eq(portalConversations.id, parseInt(id)),
+          eq(portalConversations.clientId, clientId)
+        )
+      )
+      .limit(1);
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversación no encontrada' });
+    }
+
+    // Obtener mensajes paginados
+    let query = db
+      .select()
+      .from(portalMessages)
+      .where(eq(portalMessages.conversationId, parseInt(id)))
+      .orderBy(desc(portalMessages.createdAt))
+      .limit(parseInt(limit as string));
+
+    if (before) {
+      query = db
+        .select()
+        .from(portalMessages)
+        .where(
+          and(
+            eq(portalMessages.conversationId, parseInt(id)),
+            lt(portalMessages.createdAt, new Date(before as string))
+          )
+        )
+        .orderBy(desc(portalMessages.createdAt))
+        .limit(parseInt(limit as string));
+    }
+
+    const messages = await query;
 
     res.json({
-      messages: [],
-      hasMore: false,
+      messages: messages.reverse(), // Ordenar cronológicamente
+      hasMore: messages.length === parseInt(limit as string),
     });
   } catch (error) {
     console.error('Error al obtener mensajes:', error);
@@ -406,23 +911,58 @@ router.get('/conversations/:id/messages', async (req: Request, res: Response) =>
  * POST /api/portal/conversations/:id/messages
  * Envía un mensaje
  */
-router.post('/conversations/:id/messages', async (req: Request, res: Response) => {
+router.post('/conversations/:id/messages', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { content, messageType = 'text' } = req.body;
+    const { clientId } = req.portalUser!;
 
     if (!content) {
       return res.status(400).json({ error: 'Contenido es requerido' });
     }
 
-    // TODO: Crear mensaje
-    // TODO: Notificar al técnico
+    // Verificar que la conversación pertenece al cliente
+    const [conversation] = await db
+      .select()
+      .from(portalConversations)
+      .where(
+        and(
+          eq(portalConversations.id, parseInt(id)),
+          eq(portalConversations.clientId, clientId)
+        )
+      )
+      .limit(1);
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversación no encontrada' });
+    }
+
+    // Crear mensaje
+    const [result] = await db.insert(portalMessages).values({
+      conversationId: parseInt(id),
+      senderType: 'client',
+      senderId: clientId,
+      messageType,
+      content,
+    });
+
+    // Actualizar conversación
+    await db
+      .update(portalConversations)
+      .set({
+        lastMessageAt: new Date(),
+        technicianUnreadCount: conversation.technicianUnreadCount! + 1,
+      })
+      .where(eq(portalConversations.id, parseInt(id)));
+
+    // TODO: Notificar al técnico de nuevo mensaje
+    // await notifyTechnician(conversation.odId, 'new_message', { conversationId: id, clientId });
 
     res.status(201).json({
       success: true,
       message: {
-        id: 'msg-1',
-        conversationId: id,
+        id: result.insertId,
+        conversationId: parseInt(id),
         content,
         messageType,
         senderType: 'client',
@@ -439,10 +979,44 @@ router.post('/conversations/:id/messages', async (req: Request, res: Response) =
  * POST /api/portal/conversations/:id/read
  * Marca los mensajes como leídos
  */
-router.post('/conversations/:id/read', async (req: Request, res: Response) => {
+router.post('/conversations/:id/read', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    // TODO: Marcar mensajes como leídos
+    const { clientId } = req.portalUser!;
+
+    // Verificar que la conversación pertenece al cliente
+    const [conversation] = await db
+      .select()
+      .from(portalConversations)
+      .where(
+        and(
+          eq(portalConversations.id, parseInt(id)),
+          eq(portalConversations.clientId, clientId)
+        )
+      )
+      .limit(1);
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversación no encontrada' });
+    }
+
+    // Marcar mensajes del técnico como leídos
+    await db
+      .update(portalMessages)
+      .set({ isRead: true, readAt: new Date() })
+      .where(
+        and(
+          eq(portalMessages.conversationId, parseInt(id)),
+          eq(portalMessages.senderType, 'technician'),
+          eq(portalMessages.isRead, false)
+        )
+      );
+
+    // Resetear contador de no leídos del cliente
+    await db
+      .update(portalConversations)
+      .set({ clientUnreadCount: 0 })
+      .where(eq(portalConversations.id, parseInt(id)));
 
     res.json({ success: true });
   } catch (error) {
@@ -459,11 +1033,22 @@ router.post('/conversations/:id/read', async (req: Request, res: Response) => {
  * GET /api/portal/notifications
  * Lista las notificaciones del cliente
  */
-router.get('/notifications', async (req: Request, res: Response) => {
+router.get('/notifications', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const { clientId } = req.portalUser!;
+
+    const notifications = await db
+      .select()
+      .from(portalNotifications)
+      .where(eq(portalNotifications.clientId, clientId))
+      .orderBy(desc(portalNotifications.createdAt))
+      .limit(50);
+
+    const unreadCount = notifications.filter(n => !n.isRead).length;
+
     res.json({
-      notifications: [],
-      unreadCount: 0,
+      notifications,
+      unreadCount,
     });
   } catch (error) {
     console.error('Error al obtener notificaciones:', error);
@@ -475,8 +1060,20 @@ router.get('/notifications', async (req: Request, res: Response) => {
  * POST /api/portal/notifications/read-all
  * Marca todas las notificaciones como leídas
  */
-router.post('/notifications/read-all', async (req: Request, res: Response) => {
+router.post('/notifications/read-all', authenticatePortal, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const { clientId } = req.portalUser!;
+
+    await db
+      .update(portalNotifications)
+      .set({ isRead: true, readAt: new Date() })
+      .where(
+        and(
+          eq(portalNotifications.clientId, clientId),
+          eq(portalNotifications.isRead, false)
+        )
+      );
+
     res.json({ success: true });
   } catch (error) {
     console.error('Error al marcar notificaciones:', error);
