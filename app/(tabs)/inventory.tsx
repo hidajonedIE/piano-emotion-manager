@@ -29,7 +29,6 @@ export default function InventoryScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { materials: items, loading, lowStockItems } = useInventoryData();
-  const getLowStockItems = () => lowStockItems;
   const { suppliers } = useSuppliers();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -42,8 +41,6 @@ export default function InventoryScreen() {
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');
   const success = useThemeColor({}, 'success');
-
-  const lowStockItems = getLowStockItems();
 
   // Filtrar items
   const filteredItems = useMemo(() => {
