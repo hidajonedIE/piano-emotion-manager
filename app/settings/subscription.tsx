@@ -28,13 +28,13 @@ export default function SubscriptionScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Obtener planes disponibles
-  const { data: plans, isLoading: plansLoading } = trpc.subscription.getPlans.useQuery();
+  const { data: plans, isLoading: plansLoading } = trpc.advanced.subscription.getPlans.useQuery();
   
   // Obtener plan actual del usuario
-  const { data: currentPlan, isLoading: currentPlanLoading } = trpc.subscription.getCurrentPlan.useQuery();
+  const { data: currentPlan, isLoading: currentPlanLoading } = trpc.advanced.subscription.getCurrentPlan.useQuery();
 
   // Mutation para crear checkout
-  const createCheckout = trpc.subscription.createCheckout.useMutation({
+  const createCheckout = trpc.advanced.subscription.createCheckout.useMutation({
     onSuccess: async (data) => {
       if (data.url) {
         // Abrir Stripe Checkout en el navegador
@@ -54,7 +54,7 @@ export default function SubscriptionScreen() {
   });
 
   // Mutation para abrir portal de gestión
-  const createPortal = trpc.subscription.createPortal.useMutation({
+  const createPortal = trpc.advanced.subscription.createPortal.useMutation({
     onSuccess: async (data) => {
       if (data.url) {
         if (Platform.OS === 'web') {
