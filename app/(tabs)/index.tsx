@@ -21,7 +21,6 @@ import {
   DashboardStats,
   DashboardAlerts,
   DashboardQuickActions,
-  DashboardPredictions,
   DashboardRecentServices,
 } from '@/components/dashboard';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
@@ -155,13 +154,7 @@ export default function DashboardScreen() {
               pendingCount={stats.pendingCount} 
             />
 
-            {/* Predicciones IA */}
-            <DashboardPredictions />
-
-            {/* Acciones rápidas y módulos */}
-            <DashboardQuickActions urgentCount={stats.urgentCount} />
-
-            {/* Estadísticas del mes */}
+            {/* Este Mes - Estadísticas */}
             <DashboardStats
               stats={stats}
               selectedMonth={selectedMonth}
@@ -176,6 +169,9 @@ export default function DashboardScreen() {
               clients={clients}
               pianos={pianos}
             />
+
+            {/* Acciones rápidas y módulos (Accesos Rápidos + Herramientas Avanzadas) */}
+            <DashboardQuickActions urgentCount={stats.urgentCount} />
 
             {/* Tienda */}
             <PianoEmotionStore collapsed={true} />
