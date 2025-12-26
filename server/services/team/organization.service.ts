@@ -17,10 +17,10 @@ import {
   OrganizationMember,
   InsertOrganizationMember,
   OrganizationInvitation,
-} from '../../../drizzle/team-schema';
-import { users } from '../../../drizzle/schema';
-import { generateToken, hashToken } from '../../utils/crypto';
-import { sendEmail } from '../../utils/email';
+} from '../../../drizzle/team-schema.js';
+import { users } from '../../../drizzle/schema.js';
+import { generateToken, hashToken } from '../../utils/crypto.js';
+import { sendEmail } from '../../utils/email.js';
 
 // ==========================================
 // TIPOS

@@ -12,7 +12,7 @@ interface PermissionContext {
 
 import { eq, and } from 'drizzle-orm';
 import { getDb } from '../../db.js';
-import { organizationMembers, OrganizationMember } from '../../../drizzle/team-schema';
+import { organizationMembers, OrganizationMember } from '../../../drizzle/team-schema.js';
 
 // ==========================================
 // TIPOS DE PERMISOS
