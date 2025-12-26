@@ -57,14 +57,14 @@ export function DashboardHeader() {
 
 const styles = StyleSheet.create({
   headerGradient: {
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.sm,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.xs,
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
   },
   headerGradientMobile: {
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.xs,
+    marginTop: 0,
+    marginBottom: 0,
     padding: Spacing.sm,
   },
   headerRow: {

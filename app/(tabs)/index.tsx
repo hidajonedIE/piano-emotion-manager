@@ -195,11 +195,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: Spacing.sm,
+    gap: Spacing.xs,
   },
   mainContainer: {
     flex: 1,
-    gap: Spacing.sm,
+    gap: Spacing.xs,
     width: '100%',
   },
   mainContainerDesktop: {
