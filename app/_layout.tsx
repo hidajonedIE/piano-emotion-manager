@@ -15,6 +15,7 @@ import {
   initialWindowMetrics,
 } from "react-native-safe-area-context";
 import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
+import { Analytics } from "@vercel/analytics/react";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { trpc, createTRPCClient } from "@/lib/trpc";
@@ -127,6 +128,7 @@ export default function RootLayout() {
                   <LanguageProvider>
                     <SnackbarProvider>
                     <AuthGuard>
+                    <Analytics />
                     <Stack>
                       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                       <Stack.Screen name="(app)" options={{ headerShown: false }} />

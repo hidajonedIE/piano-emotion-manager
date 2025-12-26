@@ -21,6 +21,7 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
     "@clerk/clerk-expo": "^2.9.0",
     "@clerk/backend": "^1.21.0",
     "@aws-sdk/client-s3": "^3.958.0",
