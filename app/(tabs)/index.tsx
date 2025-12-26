@@ -28,7 +28,7 @@ import {
   DashboardAdvancedTools,
   DashboardPredictions,
   DashboardRecentServices,
-  DashboardDraggable,
+  DashboardDraggableWeb,
 } from '@/components/dashboard';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
@@ -255,7 +255,7 @@ export default function DashboardScreen() {
             <DashboardHeader />
 
             {/* Secciones con drag & drop */}
-            <DashboardDraggable
+            <DashboardDraggableWeb
               sections={allSections}
               isEditMode={isEditMode}
               onReorder={reorderSections}

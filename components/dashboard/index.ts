@@ -18,3 +18,4 @@ export { DashboardPredictions } from './dashboard-predictions';
 export { DashboardRecentServices } from './dashboard-recent-services';
 export { DashboardSettingsPanel } from './dashboard-settings-panel';
 export { DashboardDraggable } from './dashboard-draggable';
+export { DashboardDraggableWeb } from './dashboard-draggable-web';
