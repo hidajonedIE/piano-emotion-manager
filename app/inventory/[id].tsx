@@ -427,7 +427,7 @@ export default function InventoryDetailScreen() {
               )}
               {/* Botones de contacto rápido */}
               {form.supplierId && (() => {
-                const supplier = suppliers.find((s: any) => s.id === form.supplierId);
+                const supplier = suppliers.find((s: { id: string }) => s.id === form.supplierId);
                 if (!supplier) return null;
                 const hasPhone = supplier.phone && supplier.phone.trim();
                 const hasEmail = supplier.email && supplier.email.trim();

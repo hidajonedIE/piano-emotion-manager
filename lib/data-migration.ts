@@ -1,5 +1,31 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+// Tipos para migración de datos
+interface MigrationClient {
+  id?: string;
+  firstName?: string;
+  lastName1?: string;
+  email?: string;
+  phone?: string;
+}
+
+interface MigrationPiano {
+  id?: string;
+  brand?: string;
+  model?: string;
+  serialNumber?: string;
+  clientId?: string;
+}
+
+interface MigrationService {
+  id?: string;
+  type?: string;
+  date?: string;
+  clientId?: string;
+  pianoId?: string;
+  price?: number;
+}
 // Versión actual del esquema de datos
 export const CURRENT_DATA_VERSION = 1;
 
@@ -30,7 +56,7 @@ const migrations: Record<number, MigrationFunction> = {
     
     // Ejemplo: Añadir campos por defecto a clientes existentes
     if (data.clients) {
-      data.clients = data.clients.map((client: any) => ({
+      data.clients = data.clients.map((client: Record<string, unknown>) => ({
         ...client,
         // Añadir campo preferredContact si no existe
         preferredContact: client.preferredContact || 'phone',
@@ -41,7 +67,7 @@ const migrations: Record<number, MigrationFunction> = {
 
     // Ejemplo: Normalizar fechas en servicios
     if (data.services) {
-      data.services = data.services.map((service: any) => ({
+      data.services = data.services.map((service: Record<string, unknown>) => ({
         ...service,
         // Asegurar que la fecha esté en formato ISO
         date: service.date ? new Date(service.date).toISOString().split('T')[0] : service.date,
@@ -50,7 +76,7 @@ const migrations: Record<number, MigrationFunction> = {
 
     // Ejemplo: Añadir campo category a pianos si no existe
     if (data.pianos) {
-      data.pianos = data.pianos.map((piano: any) => ({
+      data.pianos = data.pianos.map((piano: Record<string, unknown>) => ({
         ...piano,
         category: piano.category || 'vertical',
       }));
@@ -277,7 +303,7 @@ export async function verifyDataIntegrity(): Promise<{
 
   // Verificar que los clientes tengan campos requeridos
   if (data.clients) {
-    data.clients.forEach((client: any, index: number) => {
+    data.clients.forEach((client: MigrationClient, index: number) => {
       if (!client.id) errors.push(`Cliente ${index}: falta ID`);
       if (!client.name) errors.push(`Cliente ${index}: falta nombre`);
     });
@@ -285,8 +311,8 @@ export async function verifyDataIntegrity(): Promise<{
 
   // Verificar que los pianos referencien clientes válidos
   if (data.pianos && data.clients) {
-    const clientIds = new Set(data.clients.map((c: any) => c.id));
-    data.pianos.forEach((piano: any, index: number) => {
+    const clientIds = new Set(data.clients.map((c: { id: string }) => c.id));
+    data.pianos.forEach((piano: MigrationPiano, index: number) => {
       if (!piano.id) errors.push(`Piano ${index}: falta ID`);
       if (piano.clientId && !clientIds.has(piano.clientId)) {
         errors.push(`Piano ${index}: referencia a cliente inexistente`);
@@ -296,8 +322,8 @@ export async function verifyDataIntegrity(): Promise<{
 
   // Verificar que los servicios referencien pianos válidos
   if (data.services && data.pianos) {
-    const pianoIds = new Set(data.pianos.map((p: any) => p.id));
-    data.services.forEach((service: any, index: number) => {
+    const pianoIds = new Set(data.pianos.map((p: { id: string }) => p.id));
+    data.services.forEach((service: MigrationService, index: number) => {
       if (!service.id) errors.push(`Servicio ${index}: falta ID`);
       if (service.pianoId && !pianoIds.has(service.pianoId)) {
         errors.push(`Servicio ${index}: referencia a piano inexistente`);

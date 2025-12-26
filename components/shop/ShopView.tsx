@@ -32,12 +32,19 @@ interface Product {
   category?: string;
 }
 
+interface Shop {
+  id: number;
+  name: string;
+  description?: string;
+  logoUrl?: string;
+}
+
 // ============================================================================
 // Shop Selector
 // ============================================================================
 
 interface ShopSelectorProps {
-  shops: any[];
+  shops: Shop[];
   selectedShopId: number | null;
   onSelect: (shopId: number) => void;
 }

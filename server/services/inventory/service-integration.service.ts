@@ -1,4 +1,6 @@
 /**
+
+type DatabaseTransaction = unknown;
  * Servicio de Integración de Inventario con Servicios de Piano
  * Piano Emotion Manager
  * 
@@ -434,7 +436,7 @@ export class ServiceIntegrationService {
    * Crea alerta de stock bajo
    */
   private async createStockAlert(
-    tx: any,
+    tx: DatabaseTransaction,
     productId: number,
     warehouseId: number,
     currentStock: number,

@@ -135,7 +135,7 @@ const fileUri = `${ExpoFileSystem.documentDirectory}${fileName}`;
         input.type = 'file';
         input.accept = '.json';
         
-        input.onchange = async (e: any) => {
+        input.onchange = async (e: Event) => {
           const file = e.target.files[0];
           if (file) {
             const reader = new FileReader();

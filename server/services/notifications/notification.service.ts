@@ -31,7 +31,7 @@ export interface NotificationPayload {
   type: NotificationType;
   title: string;
   body: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   badge?: number;
   sound?: boolean;
   priority?: 'default' | 'high' | 'max';
@@ -44,7 +44,7 @@ export interface StoredNotification {
   type: NotificationType;
   title: string;
   body: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   isRead: boolean;
   createdAt: Date;
   readAt?: Date;
@@ -383,7 +383,7 @@ class NotificationService {
         notificationId: notification.id,
         userId: notification.userId,
         organizationId: notification.organizationId,
-        type: notification.type as any,
+        type: notification.type,
         title: notification.title,
         body: notification.body,
         data: notification.data,

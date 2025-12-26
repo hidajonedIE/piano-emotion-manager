@@ -6,6 +6,7 @@
  */
 
 import { AnalyticsService, DateRange, DashboardMetrics } from './analytics.service';
+import type { SectionData, RevenueDataItem, ServiceDataItem, PianoDataItem } from './pdf-generator.types';
 
 // ============================================================================
 // Types
@@ -24,7 +25,7 @@ export interface ReportConfig {
 export interface ReportSection {
   type: 'summary' | 'revenue' | 'services' | 'clients' | 'pianos' | 'technicians' | 'custom';
   title: string;
-  data?: any;
+  data?: SectionData;
 }
 
 export interface GeneratedReport {
@@ -324,7 +325,7 @@ export class PDFGeneratorService {
     `;
   }
 
-  private generateSectionHTML(section: ReportSection, data: any): string {
+  private generateSectionHTML(section: ReportSection, data: SectionData): string {
     switch (section.type) {
       case 'summary':
         return this.generateSummarySection(section.title, data as DashboardMetrics);
@@ -375,7 +376,7 @@ export class PDFGeneratorService {
     `;
   }
 
-  private generateRevenueSection(title: string, data: any[]): string {
+  private generateRevenueSection(title: string, data: RevenueDataItem[]): string {
     if (!data || data.length === 0) return '';
 
     const rows = data.map(item => `
@@ -410,7 +411,7 @@ export class PDFGeneratorService {
     `;
   }
 
-  private generateServicesSection(title: string, data: any[]): string {
+  private generateServicesSection(title: string, data: ServiceDataItem[]): string {
     if (!data || data.length === 0) return '';
 
     const rows = data.map(item => `
@@ -445,7 +446,7 @@ export class PDFGeneratorService {
     `;
   }
 
-  private generatePianosSection(title: string, data: any[]): string {
+  private generatePianosSection(title: string, data: PianoDataItem[]): string {
     if (!data || data.length === 0) return '';
 
     const rows = data.map(item => `

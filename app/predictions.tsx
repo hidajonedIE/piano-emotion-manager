@@ -96,7 +96,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.revenue,
     churn: churnQuery.data && churnQuery.data.length > 0
-      ? churnQuery.data.map((c: any) => ({
+      ? churnQuery.data.map((c: { clientId: string; clientName: string; riskScore: number; daysSinceLastService: number; suggestedAction: string }) => ({
           clientName: c.clientName,
           riskScore: c.riskScore,
           daysSince: c.daysSinceLastService,
@@ -104,7 +104,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.churn,
     maintenance: maintenanceQuery.data && maintenanceQuery.data.length > 0
-      ? maintenanceQuery.data.map((m: any) => ({
+      ? maintenanceQuery.data.map((m: { pianoId: string; pianoInfo: string; clientName: string; predictedDate: string; serviceType: string; confidence: number }) => ({
           pianoInfo: m.pianoInfo,
           clientName: m.clientName,
           predictedDate: new Date(m.predictedDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -113,7 +113,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.maintenance,
     workload: workloadQuery.data && workloadQuery.data.length > 0
-      ? workloadQuery.data.map((w: any) => ({
+      ? workloadQuery.data.map((w: { week: string; scheduledAppointments: number; estimatedServices: number; workloadLevel: string }) => ({
           week: w.week,
           scheduled: w.scheduledAppointments,
           estimated: w.estimatedTotal,
@@ -121,7 +121,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.workload,
     inventory: inventoryQuery.data && inventoryQuery.data.length > 0
-      ? inventoryQuery.data.map((i: any) => ({
+      ? inventoryQuery.data.map((i: { id: string }) => ({
           itemName: i.itemName,
           currentStock: i.currentStock,
           monthlyUsage: i.monthlyUsage,

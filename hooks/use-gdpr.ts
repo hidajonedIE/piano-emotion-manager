@@ -4,21 +4,83 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
+// ============================================================================
+// Tipos base para entidades
+// ============================================================================
+
+interface BaseEntity {
+  id: string;
+  createdAt?: string;
+}
+
+interface ClientEntity extends BaseEntity {
+  name?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  taxId?: string;
+  address?: string;
+  fiscalAddress?: string;
+  notes?: string;
+}
+
+interface PianoEntity extends BaseEntity {
+  clientId: string;
+}
+
+interface ServiceEntity extends BaseEntity {
+  clientId: string;
+}
+
+interface AppointmentEntity extends BaseEntity {
+  clientId: string;
+}
+
+interface InvoiceEntity extends BaseEntity {
+  clientId: string;
+}
+
+interface InventoryEntity extends BaseEntity {
+  name?: string;
+  quantity?: number;
+}
+
+interface ReminderEntity extends BaseEntity {
+  clientId: string;
+}
+
+interface BusinessInfo {
+  name?: string;
+  taxId?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  bankAccount?: string;
+  [key: string]: unknown;
+}
+
+interface UserPreferences {
+  [key: string]: unknown;
+}
+
+// ============================================================================
 // Tipos para los datos exportables
+// ============================================================================
+
 export interface UserDataExport {
   exportDate: string;
   exportVersion: string;
   user: {
-    businessInfo: any;
-    preferences: any;
+    businessInfo: BusinessInfo | null;
+    preferences: UserPreferences | null;
   };
-  clients: any[];
-  pianos: any[];
-  services: any[];
-  appointments: any[];
-  invoices: any[];
-  inventory: any[];
-  reminders: any[];
+  clients: ClientEntity[];
+  pianos: PianoEntity[];
+  services: ServiceEntity[];
+  appointments: AppointmentEntity[];
+  invoices: InvoiceEntity[];
+  inventory: InventoryEntity[];
+  reminders: ReminderEntity[];
 }
 
 export interface GDPRHook {
@@ -50,7 +112,10 @@ export interface DataSummary {
   newestRecord: string | null;
 }
 
+// ============================================================================
 // Hook principal de GDPR
+// ============================================================================
+
 export function useGDPR(): GDPRHook {
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -88,63 +153,63 @@ export function useGDPR(): GDPRHook {
       // Preferencias de usuario
       const preferences = await AsyncStorage.getItem('@user_preferences');
       if (preferences) {
-        exportData.user.preferences = JSON.parse(preferences);
+        exportData.user.preferences = JSON.parse(preferences) as UserPreferences;
       }
       setExportProgress(20);
 
       // Información del negocio
       const businessInfo = await AsyncStorage.getItem('@business_info');
       if (businessInfo) {
-        exportData.user.businessInfo = JSON.parse(businessInfo);
+        exportData.user.businessInfo = JSON.parse(businessInfo) as BusinessInfo;
       }
       setExportProgress(30);
 
       // Clientes
       const clients = await AsyncStorage.getItem('@clients');
       if (clients) {
-        exportData.clients = JSON.parse(clients);
+        exportData.clients = JSON.parse(clients) as ClientEntity[];
       }
       setExportProgress(40);
 
       // Pianos
       const pianos = await AsyncStorage.getItem('@pianos');
       if (pianos) {
-        exportData.pianos = JSON.parse(pianos);
+        exportData.pianos = JSON.parse(pianos) as PianoEntity[];
       }
       setExportProgress(50);
 
       // Servicios
       const services = await AsyncStorage.getItem('@services');
       if (services) {
-        exportData.services = JSON.parse(services);
+        exportData.services = JSON.parse(services) as ServiceEntity[];
       }
       setExportProgress(60);
 
       // Citas
       const appointments = await AsyncStorage.getItem('@appointments');
       if (appointments) {
-        exportData.appointments = JSON.parse(appointments);
+        exportData.appointments = JSON.parse(appointments) as AppointmentEntity[];
       }
       setExportProgress(70);
 
       // Facturas
       const invoices = await AsyncStorage.getItem('@invoices');
       if (invoices) {
-        exportData.invoices = JSON.parse(invoices);
+        exportData.invoices = JSON.parse(invoices) as InvoiceEntity[];
       }
       setExportProgress(80);
 
       // Inventario
       const inventory = await AsyncStorage.getItem('@inventory');
       if (inventory) {
-        exportData.inventory = JSON.parse(inventory);
+        exportData.inventory = JSON.parse(inventory) as InventoryEntity[];
       }
       setExportProgress(85);
 
       // Recordatorios
       const reminders = await AsyncStorage.getItem('@reminders');
       if (reminders) {
-        exportData.reminders = JSON.parse(reminders);
+        exportData.reminders = JSON.parse(reminders) as ReminderEntity[];
       }
       setExportProgress(90);
 
@@ -183,7 +248,7 @@ export function useGDPR(): GDPRHook {
         setExportProgress(100);
         return filePath;
       }
-    } catch (err) {
+    } catch {
       setError('Error al exportar los datos. Por favor, inténtalo de nuevo.');
       return null;
     } finally {
@@ -231,13 +296,13 @@ export function useGDPR(): GDPRHook {
               await FileSystem.deleteAsync(`${cacheDir}${file}`, { idempotent: true });
             }
           }
-        } catch (e) {
+        } catch {
           // Ignorar errores de limpieza de caché
         }
       }
 
       return true;
-    } catch (err) {
+    } catch {
       setError('Error al eliminar los datos. Por favor, inténtalo de nuevo.');
       return false;
     } finally {
@@ -254,53 +319,53 @@ export function useGDPR(): GDPRHook {
       // Eliminar cliente
       const clientsStr = await AsyncStorage.getItem('@clients');
       if (clientsStr) {
-        const clients = JSON.parse(clientsStr);
-        const filteredClients = clients.filter((c: any) => c.id !== clientId);
+        const clients = JSON.parse(clientsStr) as ClientEntity[];
+        const filteredClients = clients.filter((c: ClientEntity) => c.id !== clientId);
         await AsyncStorage.setItem('@clients', JSON.stringify(filteredClients));
       }
 
       // Eliminar pianos del cliente
       const pianosStr = await AsyncStorage.getItem('@pianos');
       if (pianosStr) {
-        const pianos = JSON.parse(pianosStr);
-        const filteredPianos = pianos.filter((p: any) => p.clientId !== clientId);
+        const pianos = JSON.parse(pianosStr) as PianoEntity[];
+        const filteredPianos = pianos.filter((p: PianoEntity) => p.clientId !== clientId);
         await AsyncStorage.setItem('@pianos', JSON.stringify(filteredPianos));
       }
 
       // Eliminar servicios del cliente
       const servicesStr = await AsyncStorage.getItem('@services');
       if (servicesStr) {
-        const services = JSON.parse(servicesStr);
-        const filteredServices = services.filter((s: any) => s.clientId !== clientId);
+        const services = JSON.parse(servicesStr) as ServiceEntity[];
+        const filteredServices = services.filter((s: ServiceEntity) => s.clientId !== clientId);
         await AsyncStorage.setItem('@services', JSON.stringify(filteredServices));
       }
 
       // Eliminar citas del cliente
       const appointmentsStr = await AsyncStorage.getItem('@appointments');
       if (appointmentsStr) {
-        const appointments = JSON.parse(appointmentsStr);
-        const filteredAppointments = appointments.filter((a: any) => a.clientId !== clientId);
+        const appointments = JSON.parse(appointmentsStr) as AppointmentEntity[];
+        const filteredAppointments = appointments.filter((a: AppointmentEntity) => a.clientId !== clientId);
         await AsyncStorage.setItem('@appointments', JSON.stringify(filteredAppointments));
       }
 
       // Eliminar facturas del cliente
       const invoicesStr = await AsyncStorage.getItem('@invoices');
       if (invoicesStr) {
-        const invoices = JSON.parse(invoicesStr);
-        const filteredInvoices = invoices.filter((i: any) => i.clientId !== clientId);
+        const invoices = JSON.parse(invoicesStr) as InvoiceEntity[];
+        const filteredInvoices = invoices.filter((i: InvoiceEntity) => i.clientId !== clientId);
         await AsyncStorage.setItem('@invoices', JSON.stringify(filteredInvoices));
       }
 
       // Eliminar recordatorios del cliente
       const remindersStr = await AsyncStorage.getItem('@reminders');
       if (remindersStr) {
-        const reminders = JSON.parse(remindersStr);
-        const filteredReminders = reminders.filter((r: any) => r.clientId !== clientId);
+        const reminders = JSON.parse(remindersStr) as ReminderEntity[];
+        const filteredReminders = reminders.filter((r: ReminderEntity) => r.clientId !== clientId);
         await AsyncStorage.setItem('@reminders', JSON.stringify(filteredReminders));
       }
 
       return true;
-    } catch (err) {
+    } catch {
       setError('Error al eliminar los datos del cliente.');
       return false;
     } finally {
@@ -317,8 +382,8 @@ export function useGDPR(): GDPRHook {
       // Anonimizar clientes
       const clientsStr = await AsyncStorage.getItem('@clients');
       if (clientsStr) {
-        const clients = JSON.parse(clientsStr);
-        const anonymizedClients = clients.map((c: any, index: number) => ({
+        const clients = JSON.parse(clientsStr) as ClientEntity[];
+        const anonymizedClients = clients.map((c: ClientEntity, index: number) => ({
           ...c,
           name: `Cliente ${index + 1}`,
           lastName: 'Anónimo',
@@ -335,8 +400,8 @@ export function useGDPR(): GDPRHook {
       // Anonimizar información del negocio
       const businessInfoStr = await AsyncStorage.getItem('@business_info');
       if (businessInfoStr) {
-        const businessInfo = JSON.parse(businessInfoStr);
-        const anonymizedBusiness = {
+        const businessInfo = JSON.parse(businessInfoStr) as BusinessInfo;
+        const anonymizedBusiness: BusinessInfo = {
           ...businessInfo,
           name: 'Empresa Anónima',
           taxId: 'XXXXXXXXX',
@@ -349,7 +414,7 @@ export function useGDPR(): GDPRHook {
       }
 
       return true;
-    } catch (err) {
+    } catch {
       setError('Error al anonimizar los datos.');
       return false;
     } finally {
@@ -379,10 +444,10 @@ export function useGDPR(): GDPRHook {
       // Contar clientes
       const clientsStr = await AsyncStorage.getItem('@clients');
       if (clientsStr) {
-        const clients = JSON.parse(clientsStr);
+        const clients = JSON.parse(clientsStr) as ClientEntity[];
         summary.totalClients = clients.length;
         totalSize += clientsStr.length;
-        clients.forEach((c: any) => {
+        clients.forEach((c: ClientEntity) => {
           if (c.createdAt) dates.push(new Date(c.createdAt));
         });
       }
@@ -390,10 +455,10 @@ export function useGDPR(): GDPRHook {
       // Contar pianos
       const pianosStr = await AsyncStorage.getItem('@pianos');
       if (pianosStr) {
-        const pianos = JSON.parse(pianosStr);
+        const pianos = JSON.parse(pianosStr) as PianoEntity[];
         summary.totalPianos = pianos.length;
         totalSize += pianosStr.length;
-        pianos.forEach((p: any) => {
+        pianos.forEach((p: PianoEntity) => {
           if (p.createdAt) dates.push(new Date(p.createdAt));
         });
       }
@@ -401,10 +466,10 @@ export function useGDPR(): GDPRHook {
       // Contar servicios
       const servicesStr = await AsyncStorage.getItem('@services');
       if (servicesStr) {
-        const services = JSON.parse(servicesStr);
+        const services = JSON.parse(servicesStr) as ServiceEntity[];
         summary.totalServices = services.length;
         totalSize += servicesStr.length;
-        services.forEach((s: any) => {
+        services.forEach((s: ServiceEntity) => {
           if (s.createdAt) dates.push(new Date(s.createdAt));
         });
       }
@@ -412,7 +477,7 @@ export function useGDPR(): GDPRHook {
       // Contar citas
       const appointmentsStr = await AsyncStorage.getItem('@appointments');
       if (appointmentsStr) {
-        const appointments = JSON.parse(appointmentsStr);
+        const appointments = JSON.parse(appointmentsStr) as AppointmentEntity[];
         summary.totalAppointments = appointments.length;
         totalSize += appointmentsStr.length;
       }
@@ -420,7 +485,7 @@ export function useGDPR(): GDPRHook {
       // Contar facturas
       const invoicesStr = await AsyncStorage.getItem('@invoices');
       if (invoicesStr) {
-        const invoices = JSON.parse(invoicesStr);
+        const invoices = JSON.parse(invoicesStr) as InvoiceEntity[];
         summary.totalInvoices = invoices.length;
         totalSize += invoicesStr.length;
       }
@@ -428,7 +493,7 @@ export function useGDPR(): GDPRHook {
       // Contar inventario
       const inventoryStr = await AsyncStorage.getItem('@inventory');
       if (inventoryStr) {
-        const inventory = JSON.parse(inventoryStr);
+        const inventory = JSON.parse(inventoryStr) as InventoryEntity[];
         summary.totalInventoryItems = inventory.length;
         totalSize += inventoryStr.length;
       }
@@ -436,7 +501,7 @@ export function useGDPR(): GDPRHook {
       // Contar recordatorios
       const remindersStr = await AsyncStorage.getItem('@reminders');
       if (remindersStr) {
-        const reminders = JSON.parse(remindersStr);
+        const reminders = JSON.parse(remindersStr) as ReminderEntity[];
         summary.totalReminders = reminders.length;
         totalSize += remindersStr.length;
       }
@@ -461,7 +526,7 @@ export function useGDPR(): GDPRHook {
       }
 
       return summary;
-    } catch (err) {
+    } catch {
       return {
         totalClients: 0,
         totalPianos: 0,

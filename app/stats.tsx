@@ -101,7 +101,7 @@ export default function StatsScreen() {
     };
   }, [clients, pianos, services]);
 
-  const StatCard = ({ title, value, subtitle, icon, color }: any) => (
+  const StatCard = ({ title, value, subtitle, icon, color }: { title: string; value: string | number; subtitle?: string; icon: string; color: string }) => (
     <View style={[styles.statCard, { backgroundColor: cardBg, borderColor }]}>
       <View style={[styles.statIcon, { backgroundColor: `${color}15` }]}>
         <IconSymbol name={icon} size={24} color={color} />
@@ -114,7 +114,7 @@ export default function StatsScreen() {
     </View>
   );
 
-  const ProgressBar = ({ label, value, total, color }: any) => {
+  const ProgressBar = ({ label, value, total, color }: { label: string; value: number; total: number; color: string }) => {
     const percentage = total > 0 ? (value / total) * 100 : 0;
     return (
       <View style={styles.progressItem}>

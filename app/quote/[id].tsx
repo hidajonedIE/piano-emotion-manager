@@ -17,13 +17,14 @@ import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useQuotes, useQuoteTemplates, Quote, QuoteItem, QuoteStatus, calculateQuoteTotals, calculateItemTotals, generateId } from '@/hooks/use-quotes';
+import { useQuotes, useQuoteTemplates, Quote, QuoteItem, QuoteStatus, QuoteTemplate, calculateQuoteTotals, calculateItemTotals, generateId } from '@/hooks/use-quotes';
 import { useBusinessInfo } from '@/hooks/use-invoices';
 import { useServiceCatalog } from '@/hooks/use-service-catalog';
+import { ServiceRate } from '@/types/service-catalog';
 import { useClientsData, usePianosData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
-import { getClientFullName, getClientFormattedAddress } from '@/types';
+import { Client, Piano, getClientFullName, getClientFormattedAddress } from '@/types';
 
 const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   draft: 'Borrador',
@@ -118,10 +119,10 @@ export default function QuoteDetailScreen() {
 
   const clientPianos = useMemo(() => {
     if (!form.clientId) return [];
-    return pianos.filter((p: any) => p.clientId === form.clientId);
+    return pianos.filter((p: Piano) => p.clientId === form.clientId);
   }, [form.clientId, pianos]);
 
-  const handleSelectClient = (client: any) => {
+  const handleSelectClient = (client: Client) => {
     setForm(prev => ({
       ...prev,
       clientId: client.id,
@@ -132,7 +133,7 @@ export default function QuoteDetailScreen() {
     setShowClientPicker(false);
   };
 
-  const handleSelectPiano = (piano: any) => {
+  const handleSelectPiano = (piano: Piano) => {
     setForm(prev => ({
       ...prev,
       pianoId: piano.id,
@@ -141,8 +142,8 @@ export default function QuoteDetailScreen() {
     setShowPianoPicker(false);
   };
 
-  const handleSelectTemplate = (template: any) => {
-    const newItems: QuoteItem[] = template.items.map((item: any, index: number) => {
+  const handleSelectTemplate = (template: QuoteTemplate) => {
+    const newItems: QuoteItem[] = template.items.map((item: Omit<QuoteItem, 'id' | 'subtotal' | 'total'>, index: number) => {
       const itemTotals = calculateItemTotals(item);
       return {
         ...item,
@@ -160,7 +161,7 @@ export default function QuoteDetailScreen() {
     setShowTemplatePicker(false);
   };
 
-  const handleAddItemFromService = (rate: any) => {
+  const handleAddItemFromService = (rate: ServiceRate) => {
     const newItem: QuoteItem = {
       id: generateId(),
       type: 'service',
@@ -730,7 +731,7 @@ export default function QuoteDetailScreen() {
             </View>
             <FlatList
               data={clients}
-              keyExtractor={(item: any) => item.id}
+              keyExtractor={(item: { id: string }) => item.id}
               renderItem={({ item }) => (
                 <Pressable
                   style={[styles.pickerItem, { borderColor }]}
@@ -766,7 +767,7 @@ export default function QuoteDetailScreen() {
             </View>
             <FlatList
               data={clientPianos}
-              keyExtractor={(item: any) => item.id}
+              keyExtractor={(item: { id: string }) => item.id}
               renderItem={({ item }) => (
                 <Pressable
                   style={[styles.pickerItem, { borderColor }]}
@@ -802,7 +803,7 @@ export default function QuoteDetailScreen() {
             </View>
             <FlatList
               data={templates}
-              keyExtractor={(item: any) => item.id}
+              keyExtractor={(item: { id: string }) => item.id}
               renderItem={({ item }) => (
                 <Pressable
                   style={[styles.pickerItem, { borderColor }]}
@@ -841,7 +842,7 @@ export default function QuoteDetailScreen() {
             </View>
             <FlatList
               data={rates}
-              keyExtractor={(item: any) => item.id}
+              keyExtractor={(item: { id: string }) => item.id}
               renderItem={({ item }) => (
                 <Pressable
                   style={[styles.pickerItem, { borderColor }]}

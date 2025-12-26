@@ -2,9 +2,82 @@ import { useState, useCallback } from 'react';
 import { pdfReportService } from '@/services/pdf-report-service';
 import { useDistributorContext } from '@/contexts/distributor-context';
 
-/**
- * Hook para generar informes PDF
- */
+// ============================================================================
+// Tipos para entidades de PDF Reports
+// ============================================================================
+
+export interface PDFClient {
+  id?: string;
+  name?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  taxId?: string;
+  notes?: string;
+}
+
+export interface PDFPiano {
+  id?: string;
+  brand: string;
+  model: string;
+  serialNumber?: string;
+  year?: number;
+  type?: string;
+  location?: string;
+  notes?: string;
+}
+
+export interface PDFService {
+  id?: string;
+  type?: string;
+  date?: string;
+  description?: string;
+  notes?: string;
+  price?: number;
+  status?: string;
+  technician?: string;
+}
+
+export interface PDFInvoiceItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total?: number;
+}
+
+export interface PDFInvoice {
+  id?: string;
+  number?: string;
+  date?: string;
+  dueDate?: string;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  total?: number;
+  status?: string;
+  notes?: string;
+}
+
+export interface PDFMaterial {
+  id?: string;
+  name: string;
+  sku?: string;
+  quantity: number;
+  minStock?: number;
+  price?: number;
+  supplier?: string;
+  category?: string;
+}
+
+export interface PDFReportOptions {
+  preview?: boolean;
+}
+
+// ============================================================================
+// Hook para generar informes PDF
+// ============================================================================
+
 export function usePDFReports() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,11 +100,11 @@ export function usePDFReports() {
    * Generar ficha de cliente
    */
   const generateClientSummary = useCallback(async (
-    client: any,
-    pianos: any[],
-    services: any[],
-    invoices: any[],
-    options?: { preview?: boolean }
+    client: PDFClient,
+    pianos: PDFPiano[],
+    services: PDFService[],
+    invoices: PDFInvoice[],
+    options?: PDFReportOptions
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -59,10 +132,10 @@ export function usePDFReports() {
    * Generar historial de piano
    */
   const generatePianoHistory = useCallback(async (
-    piano: any,
-    client: any,
-    services: any[],
-    options?: { preview?: boolean }
+    piano: PDFPiano,
+    client: PDFClient,
+    services: PDFService[],
+    options?: PDFReportOptions
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -90,10 +163,10 @@ export function usePDFReports() {
    * Generar informe de servicio
    */
   const generateServiceReport = useCallback(async (
-    service: any,
-    client: any,
-    piano: any,
-    options?: { preview?: boolean }
+    service: PDFService,
+    client: PDFClient,
+    piano: PDFPiano,
+    options?: PDFReportOptions
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -121,10 +194,10 @@ export function usePDFReports() {
    * Generar factura
    */
   const generateInvoice = useCallback(async (
-    invoice: any,
-    client: any,
-    items: any[],
-    options?: { preview?: boolean }
+    invoice: PDFInvoice,
+    client: PDFClient,
+    items: PDFInvoiceItem[],
+    options?: PDFReportOptions
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -133,7 +206,7 @@ export function usePDFReports() {
       configureCompanyInfo();
       
       // Usar tasa de IVA del distribuidor si no está especificada
-      const invoiceWithTax = {
+      const invoiceWithTax: PDFInvoice = {
         ...invoice,
         taxRate: invoice.taxRate ?? fiscal.taxRate,
       };
@@ -161,10 +234,10 @@ export function usePDFReports() {
   const generateMonthlySummary = useCallback(async (
     month: number,
     year: number,
-    services: any[],
-    invoices: any[],
+    services: PDFService[],
+    invoices: PDFInvoice[],
     newClients: number,
-    options?: { preview?: boolean }
+    options?: PDFReportOptions
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -192,8 +265,8 @@ export function usePDFReports() {
    * Generar informe de inventario
    */
   const generateInventoryReport = useCallback(async (
-    materials: any[],
-    options?: { preview?: boolean }
+    materials: PDFMaterial[],
+    options?: PDFReportOptions
   ) => {
     setIsGenerating(true);
     setError(null);

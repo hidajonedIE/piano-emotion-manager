@@ -35,7 +35,7 @@ interface Quote {
   date: string;
   validUntil: string;
   status: QuoteStatus;
-  items: any[];
+  items: QuoteItem[];
   total: number;
   pianoDescription?: string;
 }

@@ -2,6 +2,37 @@ import { EInvoice, EInvoiceStatus, IEInvoicingService, SendResult, SupportedCoun
 import { BaseEInvoicingService } from '../base.service';
 import { toXML } from 'jstoxml';
 
+// Tipos UBL para PEPPOL
+interface UBLAddress {
+  StreetName?: string;
+  CityName?: string;
+  PostalZone?: string;
+  CountrySubentity?: string;
+  Country: { IdentificationCode: string };
+}
+
+interface TaxSubtotal {
+  TaxableAmount: { _: string; currencyID: string };
+  TaxAmount: { _: string; currencyID: string };
+  TaxCategory: {
+    ID: string;
+    Percent: string;
+    TaxScheme: { ID: string };
+  };
+}
+
+interface UBLInvoice {
+  Invoice: Record<string, unknown>;
+}
+
+interface AddressInput {
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  region?: string;
+  country: string;
+}
+
 /**
  * Service pour la facturation électronique en Belgique via PEPPOL.
  * Conforme à la norme PEPPOL BIS Billing 3.0.
@@ -282,7 +313,7 @@ export class BelgiumPeppolService extends BaseEInvoicingService implements IEInv
    * @param invoice Données de la facture.
    * @returns Objet JSON représentant la facture UBL.
    */
-  private mapToUbl(invoice: EInvoice): any {
+  private mapToUbl(invoice: EInvoice): UBLInvoice {
     return {
       _name: 'Invoice',
       _attrs: {
@@ -375,7 +406,7 @@ export class BelgiumPeppolService extends BaseEInvoicingService implements IEInv
   /**
    * Groupe les lignes par taux de TVA et calcule les sous-totaux
    */
-  private groupTaxSubtotals(invoice: EInvoice): any[] {
+  private groupTaxSubtotals(invoice: EInvoice): TaxSubtotal[] {
     // Grouper les lignes par taux de TVA
     const taxGroups = new Map<number, { taxableAmount: number; taxAmount: number }>();
     
@@ -405,7 +436,7 @@ export class BelgiumPeppolService extends BaseEInvoicingService implements IEInv
     }));
   }
 
-  private mapAddress(address: any): any {
+  private mapAddress(address: AddressInput): UBLAddress {
     return {
       'cbc:StreetName': address.street,
       'cbc:CityName': address.city,

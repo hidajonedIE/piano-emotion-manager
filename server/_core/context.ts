@@ -1,23 +1,61 @@
 import type { User } from "../../drizzle/schema.js";
+import type { IncomingMessage, ServerResponse } from "http";
 import { sdk } from "./sdk.js";
 import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
 import { getDb } from "../db.js";
 import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 
-// Generic request/response types that work with both Express and Vercel
+// ============================================================================
+// Tipos de Request/Response
+// ============================================================================
+
+/**
+ * Tipo genérico para request HTTP que funciona con Express, Vercel y otros frameworks
+ */
+export interface HttpRequest extends IncomingMessage {
+  headers: Record<string, string | string[] | undefined>;
+  cookies?: Record<string, string>;
+  query?: Record<string, string | string[]>;
+  body?: unknown;
+}
+
+/**
+ * Tipo genérico para response HTTP
+ */
+export interface HttpResponse extends ServerResponse {
+  setHeader(name: string, value: string | number | readonly string[]): this;
+}
+
+// ============================================================================
+// Contexto de tRPC
+// ============================================================================
+
+/**
+ * Contexto disponible en todos los procedimientos de tRPC
+ */
 export type TrpcContext = {
-  req: any;
-  res: any;
+  req: HttpRequest;
+  res: HttpResponse;
   user: User | null;
 };
 
+/**
+ * Opciones para crear el contexto
+ */
 export type CreateContextOptions = {
-  req: any;
-  res: any;
-  info?: any;
+  req: HttpRequest;
+  res: HttpResponse;
+  info?: {
+    isBatchCall?: boolean;
+    calls?: unknown[];
+  };
 };
 
+/**
+ * Crea el contexto de tRPC para cada request
+ * Intenta autenticar primero con Clerk, luego con el SDK legacy
+ */
 export async function createContext(opts: CreateContextOptions): Promise<TrpcContext> {
   let user: User | null = null;
 
@@ -33,15 +71,14 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
         return { req: opts.req, res: opts.res, user };
       }
     }
-  } catch (error) {
+  } catch {
+    // Clerk authentication failed, continue to legacy auth
   }
 
   // Fall back to legacy SDK authentication (demo login, etc.)
   try {
     user = await sdk.authenticateRequest(opts.req);
-    if (user) {
-    }
-  } catch (error) {
+  } catch {
     // Authentication is optional for public procedures.
     user = null;
   }

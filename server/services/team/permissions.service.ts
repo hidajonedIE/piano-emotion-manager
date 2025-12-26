@@ -1,4 +1,9 @@
 /**
+
+interface PermissionContext {
+  user?: { id: string; role?: string };
+  organizationId?: string;
+}
  * Sistema de Roles y Permisos
  * Piano Emotion Manager
  * 
@@ -537,7 +542,7 @@ export const permissionsService = new PermissionsService();
  * Middleware para verificar permisos en rutas de API
  */
 export function requirePermission(resource: Resource, action: Action) {
-  return async (ctx: any, next: () => Promise<void>) => {
+  return async (ctx: PermissionContext, next: () => Promise<void>) => {
     const userId = ctx.state.user?.id;
     const organizationId = ctx.state.organizationId;
     

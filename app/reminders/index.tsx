@@ -16,6 +16,17 @@ import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 
+// Tipos de datos
+interface ReminderTemplate {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  enabled: boolean;
+  channels: string[];
+  timing: string;
+}
+
 // Tipos de recordatorio
 const REMINDER_TYPES = [
   { id: 'maintenance', icon: 'build-outline', color: '#3B82F6' },
@@ -145,7 +156,7 @@ export default function RemindersScreen() {
     }
   };
 
-  const handleEditTemplate = (template: any) => {
+  const handleEditTemplate = (template: ReminderTemplate) => {
     setEditingTemplate(template);
     setShowEditModal(true);
   };
@@ -195,7 +206,7 @@ export default function RemindersScreen() {
     </ScrollView>
   );
 
-  const renderTemplateCard = (template: any) => {
+  const renderTemplateCard = (template: ReminderTemplate) => {
     const typeInfo = getTypeInfo(template.type);
     
     return (

@@ -1,4 +1,11 @@
 /**
+
+interface VerificationLog {
+  timestamp: Date;
+  purchaseId: string;
+  status: string;
+  message?: string;
+}
  * Tarea Programada: Verificación Diaria de Compras
  * 
  * Este cron job se ejecuta cada noche para verificar las compras
@@ -186,7 +193,7 @@ async function updateTechnicianStatus(
 /**
  * Guarda el log de verificación en la BD
  */
-async function saveVerificationLog(log: any): Promise<void> {
+async function saveVerificationLog(log: VerificationLog): Promise<void> {
   try {
     // Guardar en tabla de logs de verificación
     // Por ahora solo logueamos, pero se puede crear una tabla específica

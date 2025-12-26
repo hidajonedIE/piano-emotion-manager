@@ -94,7 +94,7 @@ export const EInvoicingConfigPanel: React.FC<EInvoicingConfigPanelProps> = ({
     }
   };
 
-  const updateConfig = (key: string, value: any) => {
+  const updateConfig = (key: string, value: string | boolean | number) => {
     setLocalConfig(prev => ({ ...prev, [key]: value }));
   };
 

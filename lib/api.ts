@@ -2,6 +2,15 @@ import { Platform } from "react-native";
 import { getApiBaseUrl } from "@/constants/oauth";
 import * as Auth from "@/lib/auth";
 
+interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  openId?: string;
+  loginMethod?: string;
+  lastSignedIn?: Date;
+}
+
 type ApiResponse<T> = {
   data?: T;
   error?: string;
@@ -84,11 +93,11 @@ export async function apiCall<T>(endpoint: string, options: RequestInit = {}): P
 export async function exchangeOAuthCode(
   code: string,
   state: string,
-): Promise<{ sessionToken: string; user: any }> {
+): Promise<{ sessionToken: string; user: AuthUser }> {
   // Use GET with query params
   const params = new URLSearchParams({ code, state });
   const endpoint = `/api/oauth/mobile?${params.toString()}`;
-  const result = await apiCall<{ app_session_id: string; user: any }>(endpoint);
+  const result = await apiCall<{ app_session_id: string; user: AuthUser }>(endpoint);
 
   // Convert app_session_id to sessionToken for compatibility
   const sessionToken = result.app_session_id;
@@ -120,7 +129,7 @@ export async function getMe(): Promise<{
   lastSignedIn: string;
 } | null> {
   try {
-    const result = await apiCall<{ user: any }>("/api/auth/me");
+    const result = await apiCall<{ user: AuthUser }>("/api/auth/me");
     return result.user || null;
   } catch (error) {
     console.error("[API] getMe failed:", error);

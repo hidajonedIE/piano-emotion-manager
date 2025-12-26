@@ -149,11 +149,11 @@ export default function TeamIndexPage() {
         totalWorkMinutes: assignments
           .filter(a => a.status === 'completed')
           .reduce((sum, a) => sum + (a.actualDuration ?? a.estimatedDuration ?? 60), 0),
-        totalRevenue: member.services?.reduce((acc: number, s: any) => acc + (s.price || 0), 0) || 0,
-        averageRating: member.ratings?.length > 0 ? member.ratings.reduce((acc: number, r: any) => acc + r.value, 0) / member.ratings.length : 0,
+        totalRevenue: member.services?.reduce((acc: number, s: { price?: number }) => acc + (s.price || 0), 0) || 0,
+        averageRating: member.ratings?.length > 0 ? member.ratings.reduce((acc: number, r: { value: number }) => acc + r.value, 0) / member.ratings.length : 0,
         ratingsCount: member.ratings?.length || 0,
-        onTimeArrivals: member.assignments?.filter((a: any) => a.arrivedOnTime).length || 0,
-        lateArrivals: member.assignments?.filter((a: any) => !a.arrivedOnTime).length || 0,
+        onTimeArrivals: member.assignments?.filter((a: { arrivedOnTime: boolean }) => a.arrivedOnTime).length || 0,
+        lateArrivals: member.assignments?.filter((a: { arrivedOnTime: boolean }) => !a.arrivedOnTime).length || 0,
       };
     });
   

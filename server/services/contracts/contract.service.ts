@@ -5,20 +5,67 @@
  * seguimiento de servicios incluidos y renovaciones.
  */
 
-import { eq, and, lte, gte, isNull, desc, sql } from 'drizzle-orm';
+import { eq, and, lte, desc, sql } from 'drizzle-orm';
+import type {
+  DatabaseConnection,
+  InvoiceServiceInterface,
+  NotificationServiceInterface,
+  EmailServiceInterface,
+  ContractServiceDependencies,
+  IncludedService,
+  ServiceUsageRecord,
+  ContractTemplate,
+  CreateTemplateInput,
+  ContractType,
+  ContractStatus,
+  BillingFrequency,
+  MaintenanceContract,
+  CreateContractInput,
+  UpdateContractInput,
+  ContractFilters,
+  SignatureData,
+  ContractPayment,
+  ContractServiceUsage,
+  RenewalOptions,
+  ServiceCoverageResult,
+  ServiceUsageResult,
+  ContractStats,
+  PaymentProcessingResult,
+  RenewalProcessingResult,
+  getErrorMessage,
+} from './contract.types';
+
+// Re-exportar tipos para uso externo
+export type {
+  IncludedService,
+  ServiceUsageRecord,
+  ContractTemplate,
+  CreateTemplateInput,
+  ContractType,
+  ContractStatus,
+  BillingFrequency,
+  MaintenanceContract,
+  CreateContractInput,
+  UpdateContractInput,
+  ContractFilters,
+  SignatureData,
+  ContractPayment,
+  ContractServiceUsage,
+  RenewalOptions,
+  ServiceCoverageResult,
+  ServiceUsageResult,
+  ContractStats,
+  PaymentProcessingResult,
+  RenewalProcessingResult,
+};
 
 export class ContractService {
-  private db: any;
-  private invoiceService: any;
-  private notificationService: any;
-  private emailService: any;
+  private db: DatabaseConnection;
+  private invoiceService: InvoiceServiceInterface | undefined;
+  private notificationService: NotificationServiceInterface | undefined;
+  private emailService: EmailServiceInterface | undefined;
 
-  constructor(dependencies: {
-    db: any;
-    invoiceService?: any;
-    notificationService?: any;
-    emailService?: any;
-  }) {
+  constructor(dependencies: ContractServiceDependencies) {
     this.db = dependencies.db;
     this.invoiceService = dependencies.invoiceService;
     this.notificationService = dependencies.notificationService;
@@ -39,7 +86,7 @@ export class ContractService {
       AND contract_number LIKE ${prefix + '%'}
       ORDER BY contract_number DESC 
       LIMIT 1
-    `);
+    `) as { rows?: Array<{ contract_number: string }> };
     
     let nextNumber = 1;
     if (result.rows && result.rows.length > 0) {
@@ -54,76 +101,69 @@ export class ContractService {
   /**
    * Crea una plantilla de contrato
    */
-  async createTemplate(organizationId: string, data: {
-    name: string;
-    description?: string;
-    type: string;
-    includedServices: any[];
-    additionalServicesDiscount?: number;
-    basePrice: number;
-    billingFrequency?: string;
-    durationMonths?: number;
-    autoRenew?: boolean;
-    termsAndConditions?: string;
-    cancellationPolicy?: string;
-  }) {
+  async createTemplate(
+    organizationId: string, 
+    data: CreateTemplateInput
+  ): Promise<ContractTemplate> {
     const template = {
       organizationId,
-      ...data,
+      name: data.name,
+      description: data.description,
+      type: data.type,
+      includedServices: data.includedServices,
+      additionalServicesDiscount: data.additionalServicesDiscount,
+      basePrice: data.basePrice,
+      billingFrequency: data.billingFrequency,
+      durationMonths: data.durationMonths,
+      autoRenew: data.autoRenew,
+      termsAndConditions: data.termsAndConditions,
+      cancellationPolicy: data.cancellationPolicy,
+      isActive: true,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    const result = await this.db.insert('contractTemplates').values(template).returning();
-    return result[0];
+    const result = await this.db
+      .insert('contractTemplates' as never)
+      .values(template as never)
+      .returning();
+    return result[0] as ContractTemplate;
   }
 
   /**
    * Obtiene las plantillas de una organización
    */
-  async getTemplates(organizationId: string) {
+  async getTemplates(organizationId: string): Promise<ContractTemplate[]> {
     return await this.db
       .select()
-      .from('contractTemplates')
+      .from('contractTemplates' as never)
       .where(
         and(
-          eq('organizationId', organizationId),
-          eq('isActive', true)
+          eq('organizationId' as never, organizationId as never),
+          eq('isActive' as never, true as never)
         )
       )
-      .orderBy(desc('createdAt'));
+      .orderBy(desc('createdAt' as never)) as ContractTemplate[];
   }
 
   /**
    * Crea un nuevo contrato
    */
-  async createContract(organizationId: string, data: {
-    clientId: string;
-    pianoId?: string;
-    templateId?: string;
-    name: string;
-    description?: string;
-    type: string;
-    includedServices: any[];
-    additionalServicesDiscount?: number;
-    basePrice: number;
-    billingFrequency?: string;
-    startDate: Date;
-    durationMonths?: number;
-    autoRenew?: boolean;
-    termsAndConditions?: string;
-    cancellationPolicy?: string;
-    notes?: string;
-  }, createdBy: string) {
+  async createContract(
+    organizationId: string, 
+    data: CreateContractInput, 
+    createdBy: string
+  ): Promise<MaintenanceContract> {
     const contractNumber = await this.generateContractNumber(organizationId);
     const durationMonths = data.durationMonths || 12;
     const endDate = new Date(data.startDate);
     endDate.setMonth(endDate.getMonth() + durationMonths);
 
     // Calcular próxima fecha de facturación
+    const billingFrequency = data.billingFrequency || 'annual';
     const nextBillingDate = this.calculateNextBillingDate(
       data.startDate,
-      data.billingFrequency || 'annual'
+      billingFrequency
     );
 
     const contract = {
@@ -135,12 +175,12 @@ export class ContractService {
       name: data.name,
       description: data.description,
       type: data.type,
-      status: 'draft',
+      status: 'draft' as ContractStatus,
       includedServices: data.includedServices,
-      servicesUsed: [],
+      servicesUsed: [] as ServiceUsageRecord[],
       additionalServicesDiscount: data.additionalServicesDiscount || 0,
       basePrice: data.basePrice,
-      billingFrequency: data.billingFrequency || 'annual',
+      billingFrequency,
       nextBillingDate,
       startDate: data.startDate,
       endDate,
@@ -154,92 +194,97 @@ export class ContractService {
       updatedAt: new Date()
     };
 
-    const result = await this.db.insert('maintenanceContracts').values(contract).returning();
-    return result[0];
+    const result = await this.db
+      .insert('maintenanceContracts' as never)
+      .values(contract as never)
+      .returning();
+    return result[0] as MaintenanceContract;
   }
 
   /**
    * Obtiene los contratos de una organización
    */
-  async getContracts(organizationId: string, filters?: {
-    status?: string;
-    clientId?: string;
-    type?: string;
-  }) {
-    let query = this.db
-      .select()
-      .from('maintenanceContracts')
-      .where(eq('organizationId', organizationId));
+  async getContracts(
+    organizationId: string, 
+    filters?: ContractFilters
+  ): Promise<MaintenanceContract[]> {
+    // Construir condiciones de filtro
+    const conditions = [eq('organizationId' as never, organizationId as never)];
 
     if (filters?.status) {
-      query = query.where(eq('status', filters.status));
+      conditions.push(eq('status' as never, filters.status as never));
     }
     if (filters?.clientId) {
-      query = query.where(eq('clientId', filters.clientId));
+      conditions.push(eq('clientId' as never, filters.clientId as never));
     }
     if (filters?.type) {
-      query = query.where(eq('type', filters.type));
+      conditions.push(eq('type' as never, filters.type as never));
     }
 
-    return await query.orderBy(desc('createdAt'));
+    return await this.db
+      .select()
+      .from('maintenanceContracts' as never)
+      .where(and(...conditions))
+      .orderBy(desc('createdAt' as never)) as MaintenanceContract[];
   }
 
   /**
    * Obtiene un contrato por ID
    */
-  async getContract(contractId: string) {
+  async getContract(contractId: string): Promise<MaintenanceContract | null> {
     const result = await this.db
       .select()
-      .from('maintenanceContracts')
-      .where(eq('id', contractId))
-      .limit(1);
-    return result[0];
+      .from('maintenanceContracts' as never)
+      .where(eq('id' as never, contractId as never))
+      .limit(1) as MaintenanceContract[];
+    return result[0] || null;
   }
 
   /**
    * Obtiene los contratos activos de un cliente
    */
-  async getClientActiveContracts(clientId: string) {
+  async getClientActiveContracts(clientId: string): Promise<MaintenanceContract[]> {
     return await this.db
       .select()
-      .from('maintenanceContracts')
+      .from('maintenanceContracts' as never)
       .where(
         and(
-          eq('clientId', clientId),
-          eq('status', 'active')
+          eq('clientId' as never, clientId as never),
+          eq('status' as never, 'active' as never)
         )
-      );
+      ) as MaintenanceContract[];
   }
 
   /**
    * Actualiza un contrato
    */
-  async updateContract(contractId: string, data: Partial<{
-    name: string;
-    description: string;
-    includedServices: any[];
-    additionalServicesDiscount: number;
-    basePrice: number;
-    autoRenew: boolean;
-    termsAndConditions: string;
-    cancellationPolicy: string;
-    notes: string;
-  }>) {
-    return await this.db
-      .update('maintenanceContracts')
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq('id', contractId));
+  async updateContract(
+    contractId: string, 
+    data: UpdateContractInput
+  ): Promise<void> {
+    await this.db
+      .update('maintenanceContracts' as never)
+      .set({ ...data, updatedAt: new Date() } as never)
+      .where(eq('id' as never, contractId as never));
   }
 
   /**
    * Activa un contrato (después de firma)
    */
-  async activateContract(contractId: string, signatureData?: {
-    signatureClientId: string;
-    signatureData: string;
-    signedDocumentUrl?: string;
-  }) {
-    const updateData: any = {
+  async activateContract(
+    contractId: string, 
+    signatureData?: SignatureData
+  ): Promise<MaintenanceContract | null> {
+    interface ContractUpdateData {
+      status: ContractStatus;
+      signedAt: Date;
+      updatedAt: Date;
+      signatureClientId?: string;
+      signatureData?: string;
+      signedDocumentUrl?: string;
+    }
+
+    const updateData: ContractUpdateData = {
       status: 'active',
       signedAt: new Date(),
       updatedAt: new Date()
@@ -252,9 +297,9 @@ export class ContractService {
     }
 
     await this.db
-      .update('maintenanceContracts')
-      .set(updateData)
-      .where(eq('id', contractId));
+      .update('maintenanceContracts' as never)
+      .set(updateData as never)
+      .where(eq('id' as never, contractId as never));
 
     // Crear primer pago pendiente
     const contract = await this.getContract(contractId);
@@ -268,36 +313,46 @@ export class ContractService {
   /**
    * Suspende un contrato
    */
-  async suspendContract(contractId: string, reason?: string) {
-    return await this.db
-      .update('maintenanceContracts')
-      .set({
-        status: 'suspended',
-        notes: reason ? `Suspendido: ${reason}` : undefined,
-        updatedAt: new Date()
-      })
-      .where(eq('id', contractId));
+  async suspendContract(contractId: string, reason?: string): Promise<void> {
+    const updateData: { status: ContractStatus; notes?: string; updatedAt: Date } = {
+      status: 'suspended',
+      updatedAt: new Date()
+    };
+
+    if (reason) {
+      updateData.notes = `Suspendido: ${reason}`;
+    }
+
+    await this.db
+      .update('maintenanceContracts' as never)
+      .set(updateData as never)
+      .where(eq('id' as never, contractId as never));
   }
 
   /**
    * Cancela un contrato
    */
-  async cancelContract(contractId: string, reason: string) {
-    return await this.db
-      .update('maintenanceContracts')
+  async cancelContract(contractId: string, reason: string): Promise<void> {
+    await this.db
+      .update('maintenanceContracts' as never)
       .set({
-        status: 'cancelled',
+        status: 'cancelled' as ContractStatus,
         cancelledAt: new Date(),
         cancellationReason: reason,
         updatedAt: new Date()
-      })
-      .where(eq('id', contractId));
+      } as never)
+      .where(eq('id' as never, contractId as never));
   }
 
   /**
    * Registra el uso de un servicio del contrato
    */
-  async recordServiceUsage(contractId: string, serviceId: string, serviceType: string, notes?: string) {
+  async recordServiceUsage(
+    contractId: string, 
+    serviceId: string, 
+    serviceType: string, 
+    notes?: string
+  ): Promise<ServiceUsageResult> {
     const contract = await this.getContract(contractId);
     if (!contract || contract.status !== 'active') {
       throw new Error('Contract is not active');
@@ -305,16 +360,16 @@ export class ContractService {
 
     // Verificar si el servicio está incluido
     const includedService = contract.includedServices.find(
-      (s: any) => s.serviceType === serviceType
+      (s: IncludedService) => s.serviceType === serviceType
     );
 
     let coveredByContract = false;
-    let additionalCharge = 0;
+    const additionalCharge = 0;
 
     if (includedService) {
       // Verificar si hay cuota disponible
       const usageRecord = (contract.servicesUsed || []).find(
-        (u: any) => u.serviceType === serviceType
+        (u: ServiceUsageRecord) => u.serviceType === serviceType
       );
       const usedCount = usageRecord?.usedCount || 0;
 
@@ -324,7 +379,7 @@ export class ContractService {
     }
 
     // Registrar uso
-    await this.db.insert('contractServiceUsage').values({
+    await this.db.insert('contractServiceUsage' as never).values({
       contractId,
       serviceId,
       serviceType,
@@ -332,11 +387,13 @@ export class ContractService {
       notes,
       coveredByContract,
       additionalCharge
-    });
+    } as never);
 
     // Actualizar contador en el contrato
-    const servicesUsed = contract.servicesUsed || [];
-    const existingIndex = servicesUsed.findIndex((u: any) => u.serviceType === serviceType);
+    const servicesUsed: ServiceUsageRecord[] = contract.servicesUsed || [];
+    const existingIndex = servicesUsed.findIndex(
+      (u: ServiceUsageRecord) => u.serviceType === serviceType
+    );
     
     if (existingIndex >= 0) {
       servicesUsed[existingIndex].usedCount += 1;
@@ -350,9 +407,9 @@ export class ContractService {
     }
 
     await this.db
-      .update('maintenanceContracts')
-      .set({ servicesUsed, updatedAt: new Date() })
-      .where(eq('id', contractId));
+      .update('maintenanceContracts' as never)
+      .set({ servicesUsed, updatedAt: new Date() } as never)
+      .where(eq('id' as never, contractId as never));
 
     return { coveredByContract, additionalCharge };
   }
@@ -360,17 +417,15 @@ export class ContractService {
   /**
    * Verifica si un servicio está cubierto por algún contrato del cliente
    */
-  async checkServiceCoverage(clientId: string, serviceType: string): Promise<{
-    covered: boolean;
-    contractId?: string;
-    remainingQuantity?: number;
-    discount?: number;
-  }> {
+  async checkServiceCoverage(
+    clientId: string, 
+    serviceType: string
+  ): Promise<ServiceCoverageResult> {
     const activeContracts = await this.getClientActiveContracts(clientId);
 
     for (const contract of activeContracts) {
       const includedService = contract.includedServices.find(
-        (s: any) => s.serviceType === serviceType
+        (s: IncludedService) => s.serviceType === serviceType
       );
 
       if (includedService) {
@@ -383,7 +438,7 @@ export class ContractService {
         }
 
         const usageRecord = (contract.servicesUsed || []).find(
-          (u: any) => u.serviceType === serviceType
+          (u: ServiceUsageRecord) => u.serviceType === serviceType
         );
         const usedCount = usageRecord?.usedCount || 0;
         const remaining = (includedService.quantity || 0) - usedCount;
@@ -413,7 +468,7 @@ export class ContractService {
   /**
    * Crea un pago pendiente para un contrato
    */
-  private async createPayment(contract: any) {
+  private async createPayment(contract: MaintenanceContract): Promise<void> {
     const periodStart = contract.nextBillingDate || contract.startDate;
     const periodEnd = this.calculateNextBillingDate(
       periodStart,
@@ -437,19 +492,19 @@ export class ContractService {
       createdAt: new Date()
     };
 
-    await this.db.insert('contractPayments').values(payment);
+    await this.db.insert('contractPayments' as never).values(payment as never);
 
     // Actualizar próxima fecha de facturación
     await this.db
-      .update('maintenanceContracts')
-      .set({ nextBillingDate: periodEnd })
-      .where(eq('id', contract.id));
+      .update('maintenanceContracts' as never)
+      .set({ nextBillingDate: periodEnd } as never)
+      .where(eq('id' as never, contract.id as never));
   }
 
   /**
    * Calcula el monto del pago según la frecuencia
    */
-  private calculatePaymentAmount(basePrice: number, frequency: string): number {
+  private calculatePaymentAmount(basePrice: number, frequency: BillingFrequency): number {
     switch (frequency) {
       case 'monthly':
         return basePrice / 12;
@@ -467,7 +522,7 @@ export class ContractService {
   /**
    * Calcula la próxima fecha de facturación
    */
-  private calculateNextBillingDate(fromDate: Date, frequency: string): Date {
+  private calculateNextBillingDate(fromDate: Date, frequency: BillingFrequency): Date {
     const date = new Date(fromDate);
     
     switch (frequency) {
@@ -494,24 +549,24 @@ export class ContractService {
    * Procesa pagos pendientes y genera facturas
    * Este método debería ejecutarse diariamente
    */
-  async processPendingPayments() {
+  async processPendingPayments(): Promise<PaymentProcessingResult> {
     const today = new Date();
     
     // Obtener pagos pendientes con fecha de vencimiento <= hoy
     const pendingPayments = await this.db
       .select()
-      .from('contractPayments')
+      .from('contractPayments' as never)
       .where(
         and(
-          eq('status', 'pending'),
-          lte('dueDate', today)
+          eq('status' as never, 'pending' as never),
+          lte('dueDate' as never, today as never)
         )
-      );
+      ) as ContractPayment[];
 
-    const results = {
+    const results: PaymentProcessingResult = {
       processed: 0,
       invoicesCreated: 0,
-      errors: [] as string[]
+      errors: []
     };
 
     for (const payment of pendingPayments) {
@@ -537,9 +592,9 @@ export class ContractService {
 
           // Actualizar pago con referencia a factura
           await this.db
-            .update('contractPayments')
-            .set({ invoiceId: invoice.id })
-            .where(eq('id', payment.id));
+            .update('contractPayments' as never)
+            .set({ invoiceId: invoice.id } as never)
+            .where(eq('id' as never, payment.id as never));
 
           results.invoicesCreated++;
         }
@@ -550,8 +605,9 @@ export class ContractService {
         }
 
         results.processed++;
-      } catch (error: any) {
-        results.errors.push(`Payment ${payment.id}: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = getErrorMessage(error);
+        results.errors.push(`Payment ${payment.id}: ${errorMessage}`);
       }
     }
 
@@ -562,7 +618,7 @@ export class ContractService {
    * Procesa renovaciones de contratos
    * Este método debería ejecutarse diariamente
    */
-  async processRenewals() {
+  async processRenewals(): Promise<RenewalProcessingResult> {
     const today = new Date();
     const noticeDate = new Date();
     noticeDate.setDate(noticeDate.getDate() + 30); // 30 días de anticipación
@@ -570,16 +626,16 @@ export class ContractService {
     // Contratos que expiran pronto y no se ha enviado notificación
     const expiringContracts = await this.db
       .select()
-      .from('maintenanceContracts')
+      .from('maintenanceContracts' as never)
       .where(
         and(
-          eq('status', 'active'),
-          lte('endDate', noticeDate),
-          eq('renewalNotificationSent', false)
+          eq('status' as never, 'active' as never),
+          lte('endDate' as never, noticeDate as never),
+          eq('renewalNotificationSent' as never, false as never)
         )
-      );
+      ) as MaintenanceContract[];
 
-    const results = {
+    const results: RenewalProcessingResult = {
       notificationsSent: 0,
       renewed: 0,
       expired: 0
@@ -598,9 +654,9 @@ export class ContractService {
 
       // Marcar notificación como enviada
       await this.db
-        .update('maintenanceContracts')
-        .set({ renewalNotificationSent: true })
-        .where(eq('id', contract.id));
+        .update('maintenanceContracts' as never)
+        .set({ renewalNotificationSent: true } as never)
+        .where(eq('id' as never, contract.id as never));
 
       results.notificationsSent++;
     }
@@ -608,13 +664,13 @@ export class ContractService {
     // Contratos que han expirado hoy
     const expiredContracts = await this.db
       .select()
-      .from('maintenanceContracts')
+      .from('maintenanceContracts' as never)
       .where(
         and(
-          eq('status', 'active'),
-          lte('endDate', today)
+          eq('status' as never, 'active' as never),
+          lte('endDate' as never, today as never)
         )
-      );
+      ) as MaintenanceContract[];
 
     for (const contract of expiredContracts) {
       if (contract.autoRenew) {
@@ -624,9 +680,9 @@ export class ContractService {
       } else {
         // Marcar como expirado
         await this.db
-          .update('maintenanceContracts')
-          .set({ status: 'expired', updatedAt: new Date() })
-          .where(eq('id', contract.id));
+          .update('maintenanceContracts' as never)
+          .set({ status: 'expired' as ContractStatus, updatedAt: new Date() } as never)
+          .where(eq('id' as never, contract.id as never));
         results.expired++;
       }
     }
@@ -637,11 +693,10 @@ export class ContractService {
   /**
    * Renueva un contrato
    */
-  async renewContract(contractId: string, options?: {
-    newPrice?: number;
-    priceChangeReason?: string;
-    durationMonths?: number;
-  }) {
+  async renewContract(
+    contractId: string, 
+    options?: RenewalOptions
+  ): Promise<MaintenanceContract | null> {
     const contract = await this.getContract(contractId);
     if (!contract) {
       throw new Error('Contract not found');
@@ -653,7 +708,7 @@ export class ContractService {
     newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
 
     // Crear registro de renovación
-    await this.db.insert('contractRenewals').values({
+    await this.db.insert('contractRenewals' as never).values({
       originalContractId: contractId,
       renewedAt: new Date(),
       previousEndDate: contract.endDate,
@@ -662,19 +717,19 @@ export class ContractService {
       newPrice: options?.newPrice || contract.basePrice,
       priceChangeReason: options?.priceChangeReason,
       renewalType: 'automatic'
-    });
+    } as never);
 
     // Actualizar contrato
     await this.db
-      .update('maintenanceContracts')
+      .update('maintenanceContracts' as never)
       .set({
         endDate: newEndDate,
         basePrice: options?.newPrice || contract.basePrice,
-        servicesUsed: [], // Reiniciar contador de servicios
+        servicesUsed: [] as ServiceUsageRecord[], // Reiniciar contador de servicios
         renewalNotificationSent: false,
         updatedAt: new Date()
-      })
-      .where(eq('id', contractId));
+      } as never)
+      .where(eq('id' as never, contractId as never));
 
     // Crear nuevo pago
     const updatedContract = await this.getContract(contractId);
@@ -688,19 +743,19 @@ export class ContractService {
   /**
    * Obtiene estadísticas de contratos
    */
-  async getContractStats(organizationId: string) {
+  async getContractStats(organizationId: string): Promise<ContractStats> {
     const contracts = await this.getContracts(organizationId);
     
-    const stats = {
+    const stats: ContractStats = {
       total: contracts.length,
-      active: contracts.filter((c: any) => c.status === 'active').length,
-      pending: contracts.filter((c: any) => c.status === 'pending').length,
-      expired: contracts.filter((c: any) => c.status === 'expired').length,
-      cancelled: contracts.filter((c: any) => c.status === 'cancelled').length,
+      active: contracts.filter((c: MaintenanceContract) => c.status === 'active').length,
+      pending: contracts.filter((c: MaintenanceContract) => c.status === 'pending').length,
+      expired: contracts.filter((c: MaintenanceContract) => c.status === 'expired').length,
+      cancelled: contracts.filter((c: MaintenanceContract) => c.status === 'cancelled').length,
       totalRevenue: contracts
-        .filter((c: any) => c.status === 'active')
-        .reduce((sum: number, c: any) => sum + parseFloat(c.basePrice), 0),
-      byType: {} as Record<string, number>,
+        .filter((c: MaintenanceContract) => c.status === 'active')
+        .reduce((sum: number, c: MaintenanceContract) => sum + c.basePrice, 0),
+      byType: {},
       expiringThisMonth: 0
     };
 
@@ -721,23 +776,23 @@ export class ContractService {
   /**
    * Obtiene el historial de uso de servicios de un contrato
    */
-  async getServiceUsageHistory(contractId: string) {
+  async getServiceUsageHistory(contractId: string): Promise<ContractServiceUsage[]> {
     return await this.db
       .select()
-      .from('contractServiceUsage')
-      .where(eq('contractId', contractId))
-      .orderBy(desc('usedAt'));
+      .from('contractServiceUsage' as never)
+      .where(eq('contractId' as never, contractId as never))
+      .orderBy(desc('usedAt' as never)) as ContractServiceUsage[];
   }
 
   /**
    * Obtiene los pagos de un contrato
    */
-  async getContractPayments(contractId: string) {
+  async getContractPayments(contractId: string): Promise<ContractPayment[]> {
     return await this.db
       .select()
-      .from('contractPayments')
-      .where(eq('contractId', contractId))
-      .orderBy(desc('dueDate'));
+      .from('contractPayments' as never)
+      .where(eq('contractId' as never, contractId as never))
+      .orderBy(desc('dueDate' as never)) as ContractPayment[];
   }
 
   /**

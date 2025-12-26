@@ -15,6 +15,34 @@ import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 
+
+// Tipos de datos
+interface ContractService {
+  name: string;
+  date?: string;
+  included?: boolean;
+}
+
+interface Contract {
+  id: string;
+  clientName: string;
+  type: string;
+  status: keyof typeof CONTRACT_STATUS;
+  startDate: string;
+  endDate: string;
+  price: number;
+  servicesUsed: ContractService[];
+  servicesRemaining: number;
+}
+
+interface ContractTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  price: number;
+  services: ContractService[];
+}
 // Tipos de contrato
 const CONTRACT_TYPES = [
   { id: 'basic', name: 'Básico', color: '#6B7280', icon: 'document-outline' },
@@ -260,7 +288,7 @@ export default function ContractsScreen() {
     </ScrollView>
   );
 
-  const renderContractCard = (contract: any) => {
+  const renderContractCard = (contract: Contract) => {
     const typeInfo = getTypeInfo(contract.type);
     const statusInfo = getStatusInfo(contract.status);
     const daysUntilEnd = Math.ceil(
@@ -310,7 +338,7 @@ export default function ContractsScreen() {
         {/* Uso de servicios */}
         {contract.status === 'active' && (
           <View style={styles.servicesUsage}>
-            {contract.servicesUsed.map((service: any, index: number) => (
+            {contract.servicesUsed.map((service: { name: string; date: string }, index: number) => (
               <View key={index} style={styles.serviceUsageItem}>
                 <ThemedText style={[styles.serviceUsageLabel, { color: textSecondary }]}>
                   {service.type === 'tuning' ? 'Afinaciones' : 
@@ -367,7 +395,7 @@ export default function ContractsScreen() {
     );
   };
 
-  const renderTemplateCard = (template: any) => {
+  const renderTemplateCard = (template: ContractTemplate) => {
     const typeInfo = getTypeInfo(template.type);
 
     return (
@@ -398,7 +426,7 @@ export default function ContractsScreen() {
         </ThemedText>
 
         <View style={styles.templateServices}>
-          {template.services.map((service: any, index: number) => (
+          {template.services.map((service: { name: string; included: boolean }, index: number) => (
             <View key={index} style={styles.templateServiceItem}>
               <Ionicons 
                 name="checkmark-circle" 

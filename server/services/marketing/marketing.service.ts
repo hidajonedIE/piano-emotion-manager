@@ -1,4 +1,11 @@
 import { db } from '../../db';
+
+interface RecipientFilters {
+  tags?: string[];
+  status?: string[];
+  lastServiceBefore?: Date;
+  lastServiceAfter?: Date;
+}
 import { eq, and, desc, sql, lt, gt, inArray, isNull } from 'drizzle-orm';
 import { 
   messageTemplates, 
@@ -399,7 +406,7 @@ export class MarketingService {
     name: string;
     description?: string;
     templateId: number;
-    recipientFilters?: any;
+    recipientFilters?: RecipientFilters;
     createdBy?: number;
   }) {
     const [result] = await db.insert(marketingCampaigns).values({
@@ -417,7 +424,7 @@ export class MarketingService {
     name?: string;
     description?: string;
     templateId?: number;
-    recipientFilters?: any;
+    recipientFilters?: RecipientFilters;
     status?: CampaignStatus;
   }) {
     await db.update(marketingCampaigns)

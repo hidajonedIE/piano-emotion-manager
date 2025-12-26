@@ -1,4 +1,6 @@
 /**
+import type { MySql2Database } from 'drizzle-orm/mysql2';
+type DatabaseConnection = MySql2Database<Record<string, never>>;
  * Servicio de Predicción de Demanda
  * 
  * Analíticas predictivas para anticipar necesidades del negocio
@@ -48,9 +50,9 @@ interface MaintenancePrediction {
 }
 
 export class PredictionService {
-  private db: any;
+  private db: DatabaseConnection;
 
-  constructor(db: any) {
+  constructor(db: DatabaseConnection) {
     this.db = db;
   }
 
@@ -125,7 +127,7 @@ export class PredictionService {
       ORDER BY month
     `, [organizationId]);
 
-    return (result.rows || []).map((r: any) => parseFloat(r.total) || 0);
+    return (result.rows || []).map((r: { total: string }) => parseFloat(r.total) || 0);
   }
 
   private calculateTrend(data: number[]): number {
@@ -449,7 +451,7 @@ export class PredictionService {
       const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
 
       // Buscar citas programadas para esta semana
-      const scheduledAppointments = (appointmentsResult.rows || []).find((r: any) => {
+      const scheduledAppointments = (appointmentsResult.rows || []).find((r: { week: string; appointments?: string }) => {
         const weekDate = new Date(r.week);
         return weekDate >= weekStart && weekDate <= weekEnd;
       });

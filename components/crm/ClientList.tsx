@@ -3,6 +3,7 @@
  * Piano Emotion Manager
  */
 
+import type { CRMClient, ClientTag, ClientCardProps, ClientListProps } from './ClientList.types';
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -22,8 +23,8 @@ import { useTranslation } from '@/hooks/use-translation';
 // ============================================================================
 
 interface ClientCardProps {
-  client: any;
-  onPress: (client: any) => void;
+  client: CRMClient;
+  onPress: (client: CRMClient) => void;
 }
 
 interface FilterModalProps {
@@ -110,7 +111,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onPress }) => {
 
       {client.profile?.tags && client.profile.tags.length > 0 && (
         <View style={styles.tagsContainer}>
-          {client.profile.tags.slice(0, 3).map((tag: any) => (
+          {client.profile.tags.slice(0, 3).map((tag: ClientTag) => (
             <View
               key={tag.id}
               style={[styles.tag, { backgroundColor: tag.color + '20' }]}
@@ -132,7 +133,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onPress }) => {
 // ============================================================================
 
 interface ClientListProps {
-  onSelectClient: (client: any) => void;
+  onSelectClient: (client: CRMClient) => void;
 }
 
 export const ClientList: React.FC<ClientListProps> = ({ onSelectClient }) => {

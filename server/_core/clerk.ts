@@ -1,5 +1,58 @@
 import { createClerkClient, verifyToken } from "@clerk/backend";
 import type { VercelRequest } from "@vercel/node";
+import type { MySql2Database } from "drizzle-orm/mysql2";
+import type { MySqlTableWithColumns } from "drizzle-orm/mysql-core";
+import type { SQL } from "drizzle-orm";
+
+// ============================================================================
+// Tipos
+// ============================================================================
+
+/**
+ * Tipo para usuario autenticado desde Clerk
+ */
+export type ClerkUser = {
+  id: string;
+  email: string;
+  name: string;
+  imageUrl?: string;
+};
+
+/**
+ * Tipo para la tabla de usuarios de Drizzle
+ */
+type UsersTable = MySqlTableWithColumns<{
+  name: "users";
+  schema: undefined;
+  columns: {
+    id: unknown;
+    openId: unknown;
+    email: unknown;
+    name: unknown;
+    loginMethod: unknown;
+    lastSignedIn: unknown;
+  };
+  dialect: "mysql";
+}>;
+
+/**
+ * Tipo para la función eq de Drizzle
+ */
+type EqFunction = (column: unknown, value: unknown) => SQL;
+
+/**
+ * Tipo para el usuario de la base de datos
+ */
+interface DatabaseUser {
+  id: string | number;
+  email: string;
+  name: string;
+  openId?: string;
+}
+
+// ============================================================================
+// Cliente de Clerk
+// ============================================================================
 
 // Initialize Clerk client
 const clerkClient = createClerkClient({
@@ -8,13 +61,9 @@ const clerkClient = createClerkClient({
 
 export { clerkClient };
 
-// Type for authenticated user from Clerk
-export type ClerkUser = {
-  id: string;
-  email: string;
-  name: string;
-  imageUrl?: string;
-};
+// ============================================================================
+// Funciones de autenticación
+// ============================================================================
 
 /**
  * Verify the Clerk session token from the request
@@ -66,23 +115,23 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
  */
 export async function getOrCreateUserFromClerk(
   clerkUser: ClerkUser,
-  db: any,
-  users: any,
-  eq: any
-): Promise<{ id: string; email: string; name: string }> {
+  db: MySql2Database<Record<string, never>>,
+  usersTable: UsersTable,
+  eq: EqFunction
+): Promise<DatabaseUser> {
   // Check if user exists in database
   const existingUsers = await db
     .select()
-    .from(users)
-    .where(eq(users.openId, clerkUser.id))
-    .limit(1);
+    .from(usersTable)
+    .where(eq(usersTable.openId, clerkUser.id))
+    .limit(1) as DatabaseUser[];
 
   if (existingUsers.length > 0) {
     // Update last sign in
     await db
-      .update(users)
+      .update(usersTable)
       .set({ lastSignedIn: new Date() })
-      .where(eq(users.id, existingUsers[0].id));
+      .where(eq(usersTable.id, existingUsers[0].id));
     
     return existingUsers[0];
   }
@@ -96,24 +145,24 @@ export async function getOrCreateUserFromClerk(
     lastSignedIn: new Date(),
   };
 
-  const result = await db.insert(users).values(newUser);
+  const result = await db.insert(usersTable).values(newUser) as unknown as Array<{ insertId?: number }>;
   const insertedId = result[0]?.insertId;
 
   if (insertedId) {
-    const [createdUser] = await db
+    const createdUsers = await db
       .select()
-      .from(users)
-      .where(eq(users.id, insertedId))
-      .limit(1);
-    return createdUser;
+      .from(usersTable)
+      .where(eq(usersTable.id, insertedId))
+      .limit(1) as DatabaseUser[];
+    return createdUsers[0];
   }
 
   // If insert didn't return ID, fetch by openId
-  const [createdUser] = await db
+  const createdUsers = await db
     .select()
-    .from(users)
-    .where(eq(users.openId, clerkUser.id))
-    .limit(1);
+    .from(usersTable)
+    .where(eq(usersTable.openId, clerkUser.id))
+    .limit(1) as DatabaseUser[];
 
-  return createdUser;
+  return createdUsers[0];
 }

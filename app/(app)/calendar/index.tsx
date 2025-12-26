@@ -18,7 +18,7 @@ export default function CalendarScreen() {
     setShowEventModal(true);
   };
 
-  const handleEditEvent = (event: any) => {
+  const handleEditEvent = (event: { id: string; title: string; start: Date; end: Date }) => {
     // Navegar a edición de evento
   };
 

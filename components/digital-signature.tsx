@@ -76,7 +76,7 @@ export function DigitalSignature({
     }
   };
 
-  const getCoordinates = (e: any): { x: number; y: number } | null => {
+  const getCoordinates = (e: React.TouchEvent | React.MouseEvent): { x: number; y: number } | null => {
     if (!canvasRef.current) return null;
     
     const canvas = canvasRef.current;
@@ -92,7 +92,7 @@ export function DigitalSignature({
     };
   };
 
-  const startDrawing = (e: any) => {
+  const startDrawing = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     const coords = getCoordinates(e);
     if (!coords || !context) return;
@@ -102,7 +102,7 @@ export function DigitalSignature({
     context.moveTo(coords.x, coords.y);
   };
 
-  const draw = (e: any) => {
+  const draw = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     if (!isDrawing || !context) return;
     

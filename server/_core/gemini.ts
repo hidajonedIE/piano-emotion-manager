@@ -273,7 +273,7 @@ export async function listGeminiModels(): Promise<string[]> {
   }
 
   const data = await response.json();
-  return data.models?.map((m: any) => m.name) || [];
+  return data.models?.map((m: { name: string }) => m.name) || [];
 }
 
 // ============================================

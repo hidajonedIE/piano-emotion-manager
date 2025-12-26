@@ -15,6 +15,32 @@ import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 
+
+// Tipos de datos
+interface WorkflowAction {
+  type: string;
+  name: string;
+  config?: Record<string, unknown>;
+}
+
+interface Workflow {
+  id: string;
+  name: string;
+  description?: string;
+  trigger: string;
+  actions: WorkflowAction[];
+  enabled: boolean;
+  lastRun?: string;
+  runCount?: number;
+}
+
+interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  trigger: string;
+  actions: WorkflowAction[];
+}
 // Tipos de trigger
 const TRIGGER_TYPES = [
   { id: 'service_completed', name: 'Servicio Completado', icon: 'checkmark-circle-outline', color: '#10B981' },
@@ -171,7 +197,7 @@ export default function WorkflowsScreen() {
     );
   };
 
-  const renderWorkflowCard = (workflow: any) => {
+  const renderWorkflowCard = (workflow: Workflow) => {
     const trigger = getTriggerInfo(workflow.trigger);
     
     return (
@@ -211,7 +237,7 @@ export default function WorkflowsScreen() {
           </View>
           <View style={[styles.flowLine, { backgroundColor: border }]} />
           
-          {workflow.actions.map((action: any, index: number) => {
+          {workflow.actions.map((action: WorkflowAction, index: number) => {
             const actionInfo = getActionInfo(action.type);
             return (
               <React.Fragment key={index}>
@@ -247,7 +273,7 @@ export default function WorkflowsScreen() {
     );
   };
 
-  const renderTemplateCard = (template: any) => {
+  const renderTemplateCard = (template: WorkflowTemplate) => {
     const trigger = getTriggerInfo(template.trigger);
     
     return (
@@ -287,7 +313,7 @@ export default function WorkflowsScreen() {
         </View>
         
         <View style={styles.templateActions}>
-          {template.actions.map((action: any, index: number) => {
+          {template.actions.map((action: WorkflowAction, index: number) => {
             const actionInfo = getActionInfo(action.type);
             return (
               <View

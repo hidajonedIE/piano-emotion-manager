@@ -2,8 +2,27 @@ import { useCallback, useMemo } from "react";
 import type { User } from "@/lib/auth";
 
 // Try to import Clerk hooks - they may not be available if Clerk is not configured
-let useClerkAuth: any = null;
-let useClerkUser: any = null;
+// Types for Clerk hooks
+type ClerkAuthHook = () => {
+  isLoaded: boolean;
+  isSignedIn: boolean;
+  signOut: () => Promise<void>;
+  getToken: () => Promise<string | null>;
+};
+
+type ClerkUserHook = () => {
+  user: {
+    id: string;
+    fullName: string | null;
+    firstName: string | null;
+    primaryEmailAddress: { emailAddress: string } | null;
+    lastSignInAt: number | null;
+  } | null;
+  isLoaded: boolean;
+};
+
+let useClerkAuth: ClerkAuthHook | null = null;
+let useClerkUser: ClerkUserHook | null = null;
 
 try {
   const clerk = require("@clerk/clerk-expo");

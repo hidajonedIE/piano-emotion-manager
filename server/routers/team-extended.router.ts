@@ -1,4 +1,12 @@
 /**
+
+interface ServiceZoneUpdate {
+  name?: string;
+  description?: string;
+  postalCodes?: string[];
+  color?: string;
+  isActive?: boolean;
+}
  * Router Extendido de API para Gestión de Equipos
  * Piano Emotion Manager
  * 
@@ -918,8 +926,8 @@ async function createServiceZone(data: {
 /**
  * Actualizar zona de servicio
  */
-async function updateServiceZone(zoneId: number, data: any) {
-  const updateData: any = {};
+async function updateServiceZone(zoneId: number, data: ServiceZoneUpdate) {
+  const updateData: Record<string, unknown> = {};
   if (data.name !== undefined) updateData.name = data.name;
   if (data.description !== undefined) updateData.description = data.description;
   if (data.postalCodes !== undefined) updateData.postalCodes = data.postalCodes;

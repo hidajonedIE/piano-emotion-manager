@@ -5,10 +5,59 @@
  * Soporta múltiples triggers, condiciones y acciones encadenadas.
  */
 
-import { eq, and, lte, isNull } from 'drizzle-orm';
+import { eq, and, lte } from 'drizzle-orm';
+import type {
+  DatabaseConnection,
+  EmailServiceInterface,
+  SMSServiceInterface,
+  WhatsAppServiceInterface,
+  NotificationServiceInterface,
+  WorkflowServiceDependencies,
+  TriggerType,
+  TriggerTypeDefinition,
+  ActionType,
+  ActionTypeDefinition,
+  WorkflowAction,
+  TriggerConditions,
+  Workflow,
+  CreateWorkflowInput,
+  UpdateWorkflowInput,
+  WorkflowContext,
+  ExecutionStatus,
+  StepResult,
+  WorkflowExecution,
+  ActionResult,
+  WorkflowStats,
+  ActionLog,
+  WorkflowTemplate,
+  EmailActionConfig,
+  SMSActionConfig,
+  WhatsAppActionConfig,
+  PushActionConfig,
+  TaskActionConfig,
+  ReminderActionConfig,
+  UpdateFieldActionConfig,
+  WebhookActionConfig,
+  DelayActionConfig,
+  ConditionActionConfig,
+} from './workflow.types';
+
+// Re-exportar tipos para uso externo
+export type {
+  TriggerType,
+  ActionType,
+  WorkflowAction,
+  Workflow,
+  CreateWorkflowInput,
+  UpdateWorkflowInput,
+  WorkflowContext,
+  WorkflowExecution,
+  WorkflowStats,
+  WorkflowTemplate,
+};
 
 // Tipos de trigger disponibles
-export const TRIGGER_TYPES = {
+export const TRIGGER_TYPES: Record<TriggerType, TriggerTypeDefinition> = {
   service_created: {
     name: 'Servicio Creado',
     description: 'Se dispara cuando se crea un nuevo servicio',
@@ -84,7 +133,7 @@ export const TRIGGER_TYPES = {
 };
 
 // Tipos de acción disponibles
-export const ACTION_TYPES = {
+export const ACTION_TYPES: Record<ActionType, ActionTypeDefinition> = {
   send_email: {
     name: 'Enviar Email',
     description: 'Envía un email al destinatario especificado',
@@ -105,13 +154,13 @@ export const ACTION_TYPES = {
   },
   send_push: {
     name: 'Enviar Notificación Push',
-    description: 'Envía una notificación push',
+    description: 'Envía una notificación push al usuario',
     icon: 'notifications-outline',
     configFields: ['title', 'body', 'data']
   },
   create_task: {
     name: 'Crear Tarea',
-    description: 'Crea una tarea para el técnico',
+    description: 'Crea una tarea para el equipo',
     icon: 'checkbox-outline',
     configFields: ['title', 'description', 'assignTo', 'dueInDays']
   },
@@ -119,25 +168,19 @@ export const ACTION_TYPES = {
     name: 'Crear Recordatorio',
     description: 'Programa un recordatorio',
     icon: 'alarm-outline',
-    configFields: ['type', 'scheduledFor', 'channels']
+    configFields: ['type', 'scheduledFor', 'channels', 'title', 'body']
   },
   update_field: {
     name: 'Actualizar Campo',
-    description: 'Actualiza un campo de una entidad',
+    description: 'Actualiza un campo de la entidad',
     icon: 'create-outline',
     configFields: ['entityType', 'field', 'value']
-  },
-  create_invoice: {
-    name: 'Crear Factura',
-    description: 'Crea una factura automáticamente',
-    icon: 'receipt-outline',
-    configFields: ['fromService', 'sendToClient']
   },
   add_tag: {
     name: 'Añadir Etiqueta',
     description: 'Añade una etiqueta a la entidad',
     icon: 'pricetag-outline',
-    configFields: ['tag']
+    configFields: ['entityType', 'tag']
   },
   webhook: {
     name: 'Llamar Webhook',
@@ -153,18 +196,19 @@ export const ACTION_TYPES = {
   },
   condition: {
     name: 'Condición',
-    description: 'Evalúa una condición y ejecuta acciones diferentes',
+    description: 'Ejecuta acciones basadas en una condición',
     icon: 'git-branch-outline',
     configFields: ['condition', 'then', 'else']
   }
 };
 
-// Plantillas de workflows predefinidos
-export const WORKFLOW_TEMPLATES = [
+// Plantillas de workflow predefinidas
+export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
   {
-    id: 'welcome_new_client',
+    id: 'welcome_client',
     name: 'Bienvenida a Nuevo Cliente',
     description: 'Envía un email de bienvenida cuando se registra un nuevo cliente',
+    category: 'Clientes',
     triggerType: 'client_created',
     actions: [
       {
@@ -172,121 +216,97 @@ export const WORKFLOW_TEMPLATES = [
         config: {
           to: '{{client.email}}',
           subject: 'Bienvenido a {{organization.name}}',
-          body: 'Hola {{client.firstName}},\n\nGracias por confiar en nosotros para el cuidado de tu piano.\n\nSaludos,\n{{organization.name}}'
-        }
+          body: 'Estimado/a {{client.firstName}},\n\nGracias por confiar en nosotros para el cuidado de su piano.\n\nSaludos,\n{{organization.name}}'
+        } as EmailActionConfig
       }
     ]
   },
   {
-    id: 'service_completed_followup',
-    name: 'Seguimiento Post-Servicio',
-    description: 'Envía un email de seguimiento 7 días después de completar un servicio',
+    id: 'service_completed_feedback',
+    name: 'Solicitar Feedback tras Servicio',
+    description: 'Envía una solicitud de valoración al completar un servicio',
+    category: 'Servicios',
     triggerType: 'service_completed',
     actions: [
       {
         type: 'delay',
-        config: { days: 7 }
+        config: {
+          days: 1
+        } as DelayActionConfig
       },
       {
         type: 'send_email',
         config: {
           to: '{{client.email}}',
-          subject: '¿Cómo está tu piano después del servicio?',
-          body: 'Hola {{client.firstName}},\n\nHace una semana realizamos {{service.type}} en tu {{piano.brand}} {{piano.model}}.\n\n¿Todo funciona correctamente? Si tienes alguna pregunta, no dudes en contactarnos.\n\nSaludos'
-        }
+          subject: '¿Cómo fue su experiencia con nuestro servicio?',
+          body: 'Estimado/a {{client.firstName}},\n\nEsperamos que el servicio de {{service.type}} haya sido de su satisfacción.\n\n¿Podría dedicarnos un momento para valorar su experiencia?\n\nGracias,\n{{organization.name}}'
+        } as EmailActionConfig
       }
     ]
   },
   {
     id: 'invoice_reminder',
-    name: 'Recordatorio de Pago',
-    description: 'Envía recordatorios cuando una factura está vencida',
+    name: 'Recordatorio de Factura Vencida',
+    description: 'Envía un recordatorio cuando una factura está vencida',
+    category: 'Facturación',
     triggerType: 'invoice_overdue',
     actions: [
       {
         type: 'send_email',
         config: {
           to: '{{client.email}}',
-          subject: 'Recordatorio: Factura {{invoice.number}} pendiente',
-          body: 'Hola {{client.firstName}},\n\nTe recordamos que la factura {{invoice.number}} por {{invoice.total}}€ está pendiente de pago.\n\nPuedes realizar el pago a través de nuestro portal o contactarnos para más información.\n\nSaludos'
-        }
-      },
-      {
-        type: 'create_task',
-        config: {
-          title: 'Seguimiento factura vencida - {{client.name}}',
-          description: 'La factura {{invoice.number}} está vencida. Contactar al cliente.',
-          dueInDays: 3
-        }
-      }
-    ]
-  },
-  {
-    id: 'quote_accepted_create_service',
-    name: 'Presupuesto Aceptado → Crear Servicio',
-    description: 'Cuando se acepta un presupuesto, crea automáticamente el servicio',
-    triggerType: 'quote_accepted',
-    actions: [
-      {
-        type: 'send_email',
-        config: {
-          to: '{{client.email}}',
-          subject: 'Presupuesto aceptado - Próximos pasos',
-          body: 'Hola {{client.firstName}},\n\nGracias por aceptar nuestro presupuesto. Nos pondremos en contacto contigo para programar la cita.\n\nSaludos'
-        }
-      },
-      {
-        type: 'create_task',
-        config: {
-          title: 'Programar cita - {{client.name}}',
-          description: 'El cliente ha aceptado el presupuesto {{quote.number}}. Contactar para programar cita.',
-          dueInDays: 1
-        }
+          subject: 'Recordatorio: Factura {{invoice.number}} pendiente de pago',
+          body: 'Estimado/a {{client.firstName}},\n\nLe recordamos que la factura {{invoice.number}} por importe de {{invoice.amount}}€ se encuentra pendiente de pago.\n\nSi ya ha realizado el pago, ignore este mensaje.\n\nSaludos,\n{{organization.name}}'
+        } as EmailActionConfig
       }
     ]
   },
   {
     id: 'appointment_confirmation',
     name: 'Confirmación de Cita',
-    description: 'Envía confirmación cuando se programa una cita',
+    description: 'Envía confirmación por email y SMS al programar una cita',
+    category: 'Citas',
     triggerType: 'appointment_scheduled',
     actions: [
       {
         type: 'send_email',
         config: {
           to: '{{client.email}}',
-          subject: 'Cita confirmada - {{appointment.date}}',
-          body: 'Hola {{client.firstName}},\n\nTu cita ha sido confirmada:\n\nFecha: {{appointment.date}}\nHora: {{appointment.time}}\nServicio: {{appointment.serviceType}}\n\nTe esperamos.\n\nSaludos'
-        }
+          subject: 'Confirmación de cita - {{appointment.date}}',
+          body: 'Estimado/a {{client.firstName}},\n\nSu cita ha sido confirmada para el {{appointment.date}} a las {{appointment.time}}.\n\nSaludos,\n{{organization.name}}'
+        } as EmailActionConfig
       },
       {
         type: 'send_sms',
         config: {
           to: '{{client.phone}}',
           message: 'Cita confirmada para {{appointment.date}} a las {{appointment.time}}. {{organization.name}}'
-        }
+        } as SMSActionConfig
       }
     ]
   }
 ];
 
 /**
+ * Helper para obtener mensaje de error de forma segura
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Error desconocido';
+}
+
+/**
  * Clase principal del servicio de workflows
  */
 export class WorkflowService {
-  private db: any;
-  private emailService: any;
-  private smsService: any;
-  private whatsappService: any;
-  private notificationService: any;
+  private db: DatabaseConnection;
+  private emailService: EmailServiceInterface | undefined;
+  private smsService: SMSServiceInterface | undefined;
+  private whatsappService: WhatsAppServiceInterface | undefined;
+  private notificationService: NotificationServiceInterface | undefined;
 
-  constructor(dependencies: {
-    db: any;
-    emailService?: any;
-    smsService?: any;
-    whatsappService?: any;
-    notificationService?: any;
-  }) {
+  constructor(dependencies: WorkflowServiceDependencies) {
     this.db = dependencies.db;
     this.emailService = dependencies.emailService;
     this.smsService = dependencies.smsService;
@@ -297,14 +317,11 @@ export class WorkflowService {
   /**
    * Crea un nuevo workflow
    */
-  async createWorkflow(organizationId: string, data: {
-    name: string;
-    description?: string;
-    triggerType: string;
-    triggerConditions?: any;
-    actions: any[];
-    enabled?: boolean;
-  }, createdBy: string) {
+  async createWorkflow(
+    organizationId: string, 
+    data: CreateWorkflowInput, 
+    createdBy: string
+  ): Promise<Workflow> {
     const workflow = {
       organizationId,
       name: data.name,
@@ -317,77 +334,74 @@ export class WorkflowService {
       createdBy
     };
 
-    const result = await this.db.insert('workflows').values(workflow).returning();
-    return result[0];
+    const result = await this.db.insert('workflows' as never).values(workflow as never).returning();
+    return result[0] as Workflow;
   }
 
   /**
    * Obtiene todos los workflows de una organización
    */
-  async getWorkflows(organizationId: string) {
+  async getWorkflows(organizationId: string): Promise<Workflow[]> {
     return await this.db
       .select()
-      .from('workflows')
-      .where(eq('organizationId', organizationId))
-      .orderBy('createdAt', 'desc');
+      .from('workflows' as never)
+      .where(eq('organizationId' as never, organizationId as never))
+      .orderBy('createdAt' as never, 'desc' as never) as Workflow[];
   }
 
   /**
    * Obtiene un workflow por ID
    */
-  async getWorkflow(workflowId: string) {
+  async getWorkflow(workflowId: string): Promise<Workflow | undefined> {
     const result = await this.db
       .select()
-      .from('workflows')
-      .where(eq('id', workflowId))
-      .limit(1);
+      .from('workflows' as never)
+      .where(eq('id' as never, workflowId as never))
+      .limit(1) as Workflow[];
     return result[0];
   }
 
   /**
    * Actualiza un workflow
    */
-  async updateWorkflow(workflowId: string, data: Partial<{
-    name: string;
-    description: string;
-    triggerConditions: any;
-    actions: any[];
-    enabled: boolean;
-    status: string;
-  }>) {
-    return await this.db
-      .update('workflows')
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq('id', workflowId));
+  async updateWorkflow(workflowId: string, data: UpdateWorkflowInput): Promise<void> {
+    await this.db
+      .update('workflows' as never)
+      .set({ ...data, updatedAt: new Date() } as never)
+      .where(eq('id' as never, workflowId as never));
   }
 
   /**
    * Elimina un workflow
    */
-  async deleteWorkflow(workflowId: string) {
-    return await this.db
-      .delete('workflows')
-      .where(eq('id', workflowId));
+  async deleteWorkflow(workflowId: string): Promise<void> {
+    await this.db
+      .delete('workflows' as never)
+      .where(eq('id' as never, workflowId as never));
   }
 
   /**
    * Dispara workflows basados en un evento
    */
-  async triggerWorkflows(organizationId: string, triggerType: string, context: any) {
+  async triggerWorkflows(
+    organizationId: string, 
+    triggerType: TriggerType, 
+    context: WorkflowContext
+  ): Promise<WorkflowExecution[]> {
     // Buscar workflows activos que coincidan con el trigger
     const workflows = await this.db
       .select()
-      .from('workflows')
+      .from('workflows' as never)
       .where(
         and(
-          eq('organizationId', organizationId),
-          eq('triggerType', triggerType),
-          eq('status', 'active'),
-          eq('enabled', true)
+          eq('organizationId' as never, organizationId as never),
+          eq('triggerType' as never, triggerType as never),
+          eq('status' as never, 'active' as never),
+          eq('enabled' as never, true as never)
         )
-      );
+      ) as Workflow[];
 
-    const executions = [];
+    const executions: WorkflowExecution[] = [];
 
     for (const workflow of workflows) {
       // Verificar condiciones adicionales
@@ -406,7 +420,7 @@ export class WorkflowService {
       executions.push(execution);
 
       // Iniciar ejecución asíncrona
-      this.executeWorkflow(execution.id).catch(console.error);
+      this.executeWorkflow(execution.id).catch((err) => console.error('Error executing workflow:', err));
     }
 
     return executions;
@@ -415,33 +429,34 @@ export class WorkflowService {
   /**
    * Crea una ejecución de workflow
    */
-  private async createExecution(workflow: any, context: any) {
+  private async createExecution(workflow: Workflow, context: WorkflowContext): Promise<WorkflowExecution> {
     const execution = {
       workflowId: workflow.id,
       organizationId: workflow.organizationId,
       triggerEntityType: context._entityType || 'unknown',
       triggerEntityId: context._entityId || 'unknown',
-      status: 'pending',
+      status: 'pending' as ExecutionStatus,
       currentStep: 0,
       context,
       stepResults: [],
       createdAt: new Date()
     };
 
-    const result = await this.db.insert('workflowExecutions').values(execution).returning();
-    return result[0];
+    const result = await this.db.insert('workflowExecutions' as never).values(execution as never).returning();
+    return result[0] as WorkflowExecution;
   }
 
   /**
    * Ejecuta un workflow
    */
-  async executeWorkflow(executionId: string) {
-    const execution = await this.db
+  async executeWorkflow(executionId: string): Promise<void> {
+    const executionResult = await this.db
       .select()
-      .from('workflowExecutions')
-      .where(eq('id', executionId))
-      .limit(1)
-      .then((r: any[]) => r[0]);
+      .from('workflowExecutions' as never)
+      .where(eq('id' as never, executionId as never))
+      .limit(1) as WorkflowExecution[];
+
+    const execution = executionResult[0];
 
     if (!execution || execution.status !== 'pending') {
       return;
@@ -455,43 +470,50 @@ export class WorkflowService {
 
     // Marcar como en ejecución
     await this.db
-      .update('workflowExecutions')
-      .set({ status: 'running', startedAt: new Date() })
-      .where(eq('id', executionId));
+      .update('workflowExecutions' as never)
+      .set({ status: 'running', startedAt: new Date() } as never)
+      .where(eq('id' as never, executionId as never));
 
     try {
-      const actions = workflow.actions as any[];
-      const stepResults: any[] = [];
+      const actions = workflow.actions;
+      const stepResults: StepResult[] = [];
 
       for (let i = execution.currentStep; i < actions.length; i++) {
         const action = actions[i];
         
         // Actualizar paso actual
         await this.db
-          .update('workflowExecutions')
-          .set({ currentStep: i })
-          .where(eq('id', executionId));
+          .update('workflowExecutions' as never)
+          .set({ currentStep: i } as never)
+          .where(eq('id' as never, executionId as never));
 
         // Ejecutar acción
         const result = await this.executeAction(action, execution.context, executionId);
-        stepResults.push({ step: i, action: action.type, ...result });
+        stepResults.push({ 
+          step: i, 
+          action: action.type, 
+          success: result.success,
+          result: result.result,
+          error: result.error,
+          executedAt: new Date()
+        });
 
         // Guardar resultado
         await this.db
-          .update('workflowExecutions')
-          .set({ stepResults })
-          .where(eq('id', executionId));
+          .update('workflowExecutions' as never)
+          .set({ stepResults } as never)
+          .where(eq('id' as never, executionId as never));
 
         // Si es un delay, programar continuación
         if (action.type === 'delay' && result.scheduledFor) {
           await this.db
-            .update('workflowExecutions')
+            .update('workflowExecutions' as never)
             .set({ 
               status: 'waiting',
               scheduledFor: result.scheduledFor,
               currentStep: i + 1
-            })
-            .where(eq('id', executionId));
+            } as never)
+            .where(eq('id' as never, executionId as never));
           return;
         }
 
@@ -504,13 +526,13 @@ export class WorkflowService {
 
       // Completado exitosamente
       await this.db
-        .update('workflowExecutions')
+        .update('workflowExecutions' as never)
         .set({ 
           status: 'completed',
           completedAt: new Date(),
           stepResults
-        })
-        .where(eq('id', executionId));
+        } as never)
+        .where(eq('id' as never, executionId as never));
 
       // Actualizar contador del workflow
       await this.db.execute(`
@@ -519,71 +541,71 @@ export class WorkflowService {
         WHERE id = '${workflow.id}'
       `);
 
-    } catch (error: any) {
-      await this.updateExecutionStatus(executionId, 'failed', error.message);
+    } catch (error: unknown) {
+      await this.updateExecutionStatus(executionId, 'failed', getErrorMessage(error));
     }
   }
 
   /**
    * Ejecuta una acción individual
    */
-  private async executeAction(action: any, context: any, executionId: string): Promise<{
-    success: boolean;
-    result?: any;
-    error?: string;
-    scheduledFor?: Date;
-  }> {
+  private async executeAction(
+    action: WorkflowAction, 
+    context: WorkflowContext, 
+    executionId: string
+  ): Promise<ActionResult> {
     const config = this.interpolateConfig(action.config, context);
 
     try {
       switch (action.type) {
         case 'send_email':
-          return await this.executeSendEmail(config);
+          return await this.executeSendEmail(config as EmailActionConfig);
         
         case 'send_sms':
-          return await this.executeSendSms(config);
+          return await this.executeSendSms(config as SMSActionConfig);
         
         case 'send_whatsapp':
-          return await this.executeSendWhatsApp(config);
+          return await this.executeSendWhatsApp(config as WhatsAppActionConfig);
         
         case 'send_push':
-          return await this.executeSendPush(config, context);
+          return await this.executeSendPush(config as PushActionConfig, context);
         
         case 'create_task':
-          return await this.executeCreateTask(config, context);
+          return await this.executeCreateTask(config as TaskActionConfig, context);
         
         case 'create_reminder':
-          return await this.executeCreateReminder(config, context);
+          return await this.executeCreateReminder(config as ReminderActionConfig, context);
         
         case 'update_field':
-          return await this.executeUpdateField(config, context);
+          return await this.executeUpdateField(config as UpdateFieldActionConfig, context);
         
         case 'add_tag':
-          return await this.executeAddTag(config, context);
+          return this.executeAddTag();
         
         case 'webhook':
-          return await this.executeWebhook(config);
+          return await this.executeWebhook(config as WebhookActionConfig);
         
         case 'delay':
-          return this.executeDelay(config);
+          return this.executeDelay(config as DelayActionConfig);
         
         case 'condition':
-          return await this.executeCondition(config, context, executionId);
+          return await this.executeCondition(config as ConditionActionConfig, context, executionId);
         
         default:
           return { success: false, error: `Unknown action type: ${action.type}` };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       // Registrar log de acción
-      await this.logAction(executionId, action, false, null, error.message);
-      return { success: false, error: error.message };
+      await this.logAction(executionId, action, false, undefined, errorMessage);
+      return { success: false, error: errorMessage };
     }
   }
 
   /**
    * Envía un email
    */
-  private async executeSendEmail(config: any) {
+  private async executeSendEmail(config: EmailActionConfig): Promise<ActionResult> {
     if (!this.emailService) {
       return { success: false, error: 'Email service not configured' };
     }
@@ -601,7 +623,7 @@ export class WorkflowService {
   /**
    * Envía un SMS
    */
-  private async executeSendSms(config: any) {
+  private async executeSendSms(config: SMSActionConfig): Promise<ActionResult> {
     if (!this.smsService) {
       return { success: false, error: 'SMS service not configured' };
     }
@@ -617,7 +639,7 @@ export class WorkflowService {
   /**
    * Envía un mensaje de WhatsApp
    */
-  private async executeSendWhatsApp(config: any) {
+  private async executeSendWhatsApp(config: WhatsAppActionConfig): Promise<ActionResult> {
     if (!this.whatsappService) {
       return { success: false, error: 'WhatsApp service not configured' };
     }
@@ -634,13 +656,18 @@ export class WorkflowService {
   /**
    * Envía una notificación push
    */
-  private async executeSendPush(config: any, context: any) {
+  private async executeSendPush(config: PushActionConfig, context: WorkflowContext): Promise<ActionResult> {
     if (!this.notificationService) {
       return { success: false, error: 'Notification service not configured' };
     }
 
+    const userId = context.client?.userId || context.technician?.userId;
+    if (!userId) {
+      return { success: false, error: 'No user ID found in context' };
+    }
+
     await this.notificationService.sendPushNotification({
-      userId: context.client?.userId || context.technician?.userId,
+      userId,
       title: config.title,
       body: config.body,
       data: config.data
@@ -652,7 +679,7 @@ export class WorkflowService {
   /**
    * Crea una tarea
    */
-  private async executeCreateTask(config: any, context: any) {
+  private async executeCreateTask(config: TaskActionConfig, context: WorkflowContext): Promise<ActionResult> {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + (config.dueInDays || 1));
 
@@ -668,14 +695,14 @@ export class WorkflowService {
       createdAt: new Date()
     };
 
-    await this.db.insert('tasks').values(task);
+    await this.db.insert('tasks' as never).values(task as never);
     return { success: true, result: task };
   }
 
   /**
    * Crea un recordatorio
    */
-  private async executeCreateReminder(config: any, context: any) {
+  private async executeCreateReminder(config: ReminderActionConfig, context: WorkflowContext): Promise<ActionResult> {
     const scheduledFor = new Date(config.scheduledFor || Date.now() + 86400000);
 
     const reminder = {
@@ -689,23 +716,24 @@ export class WorkflowService {
       status: 'pending'
     };
 
-    await this.db.insert('scheduledReminders').values(reminder);
+    await this.db.insert('scheduledReminders' as never).values(reminder as never);
     return { success: true, result: reminder };
   }
 
   /**
    * Actualiza un campo
    */
-  private async executeUpdateField(config: any, context: any) {
-    const entityId = context[config.entityType]?.id;
+  private async executeUpdateField(config: UpdateFieldActionConfig, context: WorkflowContext): Promise<ActionResult> {
+    const entity = context[config.entityType] as { id?: string } | undefined;
+    const entityId = entity?.id;
     if (!entityId) {
       return { success: false, error: `Entity ${config.entityType} not found in context` };
     }
 
     await this.db
-      .update(config.entityType + 's') // Pluralizar nombre de tabla
-      .set({ [config.field]: config.value })
-      .where(eq('id', entityId));
+      .update((config.entityType + 's') as never) // Pluralizar nombre de tabla
+      .set({ [config.field]: config.value } as never)
+      .where(eq('id' as never, entityId as never));
 
     return { success: true };
   }
@@ -713,15 +741,15 @@ export class WorkflowService {
   /**
    * Añade una etiqueta
    */
-  private async executeAddTag(config: any, context: any) {
-    // Implementar lógica de tags
+  private executeAddTag(): ActionResult {
+    // TODO: Implementar lógica de tags
     return { success: true };
   }
 
   /**
    * Ejecuta un webhook
    */
-  private async executeWebhook(config: any) {
+  private async executeWebhook(config: WebhookActionConfig): Promise<ActionResult> {
     const response = await fetch(config.url, {
       method: config.method || 'POST',
       headers: {
@@ -742,7 +770,7 @@ export class WorkflowService {
   /**
    * Ejecuta un delay
    */
-  private executeDelay(config: any): { success: boolean; scheduledFor: Date } {
+  private executeDelay(config: DelayActionConfig): ActionResult {
     const delayMs = 
       (config.minutes || 0) * 60 * 1000 +
       (config.hours || 0) * 60 * 60 * 1000 +
@@ -755,7 +783,11 @@ export class WorkflowService {
   /**
    * Ejecuta una condición
    */
-  private async executeCondition(config: any, context: any, executionId: string) {
+  private async executeCondition(
+    config: ConditionActionConfig, 
+    context: WorkflowContext, 
+    executionId: string
+  ): Promise<ActionResult> {
     const conditionMet = this.evaluateExpression(config.condition, context);
     const actionsToExecute = conditionMet ? config.then : (config.else || []);
 
@@ -772,7 +804,7 @@ export class WorkflowService {
   /**
    * Evalúa condiciones del trigger
    */
-  private evaluateConditions(conditions: any, context: any): boolean {
+  private evaluateConditions(conditions: TriggerConditions, context: WorkflowContext): boolean {
     for (const [key, value] of Object.entries(conditions)) {
       const contextValue = this.getNestedValue(context, key);
       if (contextValue !== value) {
@@ -785,7 +817,7 @@ export class WorkflowService {
   /**
    * Evalúa una expresión
    */
-  private evaluateExpression(expression: string, context: any): boolean {
+  private evaluateExpression(expression: string, context: WorkflowContext): boolean {
     // Interpolar variables
     let interpolated = expression;
     const matches = expression.match(/\{\{([^}]+)\}\}/g) || [];
@@ -824,19 +856,19 @@ export class WorkflowService {
   /**
    * Interpola variables en la configuración
    */
-  private interpolateConfig(config: any, context: any): any {
+  private interpolateConfig<T>(config: T, context: WorkflowContext): T {
     if (typeof config === 'string') {
-      return this.interpolateString(config, context);
+      return this.interpolateString(config, context) as T;
     }
     if (Array.isArray(config)) {
-      return config.map(item => this.interpolateConfig(item, context));
+      return config.map(item => this.interpolateConfig(item, context)) as T;
     }
     if (typeof config === 'object' && config !== null) {
-      const result: any = {};
+      const result: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(config)) {
         result[key] = this.interpolateConfig(value, context);
       }
-      return result;
+      return result as T;
     }
     return config;
   }
@@ -844,8 +876,8 @@ export class WorkflowService {
   /**
    * Interpola variables en un string
    */
-  private interpolateString(str: string, context: any): string {
-    return str.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
+  private interpolateString(str: string, context: WorkflowContext): string {
+    return str.replace(/\{\{([^}]+)\}\}/g, (match, path: string) => {
       const value = this.getNestedValue(context, path.trim());
       return value !== undefined ? String(value) : match;
     });
@@ -854,24 +886,29 @@ export class WorkflowService {
   /**
    * Obtiene un valor anidado de un objeto
    */
-  private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+  private getNestedValue(obj: WorkflowContext, path: string): unknown {
+    return path.split('.').reduce<unknown>((current, key) => {
+      if (current && typeof current === 'object' && key in current) {
+        return (current as Record<string, unknown>)[key];
+      }
+      return undefined;
+    }, obj);
   }
 
   /**
    * Verifica si ya existe una ejecución
    */
-  private async checkExistingExecution(workflowId: string, context: any): Promise<boolean> {
+  private async checkExistingExecution(workflowId: string, context: WorkflowContext): Promise<boolean> {
     const result = await this.db
       .select()
-      .from('workflowExecutions')
+      .from('workflowExecutions' as never)
       .where(
         and(
-          eq('workflowId', workflowId),
-          eq('triggerEntityId', context._entityId)
+          eq('workflowId' as never, workflowId as never),
+          eq('triggerEntityId' as never, (context._entityId || '') as never)
         )
       )
-      .limit(1);
+      .limit(1) as WorkflowExecution[];
     return result.length > 0;
   }
 
@@ -880,19 +917,19 @@ export class WorkflowService {
    */
   private async updateExecutionStatus(
     executionId: string, 
-    status: string, 
+    status: ExecutionStatus, 
     errorMessage?: string,
     errorStep?: number
-  ) {
+  ): Promise<void> {
     await this.db
-      .update('workflowExecutions')
+      .update('workflowExecutions' as never)
       .set({ 
         status,
         errorMessage,
         errorStep,
         completedAt: new Date()
-      })
-      .where(eq('id', executionId));
+      } as never)
+      .where(eq('id' as never, executionId as never));
   }
 
   /**
@@ -900,12 +937,12 @@ export class WorkflowService {
    */
   private async logAction(
     executionId: string,
-    action: any,
+    action: WorkflowAction,
     success: boolean,
-    result?: any,
+    result?: unknown,
     errorMessage?: string
-  ) {
-    await this.db.insert('workflowActionLogs').values({
+  ): Promise<void> {
+    const log: ActionLog = {
       executionId,
       stepIndex: 0, // Se actualizará
       actionType: action.type,
@@ -914,35 +951,37 @@ export class WorkflowService {
       result,
       errorMessage,
       completedAt: new Date()
-    });
+    };
+
+    await this.db.insert('workflowActionLogs' as never).values(log as never);
   }
 
   /**
    * Procesa ejecuciones en espera (para delays)
    * Este método debería ejecutarse periódicamente
    */
-  async processWaitingExecutions() {
+  async processWaitingExecutions(): Promise<number> {
     const now = new Date();
     
     const waitingExecutions = await this.db
       .select()
-      .from('workflowExecutions')
+      .from('workflowExecutions' as never)
       .where(
         and(
-          eq('status', 'waiting'),
-          lte('scheduledFor', now)
+          eq('status' as never, 'waiting' as never),
+          lte('scheduledFor' as never, now as never)
         )
-      );
+      ) as WorkflowExecution[];
 
     for (const execution of waitingExecutions) {
       // Cambiar estado a pending para continuar
       await this.db
-        .update('workflowExecutions')
-        .set({ status: 'pending', scheduledFor: null })
-        .where(eq('id', execution.id));
+        .update('workflowExecutions' as never)
+        .set({ status: 'pending', scheduledFor: null } as never)
+        .where(eq('id' as never, execution.id as never));
 
       // Continuar ejecución
-      this.executeWorkflow(execution.id).catch(console.error);
+      this.executeWorkflow(execution.id).catch((err) => console.error('Error continuing workflow:', err));
     }
 
     return waitingExecutions.length;
@@ -951,26 +990,26 @@ export class WorkflowService {
   /**
    * Obtiene las ejecuciones de un workflow
    */
-  async getWorkflowExecutions(workflowId: string, limit = 50) {
+  async getWorkflowExecutions(workflowId: string, limit = 50): Promise<WorkflowExecution[]> {
     return await this.db
       .select()
-      .from('workflowExecutions')
-      .where(eq('workflowId', workflowId))
-      .orderBy('createdAt', 'desc')
-      .limit(limit);
+      .from('workflowExecutions' as never)
+      .where(eq('workflowId' as never, workflowId as never))
+      .orderBy('createdAt' as never, 'desc' as never)
+      .limit(limit) as WorkflowExecution[];
   }
 
   /**
    * Obtiene estadísticas de workflows
    */
-  async getWorkflowStats(organizationId: string) {
+  async getWorkflowStats(organizationId: string): Promise<WorkflowStats> {
     const workflows = await this.getWorkflows(organizationId);
     
-    const stats = {
+    const stats: WorkflowStats = {
       total: workflows.length,
-      active: workflows.filter((w: any) => w.status === 'active').length,
-      totalExecutions: workflows.reduce((sum: number, w: any) => sum + (w.executionCount || 0), 0),
-      byTrigger: {} as Record<string, number>
+      active: workflows.filter((w) => w.status === 'active').length,
+      totalExecutions: workflows.reduce((sum, w) => sum + (w.executionCount || 0), 0),
+      byTrigger: {}
     };
 
     for (const workflow of workflows) {

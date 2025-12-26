@@ -128,7 +128,7 @@ export default function InvoiceDetailScreen() {
 
   // Función para importar materiales de un servicio realizado
   const handleImportServiceMaterials = (serviceId: string) => {
-    const service = services.find((s: any) => s.id === serviceId);
+    const service = services.find((s: { id: string }) => s.id === serviceId);
     if (!service || !service.materialsUsed || service.materialsUsed.length === 0) {
       Alert.alert('Info', 'Este servicio no tiene materiales registrados');
       return;
@@ -181,7 +181,7 @@ export default function InvoiceDetailScreen() {
   }, [form.clientId, services]);
 
   const handleSelectClient = (clientId: string) => {
-    const client = clients.find((c: any) => c.id === clientId);
+    const client = clients.find((c: { id: string }) => c.id === clientId);
     if (client) {
       setForm(prev => ({
         ...prev,
@@ -570,7 +570,7 @@ export default function InvoiceDetailScreen() {
           <View style={[styles.modalContent, { backgroundColor: background }]}>
             <ThemedText style={styles.modalTitle}>Importar servicio con materiales</ThemedText>
             <ScrollView style={styles.modalScroll}>
-              {clientServices.map((service: any) => (
+              {clientServices.map((service: { id: string; type: string; date: string }) => (
                 <Pressable
                   key={service.id}
                   style={[styles.modalOption, { borderColor }]}
@@ -606,7 +606,7 @@ export default function InvoiceDetailScreen() {
           <View style={[styles.modalContent, { backgroundColor: background }]}>
             <ThemedText style={styles.modalTitle}>Seleccionar cliente</ThemedText>
             <ScrollView style={styles.modalScroll}>
-              {clients.map((client: any) => (
+              {clients.map((client: { id: string; firstName: string; lastName1?: string; phone: string }) => (
                 <Pressable
                   key={client.id}
                   style={[styles.modalOption, { borderColor }]}

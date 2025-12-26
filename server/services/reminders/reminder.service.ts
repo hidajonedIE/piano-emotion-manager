@@ -5,49 +5,60 @@
  * basados en reglas configurables.
  */
 
-import { eq, and, lte, gte, isNull, sql } from 'drizzle-orm';
+import { eq, and, lte, isNull, sql } from 'drizzle-orm';
+import type {
+  DatabaseConnection,
+  NotificationServiceInterface,
+  EmailServiceInterface,
+  SMSServiceInterface,
+  WhatsAppServiceInterface,
+  ReminderServiceDependencies,
+  ClientInfo,
+  ReminderCandidate,
+  ReminderRule,
+  ReminderType,
+  ReminderFrequency,
+  ReminderChannel,
+  TriggerEvent,
+  TriggerCondition,
+  MessageTemplate,
+  ReminderStatus,
+  ScheduledReminder,
+  ReminderData,
+  ScheduleReminderParams,
+  ChannelSendResult,
+  SendResults,
+  ProcessingResult,
+  ClientReminderPreferences,
+  ScheduledCount,
+  getErrorMessage,
+} from './reminder.types';
 
-// Tipos de eventos que pueden disparar recordatorios
-export type TriggerEvent = 
-  | 'service_completed'
-  | 'last_service'
-  | 'warranty_end'
-  | 'appointment_scheduled'
-  | 'invoice_created'
-  | 'invoice_due'
-  | 'contract_renewal'
-  | 'piano_registered';
+// Re-exportar tipos para uso externo
+export type {
+  TriggerEvent,
+  TriggerCondition,
+  MessageTemplate,
+  ReminderRule,
+  ReminderType,
+  ReminderFrequency,
+  ReminderChannel,
+  ScheduledReminder,
+  ClientReminderPreferences,
+};
 
-// Interfaz para condiciones de disparo
-export interface TriggerCondition {
-  event: TriggerEvent;
-  daysAfter?: number;
-  daysBefore?: number;
-  daysSince?: number;
-  customCondition?: string;
-}
-
-// Interfaz para plantilla de mensaje
-export interface MessageTemplate {
-  title: string;
-  body: string;
-  variables: string[];
-  ctaText?: string;
-  ctaUrl?: string;
-}
-
-// Interfaz para regla de recordatorio
+// Interfaz para configuración de regla de recordatorio (usada en creación)
 export interface ReminderRuleConfig {
   name: string;
   description?: string;
-  type: 'maintenance' | 'follow_up' | 'warranty_expiry' | 'appointment' | 'payment_due' | 'contract_renewal' | 'custom';
+  type: ReminderType;
   enabled: boolean;
   triggerCondition: TriggerCondition;
-  frequency: 'once' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'biannual' | 'annual' | 'custom';
+  frequency: ReminderFrequency;
   customFrequencyDays?: number;
   daysOffset: number;
   timeOfDay: string;
-  channels: ('push' | 'email' | 'sms' | 'whatsapp')[];
+  channels: ReminderChannel[];
   messageTemplate: MessageTemplate;
   clientTypes?: string[];
   serviceTypes?: string[];
@@ -238,19 +249,13 @@ export const PREDEFINED_REMINDER_TEMPLATES: Record<string, ReminderRuleConfig> =
  * Clase principal del servicio de recordatorios
  */
 export class ReminderService {
-  private db: any;
-  private notificationService: any;
-  private emailService: any;
-  private smsService: any;
-  private whatsappService: any;
+  private db: DatabaseConnection;
+  private notificationService: NotificationServiceInterface;
+  private emailService: EmailServiceInterface;
+  private smsService: SMSServiceInterface | undefined;
+  private whatsappService: WhatsAppServiceInterface | undefined;
 
-  constructor(dependencies: {
-    db: any;
-    notificationService: any;
-    emailService: any;
-    smsService?: any;
-    whatsappService?: any;
-  }) {
+  constructor(dependencies: ReminderServiceDependencies) {
     this.db = dependencies.db;
     this.notificationService = dependencies.notificationService;
     this.emailService = dependencies.emailService;
@@ -261,7 +266,11 @@ export class ReminderService {
   /**
    * Crea una nueva regla de recordatorio
    */
-  async createRule(organizationId: string, config: ReminderRuleConfig, createdBy: string) {
+  async createRule(
+    organizationId: string, 
+    config: ReminderRuleConfig, 
+    createdBy: string
+  ): Promise<ReminderRule> {
     const rule = {
       organizationId,
       name: config.name,
@@ -282,79 +291,64 @@ export class ReminderService {
     };
 
     // Insertar en la base de datos
-    const result = await this.db.insert('reminderRules').values(rule).returning();
-    return result[0];
+    const result = await this.db.insert('reminderRules' as never).values(rule as never).returning();
+    return result[0] as ReminderRule;
   }
 
   /**
    * Obtiene todas las reglas de una organización
    */
-  async getRules(organizationId: string) {
+  async getRules(organizationId: string): Promise<ReminderRule[]> {
     return await this.db
       .select()
-      .from('reminderRules')
-      .where(eq('organizationId', organizationId));
+      .from('reminderRules' as never)
+      .where(eq('organizationId' as never, organizationId as never)) as ReminderRule[];
   }
 
   /**
    * Activa o desactiva una regla
    */
-  async toggleRule(ruleId: string, enabled: boolean) {
-    return await this.db
-      .update('reminderRules')
-      .set({ enabled, updatedAt: new Date() })
-      .where(eq('id', ruleId));
+  async toggleRule(ruleId: string, enabled: boolean): Promise<void> {
+    await this.db
+      .update('reminderRules' as never)
+      .set({ enabled, updatedAt: new Date() } as never)
+      .where(eq('id' as never, ruleId as never));
   }
 
   /**
    * Programa un recordatorio
    */
-  async scheduleReminder(params: {
-    organizationId: string;
-    ruleId?: string;
-    type: string;
-    clientId?: string;
-    pianoId?: string;
-    serviceId?: string;
-    appointmentId?: string;
-    invoiceId?: string;
-    contractId?: string;
-    scheduledFor: Date;
-    channels: string[];
-    title: string;
-    body: string;
-    data?: any;
-  }) {
+  async scheduleReminder(params: ScheduleReminderParams): Promise<ScheduledReminder> {
     const reminder = {
       ...params,
-      status: 'pending',
+      status: 'pending' as ReminderStatus,
       createdAt: new Date()
     };
 
-    const result = await this.db.insert('scheduledReminders').values(reminder).returning();
-    return result[0];
+    const result = await this.db.insert('scheduledReminders' as never).values(reminder as never).returning();
+    return result[0] as ScheduledReminder;
   }
 
   /**
    * Procesa y envía recordatorios pendientes
    * Este método debería ejecutarse periódicamente (cron job)
    */
-  async processScheduledReminders() {
+  async processScheduledReminders(): Promise<ProcessingResult[]> {
     const now = new Date();
     
     // Obtener recordatorios pendientes que deben enviarse
     const pendingReminders = await this.db
       .select()
-      .from('scheduledReminders')
+      .from('scheduledReminders' as never)
       .where(
         and(
-          eq('status', 'pending'),
-          lte('scheduledFor', now),
-          isNull('snoozedUntil')
+          eq('status' as never, 'pending' as never),
+          lte('scheduledFor' as never, now as never),
+          isNull('snoozedUntil' as never)
         )
-      );
+      ) as ScheduledReminder[];
 
-    const results = [];
+    const results: ProcessingResult[] = [];
 
     for (const reminder of pendingReminders) {
       try {
@@ -362,18 +356,19 @@ export class ReminderService {
         
         // Actualizar estado del recordatorio
         await this.db
-          .update('scheduledReminders')
+          .update('scheduledReminders' as never)
           .set({
             status: 'sent',
             sentAt: new Date(),
             sendResults,
             updatedAt: new Date()
-          })
-          .where(eq('id', reminder.id));
+          } as never)
+          .where(eq('id' as never, reminder.id as never));
 
         results.push({ id: reminder.id, success: true, sendResults });
-      } catch (error) {
-        results.push({ id: reminder.id, success: false, error: error.message });
+      } catch (error: unknown) {
+        const errorMessage = getErrorMessage(error);
+        results.push({ id: reminder.id, success: false, error: errorMessage });
       }
     }
 
@@ -383,8 +378,8 @@ export class ReminderService {
   /**
    * Envía un recordatorio por todos los canales configurados
    */
-  private async sendReminder(reminder: any) {
-    const results: Record<string, any> = {};
+  private async sendReminder(reminder: ScheduledReminder): Promise<SendResults> {
+    const results: SendResults = {};
     const channels = reminder.channels || [];
 
     // Obtener información del cliente
@@ -408,8 +403,9 @@ export class ReminderService {
             results.whatsapp = await this.sendWhatsAppNotification(reminder, client);
             break;
         }
-      } catch (error) {
-        results[channel] = { success: false, error: error.message };
+      } catch (error: unknown) {
+        const errorMessage = getErrorMessage(error);
+        results[channel] = { success: false, error: errorMessage };
       }
     }
 
@@ -422,7 +418,10 @@ export class ReminderService {
   /**
    * Envía notificación push
    */
-  private async sendPushNotification(reminder: any, client: any) {
+  private async sendPushNotification(
+    reminder: ScheduledReminder, 
+    client: ClientInfo | null
+  ): Promise<ChannelSendResult> {
     if (!this.notificationService) {
       return { success: false, error: 'Push notification service not configured' };
     }
@@ -440,7 +439,10 @@ export class ReminderService {
   /**
    * Envía notificación por email
    */
-  private async sendEmailNotification(reminder: any, client: any) {
+  private async sendEmailNotification(
+    reminder: ScheduledReminder, 
+    client: ClientInfo | null
+  ): Promise<ChannelSendResult> {
     if (!this.emailService || !client?.email) {
       return { success: false, error: 'Email service not configured or client email missing' };
     }
@@ -458,7 +460,10 @@ export class ReminderService {
   /**
    * Envía notificación por SMS
    */
-  private async sendSmsNotification(reminder: any, client: any) {
+  private async sendSmsNotification(
+    reminder: ScheduledReminder, 
+    client: ClientInfo | null
+  ): Promise<ChannelSendResult> {
     if (!this.smsService || !client?.phone) {
       return { success: false, error: 'SMS service not configured or client phone missing' };
     }
@@ -474,7 +479,10 @@ export class ReminderService {
   /**
    * Envía notificación por WhatsApp
    */
-  private async sendWhatsAppNotification(reminder: any, client: any) {
+  private async sendWhatsAppNotification(
+    reminder: ScheduledReminder, 
+    client: ClientInfo | null
+  ): Promise<ChannelSendResult> {
     if (!this.whatsappService || !client?.phone) {
       return { success: false, error: 'WhatsApp service not configured or client phone missing' };
     }
@@ -494,7 +502,7 @@ export class ReminderService {
   /**
    * Genera HTML para email
    */
-  private generateEmailHtml(reminder: any): string {
+  private generateEmailHtml(reminder: ScheduledReminder): string {
     return `
       <!DOCTYPE html>
       <html>
@@ -530,21 +538,26 @@ export class ReminderService {
   /**
    * Obtiene información del cliente
    */
-  private async getClientInfo(clientId: string) {
+  private async getClientInfo(clientId: string): Promise<ClientInfo | null> {
     const result = await this.db
       .select()
-      .from('clients')
-      .where(eq('id', clientId))
-      .limit(1);
-    return result[0];
+      .from('clients' as never)
+      .where(eq('id' as never, clientId as never))
+      .limit(1) as ClientInfo[];
+    return result[0] || null;
   }
 
   /**
    * Registra el envío en el historial
    */
-  private async logReminderHistory(reminder: any, results: Record<string, any>) {
+  private async logReminderHistory(
+    reminder: ScheduledReminder, 
+    results: SendResults
+  ): Promise<void> {
     for (const [channel, result] of Object.entries(results)) {
-      await this.db.insert('reminderHistory').values({
+      if (!result) continue;
+      
+      await this.db.insert('reminderHistory' as never).values({
         organizationId: reminder.organizationId,
         reminderId: reminder.id,
         channel,
@@ -553,87 +566,94 @@ export class ReminderService {
         errorMessage: result.error,
         externalId: result.messageId,
         sentAt: new Date()
-      });
+      } as never);
     }
   }
 
   /**
    * Pospone un recordatorio
    */
-  async snoozeReminder(reminderId: string, snoozeUntil: Date) {
-    return await this.db
-      .update('scheduledReminders')
+  async snoozeReminder(reminderId: string, snoozeUntil: Date): Promise<void> {
+    await this.db
+      .update('scheduledReminders' as never)
       .set({
         status: 'snoozed',
         snoozedUntil: snoozeUntil,
         updatedAt: new Date()
-      })
-      .where(eq('id', reminderId));
+      } as never)
+      .where(eq('id' as never, reminderId as never));
   }
 
   /**
    * Marca un recordatorio como reconocido
    */
-  async acknowledgeReminder(reminderId: string) {
-    return await this.db
-      .update('scheduledReminders')
+  async acknowledgeReminder(reminderId: string): Promise<void> {
+    await this.db
+      .update('scheduledReminders' as never)
       .set({
         status: 'acknowledged',
         acknowledgedAt: new Date(),
         updatedAt: new Date()
-      })
-      .where(eq('id', reminderId));
+      } as never)
+      .where(eq('id' as never, reminderId as never));
   }
 
   /**
    * Cancela un recordatorio
    */
-  async cancelReminder(reminderId: string) {
-    return await this.db
-      .update('scheduledReminders')
+  async cancelReminder(reminderId: string): Promise<void> {
+    await this.db
+      .update('scheduledReminders' as never)
       .set({
         status: 'cancelled',
         updatedAt: new Date()
-      })
-      .where(eq('id', reminderId));
+      } as never)
+      .where(eq('id' as never, reminderId as never));
   }
 
   /**
    * Obtiene las preferencias de recordatorio de un cliente
    */
-  async getClientPreferences(clientId: string, organizationId: string) {
+  async getClientPreferences(
+    clientId: string, 
+    organizationId: string
+  ): Promise<ClientReminderPreferences | null> {
     const result = await this.db
       .select()
-      .from('clientReminderPreferences')
+      .from('clientReminderPreferences' as never)
       .where(
         and(
-          eq('clientId', clientId),
-          eq('organizationId', organizationId)
+          eq('clientId' as never, clientId as never),
+          eq('organizationId' as never, organizationId as never)
         )
       )
-      .limit(1);
-    return result[0];
+      .limit(1) as ClientReminderPreferences[];
+    return result[0] || null;
   }
 
   /**
    * Actualiza las preferencias de recordatorio de un cliente
    */
-  async updateClientPreferences(clientId: string, organizationId: string, preferences: any) {
+  async updateClientPreferences(
+    clientId: string, 
+    organizationId: string, 
+    preferences: Partial<ClientReminderPreferences>
+  ): Promise<void> {
     const existing = await this.getClientPreferences(clientId, organizationId);
     
     if (existing) {
-      return await this.db
-        .update('clientReminderPreferences')
-        .set({ ...preferences, updatedAt: new Date() })
-        .where(eq('id', existing.id));
+      await this.db
+        .update('clientReminderPreferences' as never)
+        .set({ ...preferences, updatedAt: new Date() } as never)
+        .where(eq('id' as never, existing.id as never));
     } else {
-      return await this.db
-        .insert('clientReminderPreferences')
+      await this.db
+        .insert('clientReminderPreferences' as never)
         .values({
           clientId,
           organizationId,
           ...preferences
-        });
+        } as never);
     }
   }
 
@@ -641,19 +661,19 @@ export class ReminderService {
    * Evalúa las reglas y programa recordatorios automáticamente
    * Este método debería ejecutarse diariamente
    */
-  async evaluateRulesAndSchedule(organizationId: string) {
+  async evaluateRulesAndSchedule(organizationId: string): Promise<ScheduledCount> {
     // Obtener reglas activas
     const rules = await this.db
       .select()
-      .from('reminderRules')
+      .from('reminderRules' as never)
       .where(
         and(
-          eq('organizationId', organizationId),
-          eq('enabled', true)
+          eq('organizationId' as never, organizationId as never),
+          eq('enabled' as never, true as never)
         )
-      );
+      ) as ReminderRule[];
 
-    const scheduledCount = { total: 0, byType: {} as Record<string, number> };
+    const scheduledCount: ScheduledCount = { total: 0, byType: {} };
 
     for (const rule of rules) {
       const candidates = await this.findCandidatesForRule(organizationId, rule);
@@ -664,7 +684,7 @@ export class ReminderService {
         if (existing) continue;
 
         // Calcular fecha de envío
-        const scheduledFor = this.calculateScheduledDate(rule, candidate);
+        const scheduledFor = this.calculateScheduledDate(rule);
         
         // Interpolar variables en el mensaje
         const { title, body } = this.interpolateMessage(rule.messageTemplate, candidate);
@@ -701,18 +721,20 @@ export class ReminderService {
   /**
    * Encuentra candidatos para una regla específica
    */
-  private async findCandidatesForRule(organizationId: string, rule: any): Promise<any[]> {
+  private async findCandidatesForRule(
+    organizationId: string, 
+    rule: ReminderRule
+  ): Promise<ReminderCandidate[]> {
     const condition = rule.triggerCondition;
-    const candidates: any[] = [];
+    const candidates: ReminderCandidate[] = [];
 
     switch (condition.event) {
-      case 'last_service':
+      case 'last_service': {
         // Buscar pianos cuyo último servicio fue hace X días
         const serviceThreshold = new Date();
         serviceThreshold.setDate(serviceThreshold.getDate() - (condition.daysSince || 180));
         
         // Query para encontrar pianos con último servicio antes de la fecha umbral
-        // y que coincidan con los filtros de la regla
         const pianos = await this.db.execute(sql`
           SELECT p.id as piano_id, p.client_id, c.first_name, c.last_name, c.email,
                  p.brand, p.model, MAX(s.date) as last_service_date
@@ -722,7 +744,15 @@ export class ReminderService {
           WHERE p.organization_id = ${organizationId}
           GROUP BY p.id, p.client_id, c.first_name, c.last_name, c.email, p.brand, p.model
           HAVING MAX(s.date) < ${serviceThreshold} OR MAX(s.date) IS NULL
-        `);
+        `) as Array<{
+          piano_id: string;
+          client_id: string;
+          first_name: string;
+          last_name: string;
+          brand: string;
+          model: string;
+          last_service_date: Date | null;
+        }>;
         
         for (const piano of pianos) {
           candidates.push({
@@ -730,12 +760,13 @@ export class ReminderService {
             pianoId: piano.piano_id,
             clientName: `${piano.first_name} ${piano.last_name}`,
             pianoModel: `${piano.brand} ${piano.model}`,
-            lastServiceDate: piano.last_service_date
+            lastServiceDate: piano.last_service_date || undefined
           });
         }
         break;
+      }
 
-      case 'service_completed':
+      case 'service_completed': {
         // Buscar servicios completados hace X días
         const completedThreshold = new Date();
         completedThreshold.setDate(completedThreshold.getDate() - (condition.daysAfter || 7));
@@ -750,7 +781,17 @@ export class ReminderService {
           WHERE s.organization_id = ${organizationId}
             AND s.status = 'completed'
             AND s.date::date = ${completedThreshold}::date
-        `);
+        `) as Array<{
+          service_id: string;
+          piano_id: string;
+          client_id: string;
+          type: string;
+          date: Date;
+          first_name: string;
+          last_name: string;
+          brand: string;
+          model: string;
+        }>;
         
         for (const service of services) {
           candidates.push({
@@ -764,16 +805,15 @@ export class ReminderService {
           });
         }
         break;
+      }
 
-      case 'warranty_end':
+      case 'warranty_end': {
         // Buscar garantías que expiran en X días
-        const warrantyThreshold = new Date();
-        warrantyThreshold.setDate(warrantyThreshold.getDate() + (condition.daysBefore || 30));
-        
-        // Implementar query para garantías
+        // TODO: Implementar query para garantías
         break;
+      }
 
-      case 'appointment_scheduled':
+      case 'appointment_scheduled': {
         // Buscar citas programadas para dentro de X días
         const appointmentThreshold = new Date();
         appointmentThreshold.setDate(appointmentThreshold.getDate() + (condition.daysBefore || 1));
@@ -788,23 +828,35 @@ export class ReminderService {
           WHERE a.organization_id = ${organizationId}
             AND a.status IN ('scheduled', 'confirmed')
             AND a.date::date = ${appointmentThreshold}::date
-        `);
+        `) as Array<{
+          appointment_id: string;
+          client_id: string;
+          piano_id: string | null;
+          date: Date;
+          time: string;
+          service_type: string;
+          first_name: string;
+          last_name: string;
+          brand: string | null;
+          model: string | null;
+        }>;
         
         for (const apt of appointments) {
           candidates.push({
             clientId: apt.client_id,
-            pianoId: apt.piano_id,
+            pianoId: apt.piano_id || undefined,
             appointmentId: apt.appointment_id,
             clientName: `${apt.first_name} ${apt.last_name}`,
-            pianoModel: apt.brand ? `${apt.brand} ${apt.model}` : null,
+            pianoModel: apt.brand ? `${apt.brand} ${apt.model}` : undefined,
             appointmentDate: apt.date,
             appointmentTime: apt.time,
             serviceType: apt.service_type
           });
         }
         break;
+      }
 
-      case 'invoice_due':
+      case 'invoice_due': {
         // Buscar facturas vencidas hace X días
         const invoiceThreshold = new Date();
         invoiceThreshold.setDate(invoiceThreshold.getDate() - (condition.daysAfter || 7));
@@ -817,7 +869,15 @@ export class ReminderService {
           WHERE i.organization_id = ${organizationId}
             AND i.status = 'sent'
             AND i.due_date::date = ${invoiceThreshold}::date
-        `);
+        `) as Array<{
+          invoice_id: string;
+          client_id: string;
+          invoice_number: string;
+          total: number;
+          due_date: Date;
+          first_name: string;
+          last_name: string;
+        }>;
         
         for (const invoice of invoices) {
           candidates.push({
@@ -830,6 +890,7 @@ export class ReminderService {
           });
         }
         break;
+      }
     }
 
     return candidates;
@@ -838,21 +899,24 @@ export class ReminderService {
   /**
    * Verifica si ya existe un recordatorio programado
    */
-  private async checkExistingReminder(ruleId: string, candidate: any): Promise<boolean> {
+  private async checkExistingReminder(
+    ruleId: string, 
+    candidate: ReminderCandidate
+  ): Promise<boolean> {
     const existing = await this.db
       .select()
-      .from('scheduledReminders')
+      .from('scheduledReminders' as never)
       .where(
         and(
-          eq('ruleId', ruleId),
-          candidate.clientId ? eq('clientId', candidate.clientId) : sql`true`,
-          candidate.pianoId ? eq('pianoId', candidate.pianoId) : sql`true`,
-          candidate.serviceId ? eq('serviceId', candidate.serviceId) : sql`true`,
-          candidate.appointmentId ? eq('appointmentId', candidate.appointmentId) : sql`true`,
-          candidate.invoiceId ? eq('invoiceId', candidate.invoiceId) : sql`true`
+          eq('ruleId' as never, ruleId as never),
+          candidate.clientId ? eq('clientId' as never, candidate.clientId as never) : sql`true`,
+          candidate.pianoId ? eq('pianoId' as never, candidate.pianoId as never) : sql`true`,
+          candidate.serviceId ? eq('serviceId' as never, candidate.serviceId as never) : sql`true`,
+          candidate.appointmentId ? eq('appointmentId' as never, candidate.appointmentId as never) : sql`true`,
+          candidate.invoiceId ? eq('invoiceId' as never, candidate.invoiceId as never) : sql`true`
         )
       )
-      .limit(1);
+      .limit(1) as ScheduledReminder[];
     
     return existing.length > 0;
   }
@@ -860,7 +924,7 @@ export class ReminderService {
   /**
    * Calcula la fecha de envío del recordatorio
    */
-  private calculateScheduledDate(rule: any, candidate: any): Date {
+  private calculateScheduledDate(rule: ReminderRule): Date {
     const [hours, minutes] = rule.timeOfDay.split(':').map(Number);
     const scheduledFor = new Date();
     scheduledFor.setHours(hours, minutes, 0, 0);
@@ -871,15 +935,18 @@ export class ReminderService {
   /**
    * Interpola variables en el mensaje
    */
-  private interpolateMessage(template: MessageTemplate, data: any): { title: string; body: string } {
+  private interpolateMessage(
+    template: MessageTemplate, 
+    data: ReminderCandidate
+  ): { title: string; body: string } {
     let title = template.title;
     let body = template.body;
 
     for (const variable of template.variables) {
-      const value = data[variable] || '';
+      const value = (data as Record<string, unknown>)[variable] || '';
       const regex = new RegExp(`{{${variable}}}`, 'g');
-      title = title.replace(regex, value);
-      body = body.replace(regex, value);
+      title = title.replace(regex, String(value));
+      body = body.replace(regex, String(value));
     }
 
     return { title, body };
@@ -888,7 +955,7 @@ export class ReminderService {
   /**
    * Interpola variables en la URL
    */
-  private interpolateUrl(url: string | undefined, data: any): string | undefined {
+  private interpolateUrl(url: string | undefined, data: ReminderCandidate): string | undefined {
     if (!url) return undefined;
     
     let result = url;

@@ -1,4 +1,12 @@
-// Cookie options interface for session cookies
+import type { HttpRequest } from "./context.js";
+
+// ============================================================================
+// Tipos
+// ============================================================================
+
+/**
+ * Opciones de cookie para sesiones
+ */
 export interface SessionCookieOptions {
   domain?: string;
   httpOnly: boolean;
@@ -6,6 +14,18 @@ export interface SessionCookieOptions {
   sameSite: "strict" | "lax" | "none";
   secure: boolean;
 }
+
+/**
+ * Request con propiedades extendidas para frameworks como Express
+ */
+interface ExtendedRequest extends HttpRequest {
+  protocol?: string;
+  hostname?: string;
+}
+
+// ============================================================================
+// Constantes
+// ============================================================================
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
@@ -19,19 +39,29 @@ const PUBLIC_SUFFIX_DOMAINS = new Set([
   "workers.dev",
 ]);
 
-function isIpAddress(host: string) {
+// ============================================================================
+// Funciones auxiliares
+// ============================================================================
+
+/**
+ * Verifica si un host es una dirección IP
+ */
+function isIpAddress(host: string): boolean {
   // Basic IPv4 check and IPv6 presence detection.
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
   return host.includes(":");
 }
 
-function isSecureRequest(req: any) {
-  if ((req as any).protocol === "https") return true;
+/**
+ * Verifica si la request es segura (HTTPS)
+ */
+function isSecureRequest(req: ExtendedRequest): boolean {
+  if (req.protocol === "https") return true;
 
-  const forwardedProto = (req as any).headers?.["x-forwarded-proto"];
+  const forwardedProto = req.headers?.["x-forwarded-proto"];
   if (!forwardedProto) return false;
 
-  const protoList = Array.isArray(forwardedProto) ? forwardedProto : forwardedProto.split(",");
+  const protoList = Array.isArray(forwardedProto) ? forwardedProto : String(forwardedProto).split(",");
 
   return protoList.some((proto: string) => proto.trim().toLowerCase() === "https");
 }
@@ -82,8 +112,33 @@ function getParentDomain(hostname: string): string | undefined {
   return "." + parts.slice(-2).join(".");
 }
 
-export function getSessionCookieOptions(req: any): SessionCookieOptions {
-  const hostname = (req as any).hostname || (req as any).headers?.host?.split(':')[0] || 'localhost';
+/**
+ * Extrae el hostname de una request
+ */
+function getHostname(req: ExtendedRequest): string {
+  // Try Express-style hostname first
+  if (req.hostname) {
+    return req.hostname;
+  }
+  
+  // Fall back to Host header
+  const hostHeader = req.headers?.host;
+  if (hostHeader) {
+    return String(hostHeader).split(':')[0];
+  }
+  
+  return 'localhost';
+}
+
+// ============================================================================
+// Funciones públicas
+// ============================================================================
+
+/**
+ * Obtiene las opciones de cookie para sesiones basándose en la request
+ */
+export function getSessionCookieOptions(req: ExtendedRequest): SessionCookieOptions {
+  const hostname = getHostname(req);
   const domain = getParentDomain(hostname);
 
   return {

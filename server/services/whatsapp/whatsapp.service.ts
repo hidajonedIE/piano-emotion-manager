@@ -6,6 +6,7 @@
  */
 
 import { eq, and, desc } from 'drizzle-orm';
+import type { DatabaseConnection, TemplateComponent, TemplateParameter, InteractiveMessage, WebhookBody } from './whatsapp.types';
 
 // Tipos de mensaje
 export type WhatsAppMessageType = 
@@ -168,10 +169,10 @@ interface WhatsAppMessage {
   template?: {
     name: string;
     language: { code: string };
-    components: any[];
+    components: TemplateComponent[];
   };
   text?: { body: string };
-  interactive?: any;
+  interactive?: InteractiveMessage;
   document?: {
     link: string;
     filename: string;
@@ -200,11 +201,11 @@ interface MessageLog {
 }
 
 export class WhatsAppService {
-  private db: any;
+  private db: DatabaseConnection;
   private config: WhatsAppConfig | null = null;
   private baseUrl = 'https://graph.facebook.com';
 
-  constructor(db: any) {
+  constructor(db: DatabaseConnection) {
     this.db = db;
   }
 
@@ -281,7 +282,7 @@ export class WhatsAppService {
     // Reemplazar parámetros en la plantilla
     const components = template.components.map(comp => ({
       ...comp,
-      parameters: comp.parameters.map((param: any) => ({
+      parameters: comp.parameters.map((param: TemplateParameter) => ({
         ...param,
         text: param.text.replace(/\{\{(\w+)\}\}/g, (match: string, key: string) => parameters[key] || match)
       }))
@@ -445,7 +446,7 @@ export class WhatsAppService {
 
         return { success: false, error: errorMessage };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = error.message || 'Error de conexión';
       
       await this.logMessage({
@@ -607,7 +608,7 @@ export class WhatsAppService {
   /**
    * Procesa los eventos del webhook de WhatsApp
    */
-  async processWebhook(body: any): Promise<void> {
+  async processWebhook(body: WebhookBody): Promise<void> {
     if (body.object !== 'whatsapp_business_account') {
       return;
     }

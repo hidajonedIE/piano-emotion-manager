@@ -7,7 +7,6 @@
  * SEGURIDAD: Las credenciales se almacenan encriptadas con AES-256-GCM
  */
 
-import { eq, and, desc } from 'drizzle-orm';
 import { 
   encrypt, 
   decrypt, 
@@ -17,70 +16,64 @@ import {
   isEncryptionConfigured 
 } from '../encryption.service';
 
-// Tipos de pasarela
-export type PaymentGateway = 'stripe' | 'paypal';
+import type {
+  DatabaseConnection,
+  DatabaseQueryResult,
+  GatewayConfigRow,
+  PaymentGateway,
+  PaymentStatus,
+  StripeConfig,
+  StripeCheckoutSession,
+  StripePaymentIntent,
+  StripeCharge,
+  StripeProduct,
+  StripePrice,
+  StripePaymentLink as StripePaymentLinkResponse,
+  StripeLink,
+  PayPalConfig,
+  PayPalOrder,
+  PayPalLink,
+  PayPalCapture,
+  PayPalWebhookEvent,
+  PayPalTokenResponse,
+  PaymentRecord,
+  CreatePaymentRecordInput,
+  PaymentUpdateData,
+  PaymentLink,
+  StripeCheckoutData,
+  PayPalOrderData,
+  PaymentLinkData,
+  PaymentStats,
+  PaymentStatsRow,
+  GatewayStatsRow,
+  InvoiceWithClient,
+  CheckoutSessionResult,
+  PayPalOrderResult,
+  MaskedStripeConfig,
+  MaskedPayPalConfig,
+  MaskedGatewayConfig,
+  SqlParameterValue,
+} from './payment.types';
 
-// Estados de pago
-export type PaymentStatus = 
-  | 'pending'       // Pendiente de pago
-  | 'processing'    // En proceso
-  | 'completed'     // Completado
-  | 'failed'        // Fallido
-  | 'refunded'      // Reembolsado
-  | 'cancelled';    // Cancelado
-
-// Interfaz de configuración de Stripe
-interface StripeConfig {
-  publishableKey: string;
-  secretKey: string;
-  webhookSecret: string;
-}
-
-// Interfaz de configuración de PayPal
-interface PayPalConfig {
-  clientId: string;
-  clientSecret: string;
-  environment: 'sandbox' | 'production';
-  webhookId: string;
-}
-
-// Interfaz de pago
-interface PaymentRecord {
-  id: string;
-  organizationId: string;
-  clientId: string;
-  invoiceId?: string;
-  quoteId?: string;
-  contractId?: string;
-  amount: number;
-  currency: string;
-  gateway: PaymentGateway;
-  status: PaymentStatus;
-  gatewayPaymentId?: string;
-  gatewayCustomerId?: string;
-  paymentMethod?: string;
-  receiptUrl?: string;
-  errorMessage?: string;
-  metadata?: Record<string, any>;
-  createdAt: Date;
-  completedAt?: Date;
-}
-
-// Interfaz de enlace de pago
-interface PaymentLink {
-  id: string;
-  url: string;
-  expiresAt: Date;
-  amount: number;
-  currency: string;
-}
+// Re-exportar tipos para uso externo
+export type {
+  PaymentGateway,
+  PaymentStatus,
+  StripeConfig,
+  PayPalConfig,
+  PaymentRecord,
+  PaymentLink,
+  PaymentStats,
+  CheckoutSessionResult,
+  PayPalOrderResult,
+};
 
 export class PaymentService {
-  private db: any;
+  private db: DatabaseConnection;
   private stripeConfig: StripeConfig | null = null;
   private paypalConfig: PayPalConfig | null = null;
 
-  constructor(db: any) {
+  constructor(db: DatabaseConnection) {
     this.db = db;
   }
 
@@ -138,11 +131,14 @@ export class PaymentService {
    * Obtiene la configuración de una pasarela (desencriptada)
    * Solo para uso interno del servidor
    */
-  async getGatewayConfig(organizationId: string, gateway: PaymentGateway): Promise<any> {
+  async getGatewayConfig<T extends StripeConfig | PayPalConfig>(
+    organizationId: string, 
+    gateway: PaymentGateway
+  ): Promise<T | null> {
     const result = await this.db.execute(`
       SELECT config FROM payment_gateway_config
       WHERE organization_id = $1 AND gateway = $2
-    `, [organizationId, gateway]);
+    `, [organizationId, gateway]) as DatabaseQueryResult<{ config: string }>;
 
     if (result.rows && result.rows.length > 0) {
       const encryptedConfig = result.rows[0].config;
@@ -150,7 +146,7 @@ export class PaymentService {
       // Intentar desencriptar (compatibilidad con datos antiguos sin encriptar)
       try {
         // Si es un objeto JSON válido, son datos antiguos sin encriptar
-        const parsed = JSON.parse(encryptedConfig);
+        const parsed = JSON.parse(encryptedConfig) as T;
         if (typeof parsed === 'object' && parsed !== null) {
           // Datos antiguos sin encriptar - migrar automáticamente
           console.warn(`[SECURITY] Migrando credenciales sin encriptar para ${gateway} en org ${organizationId}`);
@@ -161,7 +157,7 @@ export class PaymentService {
       }
       
       // Desencriptar
-      return decryptJSON(encryptedConfig);
+      return decryptJSON(encryptedConfig) as T;
     }
     return null;
   }
@@ -170,28 +166,33 @@ export class PaymentService {
    * Obtiene la configuración de una pasarela con valores enmascarados
    * Para mostrar en la interfaz de usuario
    */
-  async getGatewayConfigMasked(organizationId: string, gateway: PaymentGateway): Promise<any> {
-    const config = await this.getGatewayConfig(organizationId, gateway);
-    
-    if (!config) return null;
-    
+  async getGatewayConfigMasked(
+    organizationId: string, 
+    gateway: PaymentGateway
+  ): Promise<MaskedGatewayConfig> {
     if (gateway === 'stripe') {
+      const config = await this.getGatewayConfig<StripeConfig>(organizationId, gateway);
+      if (!config) return null;
+      
       return {
         publishableKey: maskSensitiveValue(config.publishableKey, 8),
         secretKey: maskSensitiveValue(config.secretKey, 4),
         webhookSecret: maskSensitiveValue(config.webhookSecret, 4),
         isConfigured: true,
-      };
+      } as MaskedStripeConfig;
     }
     
     if (gateway === 'paypal') {
+      const config = await this.getGatewayConfig<PayPalConfig>(organizationId, gateway);
+      if (!config) return null;
+      
       return {
         clientId: maskSensitiveValue(config.clientId, 8),
         clientSecret: maskSensitiveValue(config.clientSecret, 4),
         environment: config.environment,
         webhookId: maskSensitiveValue(config.webhookId, 4),
         isConfigured: true,
-      };
+      } as MaskedPayPalConfig;
     }
     
     return null;
@@ -212,8 +213,8 @@ export class PaymentService {
         (organization_id, gateway, action, user_id, created_at, ip_address)
         VALUES ($1, $2, $3, $4, NOW(), $5)
       `, [organizationId, gateway, action, userId || 'system', null]);
-    } catch (error) {
-      // Si la tabla no existe, solo loguear
+    } catch {
+      // Si la tabla no existe, solo loguear silenciosamente
     }
   }
 
@@ -232,9 +233,9 @@ export class PaymentService {
     const result = await this.db.execute(`
       SELECT gateway FROM payment_gateway_config
       WHERE organization_id = $1
-    `, [organizationId]);
+    `, [organizationId]) as DatabaseQueryResult<GatewayConfigRow>;
 
-    return (result.rows || []).map((row: any) => row.gateway);
+    return (result.rows || []).map((row: GatewayConfigRow) => row.gateway);
   }
 
   // ============================================
@@ -246,20 +247,9 @@ export class PaymentService {
    */
   async createStripeCheckoutSession(
     organizationId: string,
-    data: {
-      clientId: string;
-      clientEmail: string;
-      invoiceId?: string;
-      quoteId?: string;
-      contractId?: string;
-      amount: number;
-      currency: string;
-      description: string;
-      successUrl: string;
-      cancelUrl: string;
-    }
-  ): Promise<{ sessionId: string; url: string }> {
-    const config = await this.getGatewayConfig(organizationId, 'stripe') as StripeConfig;
+    data: StripeCheckoutData
+  ): Promise<CheckoutSessionResult> {
+    const config = await this.getGatewayConfig<StripeConfig>(organizationId, 'stripe');
     if (!config) {
       throw new Error('Stripe no está configurado');
     }
@@ -288,7 +278,7 @@ export class PaymentService {
       }).toString(),
     });
 
-    const session = await response.json();
+    const session = await response.json() as StripeCheckoutSession;
 
     if (session.error) {
       throw new Error(session.error.message);
@@ -320,13 +310,9 @@ export class PaymentService {
    */
   async createStripePaymentLink(
     organizationId: string,
-    data: {
-      amount: number;
-      currency: string;
-      description: string;
-    }
+    data: PaymentLinkData
   ): Promise<PaymentLink> {
-    const config = await this.getGatewayConfig(organizationId, 'stripe') as StripeConfig;
+    const config = await this.getGatewayConfig<StripeConfig>(organizationId, 'stripe');
     if (!config) {
       throw new Error('Stripe no está configurado');
     }
@@ -342,7 +328,7 @@ export class PaymentService {
         'name': data.description,
       }).toString(),
     });
-    const product = await productResponse.json();
+    const product = await productResponse.json() as StripeProduct;
 
     // Crear precio
     const priceResponse = await fetch('https://api.stripe.com/v1/prices', {
@@ -357,7 +343,7 @@ export class PaymentService {
         'product': product.id,
       }).toString(),
     });
-    const price = await priceResponse.json();
+    const price = await priceResponse.json() as StripePrice;
 
     // Crear enlace de pago
     const linkResponse = await fetch('https://api.stripe.com/v1/payment_links', {
@@ -371,7 +357,7 @@ export class PaymentService {
         'line_items[0][quantity]': '1',
       }).toString(),
     });
-    const link = await linkResponse.json();
+    const link = await linkResponse.json() as StripePaymentLinkResponse;
 
     return {
       id: link.id,
@@ -390,31 +376,31 @@ export class PaymentService {
     payload: string,
     signature: string
   ): Promise<void> {
-    const config = await this.getGatewayConfig(organizationId, 'stripe') as StripeConfig;
+    const config = await this.getGatewayConfig<StripeConfig>(organizationId, 'stripe');
     if (!config) {
       throw new Error('Stripe no está configurado');
     }
 
     // Verificar firma del webhook (simplificado, en producción usar stripe.webhooks.constructEvent)
-    const event = JSON.parse(payload);
+    const event = JSON.parse(payload) as { type: string; data: { object: unknown } };
 
     switch (event.type) {
       case 'checkout.session.completed':
-        await this.handleStripeCheckoutCompleted(event.data.object);
+        await this.handleStripeCheckoutCompleted(event.data.object as StripeCheckoutSession);
         break;
       case 'payment_intent.succeeded':
-        await this.handleStripePaymentSucceeded(event.data.object);
+        await this.handleStripePaymentSucceeded(event.data.object as StripePaymentIntent);
         break;
       case 'payment_intent.payment_failed':
-        await this.handleStripePaymentFailed(event.data.object);
+        await this.handleStripePaymentFailed(event.data.object as StripePaymentIntent);
         break;
       case 'charge.refunded':
-        await this.handleStripeRefund(event.data.object);
+        await this.handleStripeRefund(event.data.object as StripeCharge);
         break;
     }
   }
 
-  private async handleStripeCheckoutCompleted(session: any): Promise<void> {
+  private async handleStripeCheckoutCompleted(session: StripeCheckoutSession): Promise<void> {
     await this.updatePaymentStatus(session.id, 'completed', {
       gatewayPaymentId: session.payment_intent,
       completedAt: new Date(),
@@ -424,25 +410,25 @@ export class PaymentService {
     // Actualizar factura/presupuesto/contrato si corresponde
     const metadata = session.metadata || {};
     if (metadata.invoiceId) {
-      await this.markInvoiceAsPaid(metadata.invoiceId, session.payment_intent);
+      await this.markInvoiceAsPaid(metadata.invoiceId, session.payment_intent || session.id);
     }
   }
 
-  private async handleStripePaymentSucceeded(paymentIntent: any): Promise<void> {
+  private async handleStripePaymentSucceeded(paymentIntent: StripePaymentIntent): Promise<void> {
     await this.db.execute(`
       UPDATE payments SET status = 'completed', completed_at = NOW()
       WHERE gateway_payment_id = $1 OR metadata->>'paymentIntentId' = $1
     `, [paymentIntent.id]);
   }
 
-  private async handleStripePaymentFailed(paymentIntent: any): Promise<void> {
+  private async handleStripePaymentFailed(paymentIntent: StripePaymentIntent): Promise<void> {
     await this.db.execute(`
       UPDATE payments SET status = 'failed', error_message = $1
       WHERE gateway_payment_id = $2 OR metadata->>'paymentIntentId' = $2
     `, [paymentIntent.last_payment_error?.message || 'Payment failed', paymentIntent.id]);
   }
 
-  private async handleStripeRefund(charge: any): Promise<void> {
+  private async handleStripeRefund(charge: StripeCharge): Promise<void> {
     await this.db.execute(`
       UPDATE payments SET status = 'refunded'
       WHERE gateway_payment_id = $1
@@ -470,7 +456,7 @@ export class PaymentService {
       body: 'grant_type=client_credentials',
     });
 
-    const data = await response.json();
+    const data = await response.json() as PayPalTokenResponse;
     return data.access_token;
   }
 
@@ -479,19 +465,9 @@ export class PaymentService {
    */
   async createPayPalOrder(
     organizationId: string,
-    data: {
-      clientId: string;
-      invoiceId?: string;
-      quoteId?: string;
-      contractId?: string;
-      amount: number;
-      currency: string;
-      description: string;
-      returnUrl: string;
-      cancelUrl: string;
-    }
-  ): Promise<{ orderId: string; approvalUrl: string }> {
-    const config = await this.getGatewayConfig(organizationId, 'paypal') as PayPalConfig;
+    data: PayPalOrderData
+  ): Promise<PayPalOrderResult> {
+    const config = await this.getGatewayConfig<PayPalConfig>(organizationId, 'paypal');
     if (!config) {
       throw new Error('PayPal no está configurado');
     }
@@ -533,13 +509,14 @@ export class PaymentService {
       }),
     });
 
-    const order = await response.json();
+    const order = await response.json() as PayPalOrder;
 
     if (order.error) {
-      throw new Error(order.error_description || order.message);
+      throw new Error(order.error_description || order.message || 'PayPal error');
     }
 
-    const approvalUrl = order.links.find((link: any) => link.rel === 'approve')?.href;
+    const approvalLink = order.links.find((link: PayPalLink) => link.rel === 'approve');
+    const approvalUrl = approvalLink?.href || '';
 
     // Registrar el pago pendiente
     await this.createPaymentRecord({
@@ -565,7 +542,7 @@ export class PaymentService {
    * Captura una orden de PayPal (después de aprobación del cliente)
    */
   async capturePayPalOrder(organizationId: string, orderId: string): Promise<boolean> {
-    const config = await this.getGatewayConfig(organizationId, 'paypal') as PayPalConfig;
+    const config = await this.getGatewayConfig<PayPalConfig>(organizationId, 'paypal');
     if (!config) {
       throw new Error('PayPal no está configurado');
     }
@@ -583,23 +560,27 @@ export class PaymentService {
       },
     });
 
-    const capture = await response.json();
+    const capture = await response.json() as PayPalOrder;
 
     if (capture.status === 'COMPLETED') {
+      const selfLink = capture.links?.find((l: PayPalLink) => l.rel === 'self');
+      
       await this.updatePaymentStatus(orderId, 'completed', {
         completedAt: new Date(),
-        receiptUrl: capture.links?.find((l: any) => l.rel === 'self')?.href,
+        receiptUrl: selfLink?.href,
       });
 
       // Actualizar factura si corresponde
       const customId = capture.purchase_units?.[0]?.payments?.captures?.[0]?.custom_id;
       if (customId) {
         try {
-          const metadata = JSON.parse(customId);
+          const metadata = JSON.parse(customId) as { invoiceId?: string };
           if (metadata.invoiceId) {
             await this.markInvoiceAsPaid(metadata.invoiceId, orderId);
           }
-        } catch (e) {}
+        } catch {
+          // Ignorar errores de parsing
+        }
       }
 
       return true;
@@ -614,7 +595,7 @@ export class PaymentService {
   /**
    * Procesa webhook de PayPal
    */
-  async processPayPalWebhook(organizationId: string, event: any): Promise<void> {
+  async processPayPalWebhook(organizationId: string, event: PayPalWebhookEvent): Promise<void> {
     switch (event.event_type) {
       case 'PAYMENT.CAPTURE.COMPLETED':
         await this.handlePayPalCaptureCompleted(event.resource);
@@ -628,7 +609,7 @@ export class PaymentService {
     }
   }
 
-  private async handlePayPalCaptureCompleted(capture: any): Promise<void> {
+  private async handlePayPalCaptureCompleted(capture: PayPalCapture): Promise<void> {
     // El orderId está en el supplementary_data
     const orderId = capture.supplementary_data?.related_ids?.order_id;
     if (orderId) {
@@ -638,7 +619,7 @@ export class PaymentService {
     }
   }
 
-  private async handlePayPalCaptureDenied(capture: any): Promise<void> {
+  private async handlePayPalCaptureDenied(capture: PayPalCapture): Promise<void> {
     const orderId = capture.supplementary_data?.related_ids?.order_id;
     if (orderId) {
       await this.updatePaymentStatus(orderId, 'failed', {
@@ -647,7 +628,7 @@ export class PaymentService {
     }
   }
 
-  private async handlePayPalRefund(refund: any): Promise<void> {
+  private async handlePayPalRefund(refund: PayPalCapture): Promise<void> {
     const captureId = refund.id;
     await this.db.execute(`
       UPDATE payments SET status = 'refunded'
@@ -662,7 +643,7 @@ export class PaymentService {
   /**
    * Crea un registro de pago
    */
-  private async createPaymentRecord(data: Omit<PaymentRecord, 'id' | 'createdAt'>): Promise<string> {
+  private async createPaymentRecord(data: CreatePaymentRecordInput): Promise<string> {
     const result = await this.db.execute(`
       INSERT INTO payments 
       (organization_id, client_id, invoice_id, quote_id, contract_id, amount, currency, gateway, status, gateway_payment_id, gateway_customer_id, payment_method, receipt_url, error_message, metadata, created_at)
@@ -684,9 +665,9 @@ export class PaymentService {
       data.receiptUrl,
       data.errorMessage,
       JSON.stringify(data.metadata || {}),
-    ]);
+    ]) as DatabaseQueryResult<{ id: string }>;
 
-    return result.rows[0].id;
+    return result.rows?.[0]?.id || '';
   }
 
   /**
@@ -695,10 +676,10 @@ export class PaymentService {
   private async updatePaymentStatus(
     gatewayPaymentId: string,
     status: PaymentStatus,
-    additionalData?: Partial<PaymentRecord>
+    additionalData?: PaymentUpdateData
   ): Promise<void> {
     const updates: string[] = ['status = $1'];
-    const values: any[] = [status];
+    const values: SqlParameterValue[] = [status];
     let paramIndex = 2;
 
     if (additionalData?.completedAt) {
@@ -744,7 +725,7 @@ export class PaymentService {
       SELECT * FROM payments
       WHERE organization_id = $1 AND client_id = $2
       ORDER BY created_at DESC
-    `, [organizationId, clientId]);
+    `, [organizationId, clientId]) as DatabaseQueryResult<PaymentRecord>;
 
     return result.rows || [];
   }
@@ -755,7 +736,7 @@ export class PaymentService {
   async getPayment(paymentId: string): Promise<PaymentRecord | null> {
     const result = await this.db.execute(`
       SELECT * FROM payments WHERE id = $1
-    `, [paymentId]);
+    `, [paymentId]) as DatabaseQueryResult<PaymentRecord>;
 
     return result.rows?.[0] || null;
   }
@@ -763,14 +744,11 @@ export class PaymentService {
   /**
    * Obtiene estadísticas de pagos
    */
-  async getPaymentStats(organizationId: string, startDate: Date, endDate: Date): Promise<{
-    total: number;
-    completed: number;
-    pending: number;
-    failed: number;
-    totalAmount: number;
-    byGateway: Record<string, { count: number; amount: number }>;
-  }> {
+  async getPaymentStats(
+    organizationId: string, 
+    startDate: Date, 
+    endDate: Date
+  ): Promise<PaymentStats> {
     const result = await this.db.execute(`
       SELECT 
         COUNT(*) as total,
@@ -780,16 +758,16 @@ export class PaymentService {
         SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as total_amount
       FROM payments
       WHERE organization_id = $1 AND created_at BETWEEN $2 AND $3
-    `, [organizationId, startDate, endDate]);
+    `, [organizationId, startDate, endDate]) as DatabaseQueryResult<PaymentStatsRow>;
 
     const gatewayResult = await this.db.execute(`
       SELECT gateway, COUNT(*) as count, SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as amount
       FROM payments
       WHERE organization_id = $1 AND created_at BETWEEN $2 AND $3
       GROUP BY gateway
-    `, [organizationId, startDate, endDate]);
+    `, [organizationId, startDate, endDate]) as DatabaseQueryResult<GatewayStatsRow>;
 
-    const stats = result.rows?.[0] || {};
+    const stats = result.rows?.[0];
     const byGateway: Record<string, { count: number; amount: number }> = {};
 
     for (const row of gatewayResult.rows || []) {
@@ -800,11 +778,11 @@ export class PaymentService {
     }
 
     return {
-      total: parseInt(stats.total) || 0,
-      completed: parseInt(stats.completed) || 0,
-      pending: parseInt(stats.pending) || 0,
-      failed: parseInt(stats.failed) || 0,
-      totalAmount: parseFloat(stats.total_amount) || 0,
+      total: parseInt(stats?.total || '0') || 0,
+      completed: parseInt(stats?.completed || '0') || 0,
+      pending: parseInt(stats?.pending || '0') || 0,
+      failed: parseInt(stats?.failed || '0') || 0,
+      totalAmount: parseFloat(stats?.total_amount || '0') || 0,
       byGateway,
     };
   }
@@ -824,7 +802,7 @@ export class PaymentService {
       FROM invoices i
       JOIN clients c ON i.client_id = c.id
       WHERE i.id = $1
-    `, [invoiceId]);
+    `, [invoiceId]) as DatabaseQueryResult<InvoiceWithClient>;
 
     const invoice = invoiceResult.rows?.[0];
     if (!invoice) {

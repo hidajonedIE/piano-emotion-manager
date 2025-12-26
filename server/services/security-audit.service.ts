@@ -1,4 +1,6 @@
 /**
+import type { MySql2Database } from 'drizzle-orm/mysql2';
+type DatabaseConnection = MySql2Database<Record<string, never>>;
  * Servicio de Auditoría de Seguridad
  * Piano Emotion Manager
  * 
@@ -42,9 +44,9 @@ export interface AuditEvent {
  * Servicio de auditoría
  */
 export class SecurityAuditService {
-  private db: any;
+  private db: DatabaseConnection;
   
-  constructor(db: any) {
+  constructor(db: DatabaseConnection) {
     this.db = db;
   }
   
@@ -196,7 +198,7 @@ export class SecurityAuditService {
  */
 let auditServiceInstance: SecurityAuditService | null = null;
 
-export function getAuditService(db: any): SecurityAuditService {
+export function getAuditService(db: DatabaseConnection): SecurityAuditService {
   if (!auditServiceInstance) {
     auditServiceInstance = new SecurityAuditService(db);
   }

@@ -63,7 +63,7 @@ export default function LoginScreen() {
       } else {
         setError("Error al iniciar sesión. Por favor, inténtalo de nuevo.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Login] Sign in error:", err);
       if (err.errors?.[0]?.message) {
         setError(err.errors[0].message);
@@ -92,7 +92,7 @@ export default function LoginScreen() {
       // Enviar código de verificación
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setPendingVerification(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Login] Sign up error:", err);
       if (err.errors?.[0]?.message) {
         setError(err.errors[0].message);
@@ -121,7 +121,7 @@ export default function LoginScreen() {
       } else {
         setError("Código de verificación incorrecto.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Login] Verification error:", err);
       if (err.errors?.[0]?.message) {
         setError(err.errors[0].message);
@@ -164,7 +164,7 @@ export default function LoginScreen() {
         return;
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Login] Google sign in error:", err);
       if (err.errors?.[0]?.message) {
         setError(err.errors[0].message);

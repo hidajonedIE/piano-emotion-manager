@@ -49,7 +49,7 @@ interface CertificateInfo {
 interface TestResult {
   success: boolean;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 // ============================================

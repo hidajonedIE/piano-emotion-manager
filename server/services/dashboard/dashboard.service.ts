@@ -5,6 +5,22 @@
  */
 
 import { eq, and, desc } from 'drizzle-orm';
+import type {
+  DatabaseConnection,
+  WidgetConfig,
+  StatsCardData,
+  ChartData,
+  RecentClient,
+  RecentService,
+  RecentInvoice,
+  UpcomingAppointment,
+  RevenueSummary,
+  PaymentStatusData,
+  InventoryAlert,
+  TeamActivityMember,
+  DashboardLayoutRow,
+  SqlParameterValue,
+} from './dashboard.types';
 
 // Tipos de widget disponibles
 export type WidgetType = 
@@ -142,9 +158,9 @@ const WIDGET_CATALOG = [
 ];
 
 export class DashboardService {
-  private db: any;
+  private db: DatabaseConnection;
 
-  constructor(db: any) {
+  constructor(db: DatabaseConnection) {
     this.db = db;
   }
 
@@ -164,7 +180,7 @@ export class DashboardService {
       ORDER BY l.is_default DESC, l.updated_at DESC
     `, [userId, organizationId]);
 
-    return (result.rows || []).map((row: any) => ({
+    return (result.rows || []).map((row: DashboardLayoutRow) => ({
       ...row,
       widgets: row.widgets || [],
     }));
@@ -234,7 +250,7 @@ export class DashboardService {
    */
   async updateLayout(layoutId: string, data: Partial<DashboardLayout>): Promise<void> {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: SqlParameterValue[] = [];
     let paramIndex = 1;
 
     if (data.name !== undefined) {
@@ -329,7 +345,7 @@ export class DashboardService {
    */
   async updateWidget(widgetId: string, data: Partial<Widget>): Promise<void> {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: SqlParameterValue[] = [];
     let paramIndex = 1;
 
     if (data.title !== undefined) {
@@ -490,7 +506,7 @@ export class DashboardService {
     }
   }
 
-  private async getStatsCardData(organizationId: string, config: any): Promise<any> {
+  private async getStatsCardData(organizationId: string, config: WidgetConfig): Promise<StatsCardData> {
     const metric = config.metric;
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -543,7 +559,7 @@ export class DashboardService {
     };
   }
 
-  private async getChartData(organizationId: string, config: any): Promise<any> {
+  private async getChartData(organizationId: string, config: WidgetConfig): Promise<ChartData> {
     // Implementación simplificada - retorna datos de ejemplo
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const currentMonth = new Date().getMonth();
@@ -560,14 +576,14 @@ export class DashboardService {
     return { labels, data };
   }
 
-  private async getPieChartData(organizationId: string, config: any): Promise<any> {
+  private async getPieChartData(organizationId: string, config: WidgetConfig): Promise<ChartData> {
     return {
       labels: ['Afinación', 'Regulación', 'Reparación', 'Otros'],
       data: [45, 25, 20, 10],
     };
   }
 
-  private async getRecentClients(organizationId: string, limit: number): Promise<any[]> {
+  private async getRecentClients(organizationId: string, limit: number): Promise<RecentClient[]> {
     const result = await this.db.execute(`
       SELECT id, name, email, phone, created_at
       FROM clients
@@ -579,7 +595,7 @@ export class DashboardService {
     return result.rows || [];
   }
 
-  private async getRecentServices(organizationId: string, limit: number): Promise<any[]> {
+  private async getRecentServices(organizationId: string, limit: number): Promise<RecentService[]> {
     const result = await this.db.execute(`
       SELECT s.id, s.type, s.status, s.created_at, c.name as client_name
       FROM services s
@@ -592,7 +608,7 @@ export class DashboardService {
     return result.rows || [];
   }
 
-  private async getRecentInvoices(organizationId: string, limit: number): Promise<any[]> {
+  private async getRecentInvoices(organizationId: string, limit: number): Promise<RecentInvoice[]> {
     const result = await this.db.execute(`
       SELECT i.id, i.invoice_number, i.total, i.status, i.created_at, c.name as client_name
       FROM invoices i
@@ -605,7 +621,7 @@ export class DashboardService {
     return result.rows || [];
   }
 
-  private async getUpcomingAppointments(organizationId: string, limit: number): Promise<any[]> {
+  private async getUpcomingAppointments(organizationId: string, limit: number): Promise<UpcomingAppointment[]> {
     const result = await this.db.execute(`
       SELECT a.id, a.date, a.time, a.type, c.name as client_name, c.address
       FROM appointments a
@@ -618,7 +634,7 @@ export class DashboardService {
     return result.rows || [];
   }
 
-  private async getRevenueSummary(organizationId: string, period: string): Promise<any> {
+  private async getRevenueSummary(organizationId: string, period: string): Promise<RevenueSummary> {
     const now = new Date();
     let startDate: Date;
 
@@ -652,7 +668,7 @@ export class DashboardService {
     return result.rows?.[0] || { total: 0, count: 0, paid: 0, pending: 0 };
   }
 
-  private async getPaymentStatus(organizationId: string): Promise<any> {
+  private async getPaymentStatus(organizationId: string): Promise<PaymentStatusData> {
     const result = await this.db.execute(`
       SELECT 
         COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid,
@@ -666,7 +682,7 @@ export class DashboardService {
     return result.rows?.[0] || { paid: 0, pending: 0, overdue: 0, pending_amount: 0 };
   }
 
-  private async getInventoryAlerts(organizationId: string): Promise<any[]> {
+  private async getInventoryAlerts(organizationId: string): Promise<InventoryAlert[]> {
     const result = await this.db.execute(`
       SELECT id, name, current_stock, min_stock
       FROM inventory_items
@@ -678,7 +694,7 @@ export class DashboardService {
     return result.rows || [];
   }
 
-  private async getTeamActivity(organizationId: string, limit: number): Promise<any[]> {
+  private async getTeamActivity(organizationId: string, limit: number): Promise<TeamActivityMember[]> {
     const result = await this.db.execute(`
       SELECT 
         tm.id,
