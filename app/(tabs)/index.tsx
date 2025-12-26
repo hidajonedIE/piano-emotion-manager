@@ -21,6 +21,7 @@ import {
   DashboardStats,
   DashboardAlerts,
   DashboardQuickActions,
+  DashboardPredictions,
   DashboardRecentServices,
 } from '@/components/dashboard';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
@@ -153,6 +154,9 @@ export default function DashboardScreen() {
               urgentCount={stats.urgentCount} 
               pendingCount={stats.pendingCount} 
             />
+
+            {/* Predicciones IA */}
+            <DashboardPredictions />
 
             {/* Este Mes - Estadísticas */}
             <DashboardStats
