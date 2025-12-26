@@ -19,3 +19,5 @@ export { DashboardRecentServices } from './dashboard-recent-services';
 export { DashboardSettingsPanel } from './dashboard-settings-panel';
 export { DashboardDraggable } from './dashboard-draggable';
 export { DashboardDraggableWeb } from './dashboard-draggable-web';
+export { DashboardSortableWeb } from './dashboard-sortable-web';
+export { DashboardSortableNative } from './dashboard-sortable-native';
