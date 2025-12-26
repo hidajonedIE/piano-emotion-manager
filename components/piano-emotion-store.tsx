@@ -128,14 +128,11 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
             <Text style={styles.logoText}>🎹</Text>
           </View>
           <View style={styles.headerTextContainer}>
-            <Text style={styles.headerTitle}>Piano Emotion</Text>
-            <Text style={styles.headerSubtitle}>Tienda de productos premium</Text>
+            <Text style={styles.headerTitle}>Piano Emotion Store</Text>
+            <Text style={styles.headerSubtitle}>Tienda de productos para técnicos</Text>
           </View>
         </View>
         <View style={styles.headerRight}>
-          <View style={styles.premiumBadge}>
-            <Text style={styles.premiumBadgeText}>Premium</Text>
-          </View>
           <IconSymbol name="chevron.right" size={20} color="#7A8B99" />
         </View>
       </Pressable>
@@ -252,11 +249,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    // Use negative margin to extend beyond Accordion's paddingHorizontal (16px)
-    marginHorizontal: -16,
     marginVertical: 8,
-    // Add internal padding to compensate
-    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
