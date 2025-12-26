@@ -6,10 +6,10 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../../trpc';
+import { router, protectedProcedure } from '../../_core/trpc.js';
 import { TRPCError } from '@trpc/server';
-import { r2Upload, r2Delete, r2GetSignedUrl, generateStorageKey, isR2Configured } from '../../services/r2-storage';
-import { hasFeatureAccess } from '../../config/subscription-plans';
+import { r2Upload, r2Delete, r2GetSignedUrl, generateStorageKey, isR2Configured } from '../../services/r2-storage.js';
+import { hasFeatureAccess } from '../../config/subscription-plans.js';
 
 // Input schemas
 const uploadImageSchema = z.object({
