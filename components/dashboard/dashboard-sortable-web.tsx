@@ -167,7 +167,7 @@ const DragOverlayContent = memo(function DragOverlayContent({
         borderRadius: 16,
         overflow: 'hidden',
         boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
-        transform: 'scale(1.02) rotate(1deg)',
+        transform: 'scale(1.02)',
         border: `3px solid ${accent}`,
         backgroundColor: '#FFFFFF',
         cursor: 'grabbing',
