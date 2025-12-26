@@ -3,5 +3,26 @@
  * Piano Emotion Manager
  */
 
-export { teamRouter, organizationsRouter, membersRouter, workAssignmentsRouter } from './team.router';
-export { teamExtendedRouter, absencesRouter, metricsRouter, zonesRouter } from './team-extended.router';
+// Routers de entidades principales
+export { clientsRouter } from './clients.router.js';
+export { pianosRouter } from './pianos.router.js';
+export { servicesRouter } from './services.router.js';
+export { inventoryRouter } from './inventory.router.js';
+export { appointmentsRouter } from './appointments.router.js';
+export { invoicesRouter } from './invoices.router.js';
+export { quotesRouter } from './quotes.router.js';
+export { quoteTemplatesRouter } from './quote-templates.router.js';
+export { remindersRouter } from './reminders.router.js';
+
+// Routers de configuración
+export { authRouter } from './auth.router.js';
+export { businessInfoRouter } from './business-info.router.js';
+export { serviceRatesRouter } from './service-rates.router.js';
+export { modulesRouter } from './modules.router.js';
+
+// Routers avanzados
+export { advancedRouter } from './advanced.router.js';
+
+// Routers de equipos (existentes)
+export { teamRouter, organizationsRouter, membersRouter, workAssignmentsRouter } from './team.router.js';
+export { teamExtendedRouter, absencesRouter, metricsRouter, zonesRouter } from './team-extended.router.js';

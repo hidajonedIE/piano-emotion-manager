@@ -6,7 +6,7 @@
  */
 
 import { eq, and, gte, lte, desc, asc, sql, or } from 'drizzle-orm';
-import { db } from '../../db';
+import { getDb } from '../../db.js';
 import {
   workAssignments,
   organizationMembers,

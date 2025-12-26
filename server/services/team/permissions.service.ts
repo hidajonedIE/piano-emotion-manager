@@ -6,7 +6,7 @@
  */
 
 import { eq, and } from 'drizzle-orm';
-import { db } from '../../db';
+import { getDb } from '../../db.js';
 import { organizationMembers, OrganizationMember } from '../../../drizzle/team-schema';
 
 // ==========================================
