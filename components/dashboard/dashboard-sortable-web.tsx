@@ -104,16 +104,16 @@ const SortableItem = memo(function SortableItem({
           position: 'relative',
         }}
       >
-        {/* Indicador visual de que es draggable - aparece al hover */}
+        {/* Indicador visual de que es draggable - aparece al hover en la esquina inferior izquierda */}
         <div
           style={{
             position: 'absolute',
-            top: 8,
-            right: 8,
+            bottom: 8,
+            left: 8,
             width: 28,
             height: 28,
             borderRadius: 14,
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(0,0,0,0.6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

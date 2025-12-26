@@ -2,9 +2,12 @@
  * Dashboard Sortable Native Component
  * Drag & drop DIRECTO sin modo edición
  * Long press para activar el drag, arrastrar y soltar
+ * 
+ * IMPORTANTE: En móvil, este componente maneja su propio scroll
+ * para que el drag funcione correctamente
  */
-import { memo, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { memo, useCallback, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import DraggableFlatList, {
   ScaleDecorator,
   ShadowDecorator,
@@ -18,54 +21,11 @@ import { DashboardSectionId, DashboardSectionConfig } from '@/hooks/use-dashboar
 
 interface DashboardSortableNativeProps {
   sections: DashboardSectionConfig[];
-  isEditMode: boolean; // Ya no se usa, pero mantenemos por compatibilidad
+  isEditMode: boolean;
   onReorder: (sections: DashboardSectionConfig[]) => void;
   onToggleVisibility: (sectionId: DashboardSectionId) => void;
   renderSection: (sectionId: DashboardSectionId) => React.ReactNode;
 }
-
-// Componente de item draggable
-interface DraggableItemProps {
-  section: DashboardSectionConfig;
-  drag: () => void;
-  isActive: boolean;
-  renderSection: (sectionId: DashboardSectionId) => React.ReactNode;
-}
-
-const DraggableItem = memo(function DraggableItem({
-  section,
-  drag,
-  isActive,
-  renderSection,
-}: DraggableItemProps) {
-  const handleLongPress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    drag();
-  }, [drag]);
-
-  if (!section.visible) return null;
-
-  return (
-    <ScaleDecorator>
-      <ShadowDecorator>
-        <OpacityDecorator>
-          <View
-            style={[
-              styles.sectionContainer,
-              isActive && styles.sectionContainerActive,
-            ]}
-            onTouchStart={() => {}}
-            // @ts-ignore - onLongPress funciona en View con Gesture Handler
-            onLongPress={handleLongPress}
-            delayLongPress={200}
-          >
-            {renderSection(section.id)}
-          </View>
-        </OpacityDecorator>
-      </ShadowDecorator>
-    </ScaleDecorator>
-  );
-});
 
 export const DashboardSortableNative = memo(function DashboardSortableNative({
   sections,
@@ -75,12 +35,19 @@ export const DashboardSortableNative = memo(function DashboardSortableNative({
   renderSection,
 }: DashboardSortableNativeProps) {
   const accent = useThemeColor({}, 'accent');
+  const [isDragging, setIsDragging] = useState(false);
 
   // Filtrar solo secciones visibles
   const visibleSections = sections.filter(s => s.visible);
 
+  const handleDragBegin = useCallback(() => {
+    setIsDragging(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, []);
+
   const handleDragEnd = useCallback(
     ({ data }: { data: DashboardSectionConfig[] }) => {
+      setIsDragging(false);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       
       // Reconstruir el array completo manteniendo las secciones ocultas en su posición
@@ -93,13 +60,32 @@ export const DashboardSortableNative = memo(function DashboardSortableNative({
 
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<DashboardSectionConfig>) => {
+      if (!item.visible) return null;
+
       return (
-        <DraggableItem
-          section={item}
-          drag={drag}
-          isActive={isActive}
-          renderSection={renderSection}
-        />
+        <ScaleDecorator activeScale={1.03}>
+          <ShadowDecorator>
+            <OpacityDecorator activeOpacity={0.7}>
+              <TouchableOpacity
+                onLongPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  drag();
+                }}
+                delayLongPress={150}
+                activeOpacity={1}
+                disabled={isActive}
+                style={[
+                  styles.sectionContainer,
+                  isActive && styles.sectionContainerActive,
+                ]}
+              >
+                <View pointerEvents={isActive ? 'none' : 'auto'}>
+                  {renderSection(item.id)}
+                </View>
+              </TouchableOpacity>
+            </OpacityDecorator>
+          </ShadowDecorator>
+        </ScaleDecorator>
       );
     },
     [renderSection]
@@ -108,27 +94,24 @@ export const DashboardSortableNative = memo(function DashboardSortableNative({
   const keyExtractor = useCallback((item: DashboardSectionConfig) => item.id, []);
 
   return (
-    <View style={styles.container}>
-      <DraggableFlatList
-        data={visibleSections}
-        onDragEnd={handleDragEnd}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        containerStyle={styles.flatListContainer}
-        scrollEnabled={false}
-        activationDistance={10}
-        dragItemOverflow={true}
-      />
-    </View>
+    <DraggableFlatList
+      data={visibleSections}
+      onDragBegin={handleDragBegin}
+      onDragEnd={handleDragEnd}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      containerStyle={styles.flatListContainer}
+      activationDistance={5}
+      dragItemOverflow={true}
+      autoscrollSpeed={200}
+      autoscrollThreshold={80}
+    />
   );
 });
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 2,
-  },
   flatListContainer: {
-    overflow: 'visible',
+    flex: 1,
   },
   sectionContainer: {
     marginBottom: 2,
@@ -137,10 +120,9 @@ const styles = StyleSheet.create({
   },
   sectionContainerActive: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 12,
-    transform: [{ scale: 1.02 }],
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
   },
 });
