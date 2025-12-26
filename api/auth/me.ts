@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { COOKIE_NAME } from "../../shared/const.js";
 import { sdk } from "../../server/_core/sdk.js";
 import { verifyClerkSession, getOrCreateUserFromClerk } from "../../server/_core/clerk.js";
-import { db } from "../../server/db/index.js";
+import { getDb } from "../../server/db.js";
 import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 
@@ -15,17 +15,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Try Clerk authentication first (new system)
     const clerkUser = await verifyClerkSession(req);
     if (clerkUser) {
-      const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
-      return res.json({
-        user: {
-          id: dbUser.id,
-          openId: dbUser.openId || clerkUser.id,
-          name: dbUser.name,
-          email: dbUser.email,
-          loginMethod: "clerk",
-          lastSignedIn: (dbUser.lastSignedIn ?? new Date()).toISOString(),
-        }
-      });
+      const db = await getDb();
+      if (db) {
+        const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
+        return res.json({
+          user: {
+            id: (dbUser as any).id,
+            openId: (dbUser as any).openId || clerkUser.id,
+            name: dbUser.name,
+            email: dbUser.email,
+            loginMethod: "clerk",
+            lastSignedIn: ((dbUser as any).lastSignedIn ?? new Date()).toISOString(),
+          }
+        });
+      }
     }
 
     // Fall back to legacy SDK authentication
