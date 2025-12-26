@@ -6,7 +6,8 @@
  */
 
 import { useRouter, Stack } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Alert,
   Pressable,
@@ -149,6 +150,9 @@ export default function SettingsIndexScreen() {
   const insets = useSafeAreaInsets();
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [hasChanges, setHasChanges] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
@@ -186,8 +190,8 @@ export default function SettingsIndexScreen() {
         } catch (apiError) {
           // Si falla la API, usamos los datos locales (ya cargados)
         }
-      } catch (error) {
-        console.error('Error cargando configuraciones:', error);
+      } catch (err) {
+        // Error silencioso - usar configuración por defecto
       }
     };
     loadSettings();
@@ -219,21 +223,35 @@ export default function SettingsIndexScreen() {
         
         if (!response.ok) {
           // Si falla la API, los datos ya están guardados localmente
-          console.warn('No se pudo sincronizar con el servidor, guardado localmente');
+          // Guardado localmente exitoso, sincronización con servidor fallida
         }
       } catch (apiError) {
         // Continuar aunque falle la API - los datos están guardados localmente
-        console.warn('Error sincronizando con API:', apiError);
       }
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('Guardado', 'La configuración se ha guardado correctamente.');
       setHasChanges(false);
-    } catch (error) {
-      console.error('Error guardando configuraciones:', error);
+    } catch (err) {
       Alert.alert('Error', 'No se pudo guardar la configuración.');
     }
   };
+
+  /**
+   * Verifica si el usuario tiene suscripción premium
+   */
+  const checkPremiumStatus = useCallback(async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/user/subscription');
+      if (response.ok) {
+        const data = await response.json();
+        return data.plan !== 'free';
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, []);
 
   const toggleModule = (moduleCode: string) => {
     const module = ALL_MODULES.find(m => m.code === moduleCode);
