@@ -1,4 +1,5 @@
 import { useSignIn, useSignUp, useAuth } from "@clerk/clerk-expo";
+import { useSSO } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { useState, useCallback, useEffect } from "react";
 import {
@@ -11,10 +12,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
-import * as Linking from "expo-linking";
 
 // Completar el flujo de OAuth en web
 if (Platform.OS === "web") {
@@ -27,6 +26,7 @@ export default function LoginScreen() {
   const { signIn, setActive: setSignInActive, isLoaded: isSignInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: isSignUpLoaded } = useSignUp();
   const { isSignedIn } = useAuth();
+  const { startSSOFlow } = useSSO();
   const router = useRouter();
 
   const [mode, setMode] = useState<AuthMode>("signIn");
@@ -135,43 +135,50 @@ export default function LoginScreen() {
   }, [isSignUpLoaded, signUp, verificationCode, setSignUpActive, router]);
 
   const handleGoogleSignIn = useCallback(async () => {
-    if (!isSignInLoaded || !signIn) return;
-
     try {
       setLoading(true);
       setError(null);
 
-      const redirectUrl = Linking.createURL("/");
-
-      const { createdSessionId, signIn: signInResult, signUp: signUpResult } = await signIn.create({
+      // Use the new useSSO hook for Google OAuth
+      const { createdSessionId, setActive, signIn: ssoSignIn, signUp: ssoSignUp } = await startSSOFlow({
         strategy: "oauth_google",
-        redirectUrl,
       });
 
-      if (createdSessionId) {
-        await setSignInActive({ session: createdSessionId });
+      // If we have a created session, set it as active
+      if (createdSessionId && setActive) {
+        await setActive({ session: createdSessionId });
         router.replace("/");
-      } else {
-        // Abrir el flujo de OAuth
-        const { externalVerificationRedirectURL } = signInResult || signUpResult || {};
-        if (externalVerificationRedirectURL) {
-          if (Platform.OS === "web") {
-            window.location.href = externalVerificationRedirectURL.toString();
-          } else {
-            await WebBrowser.openAuthSessionAsync(
-              externalVerificationRedirectURL.toString(),
-              redirectUrl
-            );
-          }
-        }
+        return;
       }
+
+      // Check if we need to complete sign up (user doesn't exist yet)
+      if (ssoSignUp?.createdSessionId && setActive) {
+        await setActive({ session: ssoSignUp.createdSessionId });
+        router.replace("/");
+        return;
+      }
+
+      // Check if sign in was successful
+      if (ssoSignIn?.createdSessionId && setActive) {
+        await setActive({ session: ssoSignIn.createdSessionId });
+        router.replace("/");
+        return;
+      }
+
+      console.log("[Login] Google OAuth flow completed but no session created");
     } catch (err: any) {
       console.error("[Login] Google sign in error:", err);
-      setError("Error al iniciar sesión con Google.");
+      if (err.errors?.[0]?.message) {
+        setError(err.errors[0].message);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Error al iniciar sesión con Google.");
+      }
     } finally {
       setLoading(false);
     }
-  }, [isSignInLoaded, signIn, setSignInActive, router]);
+  }, [startSSOFlow, router]);
 
   // Pantalla de verificación de email
   if (pendingVerification) {
