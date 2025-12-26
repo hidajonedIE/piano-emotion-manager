@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { View, StyleSheet, Pressable, Modal, ScrollView, Platform } from 'react-native';
+import { View, StyleSheet, Pressable, Modal, ScrollView, Platform, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, usePathname } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -55,6 +56,11 @@ const MENU_ITEMS: MenuItem[] = [
   { key: 'modules', label: 'Módulos', icon: 'square.grid.2x2.fill', route: '/settings/modules', color: '#8B5CF6' },
   { key: 'settings', label: 'Configuración', icon: 'gearshape.fill', route: '/settings', color: '#64748B' },
   { key: 'help', label: 'Ayuda', icon: 'questionmark.circle.fill', route: '/help', color: '#0EA5E9' },
+  
+  { key: 'divider4', label: '', icon: '', route: '', color: '' },
+  
+  // Sesión
+  { key: 'logout', label: 'Cerrar Sesión', icon: 'rectangle.portrait.and.arrow.right', route: 'logout', color: '#EF4444' },
 ];
 
 export function HamburgerMenu() {
@@ -69,6 +75,35 @@ export function HamburgerMenu() {
   const accent = useThemeColor({}, 'accent');
 
   const handleMenuPress = useCallback((item: MenuItem) => {
+    // Manejar logout especialmente
+    if (item.key === 'logout') {
+      setIsOpen(false);
+      Alert.alert(
+        'Cerrar Sesión',
+        '¿Estás seguro de que quieres cerrar sesión?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Cerrar Sesión',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await AsyncStorage.clear();
+                if (Platform.OS === 'web') {
+                  window.location.href = '/api/auth/logout';
+                } else {
+                  router.replace('/login' as any);
+                }
+              } catch (err) {
+                Alert.alert('Error', 'No se pudo cerrar sesión');
+              }
+            },
+          },
+        ]
+      );
+      return;
+    }
+    
     setIsOpen(false);
     // Pequeño delay para que se cierre el menú antes de navegar
     setTimeout(() => {
