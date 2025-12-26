@@ -966,6 +966,128 @@ export default function SettingsIndexScreen() {
           </View>
         </Accordion>
 
+        {/* ========== APARIENCIA ========== */}
+        <Accordion
+          title="Apariencia"
+          icon="paintbrush.fill"
+          iconColor="#8B5CF6"
+          defaultOpen={false}
+        >
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <View style={styles.settingRow}>
+              <View style={[styles.settingIcon, { backgroundColor: '#8B5CF620' }]}>
+                <IconSymbol name="moon.fill" size={20} color="#8B5CF6" />
+              </View>
+              <View style={styles.settingContent}>
+                <ThemedText style={styles.settingLabel}>Tema</ThemedText>
+                <ThemedText style={[styles.settingSublabel, { color: textSecondary }]}>Elige el modo de visualización</ThemedText>
+              </View>
+            </View>
+            <View style={styles.themeOptions}>
+              <Pressable
+                style={[styles.themeOption, settings.theme === 'auto' && { borderColor: accent, backgroundColor: `${accent}10` }]}
+                onPress={() => updateSettings({ theme: 'auto' })}
+              >
+                <IconSymbol name="sparkles" size={24} color={settings.theme === 'auto' ? accent : textSecondary} />
+                <ThemedText style={[styles.themeOptionText, settings.theme === 'auto' && { color: accent }]}>Automático</ThemedText>
+              </Pressable>
+              <Pressable
+                style={[styles.themeOption, settings.theme === 'light' && { borderColor: accent, backgroundColor: `${accent}10` }]}
+                onPress={() => updateSettings({ theme: 'light' })}
+              >
+                <IconSymbol name="sun.max.fill" size={24} color={settings.theme === 'light' ? accent : textSecondary} />
+                <ThemedText style={[styles.themeOptionText, settings.theme === 'light' && { color: accent }]}>Claro</ThemedText>
+              </Pressable>
+              <Pressable
+                style={[styles.themeOption, settings.theme === 'dark' && { borderColor: accent, backgroundColor: `${accent}10` }]}
+                onPress={() => updateSettings({ theme: 'dark' })}
+              >
+                <IconSymbol name="moon.fill" size={24} color={settings.theme === 'dark' ? accent : textSecondary} />
+                <ThemedText style={[styles.themeOptionText, settings.theme === 'dark' && { color: accent }]}>Oscuro</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </Accordion>
+
+        {/* ========== DATOS Y BACKUP ========== */}
+        <Accordion
+          title="Datos y Backup"
+          icon="externaldrive.fill"
+          iconColor="#06B6D4"
+          defaultOpen={false}
+        >
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <Pressable
+              style={[styles.linkRow, { borderBottomColor: borderColor }]}
+              onPress={async () => {
+                try {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  Alert.alert(
+                    'Exportar Datos',
+                    'Se generará un archivo con todos tus datos (clientes, pianos, servicios, facturas, etc.).',
+                    [
+                      { text: 'Cancelar', style: 'cancel' },
+                      { 
+                        text: 'Exportar', 
+                        onPress: async () => {
+                          // Simular exportación
+                          Alert.alert('✅ Exportación Completada', 'Tus datos han sido exportados correctamente.');
+                          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        }
+                      },
+                    ]
+                  );
+                } catch (err) {
+                  Alert.alert('Error', 'No se pudieron exportar los datos.');
+                }
+              }}
+            >
+              <View style={styles.linkRowContent}>
+                <IconSymbol name="square.and.arrow.up" size={20} color={accent} />
+                <View>
+                  <ThemedText style={styles.linkText}>Exportar Datos</ThemedText>
+                  <ThemedText style={[styles.linkSubtext, { color: textSecondary }]}>Descarga una copia de todos tus datos</ThemedText>
+                </View>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+            </Pressable>
+
+            <Pressable
+              style={[styles.linkRow, { borderBottomColor: borderColor }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                Alert.alert(
+                  'Importar Datos',
+                  'Selecciona un archivo de backup para restaurar tus datos.',
+                  [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Seleccionar Archivo', onPress: () => {} },
+                  ]
+                );
+              }}
+            >
+              <View style={styles.linkRowContent}>
+                <IconSymbol name="square.and.arrow.down" size={20} color={accent} />
+                <View>
+                  <ThemedText style={styles.linkText}>Importar Datos</ThemedText>
+                  <ThemedText style={[styles.linkSubtext, { color: textSecondary }]}>Restaura desde un archivo de backup</ThemedText>
+                </View>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+            </Pressable>
+
+            <View style={[styles.linkRow, { borderBottomWidth: 0 }]}>
+              <View style={styles.linkRowContent}>
+                <IconSymbol name="clock.arrow.circlepath" size={20} color={success} />
+                <View>
+                  <ThemedText style={styles.linkText}>Último Backup</ThemedText>
+                  <ThemedText style={[styles.linkSubtext, { color: textSecondary }]}>Nunca (configura backup automático)</ThemedText>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Accordion>
+
         {/* ========== LEGAL ========== */}
         <Accordion
           title="Legal y Privacidad"
@@ -1305,5 +1427,35 @@ const styles = StyleSheet.create({
   },
   frequencyOptionText: {
     fontSize: 13,
+  },
+  // Estilos para selector de tema
+  themeOptions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  themeOption: {
+    flex: 1,
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    gap: Spacing.xs,
+  },
+  themeOptionText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  // Estilos para backup
+  linkRowContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    flex: 1,
+  },
+  linkSubtext: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });

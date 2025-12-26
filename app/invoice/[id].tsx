@@ -194,6 +194,9 @@ export default function InvoiceDetailScreen() {
     setShowClientPicker(false);
   };
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!form.clientName?.trim()) {
       Alert.alert('Error', 'Debes seleccionar un cliente');
@@ -205,20 +208,34 @@ export default function InvoiceDetailScreen() {
       return;
     }
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setIsSaving(true);
+    setSaveError(null);
 
-    const invoiceData = {
-      ...form,
-      business: businessInfo,
-      ...totals,
-    };
+    try {
+      const invoiceData = {
+        ...form,
+        business: businessInfo,
+        ...totals,
+      };
 
-    if (isNew) {
-      await addInvoice(invoiceData as any);
-      router.back();
-    } else if (id) {
-      await updateInvoice(id, invoiceData);
-      setIsEditing(false);
+      if (isNew) {
+        await addInvoice(invoiceData as any);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Factura creada correctamente');
+        router.back();
+      } else if (id) {
+        await updateInvoice(id, invoiceData);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Factura actualizada correctamente');
+        setIsEditing(false);
+      }
+    } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar la factura';
+      setSaveError(errorMessage);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -522,6 +539,42 @@ export default function InvoiceDetailScreen() {
                 <ThemedText style={[styles.actionButtonText, { color: '#FFFFFF' }]}>Marcar como Pagada</ThemedText>
               </Pressable>
             )}
+            <Pressable 
+              style={[styles.actionButtonFull, { backgroundColor: accent }]} 
+              onPress={async () => {
+                try {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  // Generar PDF usando el servicio
+                  const { generateInvoicePDF } = await import('@/server/services/pdf/invoice-pdf.service');
+                  const pdfData = await generateInvoicePDF({
+                    invoiceNumber: form.invoiceNumber || '',
+                    date: form.date || new Date().toISOString(),
+                    dueDate: form.dueDate,
+                    status: form.status || 'draft',
+                    clientName: form.clientName || '',
+                    clientEmail: form.clientEmail,
+                    clientAddress: form.clientAddress,
+                    clientTaxId: form.clientTaxId,
+                    items: form.items || [],
+                    subtotal: form.subtotal || 0,
+                    taxRate: form.taxRate || 21,
+                    taxAmount: form.taxAmount || 0,
+                    total: form.total || 0,
+                    notes: form.notes,
+                    paymentTerms: form.paymentTerms,
+                  });
+                  Alert.alert('✅ PDF Generado', `Factura ${form.invoiceNumber} exportada correctamente.\n\nTamaño: ${Math.round(pdfData.length / 1024)} KB`);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                } catch (err) {
+                  console.error('Error generando PDF:', err);
+                  Alert.alert('Error', 'No se pudo generar el PDF. Inténtalo de nuevo.');
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                }
+              }}
+            >
+              <IconSymbol name="doc.fill" size={20} color="#FFFFFF" />
+              <ThemedText style={[styles.actionButtonText, { color: '#FFFFFF' }]}>Exportar PDF</ThemedText>
+            </Pressable>
             <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}
             accessibilityRole="button"
             accessibilityLabel="Eliminar"

@@ -224,6 +224,9 @@ export default function QuoteDetailScreen() {
     setForm(prev => ({ ...prev, items: newItems }));
   };
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!form.clientId || !form.clientName) {
       Alert.alert('Error', 'Debes seleccionar un cliente');
@@ -235,6 +238,9 @@ export default function QuoteDetailScreen() {
       return;
     }
 
+    setIsSaving(true);
+    setSaveError(null);
+
     try {
       const quoteData = {
         ...form,
@@ -245,14 +251,21 @@ export default function QuoteDetailScreen() {
       if (isNew) {
         await addQuote(quoteData);
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Presupuesto creado correctamente');
         router.back();
       } else {
         await updateQuote(id!, quoteData);
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Presupuesto actualizado correctamente');
         setIsEditing(false);
       }
     } catch (err) {
-      Alert.alert('Error', 'No se pudo guardar el presupuesto');
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const errorMessage = err instanceof Error ? err.message : 'No se pudo guardar el presupuesto';
+      setSaveError(errorMessage);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -472,6 +485,92 @@ export default function QuoteDetailScreen() {
                 </Pressable>
               </View>
             )}
+          </View>
+        )}
+
+        {/* Plantillas (solo para nuevos presupuestos) */}
+        {isNew && isEditing && (
+          <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={styles.sectionTitle}>📋 Usar Plantilla</ThemedText>
+            <View style={styles.templateGrid}>
+              <Pressable
+                style={[styles.templateOption, { borderColor: accent, backgroundColor: `${accent}10` }]}
+                onPress={() => {
+                  // Plantilla: Afinación estándar
+                  setForm(prev => ({
+                    ...prev,
+                    items: [
+                      { id: generateId(), description: 'Afinación de piano', quantity: 1, unitPrice: 90, discount: 0 },
+                    ],
+                    notes: 'Incluye revisión general del mecanismo.',
+                  }));
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="tuningfork" size={24} color={accent} />
+                <ThemedText style={[styles.templateText, { color: accent }]}>Afinación</ThemedText>
+                <ThemedText style={[styles.templatePrice, { color: textSecondary }]}>90€</ThemedText>
+              </Pressable>
+              
+              <Pressable
+                style={[styles.templateOption, { borderColor }]}
+                onPress={() => {
+                  // Plantilla: Mantenimiento completo
+                  setForm(prev => ({
+                    ...prev,
+                    items: [
+                      { id: generateId(), description: 'Afinación de piano', quantity: 1, unitPrice: 90, discount: 0 },
+                      { id: generateId(), description: 'Regulación del mecanismo', quantity: 1, unitPrice: 120, discount: 0 },
+                      { id: generateId(), description: 'Limpieza interior', quantity: 1, unitPrice: 40, discount: 0 },
+                    ],
+                    notes: 'Mantenimiento completo recomendado anualmente.',
+                  }));
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="wrench.and.screwdriver.fill" size={24} color={textSecondary} />
+                <ThemedText style={styles.templateText}>Mantenimiento</ThemedText>
+                <ThemedText style={[styles.templatePrice, { color: textSecondary }]}>250€</ThemedText>
+              </Pressable>
+              
+              <Pressable
+                style={[styles.templateOption, { borderColor }]}
+                onPress={() => {
+                  // Plantilla: Reparación
+                  setForm(prev => ({
+                    ...prev,
+                    items: [
+                      { id: generateId(), description: 'Diagnóstico y evaluación', quantity: 1, unitPrice: 50, discount: 0 },
+                      { id: generateId(), description: 'Reparación (mano de obra)', quantity: 1, unitPrice: 0, discount: 0, isOptional: true },
+                      { id: generateId(), description: 'Materiales y repuestos', quantity: 1, unitPrice: 0, discount: 0, isOptional: true },
+                    ],
+                    notes: 'Presupuesto inicial. Los conceptos opcionales se confirmarán tras el diagnóstico.',
+                  }));
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="hammer.fill" size={24} color={textSecondary} />
+                <ThemedText style={styles.templateText}>Reparación</ThemedText>
+                <ThemedText style={[styles.templatePrice, { color: textSecondary }]}>A valorar</ThemedText>
+              </Pressable>
+              
+              <Pressable
+                style={[styles.templateOption, { borderColor }]}
+                onPress={() => {
+                  // Plantilla vacía
+                  setForm(prev => ({
+                    ...prev,
+                    items: [],
+                    notes: '',
+                  }));
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="doc.badge.plus" size={24} color={textSecondary} />
+                <ThemedText style={styles.templateText}>En blanco</ThemedText>
+                <ThemedText style={[styles.templatePrice, { color: textSecondary }]}>Personalizado</ThemedText>
+              </Pressable>
+            </View>
           </View>
         )}
 
@@ -1230,5 +1329,28 @@ const styles = StyleSheet.create({
   menuItem: {
     padding: Spacing.md,
     borderBottomWidth: 1,
+  },
+  // Estilos para plantillas
+  templateGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  templateOption: {
+    flex: 1,
+    minWidth: '45%',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.xs,
+  },
+  templateText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  templatePrice: {
+    fontSize: 12,
   },
 });

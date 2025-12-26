@@ -76,6 +76,9 @@ export default function AppointmentDetailScreen() {
   const selectedPiano = form.pianoId ? getPiano(form.pianoId) : null;
   const clientPianos = form.clientId ? getPianosByClient(form.clientId) : [];
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!form.clientId) {
       Alert.alert('Error', 'Debes seleccionar un cliente');
@@ -86,27 +89,41 @@ export default function AppointmentDetailScreen() {
       return;
     }
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setIsSaving(true);
+    setSaveError(null);
 
-    if (isNew) {
-      await addAppointment({
-        clientId: form.clientId,
-        pianoId: form.pianoId,
-        date: form.date,
-        startTime: form.startTime,
-        endTime: form.endTime,
-        estimatedDuration: form.estimatedDuration || 90,
-        serviceType: form.serviceType || 'tuning',
-        maintenanceLevel: form.maintenanceLevel,
-        address: form.address || (selectedClient ? getClientFormattedAddress(selectedClient) : ''),
-        status: 'scheduled',
-        notes: form.notes?.trim(),
-        reminderSent: false,
-      });
-      router.back();
-    } else if (id) {
-      await updateAppointment(id, form);
-      setIsEditing(false);
+    try {
+      if (isNew) {
+        await addAppointment({
+          clientId: form.clientId,
+          pianoId: form.pianoId,
+          date: form.date,
+          startTime: form.startTime,
+          endTime: form.endTime,
+          estimatedDuration: form.estimatedDuration || 90,
+          serviceType: form.serviceType || 'tuning',
+          maintenanceLevel: form.maintenanceLevel,
+          address: form.address || (selectedClient ? getClientFormattedAddress(selectedClient) : ''),
+          status: 'scheduled',
+          notes: form.notes?.trim(),
+          reminderSent: false,
+        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Cita creada correctamente');
+        router.back();
+      } else if (id) {
+        await updateAppointment(id, form);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Cita actualizada correctamente');
+        setIsEditing(false);
+      }
+    } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar la cita';
+      setSaveError(errorMessage);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 

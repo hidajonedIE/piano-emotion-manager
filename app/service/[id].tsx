@@ -110,6 +110,9 @@ export default function ServiceDetailScreen() {
   const selectedPiano = form.pianoId ? getPiano(form.pianoId) : null;
   const clientPianos = form.clientId ? getPianosByClient(form.clientId) : [];
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!form.clientId) {
       Alert.alert('Error', 'Debes seleccionar un cliente');
@@ -124,42 +127,56 @@ export default function ServiceDetailScreen() {
       return;
     }
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setIsSaving(true);
+    setSaveError(null);
 
-    // Actualizar estado del piano si se especificó
-    if (form.pianoConditionAfter && selectedPiano) {
-      await updatePiano(selectedPiano.id, { condition: form.pianoConditionAfter });
-    }
-
-    if (isNew) {
-      await addService({
-        pianoId: form.pianoId,
-        clientId: form.clientId,
-        date: form.date,
-        type: form.type || 'tuning',
-        maintenanceLevel: form.maintenanceLevel,
-        tasks: form.tasks || [],
-        materialsUsed: form.materialsUsed || [],
-        notes: form.notes?.trim(),
-        cost: form.cost,
-        pianoConditionAfter: form.pianoConditionAfter,
-      });
-
-      // Descontar materiales del stock
-      if (form.materialsUsed && form.materialsUsed.length > 0) {
-        for (const mat of form.materialsUsed) {
-          const material = getMaterial(mat.materialId);
-          if (material) {
-            const newStock = Math.max(0, material.currentStock - mat.quantity);
-            await updateMaterial(mat.materialId, { currentStock: newStock });
-          }
-        }
+    try {
+      // Actualizar estado del piano si se especificó
+      if (form.pianoConditionAfter && selectedPiano) {
+        await updatePiano(selectedPiano.id, { condition: form.pianoConditionAfter });
       }
 
-      router.back();
-    } else if (id) {
-      await updateService(id, form);
-      setIsEditing(false);
+      if (isNew) {
+        await addService({
+          pianoId: form.pianoId,
+          clientId: form.clientId,
+          date: form.date,
+          type: form.type || 'tuning',
+          maintenanceLevel: form.maintenanceLevel,
+          tasks: form.tasks || [],
+          materialsUsed: form.materialsUsed || [],
+          notes: form.notes?.trim(),
+          cost: form.cost,
+          pianoConditionAfter: form.pianoConditionAfter,
+        });
+
+        // Descontar materiales del stock
+        if (form.materialsUsed && form.materialsUsed.length > 0) {
+          for (const mat of form.materialsUsed) {
+            const material = getMaterial(mat.materialId);
+            if (material) {
+              const newStock = Math.max(0, material.currentStock - mat.quantity);
+              await updateMaterial(mat.materialId, { currentStock: newStock });
+            }
+          }
+        }
+
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Servicio creado correctamente');
+        router.back();
+      } else if (id) {
+        await updateService(id, form);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Servicio actualizado correctamente');
+        setIsEditing(false);
+      }
+    } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el servicio';
+      setSaveError(errorMessage);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -703,6 +720,113 @@ export default function ServiceDetailScreen() {
           )}
         </View>
 
+        {/* Fotos Antes del Servicio */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>Fotos Antes del Servicio</ThemedText>
+          {isEditing ? (
+            <View style={styles.photosContainer}>
+              {(form.photosBefore || []).map((photo, index) => (
+                <View key={index} style={styles.photoItem}>
+                  <ThemedText style={styles.photoText}>📷 Foto {index + 1}</ThemedText>
+                  <Pressable onPress={() => {
+                    const newPhotos = (form.photosBefore || []).filter((_, i) => i !== index);
+                    setForm({ ...form, photosBefore: newPhotos });
+                  }}>
+                    <IconSymbol name="xmark.circle.fill" size={20} color={error} />
+                  </Pressable>
+                </View>
+              ))}
+              <Pressable
+                style={[styles.addPhotoButton, { borderColor: accent }]}
+                onPress={() => {
+                  // Simular añadir foto (en producción usaría ImagePicker)
+                  const newPhoto = `photo_before_${Date.now()}.jpg`;
+                  setForm({ ...form, photosBefore: [...(form.photosBefore || []), newPhoto] });
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="camera.fill" size={20} color={accent} />
+                <ThemedText style={[styles.addPhotoText, { color: accent }]}>Añadir Foto</ThemedText>
+              </Pressable>
+            </View>
+          ) : (
+            <ThemedText style={styles.value}>
+              {(form.photosBefore || []).length > 0 ? `${form.photosBefore?.length} foto(s)` : 'Sin fotos'}
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Fotos Después del Servicio */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>Fotos Después del Servicio</ThemedText>
+          {isEditing ? (
+            <View style={styles.photosContainer}>
+              {(form.photosAfter || []).map((photo, index) => (
+                <View key={index} style={styles.photoItem}>
+                  <ThemedText style={styles.photoText}>📷 Foto {index + 1}</ThemedText>
+                  <Pressable onPress={() => {
+                    const newPhotos = (form.photosAfter || []).filter((_, i) => i !== index);
+                    setForm({ ...form, photosAfter: newPhotos });
+                  }}>
+                    <IconSymbol name="xmark.circle.fill" size={20} color={error} />
+                  </Pressable>
+                </View>
+              ))}
+              <Pressable
+                style={[styles.addPhotoButton, { borderColor: accent }]}
+                onPress={() => {
+                  const newPhoto = `photo_after_${Date.now()}.jpg`;
+                  setForm({ ...form, photosAfter: [...(form.photosAfter || []), newPhoto] });
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="camera.fill" size={20} color={accent} />
+                <ThemedText style={[styles.addPhotoText, { color: accent }]}>Añadir Foto</ThemedText>
+              </Pressable>
+            </View>
+          ) : (
+            <ThemedText style={styles.value}>
+              {(form.photosAfter || []).length > 0 ? `${form.photosAfter?.length} foto(s)` : 'Sin fotos'}
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Firma del Cliente */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>Firma del Cliente</ThemedText>
+          {isEditing ? (
+            <View style={styles.signatureContainer}>
+              {form.signature ? (
+                <View style={styles.signaturePreview}>
+                  <ThemedText style={styles.signatureText}>✅ Firma capturada</ThemedText>
+                  <Pressable
+                    style={[styles.clearSignatureButton, { borderColor: error }]}
+                    onPress={() => setForm({ ...form, signature: undefined })}
+                  >
+                    <ThemedText style={[styles.clearSignatureText, { color: error }]}>Borrar firma</ThemedText>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable
+                  style={[styles.captureSignatureButton, { borderColor: accent }]}
+                  onPress={() => {
+                    // Simular captura de firma (en producción usaría un canvas)
+                    setForm({ ...form, signature: `signature_${Date.now()}.png` });
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  }}
+                >
+                  <IconSymbol name="pencil.tip" size={24} color={accent} />
+                  <ThemedText style={[styles.captureSignatureText, { color: accent }]}>Capturar Firma</ThemedText>
+                </Pressable>
+              )}
+            </View>
+          ) : (
+            <ThemedText style={styles.value}>
+              {form.signature ? '✅ Firmado' : 'Sin firma'}
+            </ThemedText>
+          )}
+        </View>
+
         {/* Botones de acción */}
         {isEditing && (
           <Pressable style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave}
@@ -987,5 +1111,74 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
     borderRadius: BorderRadius.md,
     marginTop: Spacing.sm,
+  },
+  // Estilos para fotos
+  photosContainer: {
+    gap: Spacing.sm,
+  },
+  photoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  photoText: {
+    fontSize: 14,
+  },
+  addPhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  addPhotoText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  // Estilos para firma
+  signatureContainer: {
+    gap: Spacing.sm,
+  },
+  signaturePreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  signatureText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  clearSignatureButton: {
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  clearSignatureText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  captureSignatureButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  captureSignatureText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

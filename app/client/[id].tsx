@@ -290,22 +290,46 @@ export default function ClientDetailScreen() {
     </View>
   );
 
-  const updateAddress = (key: keyof ClientAddress, value: string) => {
+  const updateAddress = async (key: keyof ClientAddress, value: string) => {
+    const updates: Partial<ClientAddress> = { [key]: value };
+    
+    // Autocompletar ciudad y provincia si es código postal
+    if (key === 'postalCode' && value.length === 5) {
+      const { lookupPostalCode } = await import('@/utils/postal-code-lookup');
+      const result = lookupPostalCode(value);
+      if (result) {
+        updates.city = result.city;
+        updates.province = result.province;
+      }
+    }
+    
     setForm({
       ...form,
       address: {
         ...form.address,
-        [key]: value,
+        ...updates,
       },
     });
   };
 
-  const updateShippingAddress = (key: keyof ClientAddress, value: string) => {
+  const updateShippingAddress = async (key: keyof ClientAddress, value: string) => {
+    const updates: Partial<ClientAddress> = { [key]: value };
+    
+    // Autocompletar ciudad y provincia si es código postal
+    if (key === 'postalCode' && value.length === 5) {
+      const { lookupPostalCode } = await import('@/utils/postal-code-lookup');
+      const result = lookupPostalCode(value);
+      if (result) {
+        updates.city = result.city;
+        updates.province = result.province;
+      }
+    }
+    
     setForm({
       ...form,
       shippingAddress: {
         ...form.shippingAddress,
-        [key]: value,
+        ...updates,
       },
     });
   };

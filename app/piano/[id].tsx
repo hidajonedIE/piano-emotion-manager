@@ -93,6 +93,9 @@ export default function PianoDetailScreen() {
   const recommendations = !isNew && id ? getRecommendationsForPiano(id) : [];
   const client = form.clientId ? getClient(form.clientId) : null;
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!form.clientId) {
       Alert.alert('Error', 'Debes seleccionar un cliente');
@@ -107,29 +110,43 @@ export default function PianoDetailScreen() {
       return;
     }
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setIsSaving(true);
+    setSaveError(null);
 
-    if (isNew) {
-      const newPiano = await addPiano({
-        clientId: form.clientId,
-        brand: form.brand.trim(),
-        model: form.model.trim(),
-        serialNumber: form.serialNumber?.trim(),
-        year: form.year,
-        category: form.category || 'vertical',
-        type: form.type || 'console',
-        size: form.size,
-        condition: form.condition || 'unknown',
-        photo: form.photo,
-        notes: form.notes?.trim(),
-      });
-      router.replace({
-        pathname: '/piano/[id]',
-        params: { id: newPiano.id },
-      });
-    } else if (id) {
-      await updatePiano(id, form);
-      setIsEditing(false);
+    try {
+      if (isNew) {
+        const newPiano = await addPiano({
+          clientId: form.clientId,
+          brand: form.brand.trim(),
+          model: form.model.trim(),
+          serialNumber: form.serialNumber?.trim(),
+          year: form.year,
+          category: form.category || 'vertical',
+          type: form.type || 'console',
+          size: form.size,
+          condition: form.condition || 'unknown',
+          photo: form.photo,
+          notes: form.notes?.trim(),
+        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Piano creado correctamente');
+        router.replace({
+          pathname: '/piano/[id]',
+          params: { id: newPiano.id },
+        });
+      } else if (id) {
+        await updatePiano(id, form);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Piano actualizado correctamente');
+        setIsEditing(false);
+      }
+    } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el piano';
+      setSaveError(errorMessage);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
