@@ -85,8 +85,54 @@ export default function DistributorPanel() {
   }, []);
 
   const loadDistributorData = async () => {
-    // Cargar datos reales de la API del distribuidor
-    // Datos de ejemplo
+    try {
+      const response = await fetch('/api/distributor', {
+        headers: {
+          'x-distributor-id': localStorage.getItem('distributorId') || '',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Cargar configuración
+        if (data.config) {
+          setPremiumConfig({
+            minimumPurchaseAmount: data.config.minimumPurchaseAmount,
+            trialPeriodDays: data.config.trialPeriodDays,
+            gracePeriodDays: data.config.gracePeriodDays,
+            whatsappEnabled: data.config.whatsappEnabled,
+            portalEnabled: data.config.portalEnabled,
+            autoRemindersEnabled: data.config.autoRemindersEnabled,
+          });
+          
+          if (data.config.woocommerce) {
+            setWooConfig(prev => ({
+              ...prev,
+              url: data.config.woocommerce.url,
+              enabled: data.config.woocommerce.enabled,
+              connectionStatus: data.config.woocommerce.connectionStatus,
+            }));
+          }
+        }
+        
+        // Cargar técnicos
+        if (data.technicians) {
+          setTechnicians(data.technicians);
+        }
+        
+        // Cargar estadísticas
+        if (data.stats) {
+          setStats(data.stats);
+        }
+        
+        return;
+      }
+    } catch (error) {
+      console.error('Error cargando datos del distribuidor:', error);
+    }
+    
+    // Datos de ejemplo como fallback
     setTechnicians([
       {
         id: '1',
