@@ -24,6 +24,7 @@ import { LanguageProvider } from "@/contexts/language-context";
 import { DistributorProvider } from "@/contexts/distributor-context";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { AIAssistant } from "@/components/ai/AIAssistant";
+import { AuthGuard } from "@/components/auth-guard";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -123,6 +124,7 @@ export default function RootLayout() {
               <SubscriptionProvider>
                 <LanguageProvider>
                   <SnackbarProvider>
+                  <AuthGuard>
                   <Stack>
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                     <Stack.Screen name="(app)" options={{ headerShown: false }} />
@@ -152,6 +154,7 @@ export default function RootLayout() {
                     <Stack.Screen name="dashboard-editor" options={{ headerShown: false }} />
                     <Stack.Screen name="predictions" options={{ headerShown: false }} />
                   </Stack>
+                  </AuthGuard>
                   <StatusBar style="auto" />
                   <AIAssistant />
                   </SnackbarProvider>
