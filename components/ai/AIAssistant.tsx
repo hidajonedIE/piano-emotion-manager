@@ -303,7 +303,7 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
           ]}
         >
           <Pressable onPress={handleOpen} style={styles.fabButton}>
-            <IconSymbol name="brain" size={28} color="#FFFFFF" />
+            <IconSymbol name="brain" size={22} color="#FFFFFF" />
           </Pressable>
         </Animated.View>
       )}
@@ -444,9 +444,9 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     // Posición dinámica aplicada desde getPositionStyle()
-    width: 48, // Reducido de 60
-    height: 48, // Reducido de 60
-    borderRadius: 24, // Reducido de 30
+    width: 40, // Reducido para móvil
+    height: 40, // Reducido para móvil
+    borderRadius: 20, // Reducido para móvil
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
