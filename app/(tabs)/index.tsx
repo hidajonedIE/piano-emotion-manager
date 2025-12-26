@@ -3,14 +3,15 @@
  * Pantalla principal de Piano Emotion Manager
  * 
  * Refactorizado para usar componentes modulares en components/dashboard/
- * Con soporte para personalización de secciones con drag & drop real
+ * Con soporte para drag & drop directo (long press para arrastrar)
  */
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { useState } from 'react';
 
 import { OnboardingTutorial } from '@/components/onboarding-tutorial';
 import { GlobalSearchBar } from '@/components/global-search-bar';
@@ -43,7 +44,6 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { isMobile, isDesktop, horizontalPadding } = useResponsive();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [isEditMode, setIsEditMode] = useState(false);
   
   // Preferencias del dashboard
   const dashboardPreferences = useDashboardPreferences();
@@ -161,12 +161,6 @@ export default function DashboardScreen() {
     }
   }, [stats, selectedMonth, navigatePreviousMonth, navigateNextMonth, goToCurrentMonth, recentServices, clients, pianos]);
 
-  // Toggle modo edición
-  const handleToggleEditMode = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsEditMode(prev => !prev);
-  }, []);
-
   // Estilos condicionales para web
   const containerStyle = Platform.OS === 'web' 
     ? [styles.container, { 
@@ -209,55 +203,23 @@ export default function DashboardScreen() {
             },
           ]}
           showsVerticalScrollIndicator={false}
-          scrollEnabled={!isEditMode} // Deshabilitar scroll en modo edición para mejor drag
         >
           <View style={[styles.mainContainer, isDesktop && styles.mainContainerDesktop]}>
-            {/* Barra de búsqueda, menú y botón de edición */}
+            {/* Barra de búsqueda y menú */}
             <View style={styles.topBar}>
               <View style={styles.searchBarContainer}>
                 <GlobalSearchBar />
               </View>
-              <Pressable 
-                onPress={handleToggleEditMode} 
-                style={[
-                  styles.editButton, 
-                  { 
-                    borderColor: accent,
-                    backgroundColor: isEditMode ? accent : 'rgba(255,255,255,0.8)',
-                  }
-                ]}
-                accessibilityLabel={isEditMode ? "Guardar cambios" : "Personalizar dashboard"}
-                accessibilityHint={isEditMode ? "Guarda el orden de las secciones" : "Permite reordenar las secciones del dashboard"}
-              >
-                <IconSymbol 
-                  name={isEditMode ? "checkmark" : "slider.horizontal.3"} 
-                  size={20} 
-                  color={isEditMode ? "#FFFFFF" : accent} 
-                />
-              </Pressable>
               <HamburgerMenu />
             </View>
-
-            {/* Indicador de modo edición */}
-            {isEditMode && (
-              <View style={[styles.editModeIndicator, { backgroundColor: accent + '15', borderColor: accent }]}>
-                <IconSymbol name="hand.draw.fill" size={16} color={accent} />
-                <ThemedText style={[styles.editModeText, { color: accent }]}>
-                  Modo edición: arrastra las secciones para reordenarlas
-                </ThemedText>
-                <Pressable onPress={handleToggleEditMode} style={styles.doneButton}>
-                  <ThemedText style={[styles.doneButtonText, { color: accent }]}>Listo</ThemedText>
-                </Pressable>
-              </View>
-            )}
 
             {/* Header siempre visible */}
             <DashboardHeader />
 
-            {/* Secciones con drag & drop */}
+            {/* Secciones con drag & drop directo (long press para arrastrar) */}
             <DashboardDraggableWeb
               sections={allSections}
-              isEditMode={isEditMode}
+              isEditMode={false}
               onReorder={reorderSections}
               onToggleVisibility={toggleSectionVisibility}
               renderSection={renderSection}
@@ -296,35 +258,5 @@ const styles = StyleSheet.create({
   },
   searchBarContainer: {
     flex: 1,
-  },
-  editButton: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  editModeIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-  },
-  editModeText: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  doneButton: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-  },
-  doneButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
 });

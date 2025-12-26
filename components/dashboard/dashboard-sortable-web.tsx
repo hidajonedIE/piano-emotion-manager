@@ -1,15 +1,16 @@
 /**
  * Dashboard Sortable Web Component
- * Implementación de drag & drop profesional para web usando @dnd-kit
- * Con animaciones fluidas, feedback visual y accesibilidad
+ * Drag & drop DIRECTO sin modo edición
+ * Long press para activar el drag, arrastrar y soltar
  */
-import { memo, useCallback, useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { memo, useCallback, useState, useRef } from 'react';
+import { View, StyleSheet } from 'react-native';
 import {
   DndContext,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -41,39 +42,29 @@ interface DashboardSortableWebProps {
   renderSection: (sectionId: DashboardSectionId) => React.ReactNode;
 }
 
-// Animación de drop personalizada
+// Animación de drop suave
 const dropAnimation: DropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
     styles: {
       active: {
-        opacity: '0.5',
+        opacity: '0.4',
       },
     },
   }),
 };
 
-// Componente de item sortable
+// Componente de item sortable - SIEMPRE draggable
 interface SortableItemProps {
   section: DashboardSectionConfig;
-  index: number;
-  isEditMode: boolean;
   isDragging: boolean;
   accent: string;
-  borderColor: string;
-  cardBg: string;
-  onToggleVisibility: (sectionId: DashboardSectionId) => void;
   renderSection: (sectionId: DashboardSectionId) => React.ReactNode;
 }
 
 const SortableItem = memo(function SortableItem({
   section,
-  index,
-  isEditMode,
   isDragging,
   accent,
-  borderColor,
-  cardBg,
-  onToggleVisibility,
   renderSection,
 }: SortableItemProps) {
   const {
@@ -88,244 +79,102 @@ const SortableItem = memo(function SortableItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isItemDragging ? 0.5 : 1,
     zIndex: isItemDragging ? 1000 : 1,
+    position: 'relative' as const,
   };
 
-  if (!isEditMode) {
-    if (!section.visible) return null;
-    return (
-      <div style={{ marginBottom: 2 }}>
-        {renderSection(section.id)}
-      </div>
-    );
-  }
+  if (!section.visible) return null;
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div 
+      ref={setNodeRef} 
+      style={style}
+      {...attributes}
+      {...listeners}
+    >
       <div
         style={{
-          border: `2px solid ${section.visible ? accent : borderColor}`,
+          marginBottom: 2,
           borderRadius: 16,
-          backgroundColor: cardBg,
           overflow: 'hidden',
-          marginBottom: 8,
-          opacity: section.visible ? 1 : 0.6,
-          boxShadow: isItemDragging ? '0 8px 24px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.08)',
-          transition: 'box-shadow 0.2s ease, opacity 0.2s ease',
+          opacity: isItemDragging ? 0.3 : 1,
+          cursor: 'grab',
+          transition: 'opacity 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
+          boxShadow: isItemDragging ? '0 8px 32px rgba(0,0,0,0.2)' : 'none',
+          position: 'relative',
         }}
       >
-        {/* Barra de control con handle de drag */}
+        {/* Indicador visual de que es draggable - aparece al hover */}
         <div
           style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            backgroundColor: 'rgba(0,0,0,0.5)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '10px 12px',
-            backgroundColor: section.visible ? `${accent}15` : '#F3F4F6',
-            gap: 12,
+            justifyContent: 'center',
+            opacity: 0,
+            transition: 'opacity 0.2s ease',
+            zIndex: 10,
+            pointerEvents: 'none',
           }}
+          className="drag-indicator"
         >
-          {/* Handle de drag - área arrastrable */}
-          <div
-            {...attributes}
-            {...listeners}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              flex: 1,
-              cursor: 'grab',
-              padding: '4px 8px',
-              borderRadius: 8,
-              backgroundColor: 'rgba(0,0,0,0.05)',
-              transition: 'background-color 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)';
-            }}
-          >
-            {/* Icono de drag */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div style={{ display: 'flex', gap: 2 }}>
-                <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#9CA3AF' }} />
-                <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#9CA3AF' }} />
-              </div>
-              <div style={{ display: 'flex', gap: 2 }}>
-                <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#9CA3AF' }} />
-                <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#9CA3AF' }} />
-              </div>
-              <div style={{ display: 'flex', gap: 2 }}>
-                <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#9CA3AF' }} />
-                <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#9CA3AF' }} />
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ display: 'flex', gap: 2 }}>
+              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
+              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
             </div>
-            
-            {/* Título de la sección */}
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: '#374151',
-                flex: 1,
-                userSelect: 'none',
-              }}
-            >
-              {section.title}
-            </span>
-            
-            {/* Badge de orden */}
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: section.visible ? accent : '#9CA3AF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <span
-                style={{
-                  color: '#FFFFFF',
-                  fontSize: 12,
-                  fontWeight: 700,
-                }}
-              >
-                {index + 1}
-              </span>
+            <div style={{ display: 'flex', gap: 2 }}>
+              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
+              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
             </div>
           </div>
-
-          {/* Botón de visibilidad */}
-          <button
-            onClick={() => onToggleVisibility(section.id)}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 8,
-              border: 'none',
-              backgroundColor: section.visible ? `${accent}20` : '#E5E7EB',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'transform 0.15s ease, background-color 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            <IconSymbol
-              name={section.visible ? 'eye.fill' : 'eye.slash.fill'}
-              size={20}
-              color={section.visible ? accent : '#9CA3AF'}
-            />
-          </button>
         </div>
-
-        {/* Preview de la sección */}
-        <div
-          style={{
-            maxHeight: section.visible ? 150 : 60,
-            overflow: 'hidden',
-            opacity: section.visible ? 1 : 0.4,
-            pointerEvents: 'none',
-            transform: 'scale(0.95)',
-            transformOrigin: 'top center',
-            transition: 'max-height 0.3s ease, opacity 0.3s ease',
-          }}
-        >
-          {renderSection(section.id)}
-        </div>
+        
+        {renderSection(section.id)}
       </div>
+      
+      {/* CSS para mostrar indicador en hover */}
+      <style>{`
+        div:hover > .drag-indicator {
+          opacity: 1 !important;
+        }
+      `}</style>
     </div>
   );
 });
 
-// Componente de overlay para el drag
+// Componente de overlay para el drag - muestra preview mientras arrastras
 interface DragOverlayContentProps {
   section: DashboardSectionConfig;
-  index: number;
   accent: string;
-  cardBg: string;
+  renderSection: (sectionId: DashboardSectionId) => React.ReactNode;
 }
 
 const DragOverlayContent = memo(function DragOverlayContent({
   section,
-  index,
   accent,
-  cardBg,
+  renderSection,
 }: DragOverlayContentProps) {
   return (
     <div
       style={{
-        border: `2px solid ${accent}`,
         borderRadius: 16,
-        backgroundColor: cardBg,
         overflow: 'hidden',
-        boxShadow: '0 12px 32px rgba(0,0,0,0.25)',
-        transform: 'scale(1.02)',
+        boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
+        transform: 'scale(1.02) rotate(1deg)',
+        border: `3px solid ${accent}`,
+        backgroundColor: '#FFFFFF',
+        cursor: 'grabbing',
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '12px 16px',
-          backgroundColor: `${accent}25`,
-          gap: 12,
-        }}
-      >
-        {/* Icono de drag */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <div style={{ display: 'flex', gap: 2 }}>
-            <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: accent }} />
-            <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: accent }} />
-          </div>
-          <div style={{ display: 'flex', gap: 2 }}>
-            <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: accent }} />
-            <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: accent }} />
-          </div>
-          <div style={{ display: 'flex', gap: 2 }}>
-            <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: accent }} />
-            <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: accent }} />
-          </div>
-        </div>
-        
-        <span
-          style={{
-            fontSize: 15,
-            fontWeight: 700,
-            color: accent,
-            flex: 1,
-          }}
-        >
-          {section.title}
-        </span>
-        
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            backgroundColor: accent,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <span style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 700 }}>
-            {index + 1}
-          </span>
-        </div>
+      <div style={{ opacity: 0.9, pointerEvents: 'none' }}>
+        {renderSection(section.id)}
       </div>
     </div>
   );
@@ -333,21 +182,26 @@ const DragOverlayContent = memo(function DragOverlayContent({
 
 export const DashboardSortableWeb = memo(function DashboardSortableWeb({
   sections,
-  isEditMode,
+  isEditMode, // Ya no se usa, pero mantenemos la prop por compatibilidad
   onReorder,
   onToggleVisibility,
   renderSection,
 }: DashboardSortableWebProps) {
   const accent = useThemeColor({}, 'accent');
-  const borderColor = useThemeColor({}, 'border');
-  const cardBg = useThemeColor({}, 'cardBackground');
-  
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  // Sensores: pointer con delay para distinguir click de drag
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Requiere mover 8px antes de activar el drag
+        delay: 200, // 200ms de long press para activar drag
+        tolerance: 5, // Tolerancia de movimiento durante el delay
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -357,11 +211,14 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+    // Feedback visual: cambiar cursor
+    document.body.style.cursor = 'grabbing';
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
+    document.body.style.cursor = '';
 
     if (over && active.id !== over.id) {
       const oldIndex = sections.findIndex((s) => s.id === active.id);
@@ -373,34 +230,14 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
+    document.body.style.cursor = '';
   }, []);
 
   const activeSection = activeId ? sections.find((s) => s.id === activeId) : null;
-  const activeIndex = activeId ? sections.findIndex((s) => s.id === activeId) : -1;
-
-  // Modo normal: renderizar sin drag
-  if (!isEditMode) {
-    return (
-      <View style={styles.normalContainer}>
-        {sections.filter((s) => s.visible).map((section) => (
-          <View key={section.id} style={{ marginBottom: 2 }}>
-            {renderSection(section.id)}
-          </View>
-        ))}
-      </View>
-    );
-  }
+  const visibleSections = sections.filter((s) => s.visible);
 
   return (
-    <View style={styles.editContainer}>
-      {/* Header de modo edición */}
-      <View style={[styles.editModeHeader, { backgroundColor: accent }]}>
-        <IconSymbol name="hand.draw.fill" size={18} color="#FFFFFF" />
-        <ThemedText style={styles.editModeHeaderText}>
-          Arrastra las secciones para reordenarlas
-        </ThemedText>
-      </View>
-
+    <View style={styles.container}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -409,20 +246,15 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
         onDragCancel={handleDragCancel}
       >
         <SortableContext
-          items={sections.map((s) => s.id)}
+          items={visibleSections.map((s) => s.id)}
           strategy={verticalListSortingStrategy}
         >
-          {sections.map((section, index) => (
+          {visibleSections.map((section) => (
             <SortableItem
               key={section.id}
               section={section}
-              index={index}
-              isEditMode={isEditMode}
               isDragging={activeId === section.id}
               accent={accent}
-              borderColor={borderColor}
-              cardBg={cardBg}
-              onToggleVisibility={onToggleVisibility}
               renderSection={renderSection}
             />
           ))}
@@ -432,68 +264,18 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
           {activeSection ? (
             <DragOverlayContent
               section={activeSection}
-              index={activeIndex}
               accent={accent}
-              cardBg={cardBg}
+              renderSection={renderSection}
             />
           ) : null}
         </DragOverlay>
       </DndContext>
-
-      {/* Instrucciones */}
-      <View style={[styles.instructions, { borderColor }]}>
-        <View style={styles.instructionRow}>
-          <IconSymbol name="hand.draw.fill" size={16} color="#6B7280" />
-          <ThemedText style={styles.instructionText}>
-            Arrastra el área con puntos para mover
-          </ThemedText>
-        </View>
-        <View style={styles.instructionRow}>
-          <IconSymbol name="eye.fill" size={16} color="#6B7280" />
-          <ThemedText style={styles.instructionText}>
-            Toca el ojo para mostrar/ocultar secciones
-          </ThemedText>
-        </View>
-      </View>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  normalContainer: {
+  container: {
     gap: 2,
-  },
-  editContainer: {
-    gap: Spacing.sm,
-  },
-  editModeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
-  },
-  editModeHeaderText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  instructions: {
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderRadius: BorderRadius.md,
-    borderStyle: 'dashed',
-    gap: Spacing.sm,
-  },
-  instructionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  instructionText: {
-    fontSize: 12,
-    color: '#6B7280',
   },
 });
