@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   subtitleMobile: {
-    fontSize: 12,
+    fontSize: 14, // Aumentado para mejor legibilidad en móvil
     marginTop: 2,
   },
 });
