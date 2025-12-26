@@ -19,6 +19,7 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   // Navegación principal
   { key: 'home', label: 'Inicio', icon: 'house.fill', route: '/', color: '#6366F1' },
+  { key: 'subscription', label: 'Mi Suscripción', icon: 'crown.fill', route: '/settings/subscription', color: '#F59E0B' },
   { key: 'clients', label: 'Clientes', icon: 'person.2.fill', route: '/clients', color: '#6366F1' },
   { key: 'pianos', label: 'Pianos', icon: 'pianokeys', route: '/pianos', color: '#10B981' },
   { key: 'services', label: 'Servicios', icon: 'wrench.fill', route: '/services', color: '#F59E0B' },
