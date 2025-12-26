@@ -1,5 +1,4 @@
 import { useAuth } from "@/hooks/use-auth";
-import { getLoginUrl } from "@/constants/oauth";
 import { useEffect, useState } from "react";
 import { Platform, View, ActivityIndicator, StyleSheet, Text } from "react-native";
 import { useRouter, usePathname } from "expo-router";
@@ -9,7 +8,16 @@ type AuthGuardProps = {
 };
 
 // Rutas que no requieren autenticación
-const PUBLIC_ROUTES = ["/oauth/callback", "/login", "/portal"];
+const PUBLIC_ROUTES = ["/oauth/callback", "/login", "/portal", "/api/auth/demo-login"];
+
+// URL de demo login - usa el endpoint local que crea sesión sin OAuth externo
+function getDemoLoginUrl(): string {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    const currentUrl = encodeURIComponent(window.location.pathname);
+    return `/api/auth/demo-login?redirect=${currentUrl}`;
+  }
+  return "/api/auth/demo-login";
+}
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading, isAuthenticated } = useAuth();
@@ -25,14 +33,14 @@ export function AuthGuard({ children }: AuthGuardProps) {
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route));
     if (isPublicRoute) return;
 
-    // Si no está autenticado, redirigir a login
+    // Si no está autenticado, redirigir a demo login
     if (!isAuthenticated && !redirecting) {
-      console.log("[AuthGuard] No authenticated user, redirecting to login...");
+      console.log("[AuthGuard] No authenticated user, redirecting to demo login...");
       setRedirecting(true);
 
       if (Platform.OS === "web") {
-        // En web, redirigir directamente a OAuth
-        const loginUrl = getLoginUrl();
+        // En web, redirigir al endpoint de demo login
+        const loginUrl = getDemoLoginUrl();
         console.log("[AuthGuard] Redirecting to:", loginUrl);
         window.location.href = loginUrl;
       } else {
@@ -57,7 +65,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.text}>Redirigiendo a inicio de sesión...</Text>
+        <Text style={styles.text}>Iniciando sesión de demostración...</Text>
       </View>
     );
   }
