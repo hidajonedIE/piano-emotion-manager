@@ -21,6 +21,8 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {
+    "@clerk/clerk-expo": "^2.9.0",
+    "@clerk/backend": "^1.21.0",
     "@aws-sdk/client-s3": "^3.958.0",
     "@aws-sdk/s3-request-presigner": "^3.958.0",
     "@expo/vector-icons": "^15.0.3",

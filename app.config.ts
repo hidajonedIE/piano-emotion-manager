@@ -14,6 +14,8 @@ const env = {
   // App branding - update these values directly (do not use env vars)
   appName: 'Piano Emotion Manager',
   appSlug: 'piano_tech_app',
+  // Clerk publishable key
+  clerkPublishableKey: process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
   logoUrl: 'https://files.manuscdn.com/user_upload_by_module/session_file/110818387/JwKlBILQLDvJoMpv.png',
@@ -104,6 +106,9 @@ const config: ExpoConfig = {
     typedRoutes: true,
     reactCompiler: true,
 	tsconfigPaths: true,
+  },
+  extra: {
+    clerkPublishableKey: env.clerkPublishableKey,
   },
 };
 

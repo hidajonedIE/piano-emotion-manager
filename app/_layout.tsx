@@ -25,6 +25,7 @@ import { DistributorProvider } from "@/contexts/distributor-context";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 import { AuthGuard } from "@/components/auth-guard";
+import { ClerkProvider } from "@/components/clerk-provider";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -117,53 +118,57 @@ export default function RootLayout() {
 
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <DistributorProvider>
-              <SubscriptionProvider>
-                <LanguageProvider>
-                  <SnackbarProvider>
-                  <AuthGuard>
-                  <Stack>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(app)" options={{ headerShown: false }} />
-                    <Stack.Screen name="settings" options={{ headerShown: false }} />
-                    <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
-                    <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
-                    <Stack.Screen name="portal" options={{ headerShown: false }} />
-                    <Stack.Screen name="quote" options={{ headerShown: false }} />
-                    <Stack.Screen name="client" options={{ headerShown: false }} />
-                    <Stack.Screen name="piano" options={{ headerShown: false }} />
-                    <Stack.Screen name="service" options={{ headerShown: false }} />
-                    <Stack.Screen name="invoice" options={{ headerShown: false }} />
-                    <Stack.Screen name="appointment" options={{ headerShown: false }} />
-                    <Stack.Screen name="supplier" options={{ headerShown: false }} />
-                    <Stack.Screen name="rate" options={{ headerShown: false }} />
-                    <Stack.Screen name="inventory" options={{ headerShown: false }} />
-                    <Stack.Screen name="analytics" options={{ headerShown: false }} />
-                    <Stack.Screen name="accounting" options={{ headerShown: false }} />
-                    <Stack.Screen name="work-order" options={{ headerShown: false }} />
-                    <Stack.Screen name="teams" options={{ headerShown: false }} />
-                    <Stack.Screen name="quotes" options={{ headerShown: false }} />
-                    <Stack.Screen name="reminders" options={{ headerShown: false }} />
-                    <Stack.Screen name="workflows" options={{ headerShown: false }} />
-                    <Stack.Screen name="contracts" options={{ headerShown: false }} />
-                    <Stack.Screen name="whatsapp-settings" options={{ headerShown: false }} />
-                    <Stack.Screen name="payment-settings" options={{ headerShown: false }} />
-                    <Stack.Screen name="dashboard-editor" options={{ headerShown: false }} />
-                    <Stack.Screen name="predictions" options={{ headerShown: false }} />
-                  </Stack>
-                  </AuthGuard>
-                  <StatusBar style="auto" />
-                  <AIAssistant />
-                  </SnackbarProvider>
-                </LanguageProvider>
-              </SubscriptionProvider>
-            </DistributorProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </trpc.Provider>
+      <ClerkProvider>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+              <DistributorProvider>
+                <SubscriptionProvider>
+                  <LanguageProvider>
+                    <SnackbarProvider>
+                    <AuthGuard>
+                    <Stack>
+                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="(app)" options={{ headerShown: false }} />
+                      <Stack.Screen name="settings" options={{ headerShown: false }} />
+                      <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
+                      <Stack.Screen name="login" options={{ headerShown: false }} />
+                      <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+                      <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
+                      <Stack.Screen name="portal" options={{ headerShown: false }} />
+                      <Stack.Screen name="quote" options={{ headerShown: false }} />
+                      <Stack.Screen name="client" options={{ headerShown: false }} />
+                      <Stack.Screen name="piano" options={{ headerShown: false }} />
+                      <Stack.Screen name="service" options={{ headerShown: false }} />
+                      <Stack.Screen name="invoice" options={{ headerShown: false }} />
+                      <Stack.Screen name="appointment" options={{ headerShown: false }} />
+                      <Stack.Screen name="supplier" options={{ headerShown: false }} />
+                      <Stack.Screen name="rate" options={{ headerShown: false }} />
+                      <Stack.Screen name="inventory" options={{ headerShown: false }} />
+                      <Stack.Screen name="analytics" options={{ headerShown: false }} />
+                      <Stack.Screen name="accounting" options={{ headerShown: false }} />
+                      <Stack.Screen name="work-order" options={{ headerShown: false }} />
+                      <Stack.Screen name="teams" options={{ headerShown: false }} />
+                      <Stack.Screen name="quotes" options={{ headerShown: false }} />
+                      <Stack.Screen name="reminders" options={{ headerShown: false }} />
+                      <Stack.Screen name="workflows" options={{ headerShown: false }} />
+                      <Stack.Screen name="contracts" options={{ headerShown: false }} />
+                      <Stack.Screen name="whatsapp-settings" options={{ headerShown: false }} />
+                      <Stack.Screen name="payment-settings" options={{ headerShown: false }} />
+                      <Stack.Screen name="dashboard-editor" options={{ headerShown: false }} />
+                      <Stack.Screen name="predictions" options={{ headerShown: false }} />
+                    </Stack>
+                    </AuthGuard>
+                    <StatusBar style="auto" />
+                    <AIAssistant />
+                    </SnackbarProvider>
+                  </LanguageProvider>
+                </SubscriptionProvider>
+              </DistributorProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        </trpc.Provider>
+      </ClerkProvider>
     </GestureHandlerRootView>
   );
 
