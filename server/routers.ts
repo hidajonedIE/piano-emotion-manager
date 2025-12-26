@@ -1,10 +1,12 @@
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { COOKIE_NAME } from "../shared/const.js";
 import { storageRouter } from "./routers/storage/index.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { systemRouter } from "./_core/systemRouter.js";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc.js";
 import * as db from "./db.js";
+import { users } from "../drizzle/schema.js";
 import { getModulesForPlan, DEFAULT_PLANS, type ModuleInfo } from "./data/modules-data.js";
 
 export const appRouter = router({

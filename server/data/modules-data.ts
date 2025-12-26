@@ -6,7 +6,7 @@
  * Se usa tanto para el seed de la base de datos como para el router.
  */
 
-import type { ModuleType, SubscriptionPlan } from '@/drizzle/modules-schema';
+import type { ModuleType, SubscriptionPlan } from '../../drizzle/modules-schema.js';
 
 // ============================================================================
 // Types

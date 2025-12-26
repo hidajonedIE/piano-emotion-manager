@@ -64,7 +64,7 @@ export const storageRouter = router({
         const key = generateStorageKey(
           input.folder,
           input.filename,
-          ctx.user?.id
+          String(ctx.user?.id || '')
         );
         
         // Upload to R2 with compression
@@ -129,7 +129,7 @@ export const storageRouter = router({
         const key = generateStorageKey(
           input.folder,
           input.filename,
-          ctx.user?.id
+          String(ctx.user?.id || '')
         );
         
         // Upload to R2 (no compression for documents)
@@ -166,7 +166,7 @@ export const storageRouter = router({
       }
       
       // Verify user owns this file (key should contain user ID)
-      if (!input.key.includes(ctx.user?.id || '')) {
+      if (!input.key.includes(String(ctx.user?.id || ''))) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'No tienes permiso para eliminar este archivo',
