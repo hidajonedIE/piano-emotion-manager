@@ -9,6 +9,16 @@ export interface SessionCookieOptions {
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
+// Public suffix domains where we cannot set parent domain cookies
+const PUBLIC_SUFFIX_DOMAINS = new Set([
+  "vercel.app",
+  "netlify.app",
+  "herokuapp.com",
+  "github.io",
+  "pages.dev",
+  "workers.dev",
+]);
+
 function isIpAddress(host: string) {
   // Basic IPv4 check and IPv6 presence detection.
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
@@ -27,13 +37,34 @@ function isSecureRequest(req: any) {
 }
 
 /**
+ * Check if hostname ends with a public suffix domain
+ */
+function isPublicSuffixDomain(hostname: string): boolean {
+  for (const suffix of PUBLIC_SUFFIX_DOMAINS) {
+    if (hostname.endsWith(suffix)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Extract parent domain for cookie sharing across subdomains.
  * e.g., "3000-xxx.manuspre.computer" -> ".manuspre.computer"
  * This allows cookies set by 3000-xxx to be read by 8081-xxx
+ * 
+ * For public suffix domains (like vercel.app), we don't set a domain
+ * so the cookie is scoped to the exact hostname.
  */
 function getParentDomain(hostname: string): string | undefined {
   // Don't set domain for localhost or IP addresses
   if (LOCAL_HOSTS.has(hostname) || isIpAddress(hostname)) {
+    return undefined;
+  }
+
+  // Don't set parent domain for public suffix domains
+  // The browser won't accept cookies for these domains anyway
+  if (isPublicSuffixDomain(hostname)) {
     return undefined;
   }
 
