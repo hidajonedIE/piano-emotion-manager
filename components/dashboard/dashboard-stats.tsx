@@ -345,12 +345,12 @@ const styles = StyleSheet.create({
   monthNavigation: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 2, // Reducido para que las flechas estén más pegadas al botón Hoy
   },
   monthNavButton: {
-    padding: 8,
-    minWidth: 44, // Tamaño mínimo para accesibilidad
-    minHeight: 44,
+    padding: 4, // Reducido para móvil
+    minWidth: 32, // Reducido para móvil
+    minHeight: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   todayButtonText: {
-    fontSize: 12,
+    fontSize: 14, // Aumentado para mejor legibilidad en móvil
     fontWeight: '600',
   },
   calendarButton: {
