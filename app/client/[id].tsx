@@ -109,27 +109,33 @@ export default function ClientDetailScreen() {
       return;
     }
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-    if (isNew) {
-      const newClient = await addClient({
-        firstName: form.firstName.trim(),
-        lastName1: form.lastName1?.trim(),
-        lastName2: form.lastName2?.trim(),
-        taxId: form.taxId?.trim(),
-        type: form.type || 'individual',
-        phone: form.phone.trim(),
-        email: form.email?.trim(),
-        address: form.address,
-        notes: form.notes?.trim(),
-      });
-      router.replace({
-        pathname: '/client/[id]',
-        params: { id: newClient.id },
-      });
-    } else if (id) {
-      await updateClient(id, form);
-      setIsEditing(false);
+    try {
+      if (isNew) {
+        const newClient = await addClient({
+          firstName: form.firstName.trim(),
+          lastName1: form.lastName1?.trim(),
+          lastName2: form.lastName2?.trim(),
+          taxId: form.taxId?.trim(),
+          type: form.type || 'individual',
+          phone: form.phone.trim(),
+          email: form.email?.trim(),
+          address: form.address,
+          notes: form.notes?.trim(),
+        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace({
+          pathname: '/client/[id]',
+          params: { id: newClient.id },
+        });
+      } else if (id) {
+        await updateClient(id, form);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setIsEditing(false);
+      }
+    } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido al guardar el cliente';
+      Alert.alert('Error', errorMessage);
     }
   };
 

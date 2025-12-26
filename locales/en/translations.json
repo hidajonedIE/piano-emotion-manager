@@ -312,7 +312,13 @@
     "stockSettings": "Stock settings",
     "reorderPoint": "Reorder point",
     "reorderQuantity": "Reorder quantity",
-    "totalValue": "Total value"
+    "totalValue": "Total value",
+    "categoryDistribution": "Category distribution",
+    "valueByWarehouse": "Value by warehouse",
+    "recentAlerts": "Recent alerts",
+    "productsNeedReorder": "products need reorder",
+    "tapToCreateOrder": "Tap to create order",
+    "critical": "critical"
   },
   "invoices": {
     "title": "Invoices",

@@ -53,12 +53,14 @@ const taxIdSchema = z.string()
  */
 const clientTypeSchema = z.enum([
   "particular",
+  "individual", // Alias de particular
   "student", 
   "professional",
   "music_school",
   "conservatory",
   "concert_hall"
-]).default("particular");
+]).default("particular")
+  .transform(val => val === "individual" ? "particular" : val);
 
 /**
  * Esquema base de cliente

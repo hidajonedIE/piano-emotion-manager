@@ -312,7 +312,13 @@
     "stockSettings": "Configuración de stock",
     "reorderPoint": "Punto de reposición",
     "reorderQuantity": "Cantidad de reposición",
-    "totalValue": "Valor total"
+    "totalValue": "Valor total",
+    "categoryDistribution": "Distribución por categoría",
+    "valueByWarehouse": "Valor por almacén",
+    "recentAlerts": "Alertas recientes",
+    "productsNeedReorder": "productos necesitan reposición",
+    "tapToCreateOrder": "Toca para crear pedido",
+    "critical": "críticas"
   },
   "invoices": {
     "title": "Facturas",
