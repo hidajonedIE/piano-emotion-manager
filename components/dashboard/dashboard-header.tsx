@@ -89,8 +89,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Arkhip',
   },
   headerTitleMobile: {
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 20, // Aumentado un punto
+    lineHeight: 24,
     fontFamily: 'Arkhip',
   },
   headerTitleSecondLine: {
