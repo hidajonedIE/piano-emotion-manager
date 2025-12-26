@@ -168,7 +168,7 @@ export function GlobalSearchBar() {
         <IconSymbol name="magnifyingglass" size={20} color={textSecondary} />
         <TextInput
           style={[styles.searchInput, { color: textColor }]}
-          placeholder="Buscar clientes, pianos, servicios..."
+          placeholder="Buscar..."
           placeholderTextColor={textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     paddingVertical: Platform.OS === 'web' ? Spacing.xs : 0,
   },
   resultsContainer: {
