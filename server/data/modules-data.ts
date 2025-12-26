@@ -158,12 +158,12 @@ export const DEFAULT_MODULES: Array<{
   },
   {
     code: 'shop',
-    name: 'Tienda Online',
-    description: 'Acceso a tiendas de proveedores integradas',
+    name: 'Piano Emotion Store',
+    description: 'Acceso a tiendas de proveedores integradas - GRATIS para todos',
     icon: 'cart',
     color: '#84cc16',
-    type: 'premium',
-    includedInPlans: ['starter', 'professional', 'enterprise'],
+    type: 'free',
+    includedInPlans: ['free', 'starter', 'professional', 'enterprise'],
   },
   {
     code: 'calendar_sync',
