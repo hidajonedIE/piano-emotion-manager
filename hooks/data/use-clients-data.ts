@@ -139,6 +139,20 @@ export function useClientsData() {
         throw new Error('El teléfono es obligatorio');
       }
 
+      // Mapear tipo de cliente del frontend al backend
+      const clientTypeMap: Record<string, string> = {
+        'individual': 'particular',
+        'particular': 'particular',
+        'student': 'student',
+        'professional': 'professional',
+        'music_school': 'music_school',
+        'conservatory': 'conservatory',
+        'concert_hall': 'concert_hall',
+        'school': 'music_school',
+        'company': 'professional',
+      };
+      const mappedClientType = clientTypeMap[client.type || 'individual'] || 'particular';
+
       try {
         const result = await createMutation.mutateAsync({
           name: fullName,
@@ -153,7 +167,7 @@ export function useClientsData() {
               client.address.city,
               client.address.province
             ].filter(Boolean).join(', ') : null),
-          clientType: (client.type || 'individual') as "particular" | "student" | "professional" | "music_school" | "conservatory" | "concert_hall",
+          clientType: mappedClientType as "particular" | "student" | "professional" | "music_school" | "conservatory" | "concert_hall",
           notes: client.notes || null,
           taxId: client.taxId || null,
           city: client.address?.city || null,
