@@ -298,9 +298,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   editButton: {
-    padding: 8,
-    borderRadius: BorderRadius.md,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   editModeIndicator: {
     flexDirection: 'row',

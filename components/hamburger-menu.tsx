@@ -239,8 +239,8 @@ export function HamburgerMenu() {
 
 const styles = StyleSheet.create({
   hamburgerButton: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     justifyContent: 'center',
