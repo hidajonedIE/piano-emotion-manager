@@ -137,8 +137,7 @@ const toolCards: ToolCard[] = [
     color: '#84cc16',
     bgColor: '#ecfccb',
     route: '/shop',
-    requiredModule: 'shop',
-    requiredPermission: 'shop.access',
+    // Tienda disponible para todos - es canal de marketing
   },
 ];
 

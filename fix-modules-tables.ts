@@ -73,12 +73,12 @@ async function fixModulesTables() {
     { code: 'calendar', name: 'Calendario', description: 'Agenda y gestiona tus citas', icon: 'calendar', color: '#3b82f6', type: 'core', includedInPlans: ['free', 'starter', 'professional', 'enterprise'], sortOrder: 4 },
     { code: 'basic_invoicing', name: 'Facturación Básica', description: 'Genera facturas simples para tus servicios', icon: 'document-text', color: '#14b8a6', type: 'free', includedInPlans: ['free', 'starter', 'professional', 'enterprise'], sortOrder: 5 },
     { code: 'team_management', name: 'Gestión de Equipos', description: 'Gestiona equipos de técnicos con roles y permisos', icon: 'people-circle', color: '#10b981', type: 'premium', includedInPlans: ['professional', 'enterprise'], sortOrder: 6 },
-    { code: 'inventory', name: 'Inventario', description: 'Control de stock de piezas y materiales', icon: 'cube', color: '#6366f1', type: 'premium', includedInPlans: ['professional', 'enterprise'], sortOrder: 7 },
+    { code: 'inventory', name: 'Inventario', description: 'Control de stock de piezas y materiales', icon: 'cube', color: '#6366f1', type: 'free', includedInPlans: ['free', 'starter', 'professional', 'enterprise'], sortOrder: 7 },
     { code: 'advanced_invoicing', name: 'Facturación Avanzada', description: 'Facturación electrónica multi-país con cumplimiento legal', icon: 'receipt', color: '#0891b2', type: 'premium', includedInPlans: ['starter', 'professional', 'enterprise'], sortOrder: 8 },
     { code: 'accounting', name: 'Contabilidad', description: 'Gestión de gastos, ingresos y reportes financieros', icon: 'calculator', color: '#f97316', type: 'premium', includedInPlans: ['professional', 'enterprise'], sortOrder: 9 },
     { code: 'reports', name: 'Reportes y Analytics', description: 'Análisis avanzado y reportes personalizados', icon: 'analytics', color: '#06b6d4', type: 'premium', includedInPlans: ['professional', 'enterprise'], sortOrder: 10 },
     { code: 'crm', name: 'CRM Avanzado', description: 'Segmentación de clientes, campañas y automatizaciones', icon: 'heart', color: '#ef4444', type: 'premium', includedInPlans: ['professional', 'enterprise'], sortOrder: 11 },
-    { code: 'shop', name: 'Tienda Online', description: 'Acceso a tiendas de proveedores integradas', icon: 'cart', color: '#84cc16', type: 'premium', includedInPlans: ['starter', 'professional', 'enterprise'], sortOrder: 12 },
+    { code: 'shop', name: 'Tienda Online', description: 'Acceso a tiendas de proveedores integradas', icon: 'cart', color: '#84cc16', type: 'free', includedInPlans: ['free', 'starter', 'professional', 'enterprise'], sortOrder: 12 },
   ];
 
   for (const module of modules) {

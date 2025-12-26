@@ -50,7 +50,7 @@ const ADVANCED_MODULES = [
   { key: 'calendar_adv', icon: 'calendar.badge.clock', label: 'Calendario+', color: '#A855F7', premium: true },
   { key: 'reports', icon: 'chart.pie.fill', label: 'Reportes', color: '#06B6D4', premium: true },
   { key: 'accounting', icon: 'calculator', label: 'Contabilidad', color: '#F97316', premium: true },
-  { key: 'shop', icon: 'cart.fill', label: 'Tienda', color: '#84CC16', premium: true },
+  { key: 'shop', icon: 'cart.fill', label: 'Tienda', color: '#84CC16', premium: false },
   { key: 'client_portal', icon: 'globe', label: 'Portal Clientes', color: '#0891B2', premium: true },
   { key: 'distributor', icon: 'building.columns.fill', label: 'Distribuidor', color: '#BE185D', premium: true },
   { key: 'workflows', icon: 'arrow.triangle.branch', label: 'Workflows', color: '#6366F1', premium: true },

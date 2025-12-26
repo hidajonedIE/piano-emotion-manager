@@ -154,7 +154,7 @@ const ALL_MODULES = [
   { code: 'crm', name: 'CRM Avanzado', icon: 'heart.fill', category: 'premium', premium: true },
   { code: 'reports', name: 'Reportes y Analytics', icon: 'chart.pie.fill', category: 'premium', premium: true },
   { code: 'accounting', name: 'Contabilidad', icon: 'calculator', category: 'premium', premium: true },
-  { code: 'shop', name: 'Tienda Online', icon: 'cart.fill', category: 'premium', premium: true },
+  { code: 'shop', name: 'Tienda Online', icon: 'cart.fill', category: 'free', premium: false },
   { code: 'einvoicing', name: 'Facturación Electrónica', icon: 'doc.badge.ellipsis', category: 'premium', premium: true },
   { code: 'calendar_sync', name: 'Sincronización Calendario', icon: 'arrow.triangle.2.circlepath', category: 'premium', premium: true },
   { code: 'ai', name: 'Asistente IA', icon: 'brain', category: 'enterprise', premium: true },

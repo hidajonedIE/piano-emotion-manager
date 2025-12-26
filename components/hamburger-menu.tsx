@@ -30,10 +30,10 @@ const MENU_ITEMS: MenuItem[] = [
   // Gestión de negocio
   { key: 'section_business', label: 'Gestión de Negocio', icon: '', route: '', color: '', section: 'header' },
   { key: 'invoices', label: 'Facturas', icon: 'doc.text.fill', route: '/invoices', color: '#3B82F6' },
-  { key: 'inventory', label: 'Inventario', icon: 'shippingbox.fill', route: '/(app)/inventory', color: '#8B5CF6', premium: true },
+  { key: 'inventory', label: 'Inventario', icon: 'shippingbox.fill', route: '/(app)/inventory', color: '#8B5CF6' },
   { key: 'accounting', label: 'Contabilidad', icon: 'calculator', route: '/accounting', color: '#F97316' },
   { key: 'suppliers', label: 'Proveedores', icon: 'building.2.fill', route: '/suppliers', color: '#F97316' },
-  { key: 'shop', label: 'Tienda', icon: 'cart.fill', route: '/(app)/shop', color: '#84CC16', premium: true },
+  { key: 'shop', label: 'Tienda', icon: 'cart.fill', route: '/(app)/shop', color: '#84CC16' },
   
   { key: 'divider2', label: '', icon: '', route: '', color: '' },
   
