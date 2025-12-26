@@ -7,7 +7,11 @@ type ClerkProviderProps = {
   children: React.ReactNode;
 };
 
-// Get the publishable key from environment variables
+// Clerk publishable key - this is public and safe to include in client code
+// Get your key from: https://dashboard.clerk.com/
+const CLERK_PUBLISHABLE_KEY = "pk_test_c21uY2VyZS1jaGltcC02My5jbGVyay5hY2NvdW50cy5kZXYk";
+
+// Get the publishable key from environment variables with fallback
 function getPublishableKey(): string {
   // Try multiple sources for the key
   if (Platform.OS === "web" && typeof window !== "undefined") {
@@ -25,7 +29,8 @@ function getPublishableKey(): string {
   const configKey = Constants.expoConfig?.extra?.clerkPublishableKey;
   if (configKey) return configKey;
   
-  return "";
+  // Use hardcoded fallback key
+  return CLERK_PUBLISHABLE_KEY;
 }
 
 const publishableKey = getPublishableKey();
