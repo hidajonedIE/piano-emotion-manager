@@ -231,7 +231,7 @@ export const DashboardStats = memo(function DashboardStats({
   return (
     <Accordion 
       title={monthTitle} 
-      defaultOpen={true}
+      defaultOpen={false}
       icon="calendar"
       iconColor="#10B981"
       centerContent
