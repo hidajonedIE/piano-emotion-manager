@@ -157,14 +157,11 @@ class EmailService {
       
       // En desarrollo, loguear el email
       if (process.env.NODE_ENV === 'development') {
+        console.info('Email enviado:', {
           to: options.to,
           subject: options.subject,
           messageId: result.messageId,
         });
-        
-        // Si es jsonTransport, el mensaje está en result.message
-        if (result.message) {
-        }
       }
       
       return { success: true, messageId: result.messageId };

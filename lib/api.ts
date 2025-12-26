@@ -11,11 +11,6 @@ interface AuthUser {
   lastSignedIn?: Date;
 }
 
-type ApiResponse<T> = {
-  data?: T;
-  error?: string;
-};
-
 export async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -28,14 +23,9 @@ export async function apiCall<T>(endpoint: string, options: RequestInit = {}): P
   //   Cookie is set on backend domain via POST /api/auth/session after receiving token via postMessage
   if (Platform.OS !== "web") {
     const sessionToken = await Auth.getSessionToken();
-      endpoint,
-      hasToken: !!sessionToken,
-      method: options.method || "GET",
-    });
     if (sessionToken) {
       headers["Authorization"] = `Bearer ${sessionToken}`;
     }
-  } else {
   }
 
   const baseUrl = getApiBaseUrl();
@@ -50,13 +40,6 @@ export async function apiCall<T>(endpoint: string, options: RequestInit = {}): P
       headers,
       credentials: "include",
     });
-
-    const responseHeaders = Object.fromEntries(response.headers.entries());
-
-    // Check if Set-Cookie header is present (cookies are automatically handled in React Native)
-    const setCookie = response.headers.get("Set-Cookie");
-    if (setCookie) {
-    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -101,10 +84,6 @@ export async function exchangeOAuthCode(
 
   // Convert app_session_id to sessionToken for compatibility
   const sessionToken = result.app_session_id;
-    hasSessionToken: !!sessionToken,
-    hasUser: !!result.user,
-    sessionToken: sessionToken ? `${sessionToken.substring(0, 50)}...` : null,
-  });
 
   return {
     sessionToken,

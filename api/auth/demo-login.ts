@@ -5,8 +5,16 @@
  */
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SignJWT } from "jose";
+import { z } from "zod";
 import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
 import * as db from "../../server/db.js";
+import { applyCorsHeaders } from "../../server/security/cors.config.js";
+import { applyRateLimit } from "../../server/security/rate-limit.js";
+
+// Input validation schema
+const QuerySchema = z.object({
+  redirect: z.string().optional().default("/"),
+});
 
 const DEMO_USER = {
   openId: "demo-user-piano-emotion-2024",
@@ -36,6 +44,26 @@ async function createSessionToken(openId: string, name: string): Promise<string>
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Apply CORS
+  applyCorsHeaders(res, req.headers.origin as string | undefined);
+  
+  // Apply rate limiting for auth endpoints
+  const rateLimitResult = applyRateLimit(
+    { headers: req.headers as Record<string, string | string[] | undefined> },
+    'auth'
+  );
+  
+  for (const [key, value] of Object.entries(rateLimitResult.headers)) {
+    res.setHeader(key, value);
+  }
+  
+  if (!rateLimitResult.allowed) {
+    return res.status(429).json({ 
+      error: 'Too many requests',
+      retryAfter: rateLimitResult.retryAfter 
+    });
+  }
+
   // Only allow in development/test or when explicitly enabled
   const isDev = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_LOGIN === "true";
   
@@ -44,6 +72,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // Validate query parameters
+    const queryResult = QuerySchema.safeParse(req.query);
+    if (!queryResult.success) {
+      return res.status(400).json({ 
+        error: "Invalid query parameters",
+        details: queryResult.error.format()
+      });
+    }
+    
+    const { redirect } = queryResult.data;
+    
+    // Validate redirect URL to prevent open redirect
+    const isValidRedirect = redirect.startsWith('/') && !redirect.startsWith('//');
+    const safeRedirect = isValidRedirect ? redirect : '/';
+
     // Ensure demo user exists in database
     await db.upsertUser({
       openId: DEMO_USER.openId,
@@ -61,8 +104,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader("Set-Cookie", cookieValue);
 
     // Redirect to home page
-    const redirectUrl = req.query.redirect as string || "/";
-    res.redirect(302, redirectUrl);
+    res.redirect(302, safeRedirect);
   } catch (error) {
     console.error("[Demo Login] Error:", error);
     res.status(500).json({ 

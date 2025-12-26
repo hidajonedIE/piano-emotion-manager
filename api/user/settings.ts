@@ -4,39 +4,76 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { z } from 'zod';
 import { getDb } from '../../server/db.js';
 import { users } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { getAuthenticatedUserId } from '../../server/_core/clerk';
+import { applyCorsHeaders } from '../../server/security/cors.config.js';
+import { applyRateLimit } from '../../server/security/rate-limit.js';
 
-interface UserSettings {
-  businessMode: 'individual' | 'team';
-  organizationName?: string;
-  eInvoicingEnabled: boolean;
-  eInvoicingCountry: string;
-  eInvoicingCredentials: Record<string, string>;
-  activeModules: string[];
-  defaultMinStock: number;
-  stockAlertEmail: boolean;
-  stockAlertWhatsApp: boolean;
-  stockAlertFrequency: 'immediate' | 'daily' | 'weekly';
-  stockAlertEmailAddress?: string;
-  stockAlertPhone?: string;
-  shopEnabled: boolean;
-  externalStores: Array<{ name: string; url: string; apiKey?: string }>;
-  purchaseApprovalThreshold: number;
-  notificationsEnabled: boolean;
-  emailNotifications: boolean;
-  smsNotifications: boolean;
-  pushNotifications: boolean;
-  googleCalendarSync: boolean;
-  outlookCalendarSync: boolean;
-  aiRecommendationsEnabled: boolean;
-  aiAssistantEnabled: boolean;
-  fiscalCountry: string;
-}
+// Input validation schema
+const ExternalStoreSchema = z.object({
+  name: z.string().min(1).max(100),
+  url: z.string().url(),
+  apiKey: z.string().optional(),
+});
+
+const UserSettingsSchema = z.object({
+  businessMode: z.enum(['individual', 'team']).optional(),
+  organizationName: z.string().max(200).optional(),
+  eInvoicingEnabled: z.boolean().optional(),
+  eInvoicingCountry: z.string().max(10).optional(),
+  eInvoicingCredentials: z.record(z.string()).optional(),
+  activeModules: z.array(z.string()).optional(),
+  defaultMinStock: z.number().min(0).max(10000).optional(),
+  stockAlertEmail: z.boolean().optional(),
+  stockAlertWhatsApp: z.boolean().optional(),
+  stockAlertFrequency: z.enum(['immediate', 'daily', 'weekly']).optional(),
+  stockAlertEmailAddress: z.string().email().optional().nullable(),
+  stockAlertPhone: z.string().max(20).optional().nullable(),
+  shopEnabled: z.boolean().optional(),
+  externalStores: z.array(ExternalStoreSchema).optional(),
+  purchaseApprovalThreshold: z.number().min(0).optional(),
+  notificationsEnabled: z.boolean().optional(),
+  emailNotifications: z.boolean().optional(),
+  smsNotifications: z.boolean().optional(),
+  pushNotifications: z.boolean().optional(),
+  googleCalendarSync: z.boolean().optional(),
+  outlookCalendarSync: z.boolean().optional(),
+  aiRecommendationsEnabled: z.boolean().optional(),
+  aiAssistantEnabled: z.boolean().optional(),
+  fiscalCountry: z.string().max(10).optional(),
+});
+
+type UserSettings = z.infer<typeof UserSettingsSchema>;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Apply CORS
+  applyCorsHeaders(res, req.headers.origin as string | undefined);
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  // Apply rate limiting
+  const rateLimitResult = applyRateLimit(
+    { headers: req.headers as Record<string, string | string[] | undefined> },
+    'api'
+  );
+  
+  for (const [key, value] of Object.entries(rateLimitResult.headers)) {
+    res.setHeader(key, value);
+  }
+  
+  if (!rateLimitResult.allowed) {
+    return res.status(429).json({ 
+      error: 'Demasiadas solicitudes',
+      retryAfter: rateLimitResult.retryAfter 
+    });
+  }
+
   // Verificar autenticación
   const userId = await getAuthenticatedUserId(req);
   
@@ -54,7 +91,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'GET':
         return await getSettings(db, userId, res);
       case 'PUT':
-        return await updateSettings(db, userId, req.body as Partial<UserSettings>, res);
+        return await updateSettings(db, userId, req.body, res);
       default:
         return res.status(405).json({ error: 'Método no permitido' });
     }
@@ -97,9 +134,21 @@ async function getSettings(
 async function updateSettings(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   userId: string,
-  data: Partial<UserSettings>,
+  rawData: unknown,
   res: VercelResponse
 ) {
+  // Validate input with Zod
+  const validationResult = UserSettingsSchema.safeParse(rawData);
+  
+  if (!validationResult.success) {
+    return res.status(400).json({ 
+      error: 'Datos de entrada inválidos',
+      details: validationResult.error.format()
+    });
+  }
+  
+  const data = validationResult.data;
+
   // Obtener settings actuales
   const [user] = await db
     .select({

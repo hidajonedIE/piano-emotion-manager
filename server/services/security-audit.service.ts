@@ -58,14 +58,18 @@ export class SecurityAuditService {
     
     // Log en consola para monitoreo inmediato
     const logLevel = event.success ? 'INFO' : 'WARN';
+    const logMessage = 
       `[AUDIT][${logLevel}] ${timestamp} | ` +
       `User: ${event.userId} (${event.userRole || 'unknown'}) | ` +
       `Action: ${event.action} | ` +
       `Resource: ${event.resource} | ` +
       `Org: ${event.organizationId} | ` +
       `Success: ${event.success}` +
-      (event.details ? ` | Details: ${event.details}` : '')
-    );
+      (event.details ? ` | Details: ${event.details}` : '');
+    
+    if (logLevel === 'WARN') {
+      console.warn(logMessage);
+    }
     
     // Intentar guardar en base de datos
     try {

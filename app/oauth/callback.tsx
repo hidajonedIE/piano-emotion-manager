@@ -23,12 +23,6 @@ export default function OAuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-        code: params.code,
-        state: params.state,
-        error: params.error,
-        sessionToken: params.sessionToken ? "present" : "missing",
-        user: params.user ? "present" : "missing",
-      });
       try {
         // Check for sessionToken in params first (web OAuth callback from server redirect)
         if (params.sessionToken) {
@@ -109,11 +103,7 @@ export default function OAuthCallback() {
             code = urlObj.searchParams.get("code");
             state = urlObj.searchParams.get("state");
             sessionToken = urlObj.searchParams.get("sessionToken");
-              code: code?.substring(0, 20) + "...",
-              state: state?.substring(0, 20) + "...",
-              sessionToken: sessionToken ? "present" : "missing",
-            });
-          } catch (e) {
+          } catch {
             // Try parsing as relative URL with query params
             const match = url.match(/[?&](code|state|sessionToken)=([^&]+)/g);
             if (match) {
@@ -123,18 +113,9 @@ export default function OAuthCallback() {
                 if (key === "state") state = decodeURIComponent(value);
                 if (key === "sessionToken") sessionToken = decodeURIComponent(value);
               });
-                code: code?.substring(0, 20) + "...",
-                state: state?.substring(0, 20) + "...",
-                sessionToken: sessionToken ? "present" : "missing",
-              });
             }
           }
         }
-
-          hasCode: !!code,
-          hasState: !!state,
-          hasSessionToken: !!sessionToken,
-        });
 
         // If we have sessionToken directly from URL, use it
         if (sessionToken) {
@@ -150,23 +131,14 @@ export default function OAuthCallback() {
 
         // Otherwise, exchange code for session token
         if (!code || !state) {
-          console.error("[OAuth] Missing code or state parameter", {
-            hasCode: !!code,
-            hasState: !!state,
-          });
+          console.error("[OAuth] Missing code or state parameter");
           setStatus("error");
           setErrorMessage("Missing code or state parameter");
           return;
         }
 
         // Exchange code for session token
-          code: code.substring(0, 20) + "...",
-          state: state.substring(0, 20) + "...",
-        });
         const result = await Api.exchangeOAuthCode(code, state);
-          hasSessionToken: !!result.sessionToken,
-          hasUser: !!result.user,
-        });
 
         if (result.sessionToken) {
           // Store session token
@@ -183,7 +155,6 @@ export default function OAuthCallback() {
               lastSignedIn: new Date(result.user.lastSignedIn || Date.now()),
             };
             await Auth.setUserInfo(userInfo);
-          } else {
           }
 
           setStatus("success");

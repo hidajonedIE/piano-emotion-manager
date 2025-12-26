@@ -4,20 +4,51 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { z } from 'zod';
 import { getDb } from '../../server/db.js';
 import { distributorPremiumConfig } from '../../server/db/premium-schema';
 import { eq } from 'drizzle-orm';
+import { applyCorsHeaders } from '../../server/security/cors.config.js';
+import { applyRateLimit } from '../../server/security/rate-limit.js';
 
-interface PremiumConfigUpdate {
-  minimumPurchaseAmount?: number;
-  trialPeriodDays?: number;
-  gracePeriodDays?: number;
-  whatsappEnabled?: boolean;
-  portalEnabled?: boolean;
-  autoRemindersEnabled?: boolean;
-}
+// Input validation schema
+const PremiumConfigUpdateSchema = z.object({
+  minimumPurchaseAmount: z.number().min(0, 'El monto mínimo no puede ser negativo').optional(),
+  trialPeriodDays: z.number().min(0).max(90, 'El periodo de prueba debe estar entre 0 y 90 días').optional(),
+  gracePeriodDays: z.number().min(0).max(30, 'El periodo de gracia debe estar entre 0 y 30 días').optional(),
+  whatsappEnabled: z.boolean().optional(),
+  portalEnabled: z.boolean().optional(),
+  autoRemindersEnabled: z.boolean().optional(),
+});
+
+type PremiumConfigUpdate = z.infer<typeof PremiumConfigUpdateSchema>;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Apply CORS
+  applyCorsHeaders(res, req.headers.origin as string | undefined);
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  // Apply rate limiting
+  const rateLimitResult = applyRateLimit(
+    { headers: req.headers as Record<string, string | string[] | undefined> },
+    'api'
+  );
+  
+  for (const [key, value] of Object.entries(rateLimitResult.headers)) {
+    res.setHeader(key, value);
+  }
+  
+  if (!rateLimitResult.allowed) {
+    return res.status(429).json({ 
+      error: 'Demasiadas solicitudes',
+      retryAfter: rateLimitResult.retryAfter 
+    });
+  }
+
   const distributorId = req.headers['x-distributor-id'] as string;
   
   if (!distributorId) {
@@ -34,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'GET':
         return await getConfig(db, distributorId, res);
       case 'PUT':
-        return await updateConfig(db, distributorId, req.body as PremiumConfigUpdate, res);
+        return await updateConfig(db, distributorId, req.body, res);
       default:
         return res.status(405).json({ error: 'Método no permitido' });
     }
@@ -68,21 +99,20 @@ async function getConfig(db: NonNullable<Awaited<ReturnType<typeof getDb>>>, dis
 async function updateConfig(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   distributorId: string,
-  data: PremiumConfigUpdate,
+  rawData: unknown,
   res: VercelResponse
 ) {
-  // Validar datos
-  if (data.minimumPurchaseAmount !== undefined && data.minimumPurchaseAmount < 0) {
-    return res.status(400).json({ error: 'El monto mínimo no puede ser negativo' });
+  // Validate input with Zod
+  const validationResult = PremiumConfigUpdateSchema.safeParse(rawData);
+  
+  if (!validationResult.success) {
+    return res.status(400).json({ 
+      error: 'Datos de entrada inválidos',
+      details: validationResult.error.format()
+    });
   }
   
-  if (data.trialPeriodDays !== undefined && (data.trialPeriodDays < 0 || data.trialPeriodDays > 90)) {
-    return res.status(400).json({ error: 'El periodo de prueba debe estar entre 0 y 90 días' });
-  }
-  
-  if (data.gracePeriodDays !== undefined && (data.gracePeriodDays < 0 || data.gracePeriodDays > 30)) {
-    return res.status(400).json({ error: 'El periodo de gracia debe estar entre 0 y 30 días' });
-  }
+  const data = validationResult.data;
 
   // Construir objeto de actualización
   const updateData: Record<string, unknown> = {};

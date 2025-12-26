@@ -196,13 +196,6 @@ async function updateTechnicianStatus(
 async function saveVerificationLog(log: VerificationLog): Promise<void> {
   try {
     // Guardar en tabla de logs de verificación
-    // Por ahora solo logueamos, pero se puede crear una tabla específica
-      id: log.id,
-      technicianId: log.technicianId,
-      status: log.status,
-      tierChanged: log.tierChanged,
-      purchasesFound: log.purchasesFound,
-    });
     
     // Guardar en tabla verification_logs
     try {

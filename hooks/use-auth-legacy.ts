@@ -43,9 +43,7 @@ export function useAuth(options?: UseAuthOptions) {
 
       // Native platform: use token-based auth
       const sessionToken = await Auth.getSessionToken();
-        "[useAuth-legacy] Session token:",
-        sessionToken ? `present (${sessionToken.substring(0, 20)}...)` : "missing",
-      );
+
       if (!sessionToken) {
         setUser(null);
         return;
@@ -105,14 +103,6 @@ export function useAuth(options?: UseAuthOptions) {
       setLoading(false);
     }
   }, [autoFetch, fetchUser]);
-
-  useEffect(() => {
-      hasUser: !!user,
-      loading,
-      isAuthenticated,
-      error: error?.message,
-    });
-  }, [user, loading, isAuthenticated, error]);
 
   return {
     user,

@@ -6,6 +6,8 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { applyCorsHeaders, isOriginAllowed } from "../security/cors.config.js";
+import { applyRateLimit } from "../security/rate-limit.js";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -30,24 +32,59 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  // Enable CORS for all routes - reflect the request origin to support credentials
+  // CORS middleware with strict origin checking
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin) {
-      res.header("Access-Control-Allow-Origin", origin);
+    
+    // Apply CORS headers
+    applyCorsHeaders(res, origin);
+    
+    // Reject requests from unauthorized origins (except for requests without origin)
+    if (origin && !isOriginAllowed(origin)) {
+      res.status(403).json({ error: 'Origin not allowed' });
+      return;
     }
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-    );
-    res.header("Access-Control-Allow-Credentials", "true");
 
     // Handle preflight requests
     if (req.method === "OPTIONS") {
       res.sendStatus(200);
       return;
     }
+    next();
+  });
+
+  // Rate limiting middleware
+  app.use((req, res, next) => {
+    // Determine rate limit type based on path
+    let limitType: 'auth' | 'public' | 'api' | 'expensive' | 'portal' = 'api';
+    
+    if (req.path.startsWith('/api/auth') || req.path.includes('/login') || req.path.includes('/logout')) {
+      limitType = 'auth';
+    } else if (req.path.startsWith('/api/portal')) {
+      limitType = 'portal';
+    } else if (req.path.includes('/pdf') || req.path.includes('/email') || req.path.includes('/export')) {
+      limitType = 'expensive';
+    }
+    
+    const rateLimitResult = applyRateLimit(
+      { headers: req.headers as Record<string, string | string[] | undefined> },
+      limitType
+    );
+    
+    // Set rate limit headers
+    for (const [key, value] of Object.entries(rateLimitResult.headers)) {
+      res.setHeader(key, value);
+    }
+    
+    // Check if rate limited
+    if (!rateLimitResult.allowed) {
+      res.status(429).json({ 
+        error: 'Too many requests',
+        retryAfter: rateLimitResult.retryAfter 
+      });
+      return;
+    }
+    
     next();
   });
 

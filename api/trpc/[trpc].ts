@@ -6,18 +6,44 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from '../../server/routers.js';
 import { createContext } from '../../server/_core/context.js';
+import { applyCorsHeaders, isOriginAllowed } from '../../server/security/cors.config.js';
+import { applyRateLimit, getClientIdentifier } from '../../server/security/rate-limit.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
-  const origin = req.headers.origin || 'https://piano-emotion-manager.vercel.app';
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin as string | undefined;
+  
+  // Apply CORS headers
+  const corsApplied = applyCorsHeaders(res, origin);
+  
+  // Reject requests from unauthorized origins (except for requests without origin)
+  if (origin && !isOriginAllowed(origin)) {
+    res.status(403).json({ error: 'Origin not allowed' });
+    return;
+  }
 
   // Handle preflight
   if (req.method === 'OPTIONS') {
     res.status(200).end();
+    return;
+  }
+
+  // Apply rate limiting
+  const rateLimitResult = applyRateLimit(
+    { headers: req.headers as Record<string, string | string[] | undefined> },
+    'api'
+  );
+  
+  // Set rate limit headers
+  for (const [key, value] of Object.entries(rateLimitResult.headers)) {
+    res.setHeader(key, value);
+  }
+  
+  // Check if rate limited
+  if (!rateLimitResult.allowed) {
+    res.status(429).json({ 
+      error: 'Too many requests',
+      retryAfter: rateLimitResult.retryAfter 
+    });
     return;
   }
 
@@ -46,7 +72,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   });
 
   // Create a normalized request object that works with the SDK
-  // The SDK expects req.headers.cookie to be a string
   const normalizedReq = {
     headers: {
       cookie: req.headers.cookie,
