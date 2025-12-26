@@ -64,6 +64,47 @@ export const distributorPremiumConfig = mysqlTable('distributor_premium_config',
 }));
 
 // ============================================================================
+// Distributor Module Configuration
+// Configura qué módulos están disponibles para los clientes del distribuidor
+// ============================================================================
+
+export const distributorModuleConfig = mysqlTable('distributor_module_config', {
+  id: int('id').primaryKey().autoincrement(),
+  distributorId: int('distributor_id').notNull().references(() => distributors.id, { onDelete: 'cascade' }).unique(),
+  
+  // Módulos Core (siempre activos, no configurables)
+  // clients, pianos, services, calendar - siempre disponibles
+  
+  // Módulos de Negocio - el distribuidor decide si ofrecer
+  suppliersEnabled: boolean('suppliers_enabled').default(true),        // Permite ver/añadir otros proveedores
+  inventoryEnabled: boolean('inventory_enabled').default(true),        // Control de stock
+  invoicingEnabled: boolean('invoicing_enabled').default(true),        // Facturación básica
+  advancedInvoicingEnabled: boolean('advanced_invoicing_enabled').default(false), // Facturación electrónica
+  accountingEnabled: boolean('accounting_enabled').default(false),     // Contabilidad
+  
+  // Módulos Premium - normalmente solo para clientes premium del distribuidor
+  teamEnabled: boolean('team_enabled').default(false),                 // Gestión de equipos
+  crmEnabled: boolean('crm_enabled').default(false),                   // CRM avanzado
+  reportsEnabled: boolean('reports_enabled').default(false),           // Reportes y analytics
+  
+  // Configuración de Tienda
+  shopEnabled: boolean('shop_enabled').default(true),                  // Tienda del distribuidor
+  showPrices: boolean('show_prices').default(true),                    // Mostrar precios en tienda
+  allowDirectOrders: boolean('allow_direct_orders').default(true),     // Permitir pedidos directos
+  showStock: boolean('show_stock').default(true),                      // Mostrar disponibilidad
+  stockAlertsEnabled: boolean('stock_alerts_enabled').default(true),   // Alertas de stock bajo
+  
+  // Configuración de marca
+  customBranding: boolean('custom_branding').default(false),           // Usar branding del distribuidor
+  hideCompetitorLinks: boolean('hide_competitor_links').default(false), // Ocultar enlaces a otros proveedores
+  
+  createdAt: datetime('created_at').notNull().$defaultFn(() => new Date()),
+  updatedAt: datetime('updated_at').notNull().$defaultFn(() => new Date()),
+}, (table) => ({
+  distributorIdIdx: index('module_config_distributor_id_idx').on(table.distributorId),
+}));
+
+// ============================================================================
 // Technician Account Status
 // ============================================================================
 
@@ -127,6 +168,9 @@ export type InsertDistributorWooCommerceConfig = typeof distributorWooCommerceCo
 
 export type DistributorPremiumConfig = typeof distributorPremiumConfig.$inferSelect;
 export type InsertDistributorPremiumConfig = typeof distributorPremiumConfig.$inferInsert;
+
+export type DistributorModuleConfig = typeof distributorModuleConfig.$inferSelect;
+export type InsertDistributorModuleConfig = typeof distributorModuleConfig.$inferInsert;
 
 export type TechnicianAccountStatus = typeof technicianAccountStatus.$inferSelect;
 export type InsertTechnicianAccountStatus = typeof technicianAccountStatus.$inferInsert;

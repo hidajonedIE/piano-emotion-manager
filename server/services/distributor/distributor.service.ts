@@ -688,3 +688,236 @@ export class DistributorService {
 export function createDistributorService(distributorId: number): DistributorService {
   return new DistributorService(distributorId);
 }
+
+
+// ============================================================================
+// Module Configuration Types
+// ============================================================================
+
+export interface ModuleConfig {
+  // Módulos de Negocio
+  suppliersEnabled: boolean;
+  inventoryEnabled: boolean;
+  invoicingEnabled: boolean;
+  advancedInvoicingEnabled: boolean;
+  accountingEnabled: boolean;
+  
+  // Módulos Premium
+  teamEnabled: boolean;
+  crmEnabled: boolean;
+  reportsEnabled: boolean;
+  
+  // Configuración de Tienda
+  shopEnabled: boolean;
+  showPrices: boolean;
+  allowDirectOrders: boolean;
+  showStock: boolean;
+  stockAlertsEnabled: boolean;
+  
+  // Configuración de Marca
+  customBranding: boolean;
+  hideCompetitorLinks: boolean;
+}
+
+export interface DistributorInfo {
+  id: number;
+  name: string;
+  logoUrl?: string;
+  hasWooCommerce: boolean;
+}
+
+export interface MyDistributorConfigResult {
+  hasDistributor: boolean;
+  distributor: DistributorInfo | null;
+  moduleConfig: ModuleConfig | null;
+  accountTier: 'trial' | 'basic' | 'premium' | null;
+}
+
+// ============================================================================
+// Default Module Config
+// ============================================================================
+
+const DEFAULT_MODULE_CONFIG: ModuleConfig = {
+  suppliersEnabled: true,
+  inventoryEnabled: true,
+  invoicingEnabled: true,
+  advancedInvoicingEnabled: false,
+  accountingEnabled: false,
+  teamEnabled: false,
+  crmEnabled: false,
+  reportsEnabled: false,
+  shopEnabled: true,
+  showPrices: true,
+  allowDirectOrders: true,
+  showStock: true,
+  stockAlertsEnabled: true,
+  customBranding: false,
+  hideCompetitorLinks: false,
+};
+
+// ============================================================================
+// Extended Distributor Service Methods
+// ============================================================================
+
+// Add these methods to the DistributorService class prototype
+// This is a workaround to avoid rewriting the entire file
+
+DistributorService.prototype.getModuleConfig = async function(): Promise<ModuleConfig> {
+  try {
+    // Import dynamically to avoid circular dependencies
+    const { distributorModuleConfig } = await import('@/drizzle/distributor-schema');
+    
+    const [config] = await db
+      .select()
+      .from(distributorModuleConfig)
+      .where(eq(distributorModuleConfig.distributorId, this.distributorId));
+
+    if (!config) {
+      return DEFAULT_MODULE_CONFIG;
+    }
+
+    return {
+      suppliersEnabled: config.suppliersEnabled ?? true,
+      inventoryEnabled: config.inventoryEnabled ?? true,
+      invoicingEnabled: config.invoicingEnabled ?? true,
+      advancedInvoicingEnabled: config.advancedInvoicingEnabled ?? false,
+      accountingEnabled: config.accountingEnabled ?? false,
+      teamEnabled: config.teamEnabled ?? false,
+      crmEnabled: config.crmEnabled ?? false,
+      reportsEnabled: config.reportsEnabled ?? false,
+      shopEnabled: config.shopEnabled ?? true,
+      showPrices: config.showPrices ?? true,
+      allowDirectOrders: config.allowDirectOrders ?? true,
+      showStock: config.showStock ?? true,
+      stockAlertsEnabled: config.stockAlertsEnabled ?? true,
+      customBranding: config.customBranding ?? false,
+      hideCompetitorLinks: config.hideCompetitorLinks ?? false,
+    };
+  } catch (error) {
+    console.error('Error obteniendo configuración de módulos:', error);
+    return DEFAULT_MODULE_CONFIG;
+  }
+};
+
+DistributorService.prototype.saveModuleConfig = async function(config: Partial<ModuleConfig>): Promise<ModuleConfig> {
+  try {
+    const { distributorModuleConfig } = await import('@/drizzle/distributor-schema');
+    
+    const currentConfig = await this.getModuleConfig();
+    const newConfig = { ...currentConfig, ...config };
+
+    // Si hideCompetitorLinks está activo, desactivar suppliers
+    if (newConfig.hideCompetitorLinks) {
+      newConfig.suppliersEnabled = false;
+    }
+
+    // Verificar si ya existe configuración
+    const [existing] = await db
+      .select({ id: distributorModuleConfig.id })
+      .from(distributorModuleConfig)
+      .where(eq(distributorModuleConfig.distributorId, this.distributorId));
+
+    const configData = {
+      ...newConfig,
+      updatedAt: new Date(),
+    };
+
+    if (existing) {
+      await db
+        .update(distributorModuleConfig)
+        .set(configData)
+        .where(eq(distributorModuleConfig.id, existing.id));
+    } else {
+      await db.insert(distributorModuleConfig).values({
+        ...configData,
+        distributorId: this.distributorId,
+      });
+    }
+
+    return newConfig;
+  } catch (error) {
+    console.error('Error guardando configuración de módulos:', error);
+    throw error;
+  }
+};
+
+DistributorService.prototype.getMyDistributorConfig = async function(): Promise<MyDistributorConfigResult> {
+  try {
+    // Buscar si el usuario tiene un distribuidor asociado
+    const [accountStatus] = await db
+      .select({
+        distributorId: technicianAccountStatus.distributorId,
+        accountTier: technicianAccountStatus.accountTier,
+      })
+      .from(technicianAccountStatus)
+      .where(eq(technicianAccountStatus.userId, this.distributorId)); // Note: distributorId here is actually userId
+
+    if (!accountStatus) {
+      // Usuario sin distribuidor - usa configuración de Piano Emotion
+      return {
+        hasDistributor: false,
+        distributor: null,
+        moduleConfig: null,
+        accountTier: null,
+      };
+    }
+
+    // Obtener información del distribuidor
+    const [distributor] = await db
+      .select({
+        id: distributors.id,
+        name: distributors.name,
+        logoUrl: distributors.logoUrl,
+      })
+      .from(distributors)
+      .where(eq(distributors.id, accountStatus.distributorId));
+
+    if (!distributor) {
+      return {
+        hasDistributor: false,
+        distributor: null,
+        moduleConfig: null,
+        accountTier: null,
+      };
+    }
+
+    // Verificar si tiene WooCommerce configurado
+    const [wooConfig] = await db
+      .select({ enabled: distributorWooCommerceConfig.enabled })
+      .from(distributorWooCommerceConfig)
+      .where(eq(distributorWooCommerceConfig.distributorId, distributor.id));
+
+    // Obtener configuración de módulos del distribuidor
+    const distributorService = new DistributorService(distributor.id);
+    const moduleConfig = await distributorService.getModuleConfig();
+
+    return {
+      hasDistributor: true,
+      distributor: {
+        id: distributor.id,
+        name: distributor.name,
+        logoUrl: distributor.logoUrl ?? undefined,
+        hasWooCommerce: wooConfig?.enabled ?? false,
+      },
+      moduleConfig,
+      accountTier: accountStatus.accountTier as 'trial' | 'basic' | 'premium',
+    };
+  } catch (error) {
+    console.error('Error obteniendo configuración del distribuidor del usuario:', error);
+    return {
+      hasDistributor: false,
+      distributor: null,
+      moduleConfig: null,
+      accountTier: null,
+    };
+  }
+};
+
+// Type augmentation for TypeScript
+declare module './distributor.service' {
+  interface DistributorService {
+    getModuleConfig(): Promise<ModuleConfig>;
+    saveModuleConfig(config: Partial<ModuleConfig>): Promise<ModuleConfig>;
+    getMyDistributorConfig(): Promise<MyDistributorConfigResult>;
+  }
+}

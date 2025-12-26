@@ -3,13 +3,13 @@
  * Piano Emotion Manager
  * 
  * Endpoints para gestionar la configuración del distribuidor,
- * conexión con WooCommerce y técnicos.
+ * conexión con WooCommerce, módulos y técnicos.
  */
 
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure } from '../../_core/trpc';
-import { createDistributorService } from '../../services/distributor/distributor.service';
+import { router, protectedProcedure } from '../../_core/trpc.js';
+import { createDistributorService } from '../../services/distributor/distributor.service.js';
 
 // ============================================================================
 // Schemas de validación
@@ -31,6 +31,31 @@ const premiumConfigSchema = z.object({
   autoRemindersEnabled: z.boolean(),
 });
 
+const moduleConfigSchema = z.object({
+  // Módulos de Negocio
+  suppliersEnabled: z.boolean(),
+  inventoryEnabled: z.boolean(),
+  invoicingEnabled: z.boolean(),
+  advancedInvoicingEnabled: z.boolean(),
+  accountingEnabled: z.boolean(),
+  
+  // Módulos Premium
+  teamEnabled: z.boolean(),
+  crmEnabled: z.boolean(),
+  reportsEnabled: z.boolean(),
+  
+  // Configuración de Tienda
+  shopEnabled: z.boolean(),
+  showPrices: z.boolean(),
+  allowDirectOrders: z.boolean(),
+  showStock: z.boolean(),
+  stockAlertsEnabled: z.boolean(),
+  
+  // Configuración de Marca
+  customBranding: z.boolean(),
+  hideCompetitorLinks: z.boolean(),
+});
+
 const technicianTierSchema = z.enum(['trial', 'basic', 'premium']);
 
 // ============================================================================
@@ -38,6 +63,43 @@ const technicianTierSchema = z.enum(['trial', 'basic', 'premium']);
 // ============================================================================
 
 export const distributorRouter = router({
+  // ============================================================================
+  // User's Distributor Config (for clients of a distributor)
+  // ============================================================================
+
+  /**
+   * Obtener la configuración del distribuidor del usuario actual
+   * Este endpoint es usado por los técnicos/clientes para saber qué módulos tienen disponibles
+   */
+  getMyDistributorConfig: protectedProcedure
+    .query(async ({ ctx }) => {
+      const service = createDistributorService(ctx.user.id);
+      return service.getMyDistributorConfig();
+    }),
+
+  // ============================================================================
+  // Module Configuration (for distributor admins)
+  // ============================================================================
+
+  /**
+   * Obtener configuración de módulos del distribuidor
+   */
+  getModuleConfig: protectedProcedure
+    .query(async ({ ctx }) => {
+      const service = createDistributorService(ctx.user.id);
+      return service.getModuleConfig();
+    }),
+
+  /**
+   * Guardar configuración de módulos del distribuidor
+   */
+  saveModuleConfig: protectedProcedure
+    .input(moduleConfigSchema.partial())
+    .mutation(async ({ ctx, input }) => {
+      const service = createDistributorService(ctx.user.id);
+      return service.saveModuleConfig(input);
+    }),
+
   // ============================================================================
   // WooCommerce Configuration
   // ============================================================================
@@ -98,11 +160,11 @@ export const distributorRouter = router({
     }),
 
   // ============================================================================
-  // Technicians
+  // Technicians (Clients)
   // ============================================================================
 
   /**
-   * Listar técnicos
+   * Listar técnicos/clientes
    */
   listTechnicians: protectedProcedure
     .query(async ({ ctx }) => {

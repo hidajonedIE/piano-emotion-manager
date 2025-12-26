@@ -25,6 +25,7 @@ import {
   modulesRouter,
   advancedRouter,
 } from "./routers/index.js";
+import { licenseRouter } from "./routers/license/index.js";
 
 export const appRouter = router({
   // Sistema
@@ -51,6 +52,9 @@ export const appRouter = router({
   
   // Funcionalidades avanzadas
   advanced: advancedRouter,
+  
+  // Sistema de licencias
+  license: licenseRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -25,7 +25,8 @@ import { relations } from 'drizzle-orm';
 // ============================================================================
 
 export const shopTypeEnum = pgEnum('shop_type', [
-  'distributor',     // Tienda del distribuidor principal
+  'platform',        // Tienda de la plataforma (Piano Emotion)
+  'distributor',     // Tienda del distribuidor asociado
   'external',        // Tienda externa configurada por el usuario
 ]);
 
