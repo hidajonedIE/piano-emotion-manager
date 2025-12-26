@@ -287,6 +287,39 @@ export class WorkAssignmentService {
       .returning();
     
     // Notificar a ambos técnicos sobre la reasignación
+    try {
+      const { notificationService } = await import('../notifications/notification.service');
+      
+      // Obtener userIds de los técnicos
+      const [prevTechnician] = await db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.id, assignment.technicianId))
+        .limit(1);
+      
+      const [newTechnician] = await db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.id, input.newTechnicianId))
+        .limit(1);
+      
+      if (prevTechnician && newTechnician) {
+        await notificationService.notifyReassignment(
+          prevTechnician.userId,
+          newTechnician.userId,
+          {
+            clientName: 'Cliente', // TODO: Obtener nombre real del cliente
+            serviceType: 'Servicio', // TODO: Obtener tipo real del servicio
+            scheduledDate: assignment.scheduledDate,
+            reason: input.reason,
+            assignmentId: assignment.id,
+            organizationId: assignment.organizationId,
+          }
+        );
+      }
+    } catch (notifyError) {
+      console.error('Error enviando notificación de reasignación:', notifyError);
+    }
     
     return updated;
   }
@@ -340,7 +373,38 @@ export class WorkAssignmentService {
       .where(eq(workAssignments.id, assignmentId))
       .returning();
     
-    // Notificar al manager sobre el trabajo completado
+    // Notificar al manager sobre el rechazo
+    try {
+      const { notificationService } = await import('../notifications/notification.service');
+      const { organizationService } = await import('./organization.service');
+      
+      // Obtener managers de la organización
+      const managers = await organizationService.getManagersByOrganization(assignment.organizationId);
+      const managerUserIds = managers.map(m => m.userId);
+      
+      // Obtener nombre del técnico
+      const [technician] = await db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.id, technicianId))
+        .limit(1);
+      
+      if (managerUserIds.length > 0 && technician) {
+        await notificationService.notifyAssignmentRejected(
+          managerUserIds,
+          {
+            technicianName: technician.displayName || 'Técnico',
+            clientName: 'Cliente', // TODO: Obtener nombre real del cliente
+            serviceType: 'Servicio', // TODO: Obtener tipo real del servicio
+            reason,
+            assignmentId: assignment.id,
+            organizationId: assignment.organizationId,
+          }
+        );
+      }
+    } catch (notifyError) {
+      console.error('Error enviando notificación de rechazo:', notifyError);
+    }
     
     return updated;
   }

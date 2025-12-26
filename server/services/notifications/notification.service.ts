@@ -577,6 +577,92 @@ class NotificationService {
   }
   
   /**
+   * Notifica reasignación de trabajo a ambos técnicos
+   */
+  async notifyReassignment(
+    previousTechnicianUserId: number,
+    newTechnicianUserId: number,
+    data: {
+      clientName: string;
+      serviceType: string;
+      scheduledDate: Date;
+      reason: string;
+      assignmentId: number;
+      organizationId: number;
+    }
+  ): Promise<void> {
+    const dateStr = data.scheduledDate.toLocaleDateString('es-ES', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+    
+    // Notificar al técnico anterior
+    const removedPayload: NotificationPayload = {
+      type: 'assignment_reassigned',
+      title: '🔄 Trabajo Reasignado',
+      body: `Tu trabajo de ${data.serviceType} para ${data.clientName} ha sido reasignado`,
+      data: {
+        assignmentId: data.assignmentId,
+        organizationId: data.organizationId,
+        screen: 'team/calendar',
+      },
+    };
+    
+    await this.sendPushNotification(previousTechnicianUserId, removedPayload);
+    await this.storeNotification(previousTechnicianUserId, removedPayload, data.organizationId);
+    
+    // Notificar al nuevo técnico
+    const assignedPayload: NotificationPayload = {
+      type: 'assignment_new',
+      title: '📋 Trabajo Reasignado a Ti',
+      body: `${data.serviceType} para ${data.clientName} - ${dateStr}`,
+      data: {
+        assignmentId: data.assignmentId,
+        organizationId: data.organizationId,
+        screen: 'team/calendar',
+      },
+      priority: 'high',
+    };
+    
+    await this.sendPushNotification(newTechnicianUserId, assignedPayload);
+    await this.storeNotification(newTechnicianUserId, assignedPayload, data.organizationId);
+  }
+  
+  /**
+   * Notifica rechazo de asignación al manager
+   */
+  async notifyAssignmentRejected(
+    managerUserIds: number[],
+    data: {
+      technicianName: string;
+      clientName: string;
+      serviceType: string;
+      reason: string;
+      assignmentId: number;
+      organizationId: number;
+    }
+  ): Promise<void> {
+    const payload: NotificationPayload = {
+      type: 'assignment_rejected',
+      title: '❌ Asignación Rechazada',
+      body: `${data.technicianName} rechazó ${data.serviceType} para ${data.clientName}: ${data.reason}`,
+      data: {
+        assignmentId: data.assignmentId,
+        organizationId: data.organizationId,
+        screen: 'team/calendar',
+      },
+      priority: 'high',
+    };
+    
+    await this.sendToMultipleUsers(managerUserIds, payload);
+    
+    for (const userId of managerUserIds) {
+      await this.storeNotification(userId, payload, data.organizationId);
+    }
+  }
+  
+  /**
    * Notifica invitación aceptada
    */
   async notifyInvitationAccepted(

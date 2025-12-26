@@ -478,6 +478,26 @@ export class OrganizationService {
       );
   }
   
+  /**
+   * Obtener managers de una organización
+   */
+  async getManagersByOrganization(organizationId: number): Promise<OrganizationMember[]> {
+    return db
+      .select()
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.status, 'active'),
+          or(
+            eq(organizationMembers.role, 'owner'),
+            eq(organizationMembers.role, 'admin'),
+            eq(organizationMembers.role, 'manager')
+          )
+        )
+      );
+  }
+  
   // ==========================================
   // MÉTODOS PRIVADOS
   // ==========================================
