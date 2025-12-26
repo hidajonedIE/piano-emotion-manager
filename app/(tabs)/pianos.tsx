@@ -97,6 +97,7 @@ export default function PianosScreen() {
     { key: 'all', label: t('common.all') },
     { key: 'vertical', label: t('pianos.categories.upright') },
     { key: 'grand', label: t('pianos.categories.grand') },
+    { key: 'digital', label: t('pianos.categories.digital') },
   ];
 
   // Mostrar animación de carga inicial

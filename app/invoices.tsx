@@ -25,6 +25,7 @@ export default function InvoicesScreen() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Invoice['status'] | 'all'>('all');
+  const [dateFilter, setDateFilter] = useState<'all' | 'thisMonth' | 'lastMonth' | 'thisYear'>('all');
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
@@ -36,16 +37,39 @@ export default function InvoicesScreen() {
   const textColor = useThemeColor({}, 'text');
 
   const filteredInvoices = useMemo(() => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+    const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+
     return invoices
       .filter(inv => {
         const matchesSearch = 
           inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
           inv.clientName.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        
+        // Filtro por fecha
+        let matchesDate = true;
+        if (dateFilter !== 'all') {
+          const invDate = new Date(inv.date);
+          const invMonth = invDate.getMonth();
+          const invYear = invDate.getFullYear();
+          
+          if (dateFilter === 'thisMonth') {
+            matchesDate = invMonth === thisMonth && invYear === thisYear;
+          } else if (dateFilter === 'lastMonth') {
+            matchesDate = invMonth === lastMonth && invYear === lastMonthYear;
+          } else if (dateFilter === 'thisYear') {
+            matchesDate = invYear === thisYear;
+          }
+        }
+        
+        return matchesSearch && matchesStatus && matchesDate;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [invoices, searchQuery, statusFilter]);
+  }, [invoices, searchQuery, statusFilter, dateFilter]);
 
   const stats = useMemo(() => {
     const total = invoices.reduce((sum, inv) => sum + inv.total, 0);

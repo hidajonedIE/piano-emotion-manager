@@ -43,6 +43,77 @@ export interface InvoiceItem {
   total: number;
 }
 
+// ==================== PRESUPUESTOS ====================
+
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
+
+export interface Quote {
+  id: string;
+  number: string; // Número de presupuesto (ej: P2024-001)
+  clientId: string;
+  pianoId?: string;
+  // Datos fiscales del técnico
+  issuerName: string;
+  issuerNif: string;
+  issuerAddress: string;
+  // Líneas del presupuesto
+  items: QuoteItem[];
+  // Totales
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+  // Fechas
+  issueDate: string;
+  expirationDate: string; // Fecha de validez del presupuesto
+  // Estado
+  status: QuoteStatus;
+  // Conversión a factura
+  convertedToInvoiceId?: string;
+  convertedAt?: string;
+  // Notas y condiciones
+  notes?: string;
+  termsAndConditions?: string;
+  // Metadatos
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QuoteItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  isOptional?: boolean; // Items opcionales que el cliente puede elegir
+}
+
+export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
+  draft: 'Borrador',
+  sent: 'Enviado',
+  accepted: 'Aceptado',
+  rejected: 'Rechazado',
+  expired: 'Expirado',
+  converted: 'Convertido a factura',
+};
+
+// Generar número de presupuesto
+export const generateQuoteNumber = (existingQuotes: Quote[]): string => {
+  const year = new Date().getFullYear();
+  const prefix = `P${year}-`;
+  
+  const yearQuotes = existingQuotes.filter(q => 
+    q.number.startsWith(prefix)
+  );
+  
+  const maxNumber = yearQuotes.reduce((max, q) => {
+    const num = parseInt(q.number.replace(prefix, '')) || 0;
+    return Math.max(max, num);
+  }, 0);
+  
+  return `${prefix}${String(maxNumber + 1).padStart(4, '0')}`;
+};
+
 // ==================== AGENDA/CALENDARIO ====================
 
 export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';

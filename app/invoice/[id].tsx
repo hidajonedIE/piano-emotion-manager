@@ -36,7 +36,7 @@ export default function InvoiceDetailScreen() {
   const { businessInfo } = useBusinessInfo();
   const { rates, getActiveRates } = useServiceCatalog();
   const { clients } = useClientsData();
-  const { pianos } = usePianos();
+  const { pianos } = usePianosData();
   const { services, getServicesByClient } = useServicesData();
   const { materials, getMaterial } = useInventoryData();
 

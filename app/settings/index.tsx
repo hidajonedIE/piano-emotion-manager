@@ -38,6 +38,21 @@ interface AppSettings {
   businessMode: BusinessMode;
   organizationName?: string;
   
+  // Datos fiscales de la empresa
+  businessName?: string;      // Nombre comercial
+  legalName?: string;         // Razón social
+  taxId?: string;             // NIF/CIF
+  businessAddress?: string;   // Dirección fiscal
+  businessCity?: string;
+  businessPostalCode?: string;
+  businessProvince?: string;
+  businessPhone?: string;
+  businessEmail?: string;
+  businessWebsite?: string;
+  businessLogo?: string;      // URL del logo
+  bankAccount?: string;       // IBAN para facturas
+  bankName?: string;          // Nombre del banco
+  
   // Facturación electrónica
   eInvoicingEnabled: boolean;
   eInvoicingCountry: EInvoicingCountry;

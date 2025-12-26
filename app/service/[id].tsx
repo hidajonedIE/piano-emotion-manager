@@ -63,9 +63,12 @@ export default function ServiceDetailScreen() {
     materialsUsed: [],
     notes: '',
     cost: undefined,
+    duration: undefined,  // Duración en minutos
     pianoConditionAfter: undefined,
-    humidity: undefined,
-    temperature: undefined,
+    photosBefore: [],  // Fotos antes del servicio
+    photosAfter: [],   // Fotos después del servicio
+    clientSignature: undefined,  // Firma del cliente
+    technicianNotes: '',  // Notas internas del técnico
   });
 
   // Estado para modal de añadir material

@@ -2,15 +2,15 @@
  * Hook de Clientes basado en tRPC
  * Piano Emotion Manager
  * 
- * Este hook reemplaza la versión de AsyncStorage por una que usa tRPC
- * para sincronización con el servidor.
+ * Este hook maneja la sincronización de clientes con el servidor,
+ * incluyendo manejo de errores y estados de carga.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { trpc } from '@/utils/trpc';
 import type { Client } from '@/types';
 
-// Tipo del cliente del servidor (puede diferir ligeramente del tipo local)
+// Tipo del cliente del servidor
 type ServerClient = {
   id: number;
   odId: string;
@@ -20,6 +20,10 @@ type ServerClient = {
   address: string | null;
   clientType: string;
   notes: string | null;
+  taxId?: string | null;
+  city?: string | null;
+  region?: string | null;
+  postalCode?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -40,71 +44,139 @@ function serverToLocalClient(server: ServerClient): Client {
     type: (server.clientType as Client['type']) || 'individual',
     phone: server.phone || '',
     email: server.email || undefined,
+    taxId: server.taxId || undefined,
     addressText: server.address || undefined,
+    address: server.address ? {
+      street: server.address,
+      city: server.city || undefined,
+      province: server.region || undefined,
+      postalCode: server.postalCode || undefined,
+    } : undefined,
     notes: server.notes || undefined,
-    createdAt: server.createdAt.toISOString(),
-    updatedAt: server.updatedAt.toISOString(),
+    createdAt: server.createdAt instanceof Date 
+      ? server.createdAt.toISOString() 
+      : String(server.createdAt),
+    updatedAt: server.updatedAt instanceof Date 
+      ? server.updatedAt.toISOString() 
+      : String(server.updatedAt),
   };
 }
 
 export function useClientsData() {
   const utils = trpc.useUtils();
+  const [error, setError] = useState<string | null>(null);
 
-  // Query para obtener todos los clientes
-  const { data: serverClients, isLoading: loading, refetch } = trpc.clients.list.useQuery(undefined, {
+  // Query para obtener todos los clientes (usando listAll para evitar paginación)
+  const { 
+    data: serverClients, 
+    isLoading: loading, 
+    refetch,
+    error: queryError 
+  } = trpc.clients.listAll.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // 5 minutos
+    retry: 2,
+    onError: (err) => {
+      console.error('Error al cargar clientes:', err);
+      setError('Error al cargar los clientes');
+    },
   });
 
-  // Mutations
+  // Mutations con manejo de errores
   const createMutation = trpc.clients.create.useMutation({
     onSuccess: () => {
+      utils.clients.listAll.invalidate();
       utils.clients.list.invalidate();
+      setError(null);
+    },
+    onError: (err) => {
+      console.error('Error al crear cliente:', err);
+      setError(err.message || 'Error al crear el cliente');
+      throw err; // Re-lanzar para que el componente pueda manejarlo
     },
   });
 
   const updateMutation = trpc.clients.update.useMutation({
     onSuccess: () => {
+      utils.clients.listAll.invalidate();
       utils.clients.list.invalidate();
+      setError(null);
+    },
+    onError: (err) => {
+      console.error('Error al actualizar cliente:', err);
+      setError(err.message || 'Error al actualizar el cliente');
+      throw err;
     },
   });
 
   const deleteMutation = trpc.clients.delete.useMutation({
     onSuccess: () => {
+      utils.clients.listAll.invalidate();
       utils.clients.list.invalidate();
+      setError(null);
+    },
+    onError: (err) => {
+      console.error('Error al eliminar cliente:', err);
+      setError(err.message || 'Error al eliminar el cliente');
+      throw err;
     },
   });
 
   // Convertir clientes del servidor al formato local
   const clients: Client[] = (serverClients || []).map(serverToLocalClient);
 
-  // Añadir cliente
+  // Añadir cliente con manejo de errores mejorado
   const addClient = useCallback(
-    async (client: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
+    async (client: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>): Promise<Client> => {
       const fullName = [client.firstName, client.lastName1, client.lastName2]
         .filter(Boolean)
         .join(' ');
 
-      const result = await createMutation.mutateAsync({
-        name: fullName,
-        email: client.email || null,
-        phone: client.phone || null,
-        address: client.addressText || client.address?.street || null,
-        clientType: client.type as "particular" | "student" | "professional" | "music_school" | "conservatory" | "concert_hall",
-        notes: client.notes || null,
-      });
+      // Validación del lado del cliente
+      if (!fullName.trim()) {
+        throw new Error('El nombre es obligatorio');
+      }
+      if (!client.phone?.trim()) {
+        throw new Error('El teléfono es obligatorio');
+      }
 
-      return serverToLocalClient(result as ServerClient);
+      try {
+        const result = await createMutation.mutateAsync({
+          name: fullName,
+          email: client.email || null,
+          phone: client.phone || null,
+          address: client.addressText || (client.address?.street ? 
+            [
+              client.address.street,
+              client.address.number,
+              client.address.floor,
+              client.address.postalCode,
+              client.address.city,
+              client.address.province
+            ].filter(Boolean).join(', ') : null),
+          clientType: (client.type || 'individual') as "particular" | "student" | "professional" | "music_school" | "conservatory" | "concert_hall",
+          notes: client.notes || null,
+          taxId: client.taxId || null,
+          city: client.address?.city || null,
+          postalCode: client.address?.postalCode || null,
+          region: client.address?.province || null,
+        });
+
+        return serverToLocalClient(result as ServerClient);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error desconocido al crear cliente';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
     },
     [createMutation]
   );
 
   // Actualizar cliente
   const updateClient = useCallback(
-    async (id: string, updates: Partial<Client>) => {
+    async (id: string, updates: Partial<Client>): Promise<void> => {
       const updateData: Record<string, unknown> = {};
 
       if (updates.firstName !== undefined || updates.lastName1 !== undefined || updates.lastName2 !== undefined) {
-        // Si se actualiza algún campo del nombre, reconstruir el nombre completo
         const existingClient = clients.find(c => c.id === id);
         const firstName = updates.firstName ?? existingClient?.firstName ?? '';
         const lastName1 = updates.lastName1 ?? existingClient?.lastName1 ?? '';
@@ -117,19 +189,47 @@ export function useClientsData() {
       if (updates.addressText !== undefined) updateData.address = updates.addressText || null;
       if (updates.type !== undefined) updateData.clientType = updates.type;
       if (updates.notes !== undefined) updateData.notes = updates.notes || null;
+      if (updates.taxId !== undefined) updateData.taxId = updates.taxId || null;
 
-      await updateMutation.mutateAsync({
-        id: parseInt(id, 10),
-        ...updateData,
-      });
+      // Dirección estructurada
+      if (updates.address) {
+        updateData.addressStructured = {
+          street: updates.address.street || null,
+          number: updates.address.number || null,
+          floor: updates.address.floor || null,
+          postalCode: updates.address.postalCode || null,
+          city: updates.address.city || null,
+          province: updates.address.province || null,
+        };
+        updateData.city = updates.address.city || null;
+        updateData.postalCode = updates.address.postalCode || null;
+        updateData.region = updates.address.province || null;
+      }
+
+      try {
+        await updateMutation.mutateAsync({
+          id: parseInt(id, 10),
+          ...updateData,
+        });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error desconocido al actualizar cliente';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
     },
     [updateMutation, clients]
   );
 
   // Eliminar cliente
   const deleteClient = useCallback(
-    async (id: string) => {
-      await deleteMutation.mutateAsync({ id: parseInt(id, 10) });
+    async (id: string): Promise<void> => {
+      try {
+        await deleteMutation.mutateAsync({ id: parseInt(id, 10) });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error desconocido al eliminar cliente';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
     },
     [deleteMutation]
   );
@@ -140,16 +240,26 @@ export function useClientsData() {
     [clients]
   );
 
+  // Limpiar error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     clients,
     loading,
+    error: error || (queryError?.message ?? null),
     addClient,
     updateClient,
     deleteClient,
     getClient,
     refresh: refetch,
+    clearError,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    createError: createMutation.error?.message ?? null,
+    updateError: updateMutation.error?.message ?? null,
+    deleteError: deleteMutation.error?.message ?? null,
   };
 }

@@ -24,7 +24,7 @@ interface CalendarViewProps {
   initialDate?: string;
 }
 
-type ViewMode = 'month' | 'week';
+type ViewMode = 'month' | 'week' | 'day';
 
 const DAYS_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTHS = [
@@ -166,7 +166,14 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
 
   const toggleViewMode = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setViewMode(viewMode === 'month' ? 'week' : 'month');
+    // Ciclar entre las tres vistas: mes -> semana -> día -> mes
+    if (viewMode === 'month') {
+      setViewMode('week');
+    } else if (viewMode === 'week') {
+      setViewMode('day');
+    } else {
+      setViewMode('month');
+    }
   };
 
   const handleDatePress = (date: string) => {

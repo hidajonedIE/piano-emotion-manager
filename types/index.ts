@@ -65,17 +65,20 @@ export function getClientFormattedAddress(client: Client): string {
   return parts.join(', ');
 }
 
-// Categorías de piano acústico
-export type PianoCategory = 'vertical' | 'grand';
+// Categorías de piano
+export type PianoCategory = 'vertical' | 'grand' | 'digital';
 
 // Tipos específicos de piano vertical (por altura)
 export type VerticalPianoType = 'spinet' | 'console' | 'studio' | 'upright_professional';
 
 // Tipos específicos de piano de cola (por longitud)
-export type GrandPianoType = 'baby_grand' | 'medium_grand' | 'parlor_grand' | 'concert_grand';
+export type GrandPianoType = 'baby_grand' | 'medium_grand' | 'parlor_grand' | 'semi_concert' | 'concert_grand';
+
+// Tipos específicos de piano digital
+export type DigitalPianoType = 'portable' | 'console_digital' | 'stage' | 'hybrid';
 
 // Tipo unificado de piano
-export type PianoType = VerticalPianoType | GrandPianoType;
+export type PianoType = VerticalPianoType | GrandPianoType | DigitalPianoType;
 
 export interface Piano {
   id: string;
@@ -90,6 +93,9 @@ export interface Piano {
   size?: number;
   condition: PianoCondition;
   photo?: string;
+  photos?: string[];  // Múltiples fotos
+  location?: string;  // Ubicación del piano (casa cliente, taller, etc.)
+  estimatedValue?: number;  // Valor estimado para seguros
   notes?: string;
   // Campos de mantenimiento
   lastMaintenanceDate?: string;  // Fecha del último mantenimiento
