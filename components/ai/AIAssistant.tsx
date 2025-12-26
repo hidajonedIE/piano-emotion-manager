@@ -3,6 +3,7 @@
  * Piano Emotion Manager
  * 
  * Componente de asistente inteligente accesible desde cualquier pantalla
+ * Con botón arrastrable para posicionar libremente
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -26,7 +27,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { trpc } from '@/lib/trpc';
-import { useDashboardPreferences, AIIconPosition } from '@/hooks/use-dashboard-preferences';
+import { DraggableAIButton } from './DraggableAIButton';
 
 interface Message {
   id: string;
@@ -71,24 +72,6 @@ const SAMPLE_RESPONSES: Record<string, { text: string; suggestions: string[] }> 
   },
 };
 
-// Función para obtener estilos de posición según preferencia
-const getPositionStyle = (position: AIIconPosition) => {
-  switch (position) {
-    case 'bottom-right':
-      return { bottom: 100, right: 20 };
-    case 'bottom-left':
-      return { bottom: 100, left: 20 };
-    case 'bottom-center':
-      return { bottom: 100, left: '50%', marginLeft: -24 };
-    case 'top-right':
-      return { top: 100, right: 20 };
-    case 'top-left':
-      return { top: 100, left: 20 };
-    default:
-      return { bottom: 100, right: 20 };
-  }
-};
-
 export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
   const [isOpen, setIsOpen] = useState(visible);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -96,10 +79,8 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   
-  // Preferencias del dashboard para posición del icono
-  const { preferences } = useDashboardPreferences();
-  
   const scrollViewRef = useRef<ScrollView>(null);
+  const slideAnim = useRef(new Animated.Value(0)).current;
   
   // Mutation para enviar mensajes al chat de IA
   const chatMutation = trpc.advanced.chat.sendMessage.useMutation();
@@ -110,34 +91,13 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
     onSuccess: (data) => setAiAvailable(data.available),
     onError: () => setAiAvailable(false),
   });
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const background = useThemeColor({}, 'background');
-
-  useEffect(() => {
-    // Animación de pulso para el botón flotante
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, []);
+  const textColor = useThemeColor({}, 'text');
 
   useEffect(() => {
     Animated.spring(slideAnim, {
@@ -288,24 +248,11 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
     );
   };
 
-  // Obtener posición dinámica del icono
-  const positionStyle = getPositionStyle(preferences.aiIconPosition);
-
   return (
     <>
-      {/* Botón flotante */}
-      {!isOpen && preferences.aiIconVisible && (
-        <Animated.View
-          style={[
-            styles.fab,
-            positionStyle,
-            { backgroundColor: accent, transform: [{ scale: pulseAnim }] },
-          ]}
-        >
-          <Pressable onPress={handleOpen} style={styles.fabButton}>
-            <IconSymbol name="brain" size={22} color="#FFFFFF" />
-          </Pressable>
-        </Animated.View>
+      {/* Botón flotante arrastrable */}
+      {!isOpen && (
+        <DraggableAIButton onPress={handleOpen} />
       )}
 
       {/* Modal del chat */}
@@ -407,7 +354,7 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
           >
             <View style={[styles.inputContainer, { borderTopColor: borderColor, backgroundColor: background }]}>
               <TextInput
-                style={[styles.input, { backgroundColor: cardBg, borderColor, color: useThemeColor({}, 'text') }]}
+                style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
                 placeholder="Escribe tu pregunta..."
                 placeholderTextColor={textSecondary}
                 value={inputText}
@@ -440,24 +387,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  fab: {
-    position: 'absolute',
-    // Posición dinámica aplicada desde getPositionStyle()
-    width: 40, // Reducido para móvil
-    height: 40, // Reducido para móvil
-    borderRadius: 20, // Reducido para móvil
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    zIndex: 1000,
-  },
-  fabButton: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -503,13 +432,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
-    paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
   },
   quickActionLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   messagesContainer: {
@@ -522,12 +451,13 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     gap: Spacing.sm,
+    maxWidth: '85%',
   },
   userMessage: {
-    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
   },
   assistantMessage: {
-    justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
   },
   avatarContainer: {
     width: 28,
@@ -537,16 +467,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   messageBubble: {
-    maxWidth: SCREEN_WIDTH * 0.75,
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
+    maxWidth: SCREEN_WIDTH * 0.7,
   },
   userBubble: {
     borderBottomRightRadius: 4,
   },
   assistantBubble: {
-    borderWidth: 1,
     borderBottomLeftRadius: 4,
+    borderWidth: 1,
   },
   messageText: {
     fontSize: 15,
@@ -555,8 +485,8 @@ const styles = StyleSheet.create({
   typingBubble: {
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
-    borderWidth: 1,
     borderBottomLeftRadius: 4,
+    borderWidth: 1,
   },
   typingText: {
     fontSize: 14,
@@ -565,18 +495,18 @@ const styles = StyleSheet.create({
   suggestionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginLeft: 36,
-    marginTop: Spacing.xs,
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+    paddingLeft: 36,
   },
   suggestionButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
   suggestionText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
   },
   inputContainer: {
@@ -588,18 +518,18 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    minHeight: 44,
-    maxHeight: 120,
-    borderWidth: 1,
-    borderRadius: BorderRadius.lg,
+    minHeight: 40,
+    maxHeight: 100,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    fontSize: 16,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    fontSize: 15,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -3,7 +3,7 @@
  * Pantalla principal de Piano Emotion Manager
  * 
  * Refactorizado para usar componentes modulares en components/dashboard/
- * Con soporte para personalización de secciones y posición del icono IA
+ * Con soporte para personalización de secciones con drag & drop real
  */
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -17,6 +17,7 @@ import { GlobalSearchBar } from '@/components/global-search-bar';
 import { HamburgerMenu } from '@/components/hamburger-menu';
 import { PianoEmotionStore } from '@/components/piano-emotion-store';
 import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import {
   DashboardHeader,
@@ -27,8 +28,8 @@ import {
   DashboardAdvancedTools,
   DashboardPredictions,
   DashboardRecentServices,
+  DashboardDraggable,
 } from '@/components/dashboard';
-import { DashboardSettingsPanel } from '@/components/dashboard/dashboard-settings-panel';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
 import { useWhatsNew } from '@/hooks/use-whats-new';
@@ -42,13 +43,19 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { isMobile, isDesktop, horizontalPadding } = useResponsive();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [showSettings, setShowSettings] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   // Preferencias del dashboard
   const dashboardPreferences = useDashboardPreferences();
-  const { visibleSections, isLoading: prefsLoading } = dashboardPreferences;
+  const { 
+    allSections, 
+    reorderSections, 
+    toggleSectionVisibility,
+    isLoading: prefsLoading 
+  } = dashboardPreferences;
   
   const accent = useThemeColor({}, 'accent');
+  const textSecondary = useThemeColor({}, 'textSecondary');
 
   // Datos
   const { clients } = useClientsData();
@@ -154,6 +161,12 @@ export default function DashboardScreen() {
     }
   }, [stats, selectedMonth, navigatePreviousMonth, navigateNextMonth, goToCurrentMonth, recentServices, clients, pianos]);
 
+  // Toggle modo edición
+  const handleToggleEditMode = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsEditMode(prev => !prev);
+  }, []);
+
   // Estilos condicionales para web
   const containerStyle = Platform.OS === 'web' 
     ? [styles.container, { 
@@ -180,11 +193,6 @@ export default function DashboardScreen() {
         </LinearGradient>
       );
 
-  const handleOpenSettings = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setShowSettings(true);
-  };
-
   return (
     <>
       <OnboardingTutorial />
@@ -201,39 +209,62 @@ export default function DashboardScreen() {
             },
           ]}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={!isEditMode} // Deshabilitar scroll en modo edición para mejor drag
         >
           <View style={[styles.mainContainer, isDesktop && styles.mainContainerDesktop]}>
-            {/* Barra de búsqueda, menú y botón de configuración */}
+            {/* Barra de búsqueda, menú y botón de edición */}
             <View style={styles.topBar}>
               <View style={styles.searchBarContainer}>
                 <GlobalSearchBar />
               </View>
               <Pressable 
-                onPress={handleOpenSettings} 
-                style={[styles.settingsButton, { borderColor: accent }]}
-                accessibilityLabel="Personalizar dashboard"
-                accessibilityHint="Abre el panel para reordenar secciones y configurar el asistente IA"
+                onPress={handleToggleEditMode} 
+                style={[
+                  styles.editButton, 
+                  { 
+                    borderColor: accent,
+                    backgroundColor: isEditMode ? accent : 'rgba(255,255,255,0.8)',
+                  }
+                ]}
+                accessibilityLabel={isEditMode ? "Guardar cambios" : "Personalizar dashboard"}
+                accessibilityHint={isEditMode ? "Guarda el orden de las secciones" : "Permite reordenar las secciones del dashboard"}
               >
-                <IconSymbol name="slider.horizontal.3" size={20} color={accent} />
+                <IconSymbol 
+                  name={isEditMode ? "checkmark" : "slider.horizontal.3"} 
+                  size={20} 
+                  color={isEditMode ? "#FFFFFF" : accent} 
+                />
               </Pressable>
               <HamburgerMenu />
             </View>
 
+            {/* Indicador de modo edición */}
+            {isEditMode && (
+              <View style={[styles.editModeIndicator, { backgroundColor: accent + '15', borderColor: accent }]}>
+                <IconSymbol name="hand.draw.fill" size={16} color={accent} />
+                <ThemedText style={[styles.editModeText, { color: accent }]}>
+                  Modo edición: arrastra las secciones para reordenarlas
+                </ThemedText>
+                <Pressable onPress={handleToggleEditMode} style={styles.doneButton}>
+                  <ThemedText style={[styles.doneButtonText, { color: accent }]}>Listo</ThemedText>
+                </Pressable>
+              </View>
+            )}
+
             {/* Header siempre visible */}
             <DashboardHeader />
 
-            {/* Secciones dinámicas según preferencias */}
-            {visibleSections.map(section => renderSection(section.id))}
+            {/* Secciones con drag & drop */}
+            <DashboardDraggable
+              sections={allSections}
+              isEditMode={isEditMode}
+              onReorder={reorderSections}
+              onToggleVisibility={toggleSectionVisibility}
+              renderSection={renderSection}
+            />
           </View>
         </ScrollView>
       </GradientWrapper>
-
-      {/* Panel de configuración del dashboard */}
-      <DashboardSettingsPanel
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-        preferences={dashboardPreferences}
-      />
     </>
   );
 }
@@ -266,10 +297,31 @@ const styles = StyleSheet.create({
   searchBarContainer: {
     flex: 1,
   },
-  settingsButton: {
+  editButton: {
     padding: 8,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
-    backgroundColor: 'rgba(255,255,255,0.8)',
+  },
+  editModeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  editModeText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  doneButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+  },
+  doneButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

@@ -20,30 +20,28 @@ export type DashboardSectionId =
   | 'store';
 
 // Configuración de una sección
-export interface DashboardSection {
+export interface DashboardSectionConfig {
   id: DashboardSectionId;
   title: string;
   visible: boolean;
   order: number;
 }
 
-// Posiciones disponibles para el icono de IA
-export type AIIconPosition = 
-  | 'bottom-right'
-  | 'bottom-left'
-  | 'bottom-center'
-  | 'top-right'
-  | 'top-left';
+// Posición libre del icono de IA (coordenadas relativas 0-1)
+export interface AIIconFreePosition {
+  x: number; // 0 = izquierda, 1 = derecha
+  y: number; // 0 = arriba, 1 = abajo
+}
 
 // Preferencias completas del dashboard
 export interface DashboardPreferences {
-  sections: DashboardSection[];
-  aiIconPosition: AIIconPosition;
+  sections: DashboardSectionConfig[];
+  aiIconPosition: AIIconFreePosition;
   aiIconVisible: boolean;
 }
 
 // Configuración por defecto
-const DEFAULT_SECTIONS: DashboardSection[] = [
+const DEFAULT_SECTIONS: DashboardSectionConfig[] = [
   { id: 'alerts', title: 'Alertas', visible: true, order: 0 },
   { id: 'quick_actions', title: 'Acciones Rápidas', visible: true, order: 1 },
   { id: 'predictions', title: 'Predicciones IA', visible: true, order: 2 },
@@ -54,9 +52,12 @@ const DEFAULT_SECTIONS: DashboardSection[] = [
   { id: 'store', title: 'Tienda', visible: true, order: 7 },
 ];
 
+// Posición por defecto: abajo derecha
+const DEFAULT_AI_POSITION: AIIconFreePosition = { x: 0.95, y: 0.85 };
+
 const DEFAULT_PREFERENCES: DashboardPreferences = {
   sections: DEFAULT_SECTIONS,
-  aiIconPosition: 'bottom-right',
+  aiIconPosition: DEFAULT_AI_POSITION,
   aiIconVisible: true,
 };
 
@@ -81,10 +82,26 @@ export function useDashboardPreferences() {
           const storedSection = parsed.sections?.find(s => s.id === defaultSection.id);
           return storedSection || defaultSection;
         });
+        
+        // Convertir posición antigua a nueva si es necesario
+        let aiPosition = parsed.aiIconPosition;
+        if (typeof aiPosition === 'string') {
+          // Convertir posiciones predefinidas a coordenadas
+          switch (aiPosition) {
+            case 'bottom-right': aiPosition = { x: 0.95, y: 0.85 }; break;
+            case 'bottom-left': aiPosition = { x: 0.05, y: 0.85 }; break;
+            case 'bottom-center': aiPosition = { x: 0.5, y: 0.85 }; break;
+            case 'top-right': aiPosition = { x: 0.95, y: 0.15 }; break;
+            case 'top-left': aiPosition = { x: 0.05, y: 0.15 }; break;
+            default: aiPosition = DEFAULT_AI_POSITION;
+          }
+        }
+        
         setPreferences({
           ...DEFAULT_PREFERENCES,
           ...parsed,
           sections: mergedSections,
+          aiIconPosition: aiPosition || DEFAULT_AI_POSITION,
         });
       }
     } catch (error) {
@@ -104,8 +121,20 @@ export function useDashboardPreferences() {
     }
   }, []);
 
-  // Reordenar secciones
-  const reorderSections = useCallback((fromIndex: number, toIndex: number) => {
+  // Reordenar secciones (recibe array completo reordenado)
+  const reorderSections = useCallback((newSections: DashboardSectionConfig[]) => {
+    // Actualizar orden
+    const updatedSections = newSections.map((section, index) => ({
+      ...section,
+      order: index,
+    }));
+
+    const newPreferences = { ...preferences, sections: updatedSections };
+    savePreferences(newPreferences);
+  }, [preferences, savePreferences]);
+
+  // Mover sección de una posición a otra
+  const moveSectionByIndex = useCallback((fromIndex: number, toIndex: number) => {
     const newSections = [...preferences.sections];
     const [movedSection] = newSections.splice(fromIndex, 1);
     newSections.splice(toIndex, 0, movedSection);
@@ -131,8 +160,8 @@ export function useDashboardPreferences() {
     savePreferences(newPreferences);
   }, [preferences, savePreferences]);
 
-  // Cambiar posición del icono de IA
-  const setAIIconPosition = useCallback((position: AIIconPosition) => {
+  // Cambiar posición del icono de IA (posición libre)
+  const setAIIconPosition = useCallback((position: AIIconFreePosition) => {
     const newPreferences = { ...preferences, aiIconPosition: position };
     savePreferences(newPreferences);
   }, [preferences, savePreferences]);
@@ -164,6 +193,7 @@ export function useDashboardPreferences() {
     visibleSections,
     allSections,
     reorderSections,
+    moveSectionByIndex,
     toggleSectionVisibility,
     setAIIconPosition,
     toggleAIIconVisibility,

@@ -4,3 +4,4 @@
  */
 
 export { AIAssistant } from './AIAssistant';
+export { DraggableAIButton } from './DraggableAIButton';
