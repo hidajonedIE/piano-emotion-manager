@@ -9,9 +9,10 @@ import { createContext } from '../../server/_core/context.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin || 'https://piano-emotion-manager.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   // Handle preflight
@@ -44,12 +45,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     body: body,
   });
 
+  // Create a normalized request object that works with the SDK
+  // The SDK expects req.headers.cookie to be a string
+  const normalizedReq = {
+    headers: {
+      cookie: req.headers.cookie,
+      authorization: req.headers.authorization || req.headers.Authorization,
+      Authorization: req.headers.authorization || req.headers.Authorization,
+    },
+  };
+
   // Handle tRPC request using fetch adapter
   const response = await fetchRequestHandler({
     endpoint: '/api/trpc',
     req: fetchRequest,
     router: appRouter,
-    createContext: async () => createContext({ req, res }),
+    createContext: async () => createContext({ req: normalizedReq, res }),
   });
 
   // Copy response headers
