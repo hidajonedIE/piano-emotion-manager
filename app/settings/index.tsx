@@ -160,13 +160,31 @@ export default function SettingsIndexScreen() {
 
   // Cargar configuración guardada
   useEffect(() => {
-    // Cargar desde AsyncStorage
     const loadSettings = async () => {
       try {
+        // Cargar desde AsyncStorage primero (offline-first)
         const savedSettings = await AsyncStorage.getItem('userSettings');
         if (savedSettings) {
-          const parsed = JSON.parse(savedSettings);
-          // Aplicar configuraciones guardadas
+          const parsed = JSON.parse(savedSettings) as Partial<AppSettings>;
+          setSettings(prev => ({ ...prev, ...parsed }));
+          setNotificationsEnabled(parsed.notificationsEnabled ?? true);
+        }
+        
+        // Intentar sincronizar con la API si hay conexión
+        try {
+          const response = await fetch('/api/user/settings');
+          if (response.ok) {
+            const apiSettings = await response.json();
+            if (apiSettings) {
+              const mergedSettings = { ...defaultSettings, ...apiSettings };
+              setSettings(mergedSettings);
+              setNotificationsEnabled(mergedSettings.notificationsEnabled);
+              // Actualizar AsyncStorage con los datos del servidor
+              await AsyncStorage.setItem('userSettings', JSON.stringify(mergedSettings));
+            }
+          }
+        } catch (apiError) {
+          // Si falla la API, usamos los datos locales (ya cargados)
         }
       } catch (error) {
         console.error('Error cargando configuraciones:', error);
@@ -182,19 +200,37 @@ export default function SettingsIndexScreen() {
 
   const saveSettings = async () => {
     try {
-      // Guardar en AsyncStorage
+      // Preparar datos para guardar
+      const settingsToSave: AppSettings = {
+        ...settings,
+        notificationsEnabled,
+      };
+      
+      // Guardar en AsyncStorage (offline-first)
+      await AsyncStorage.setItem('userSettings', JSON.stringify(settingsToSave));
+      
+      // Sincronizar con la API
       try {
-        await AsyncStorage.setItem('userSettings', JSON.stringify({
-          notifications: notificationsEnabled,
-          // Añadir más configuraciones según sea necesario
-        }));
-      } catch (error) {
-        console.error('Error guardando configuraciones:', error);
+        const response = await fetch('/api/user/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settingsToSave),
+        });
+        
+        if (!response.ok) {
+          // Si falla la API, los datos ya están guardados localmente
+          console.warn('No se pudo sincronizar con el servidor, guardado localmente');
+        }
+      } catch (apiError) {
+        // Continuar aunque falle la API - los datos están guardados localmente
+        console.warn('Error sincronizando con API:', apiError);
       }
+      
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('Guardado', 'La configuración se ha guardado correctamente.');
       setHasChanges(false);
     } catch (error) {
+      console.error('Error guardando configuraciones:', error);
       Alert.alert('Error', 'No se pudo guardar la configuración.');
     }
   };
