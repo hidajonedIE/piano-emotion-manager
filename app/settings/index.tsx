@@ -1122,6 +1122,46 @@ export default function SettingsIndexScreen() {
           </View>
         </Accordion>
 
+        {/* Sección de Sesión */}
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={styles.sectionTitle}>Sesión</ThemedText>
+          <Pressable
+            style={[styles.linkRow, { borderBottomWidth: 0 }]}
+            onPress={async () => {
+              Alert.alert(
+                'Cerrar Sesión',
+                '¿Estás seguro de que quieres cerrar sesión?',
+                [
+                  { text: 'Cancelar', style: 'cancel' },
+                  {
+                    text: 'Cerrar Sesión',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        // Limpiar AsyncStorage
+                        await AsyncStorage.clear();
+                        // Redirigir a la página de login
+                        if (Platform.OS === 'web') {
+                          window.location.href = '/api/auth/logout';
+                        } else {
+                          router.replace('/login' as any);
+                        }
+                      } catch (err) {
+                        Alert.alert('Error', 'No se pudo cerrar sesión');
+                      }
+                    },
+                  },
+                ]
+              );
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
+              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={error} />
+              <ThemedText style={[styles.linkText, { color: error }]}>Cerrar Sesión</ThemedText>
+            </View>
+          </Pressable>
+        </View>
+
       </ScrollView>
     </ThemedView>
   );
