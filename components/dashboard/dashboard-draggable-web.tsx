@@ -205,7 +205,7 @@ export const DashboardDraggableWeb = memo(function DashboardDraggableWeb({
 
 const styles = StyleSheet.create({
   normalContainer: {
-    gap: Spacing.xs,
+    gap: 2,
   },
   editContainer: {
     gap: Spacing.sm,

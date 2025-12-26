@@ -57,8 +57,8 @@ export function DashboardHeader() {
 
 const styles = StyleSheet.create({
   headerGradient: {
-    marginTop: Spacing.xs,
-    marginBottom: Spacing.xs,
+    marginTop: 0,
+    marginBottom: 0,
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
   },
