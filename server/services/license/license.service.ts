@@ -5,7 +5,7 @@
  * Gestiona la creación, activación y administración de licencias.
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { users } from '@/drizzle/schema';
 
@@ -192,6 +192,11 @@ export class LicenseService {
    * Crea una licencia individual
    */
   async createLicense(input: CreateLicenseInput): Promise<LicenseInfo> {
+    const db = await getDb();
+    if (!db) {
+      throw new Error('Database not available');
+    }
+
     const code = this.generateLicenseCode();
     const now = new Date();
     
@@ -242,6 +247,11 @@ export class LicenseService {
     batchCode: string;
     licenses: string[];
   }> {
+    const db = await getDb();
+    if (!db) {
+      throw new Error('Database not available');
+    }
+
     const batchCode = `BATCH-${Date.now().toString(36).toUpperCase()}`;
     const licenses: string[] = [];
     const now = new Date();
@@ -284,6 +294,14 @@ export class LicenseService {
    * Activa una licencia para un usuario
    */
   async activateLicense(code: string, userId: number): Promise<ActivationResult> {
+    const db = await getDb();
+    if (!db) {
+      return {
+        success: false,
+        message: 'Database not available',
+      };
+    }
+
     // Buscar la licencia
     const [license] = await db.execute(sql`
       SELECT l.*, d.name as distributor_name, d.logo_url as distributor_logo,
@@ -387,6 +405,11 @@ export class LicenseService {
    * Obtiene la licencia activa de un usuario
    */
   async getUserLicense(userId: number): Promise<LicenseInfo | null> {
+    const db = await getDb();
+    if (!db) {
+      return null;
+    }
+
     const [license] = await db.execute(sql`
       SELECT l.*, d.name as distributor_name
       FROM licenses l
@@ -423,6 +446,11 @@ export class LicenseService {
    * Revoca una licencia
    */
   async revokeLicense(licenseId: number, adminId: number, reason?: string): Promise<boolean> {
+    const db = await getDb();
+    if (!db) {
+      return false;
+    }
+
     const [license] = await db.execute(sql`
       SELECT status FROM licenses WHERE id = ${licenseId}
     `) as any[];
@@ -452,6 +480,11 @@ export class LicenseService {
     licenseType?: string;
     distributorId?: number;
   }): Promise<LicenseInfo[]> {
+    const db = await getDb();
+    if (!db) {
+      return [];
+    }
+
     let query = sql`
       SELECT l.*, d.name as distributor_name, u.name as user_name
       FROM licenses l
@@ -509,6 +542,11 @@ export class LicenseService {
     userId?: number | null,
     details?: Record<string, any>
   ): Promise<void> {
+    const db = await getDb();
+    if (!db) {
+      return;
+    }
+
     await db.execute(sql`
       INSERT INTO license_history (
         license_id, action, previous_status, new_status,
