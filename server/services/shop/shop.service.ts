@@ -635,54 +635,53 @@ export class ShopService {
 
 export function createShopService(organizationId: number, userId: number, userRole: string): ShopService {
   return new ShopService(organizationId, userId, userRole);
+}
 
+// ============================================================================
+// Encryption Utilities
+// ============================================================================
 
-  // ============================================================================
-  // Encryption Utilities
-  // ============================================================================
+/**
+ * Encripta una contraseña para almacenamiento seguro
+ */
+export function encryptPassword(password: string): string {
+  // Usar crypto para encriptar
+  const crypto = require('crypto');
+  const algorithm = 'aes-256-gcm';
+  const key = process.env.ENCRYPTION_KEY || crypto.randomBytes(32);
+  const iv = crypto.randomBytes(16);
+  
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'hex').slice(0, 32), iv);
+  let encrypted = cipher.update(password, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  const authTag = cipher.getAuthTag();
+  
+  // Formato: iv:authTag:encrypted
+  return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+}
 
-  /**
-   * Encripta una contraseña para almacenamiento seguro
-   */
-  private encryptPassword(password: string): string {
-    // Usar crypto para encriptar
-    const crypto = require('crypto');
-    const algorithm = 'aes-256-gcm';
-    const key = process.env.ENCRYPTION_KEY || crypto.randomBytes(32);
-    const iv = crypto.randomBytes(16);
-    
-    const cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'hex').slice(0, 32), iv);
-    let encrypted = cipher.update(password, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    const authTag = cipher.getAuthTag();
-    
-    // Formato: iv:authTag:encrypted
-    return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+/**
+ * Desencripta una contraseña almacenada
+ */
+export function decryptPassword(encryptedPassword: string): string {
+  const crypto = require('crypto');
+  const algorithm = 'aes-256-gcm';
+  const key = process.env.ENCRYPTION_KEY || '';
+  
+  const parts = encryptedPassword.split(':');
+  if (parts.length !== 3) {
+    throw new Error('Invalid encrypted password format');
   }
-
-  /**
-   * Desencripta una contraseña almacenada
-   */
-  private decryptPassword(encryptedPassword: string): string {
-    const crypto = require('crypto');
-    const algorithm = 'aes-256-gcm';
-    const key = process.env.ENCRYPTION_KEY || '';
-    
-    const parts = encryptedPassword.split(':');
-    if (parts.length !== 3) {
-      throw new Error('Invalid encrypted password format');
-    }
-    
-    const [ivHex, authTagHex, encrypted] = parts;
-    const iv = Buffer.from(ivHex, 'hex');
-    const authTag = Buffer.from(authTagHex, 'hex');
-    
-    const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex').slice(0, 32), iv);
-    decipher.setAuthTag(authTag);
-    
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    
-    return decrypted;
-  }
+  
+  const [ivHex, authTagHex, encrypted] = parts;
+  const iv = Buffer.from(ivHex, 'hex');
+  const authTag = Buffer.from(authTagHex, 'hex');
+  
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex').slice(0, 32), iv);
+  decipher.setAuthTag(authTag);
+  
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  
+  return decrypted;
 }
