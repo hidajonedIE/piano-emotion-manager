@@ -705,7 +705,6 @@ export class SAFTPTGenerator {
   ): Promise<string> {
     // Implementación del SAF-T (PT)
     // Estructura XML según especificaciones de la AT
-    console.log('[SAF-T] Generando fichero para período:', period);
     
     return `<?xml version="1.0" encoding="UTF-8"?>
 <AuditFile xmlns="urn:OECD:StandardAuditFile-Tax:PT_1.04_01">

@@ -662,7 +662,6 @@ export class SDIClient {
    */
   async sendInvoice(xml: string): Promise<{ success: boolean; identificativoSdI?: string; error?: string }> {
     // Implementación real usaría SOAP/REST API del SDI
-    console.log('[SDI] Enviando factura al SDI...');
     
     // Simular respuesta
     return {
@@ -679,7 +678,6 @@ export class SDIClient {
     dataStato: Date;
     errori?: string[];
   }> {
-    console.log('[SDI] Consultando estado:', identificativoSdI);
     
     return {
       stato: 'CONSEGNATA',

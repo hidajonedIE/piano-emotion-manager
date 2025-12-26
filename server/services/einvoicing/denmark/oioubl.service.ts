@@ -617,8 +617,6 @@ export class NemHandelClient {
     recipientId: string,
     documentType: 'Invoice' | 'CreditNote'
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    console.log('[NemHandel] Enviando documento vía PEPPOL...');
-    console.log('[NemHandel] Destinatario:', recipientId);
     
     return {
       success: true,
@@ -634,7 +632,6 @@ export class NemHandelClient {
     timestamp: Date;
     error?: string;
   }> {
-    console.log('[NemHandel] Consultando estado:', messageId);
     
     return {
       status: 'DELIVERED',
@@ -650,7 +647,6 @@ export class NemHandelClient {
     participantId?: string;
     capabilities?: string[];
   }> {
-    console.log('[NemHandel] Buscando participante:', identifier);
     
     return {
       found: true,

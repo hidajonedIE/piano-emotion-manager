@@ -214,7 +214,6 @@ export class PaymentService {
       `, [organizationId, gateway, action, userId || 'system', null]);
     } catch (error) {
       // Si la tabla no existe, solo loguear
-      console.log(`[AUDIT] ${action} ${gateway} credentials for org ${organizationId} by ${userId || 'system'}`);
     }
   }
 

@@ -213,7 +213,6 @@ export async function r2Upload(
     
     if (compressed.compressed) {
       compressionRatio = originalSize / finalData.length;
-      console.log(`Image compressed: ${originalSize} -> ${finalData.length} bytes (${compressionRatio.toFixed(2)}x)`);
     }
   }
   

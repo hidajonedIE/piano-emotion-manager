@@ -30,19 +30,16 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       if (db) {
         const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
         user = dbUser as User;
-        console.log("[Context] Authenticated via Clerk:", user.email);
         return { req: opts.req, res: opts.res, user };
       }
     }
   } catch (error) {
-    console.log("[Context] Clerk auth failed, trying legacy auth:", error);
   }
 
   // Fall back to legacy SDK authentication (demo login, etc.)
   try {
     user = await sdk.authenticateRequest(opts.req);
     if (user) {
-      console.log("[Context] Authenticated via legacy SDK:", user.email);
     }
   } catch (error) {
     // Authentication is optional for public procedures.

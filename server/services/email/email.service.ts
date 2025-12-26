@@ -100,7 +100,6 @@ class EmailService {
       
       // En desarrollo, usar ethereal.email para testing
       if (process.env.NODE_ENV === 'development' && !config.auth.user) {
-        console.log('📧 Email service running in development mode (emails will be logged)');
         this.transporter = nodemailer.createTransport({
           jsonTransport: true,
         });
@@ -133,7 +132,6 @@ class EmailService {
       
       // En desarrollo, loguear el email
       if (process.env.NODE_ENV === 'development') {
-        console.log('📧 Email sent (dev mode):', {
           to: options.to,
           subject: options.subject,
           messageId: result.messageId,
@@ -141,7 +139,6 @@ class EmailService {
         
         // Si es jsonTransport, el mensaje está en result.message
         if (result.message) {
-          console.log('📧 Email content:', JSON.parse(result.message));
         }
       }
       

@@ -28,7 +28,6 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       : null;
 
     if (!sessionToken) {
-      console.log("[Clerk] No session token found in request");
       return null;
     }
 
@@ -44,7 +43,6 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     });
 
     if (!payload || !payload.sub) {
-      console.log("[Clerk] Invalid token payload");
       return null;
     }
 

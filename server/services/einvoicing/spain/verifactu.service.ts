@@ -165,7 +165,6 @@ export class VerifactuService extends BaseEInvoicingService {
     try {
       // En producción, aquí se enviaría el XML firmado a la AEAT
       // Por ahora, simulamos el envío
-      console.log(`[Verifactu] Enviando factura ${invoice.number} a ${endpoint}`);
       
       return {
         success: true,

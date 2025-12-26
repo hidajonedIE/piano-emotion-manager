@@ -177,7 +177,6 @@ async function updateTechnicianStatus(
       .set(updateData)
       .where(eq(users.id, parseInt(technicianId)));
     
-    console.log(`[DB] Técnico ${technicianId} actualizado correctamente`);
   } catch (error) {
     console.error(`[DB] Error actualizando técnico ${technicianId}:`, error);
     throw error;
@@ -191,7 +190,6 @@ async function saveVerificationLog(log: any): Promise<void> {
   try {
     // Guardar en tabla de logs de verificación
     // Por ahora solo logueamos, pero se puede crear una tabla específica
-    console.log(`[DB] Log de verificación guardado:`, {
       id: log.id,
       technicianId: log.technicianId,
       status: log.status,
@@ -235,7 +233,6 @@ async function notifyTierChange(
   newTier: AccountTier,
   purchasesNeeded: number
 ): Promise<void> {
-  console.log(`[Notify] Técnico ${technicianId}: ${previousTier} -> ${newTier}`);
   
   try {
     // Obtener datos del técnico
@@ -279,7 +276,6 @@ async function notifyTierChange(
       });
     }
     
-    console.log(`[Notify] Email enviado a ${technician.email}`);
   } catch (error) {
     console.error(`[Notify] Error enviando notificación:`, error);
   }
@@ -301,7 +297,6 @@ export class DailyPurchaseCheckJob {
    */
   async run(): Promise<JobResult> {
     const startTime = new Date();
-    console.log(`[Job] Iniciando verificación diaria de compras: ${startTime.toISOString()}`);
 
     const result: JobResult = {
       startTime,
@@ -323,13 +318,11 @@ export class DailyPurchaseCheckJob {
       const techniciansToVerify = await getTechniciansToVerify();
       result.totalTechnicians = techniciansToVerify.length;
 
-      console.log(`[Job] Técnicos a verificar: ${result.totalTechnicians}`);
 
       // Procesar en lotes
       for (let i = 0; i < techniciansToVerify.length; i += JOB_CONFIG.BATCH_SIZE) {
         const batch = techniciansToVerify.slice(i, i + JOB_CONFIG.BATCH_SIZE);
         
-        console.log(`[Job] Procesando lote ${Math.floor(i / JOB_CONFIG.BATCH_SIZE) + 1}...`);
 
         for (const context of batch) {
           const techResult = await this.verifyTechnician(context);
@@ -364,9 +357,6 @@ export class DailyPurchaseCheckJob {
     result.endTime = new Date();
     result.duration = result.endTime.getTime() - result.startTime.getTime();
 
-    console.log(`[Job] Verificación completada en ${result.duration}ms`);
-    console.log(`[Job] Resultados: ${result.verified} verificados, ${result.skipped} omitidos, ${result.errors} errores`);
-    console.log(`[Job] Cambios de tier: ${result.tierChanges.toPremium} a Premium, ${result.tierChanges.toBasic} a Básica`);
 
     return result;
   }
@@ -508,7 +498,6 @@ export function initializeDailyPurchaseCheck() {
   //   await job.run();
   // });
   
-  console.log(`[Cron] Job de verificación diaria programado para: ${JOB_CONFIG.CRON_SCHEDULE}`);
 }
 
 /**

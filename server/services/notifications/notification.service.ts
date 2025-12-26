@@ -98,7 +98,6 @@ class NotificationService {
       }
       
       if (finalStatus !== 'granted') {
-        console.log('❌ Permission for push notifications denied');
         return null;
       }
       
@@ -136,7 +135,6 @@ class NotificationService {
         });
       }
       
-      console.log('✅ Push token registered:', token);
       return token;
     } catch (error) {
       console.error('❌ Error registering for push notifications:', error);
@@ -242,7 +240,6 @@ class NotificationService {
       const userTokens = this.pushTokens.get(userId) || [];
       
       if (userTokens.length === 0) {
-        console.log(`⚠️ No push tokens for user ${userId}`);
         return false;
       }
       
@@ -277,7 +274,6 @@ class NotificationService {
         return false;
       }
       
-      console.log(`✅ Push notification sent to user ${userId}`);
       return true;
     } catch (error) {
       console.error('❌ Error sending push notification:', error);

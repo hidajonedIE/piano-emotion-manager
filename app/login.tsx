@@ -61,7 +61,6 @@ export default function LoginScreen() {
         await setSignInActive({ session: result.createdSessionId });
         router.replace("/");
       } else {
-        console.log("[Login] Sign in incomplete:", result);
         setError("Error al iniciar sesión. Por favor, inténtalo de nuevo.");
       }
     } catch (err: any) {
@@ -165,7 +164,6 @@ export default function LoginScreen() {
         return;
       }
 
-      console.log("[Login] Google OAuth flow completed but no session created");
     } catch (err: any) {
       console.error("[Login] Google sign in error:", err);
       if (err.errors?.[0]?.message) {

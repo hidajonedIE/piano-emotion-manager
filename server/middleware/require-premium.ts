@@ -194,7 +194,6 @@ export function logPremiumAccess(feature: PremiumFeature) {
       const allowed = user.accountTier === 'premium' || user.accountTier === 'trial';
       
       // Aquí se podría guardar en la BD el intento de acceso
-      console.log(`[Premium Access] User: ${user.id}, Feature: ${feature}, Allowed: ${allowed}, Tier: ${user.accountTier}`);
     }
     
     next();

@@ -128,7 +128,6 @@ router.post('/auth/request-magic-link', async (req: Request, res: Response) => {
 
     // Por seguridad, siempre respondemos igual aunque no exista el cliente
     if (!client) {
-      console.log(`Magic link solicitado para email no registrado: ${email}`);
       return res.json({ 
         success: true, 
         message: 'Si el email está registrado, recibirás un enlace de acceso.' 
@@ -192,11 +191,9 @@ router.post('/auth/request-magic-link', async (req: Request, res: Response) => {
         `,
         text: `Accede a tu Portal de Cliente de Piano Emotion: ${magicLink}\n\nEste enlace expira en 15 minutos.`,
       });
-      console.log(`Magic link enviado a ${email}`);
     } catch (emailError) {
       console.error('Error enviando email magic link:', emailError);
       // Loguear para desarrollo
-      console.log(`Magic link generado para ${email}: ${magicLink}`);
     }
 
     // Configuración de email (referencia):

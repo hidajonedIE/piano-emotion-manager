@@ -107,7 +107,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
     }
 
     return res.status(200).json({ received: true });
@@ -122,7 +121,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
  * Maneja el evento de checkout completado
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  console.log('Checkout completed:', session.id);
 
   const userId = session.client_reference_id;
   const customerId = session.customer as string;
@@ -151,14 +149,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     })
     .where(eq(users.openId, userId));
 
-  console.log(`User ${userId} subscribed to ${plan}`);
 }
 
 /**
  * Maneja actualizaciones de suscripción
  */
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log('Subscription updated:', subscription.id);
 
   const customerId = subscription.customer as string;
   const priceId = subscription.items.data[0]?.price.id;
@@ -188,7 +184,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
  * Maneja cancelación de suscripción
  */
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log('Subscription deleted:', subscription.id);
 
   const customerId = subscription.customer as string;
   const db = await getDb();
@@ -206,7 +201,6 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
  * Maneja pago exitoso
  */
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  console.log('Payment succeeded for invoice:', invoice.id);
   // Aquí podrías enviar un email de confirmación
 }
 
@@ -214,7 +208,6 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
  * Maneja pago fallido
  */
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  console.log('Payment failed for invoice:', invoice.id);
   
   const customerId = invoice.customer as string;
   const db = await getDb();

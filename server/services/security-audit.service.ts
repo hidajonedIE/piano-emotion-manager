@@ -56,7 +56,6 @@ export class SecurityAuditService {
     
     // Log en consola para monitoreo inmediato
     const logLevel = event.success ? 'INFO' : 'WARN';
-    console.log(
       `[AUDIT][${logLevel}] ${timestamp} | ` +
       `User: ${event.userId} (${event.userRole || 'unknown'}) | ` +
       `Action: ${event.action} | ` +

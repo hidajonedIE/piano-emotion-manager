@@ -148,7 +148,6 @@ export abstract class BaseEInvoicingService implements IEInvoicingService {
    * Log de operación para auditoría
    */
   protected log(operation: string, data: Record<string, unknown>): void {
-    console.log(`[${this.system.toUpperCase()}] ${operation}:`, JSON.stringify(data, null, 2));
   }
 }
 

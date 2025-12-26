@@ -12,7 +12,6 @@ try {
   useClerkAuth = clerk.useAuth;
   useClerkUser = clerk.useUser;
 } catch (e) {
-  console.log("[AuthGuard] Clerk not available, using fallback auth");
 }
 
 // Fallback hook for when Clerk is not available
@@ -56,7 +55,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
     // Si no está autenticado, redirigir a login
     if (!isSignedIn && !redirecting) {
-      console.log("[AuthGuard] No authenticated user, redirecting to login...");
       setRedirecting(true);
       
       if (usingClerk) {

@@ -10,7 +10,6 @@ try {
   useClerkAuth = clerk.useAuth;
   useClerkUser = clerk.useUser;
 } catch (e) {
-  console.log("[useAuth] Clerk not available");
 }
 
 // Import legacy auth as fallback
@@ -68,7 +67,6 @@ export function useAuth(options?: UseAuthOptions) {
   const refresh = useCallback(async () => {
     if (usingClerk) {
       // Clerk handles this automatically
-      console.log("[useAuth] Refresh called - Clerk handles this automatically");
     } else {
       await legacyAuth.refresh();
     }

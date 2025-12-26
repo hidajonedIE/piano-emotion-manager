@@ -375,8 +375,6 @@ export default function PrivacySettingsScreen() {
                 '• Cookies de rendimiento: Nos ayudan a mejorar la app\n' +
                 '• Cookies de análisis: Nos permiten entender cómo usas la app',
                 [
-                  { text: 'Aceptar todas', onPress: () => console.log('Cookies aceptadas') },
-                  { text: 'Solo esenciales', onPress: () => console.log('Solo esenciales') },
                   { text: 'Cerrar', style: 'cancel' },
                 ]
               );

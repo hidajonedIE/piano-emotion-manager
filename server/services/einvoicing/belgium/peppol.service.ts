@@ -50,7 +50,6 @@ export class BelgiumPeppolService extends BaseEInvoicingService implements IEInv
       };
     }
 
-    console.log(`Envoi de la facture PEPPOL pour la Belgique: ${invoice.invoiceId}`);
     
     // Envoi à l'Access Point PEPPOL
     try {
@@ -123,7 +122,6 @@ export class BelgiumPeppolService extends BaseEInvoicingService implements IEInv
    * @returns Le statut de la facture.
    */
   async getStatus(invoiceId: string): Promise<EInvoiceStatus> {
-    console.log(`Vérification du statut de la facture PEPPOL: ${invoiceId}`);
     
     try {
       const accessPointUrl = process.env.PEPPOL_ACCESS_POINT_URL;

@@ -622,7 +622,6 @@ export class ChorusProClient {
     serviceCode: string;
     engagementNumber?: string;
   }): Promise<{ success: boolean; numeroFlux?: string; error?: string }> {
-    console.log('[ChorusPro] Enviando factura...');
     
     return {
       success: true,
@@ -638,7 +637,6 @@ export class ChorusProClient {
     dateStatut: Date;
     motifRejet?: string;
   }> {
-    console.log('[ChorusPro] Consultando estado:', numeroFlux);
     
     return {
       statut: 'VALIDEE',

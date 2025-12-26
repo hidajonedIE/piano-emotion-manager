@@ -86,7 +86,6 @@ class DigitalSignatureService {
       this.privateKey = keyBag[0].key!;
       this.isLoaded = true;
 
-      console.log('✅ Certificado digital cargado correctamente');
     } catch (error) {
       console.error('❌ Error al cargar el certificado:', error);
       throw error;

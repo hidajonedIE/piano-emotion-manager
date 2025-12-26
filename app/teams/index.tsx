@@ -300,7 +300,6 @@ export default function TeamsScreen() {
       'Introduce el email del nuevo miembro para enviar una invitación.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Invitar', onPress: () => console.log('Invitar') },
       ]
     );
   };
@@ -312,7 +311,6 @@ export default function TeamsScreen() {
       'Selecciona un técnico para asignar este trabajo.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Asignar', onPress: () => console.log('Asignar', assignmentId) },
       ]
     );
   };

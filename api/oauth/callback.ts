@@ -54,8 +54,6 @@ function getFrontendUrl(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  console.log("[OAuth Callback] Request received");
-  console.log("[OAuth Callback] Headers:", JSON.stringify(req.headers, null, 2));
   
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -64,32 +62,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const code = getQueryParam(req, "code");
   const state = getQueryParam(req, "state");
 
-  console.log("[OAuth Callback] code:", code ? "present" : "missing");
-  console.log("[OAuth Callback] state:", state ? "present" : "missing");
 
   if (!code || !state) {
     return res.status(400).json({ error: "code and state are required" });
   }
 
   try {
-    console.log("[OAuth Callback] Exchanging code for token...");
     const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-    console.log("[OAuth Callback] Token received");
     
-    console.log("[OAuth Callback] Getting user info...");
     const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-    console.log("[OAuth Callback] User info:", { openId: userInfo.openId, name: userInfo.name });
     
-    console.log("[OAuth Callback] Syncing user to database...");
     const savedUser = await syncUser(userInfo);
-    console.log("[OAuth Callback] User synced:", savedUser?.id);
     
-    console.log("[OAuth Callback] Creating session token...");
     const sessionToken = await sdk.createSessionToken(userInfo.openId!, {
       name: userInfo.name || "",
       expiresInMs: ONE_YEAR_MS,
     });
-    console.log("[OAuth Callback] Session token created");
 
     // Set cookie - for Vercel deployments, don't set domain to allow it to default to the exact host
     const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
@@ -108,13 +96,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     
     const cookieValue = cookieParts.join("; ");
-    console.log("[OAuth Callback] Setting cookie (without value):", cookieValue.replace(sessionToken, "[REDACTED]"));
     
     res.setHeader("Set-Cookie", cookieValue);
 
     // Redirect to the frontend
     const frontendUrl = getFrontendUrl(req);
-    console.log("[OAuth Callback] Redirecting to:", frontendUrl);
     
     return res.redirect(302, frontendUrl);
   } catch (error) {

@@ -202,7 +202,6 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
       }
     } catch (error) {
       // Fallback a respuestas predefinidas si hay error
-      console.log('Usando respuestas predefinidas (IA no disponible)');
       const response = findResponse(messageText);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

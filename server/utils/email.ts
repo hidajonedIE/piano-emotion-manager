@@ -12,16 +12,12 @@ interface EmailOptions {
 
 /**
  * Envía un email
- * Por ahora solo registra en consola - implementar con servicio real
+ * Por ahora solo simula el envío - implementar con servicio real
  */
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
-  // TODO: Implementar con servicio de email real
-  console.log('[Email] Enviando email:', {
-    to: options.to,
-    subject: options.subject,
-  });
-  
-  // Simular envío exitoso
+  // TODO: Implementar con servicio de email real (SendGrid, AWS SES, etc.)
+  // Por ahora solo simulamos el envío exitoso
+  void options; // Evitar warning de variable no usada
   return true;
 }
 

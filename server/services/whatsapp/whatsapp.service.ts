@@ -631,7 +631,6 @@ export class WhatsAppService {
         for (const message of value.messages || []) {
           // Aquí se podría implementar lógica para manejar respuestas
           // Por ejemplo, guardar el mensaje o notificar al técnico
-          console.log('Mensaje recibido:', message);
         }
       }
     }
