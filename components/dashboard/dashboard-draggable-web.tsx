@@ -1,9 +1,9 @@
 /**
- * Dashboard con Drag & Drop para Web
- * Usa HTML5 Drag and Drop API para compatibilidad con navegadores
+ * Dashboard con Reordenamiento de Secciones
+ * Usa botones de subir/bajar para reordenar - funciona en web y móvil
  */
-import { memo, useCallback, useState, useRef } from 'react';
-import { View, StyleSheet, Pressable, Platform } from 'react-native';
+import { memo, useCallback } from 'react';
+import { View, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
@@ -29,56 +29,33 @@ export const DashboardDraggableWeb = memo(function DashboardDraggableWeb({
 }: DashboardDraggableWebProps) {
   const accent = useThemeColor({}, 'accent');
   const borderColor = useThemeColor({}, 'border');
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const cardBg = useThemeColor({}, 'cardBackground');
 
-  const handleDragStart = useCallback((e: any, index: number) => {
-    if (Platform.OS === 'web') {
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', index.toString());
-    }
-    setDraggedIndex(index);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, []);
-
-  const handleDragOver = useCallback((e: any, index: number) => {
-    e.preventDefault();
-    if (Platform.OS === 'web') {
-      e.dataTransfer.dropEffect = 'move';
-    }
-    if (dragOverIndex !== index) {
-      setDragOverIndex(index);
-    }
-  }, [dragOverIndex]);
-
-  const handleDragLeave = useCallback(() => {
-    setDragOverIndex(null);
-  }, []);
-
-  const handleDrop = useCallback((e: any, dropIndex: number) => {
-    e.preventDefault();
+  // Mover sección hacia arriba
+  const handleMoveUp = useCallback((index: number) => {
+    if (index <= 0) return;
     
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null);
-      setDragOverIndex(null);
-      return;
-    }
-
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newSections = [...sections];
-    const [draggedItem] = newSections.splice(draggedIndex, 1);
-    newSections.splice(dropIndex, 0, draggedItem);
-    
+    [newSections[index - 1], newSections[index]] = [newSections[index], newSections[index - 1]];
     onReorder(newSections);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-  }, [draggedIndex, sections, onReorder]);
+  }, [sections, onReorder]);
 
-  const handleDragEnd = useCallback(() => {
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-  }, []);
+  // Mover sección hacia abajo
+  const handleMoveDown = useCallback((index: number) => {
+    if (index >= sections.length - 1) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newSections = [...sections];
+    [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
+    onReorder(newSections);
+  }, [sections, onReorder]);
+
+  // Toggle visibilidad
+  const handleToggleVisibility = useCallback((sectionId: DashboardSectionId) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onToggleVisibility(sectionId);
+  }, [onToggleVisibility]);
 
   // Modo normal: renderizar secciones visibles sin controles de edición
   if (!isEditMode) {
@@ -93,85 +70,135 @@ export const DashboardDraggableWeb = memo(function DashboardDraggableWeb({
     );
   }
 
-  // Modo edición: mostrar controles de drag & drop
+  // Modo edición: mostrar controles de reordenamiento
   return (
     <View style={styles.editContainer}>
+      {/* Header de modo edición */}
       <View style={[styles.editModeHeader, { backgroundColor: accent }]}>
-        <IconSymbol name="hand.draw.fill" size={18} color="#FFFFFF" />
-        <ThemedText style={styles.editModeText}>
-          Arrastra las secciones para reordenarlas
+        <IconSymbol name="slider.horizontal.3" size={18} color="#FFFFFF" />
+        <ThemedText style={styles.editModeHeaderText}>
+          Usa las flechas para reordenar las secciones
         </ThemedText>
       </View>
 
       {sections.map((section, index) => {
-        const isDragging = draggedIndex === index;
-        const isDragOver = dragOverIndex === index;
+        const canMoveUp = index > 0;
+        const canMoveDown = index < sections.length - 1;
 
         return (
           <View
             key={section.id}
             style={[
               styles.editableSection,
-              { borderColor: isDragOver ? accent : borderColor },
-              isDragging && styles.editableSectionDragging,
-              isDragOver && styles.editableSectionDragOver,
+              { 
+                borderColor: section.visible ? accent : borderColor,
+                backgroundColor: cardBg,
+              },
               !section.visible && styles.editableSectionHidden,
             ]}
-            // @ts-ignore - Web-specific props
-            draggable={Platform.OS === 'web'}
-            onDragStart={(e: any) => handleDragStart(e, index)}
-            onDragOver={(e: any) => handleDragOver(e, index)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e: any) => handleDrop(e, index)}
-            onDragEnd={handleDragEnd}
           >
             {/* Barra de control */}
-            <View 
-              style={[
-                styles.controlBar, 
-                { backgroundColor: isDragging ? accent : '#F3F4F6' },
-                isDragOver && { backgroundColor: `${accent}30` }
-              ]}
-            >
-              <View style={styles.dragHandle}>
+            <View style={[styles.controlBar, { backgroundColor: section.visible ? `${accent}15` : '#F3F4F6' }]}>
+              {/* Botones de mover */}
+              <View style={styles.moveButtons}>
+                <TouchableOpacity
+                  onPress={() => handleMoveUp(index)}
+                  disabled={!canMoveUp}
+                  style={[
+                    styles.moveButton,
+                    { backgroundColor: canMoveUp ? accent : '#E5E7EB' }
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol 
+                    name="chevron.up" 
+                    size={16} 
+                    color={canMoveUp ? '#FFFFFF' : '#9CA3AF'} 
+                  />
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={() => handleMoveDown(index)}
+                  disabled={!canMoveDown}
+                  style={[
+                    styles.moveButton,
+                    { backgroundColor: canMoveDown ? accent : '#E5E7EB' }
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol 
+                    name="chevron.down" 
+                    size={16} 
+                    color={canMoveDown ? '#FFFFFF' : '#9CA3AF'} 
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Título de la sección */}
+              <View style={styles.sectionInfo}>
                 <IconSymbol 
                   name="line.3.horizontal" 
-                  size={20} 
-                  color={isDragging ? '#FFFFFF' : '#6B7280'} 
+                  size={16} 
+                  color="#9CA3AF" 
                 />
-                <ThemedText style={[
-                  styles.sectionTitle, 
-                  isDragging && { color: '#FFFFFF' }
-                ]}>
+                <ThemedText style={styles.sectionTitle}>
                   {section.title}
                 </ThemedText>
+                <View style={[
+                  styles.orderBadge, 
+                  { backgroundColor: section.visible ? accent : '#9CA3AF' }
+                ]}>
+                  <ThemedText style={styles.orderBadgeText}>
+                    {index + 1}
+                  </ThemedText>
+                </View>
               </View>
               
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  onToggleVisibility(section.id);
-                }}
-                style={styles.visibilityButton}
+              {/* Botón de visibilidad */}
+              <TouchableOpacity
+                onPress={() => handleToggleVisibility(section.id)}
+                style={[
+                  styles.visibilityButton,
+                  { backgroundColor: section.visible ? `${accent}20` : '#F3F4F6' }
+                ]}
+                activeOpacity={0.7}
               >
                 <IconSymbol 
                   name={section.visible ? 'eye.fill' : 'eye.slash.fill'} 
                   size={18} 
                   color={section.visible ? accent : '#9CA3AF'} 
                 />
-              </Pressable>
+              </TouchableOpacity>
             </View>
 
-            {/* Contenido de la sección (preview) */}
+            {/* Preview de la sección (colapsado) */}
             <View style={[
               styles.sectionPreview, 
               !section.visible && styles.sectionPreviewHidden
             ]}>
-              {renderSection(section.id)}
+              <View style={styles.previewContent}>
+                {renderSection(section.id)}
+              </View>
             </View>
           </View>
         );
       })}
+
+      {/* Instrucciones */}
+      <View style={[styles.instructions, { borderColor }]}>
+        <View style={styles.instructionRow}>
+          <IconSymbol name="chevron.up.chevron.down" size={16} color="#6B7280" />
+          <ThemedText style={styles.instructionText}>
+            Usa las flechas para cambiar el orden
+          </ThemedText>
+        </View>
+        <View style={styles.instructionRow}>
+          <IconSymbol name="eye.fill" size={16} color="#6B7280" />
+          <ThemedText style={styles.instructionText}>
+            Toca el ojo para mostrar/ocultar secciones
+          </ThemedText>
+        </View>
+      </View>
     </View>
   );
 });
@@ -192,55 +219,95 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderRadius: BorderRadius.md,
   },
-  editModeText: {
+  editModeHeaderText: {
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '500',
   },
   editableSection: {
     borderWidth: 2,
-    borderStyle: 'dashed',
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
-    cursor: 'grab',
-  },
-  editableSectionDragging: {
-    opacity: 0.5,
-    cursor: 'grabbing',
-  },
-  editableSectionDragOver: {
-    borderStyle: 'solid',
-    borderWidth: 3,
   },
   editableSectionHidden: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   controlBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: Spacing.xs,
+    paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.sm,
+    gap: Spacing.sm,
   },
-  dragHandle: {
+  moveButtons: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  moveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
     flex: 1,
-    cursor: 'grab',
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: '#374151',
+    flex: 1,
+  },
+  orderBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  orderBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
   },
   visibilityButton: {
-    padding: Spacing.xs,
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionPreview: {
-    // El contenido real de la sección
+    maxHeight: 150,
+    overflow: 'hidden',
   },
   sectionPreviewHidden: {
+    maxHeight: 60,
     opacity: 0.4,
+  },
+  previewContent: {
+    transform: [{ scale: 0.95 }],
+    pointerEvents: 'none',
+  },
+  instructions: {
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    borderStyle: 'dashed',
+    gap: Spacing.sm,
+  },
+  instructionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  instructionText: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });

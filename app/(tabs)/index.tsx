@@ -202,7 +202,7 @@ export default function DashboardScreen() {
           contentContainerStyle={[
             styles.content,
             {
-              paddingTop: Math.max(insets.top, 20),
+              paddingTop: Math.max(insets.top, 8),
               paddingBottom: insets.bottom + 100,
               paddingHorizontal: horizontalPadding,
               alignItems: isDesktop ? 'center' : undefined,
