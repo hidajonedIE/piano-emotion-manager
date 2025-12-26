@@ -250,7 +250,7 @@ interface EmptyStateProps {
   message: string;
 }
 
-export function EmptyState({ icon, title, message }: EmptyStateProps) {
+export const EmptyState = memo(function EmptyState({ icon, title, message }: EmptyStateProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   return (
@@ -264,7 +264,7 @@ export function EmptyState({ icon, title, message }: EmptyStateProps) {
       </ThemedText>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
