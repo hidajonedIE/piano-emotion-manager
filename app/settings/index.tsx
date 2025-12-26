@@ -1128,31 +1128,38 @@ export default function SettingsIndexScreen() {
           <Pressable
             style={[styles.linkRow, { borderBottomWidth: 0 }]}
             onPress={async () => {
-              Alert.alert(
-                'Cerrar Sesión',
-                '¿Estás seguro de que quieres cerrar sesión?',
-                [
-                  { text: 'Cancelar', style: 'cancel' },
-                  {
-                    text: 'Cerrar Sesión',
-                    style: 'destructive',
-                    onPress: async () => {
-                      try {
-                        // Limpiar AsyncStorage
-                        await AsyncStorage.clear();
-                        // Redirigir a la página de login
-                        if (Platform.OS === 'web') {
-                          window.location.href = '/api/auth/logout';
-                        } else {
+              // Usar confirm nativo en web, Alert en móvil
+              if (Platform.OS === 'web') {
+                const confirmed = window.confirm('¿Estás seguro de que quieres cerrar sesión?');
+                if (confirmed) {
+                  try {
+                    await AsyncStorage.clear();
+                  } catch (e) {
+                    // Ignorar errores de AsyncStorage
+                  }
+                  window.location.href = '/api/auth/logout';
+                }
+              } else {
+                Alert.alert(
+                  'Cerrar Sesión',
+                  '¿Estás seguro de que quieres cerrar sesión?',
+                  [
+                    { text: 'Cancelar', style: 'cancel' },
+                    {
+                      text: 'Cerrar Sesión',
+                      style: 'destructive',
+                      onPress: async () => {
+                        try {
+                          await AsyncStorage.clear();
                           router.replace('/login' as any);
+                        } catch (err) {
+                          Alert.alert('Error', 'No se pudo cerrar sesión');
                         }
-                      } catch (err) {
-                        Alert.alert('Error', 'No se pudo cerrar sesión');
-                      }
+                      },
                     },
-                  },
-                ]
-              );
+                  ]
+                );
+              }
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>

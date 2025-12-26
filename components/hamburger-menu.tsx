@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, StyleSheet, Pressable, Modal, ScrollView, Platform, Alert } from 'react-native';
+import { View, StyleSheet, Pressable, Modal, ScrollView, Platform, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, usePathname } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
@@ -56,11 +56,6 @@ const MENU_ITEMS: MenuItem[] = [
   { key: 'modules', label: 'Módulos', icon: 'square.grid.2x2.fill', route: '/settings/modules', color: '#8B5CF6' },
   { key: 'settings', label: 'Configuración', icon: 'gearshape.fill', route: '/settings', color: '#64748B' },
   { key: 'help', label: 'Ayuda', icon: 'questionmark.circle.fill', route: '/help', color: '#0EA5E9' },
-  
-  { key: 'divider4', label: '', icon: '', route: '', color: '' },
-  
-  // Sesión
-  { key: 'logout', label: 'Cerrar Sesión', icon: 'rectangle.portrait.and.arrow.right', route: 'logout', color: '#EF4444' },
 ];
 
 export function HamburgerMenu() {
@@ -74,36 +69,43 @@ export function HamburgerMenu() {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const accent = useThemeColor({}, 'accent');
 
-  const handleMenuPress = useCallback((item: MenuItem) => {
-    // Manejar logout especialmente
-    if (item.key === 'logout') {
-      setIsOpen(false);
-      Alert.alert(
-        'Cerrar Sesión',
-        '¿Estás seguro de que quieres cerrar sesión?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Cerrar Sesión',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await AsyncStorage.clear();
-                if (Platform.OS === 'web') {
-                  window.location.href = '/api/auth/logout';
-                } else {
-                  router.replace('/login' as any);
-                }
-              } catch (err) {
-                Alert.alert('Error', 'No se pudo cerrar sesión');
-              }
-            },
-          },
-        ]
-      );
-      return;
-    }
+  const handleLogout = useCallback(() => {
+    setIsOpen(false);
     
+    // Pequeño delay para cerrar el modal primero
+    setTimeout(() => {
+      if (Platform.OS === 'web') {
+        const confirmed = window.confirm('¿Estás seguro de que quieres cerrar sesión?');
+        if (confirmed) {
+          AsyncStorage.clear().finally(() => {
+            window.location.href = '/api/auth/logout';
+          });
+        }
+      } else {
+        Alert.alert(
+          'Cerrar Sesión',
+          '¿Estás seguro de que quieres cerrar sesión?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Cerrar Sesión',
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await AsyncStorage.clear();
+                  router.replace('/login' as any);
+                } catch (err) {
+                  Alert.alert('Error', 'No se pudo cerrar sesión');
+                }
+              },
+            },
+          ]
+        );
+      }
+    }, 100);
+  }, [router]);
+
+  const handleMenuPress = useCallback((item: MenuItem) => {
     setIsOpen(false);
     // Pequeño delay para que se cierre el menú antes de navegar
     setTimeout(() => {
@@ -174,13 +176,14 @@ export function HamburgerMenu() {
                 const isActive = isActiveRoute(item.route);
 
                 return (
-                  <Pressable
+                  <TouchableOpacity
                     key={item.key}
                     style={[
                       styles.menuItem,
                       isActive && { backgroundColor: accent + '15' },
                     ]}
                     onPress={() => handleMenuPress(item)}
+                    activeOpacity={0.7}
                     accessibilityRole="menuitem"
                     accessibilityLabel={`${item.label}${item.premium ? ', función premium' : ''}${isActive ? ', sección actual' : ''}`}
                     accessibilityState={{ selected: isActive }}
@@ -204,9 +207,28 @@ export function HamburgerMenu() {
                     {isActive && (
                       <View style={[styles.activeIndicator, { backgroundColor: accent }]} />
                     )}
-                  </Pressable>
+                  </TouchableOpacity>
                 );
               })}
+              
+              {/* Divisor antes de logout */}
+              <View style={[styles.divider, { backgroundColor: borderColor }]} />
+              
+              {/* Botón de Cerrar Sesión - separado del map */}
+              <TouchableOpacity
+                style={[styles.menuItem, styles.logoutItem]}
+                onPress={handleLogout}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Cerrar sesión"
+              >
+                <View style={[styles.menuItemIcon, { backgroundColor: '#EF444420' }]}>
+                  <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color="#EF4444" />
+                </View>
+                <ThemedText style={[styles.menuItemLabel, { color: '#EF4444' }]}>
+                  Cerrar Sesión
+                </ThemedText>
+              </TouchableOpacity>
             </ScrollView>
           </Pressable>
         </Pressable>
@@ -283,6 +305,10 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     marginBottom: Spacing.xs,
     gap: Spacing.md,
+  },
+  logoutItem: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
   menuItemIcon: {
     width: 40,
