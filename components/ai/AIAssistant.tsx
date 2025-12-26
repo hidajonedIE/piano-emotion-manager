@@ -303,7 +303,7 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
           ]}
         >
           <Pressable onPress={handleOpen} style={styles.fabButton}>
-            <IconSymbol name="brain" size={22} color="#FFFFFF" />
+            <IconSymbol name="brain" size={28} color="#FFFFFF" />
           </Pressable>
         </Animated.View>
       )}
