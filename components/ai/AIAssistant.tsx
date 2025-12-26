@@ -26,6 +26,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { trpc } from '@/lib/trpc';
+import { useDashboardPreferences, AIIconPosition } from '@/hooks/use-dashboard-preferences';
 
 interface Message {
   id: string;
@@ -70,12 +71,33 @@ const SAMPLE_RESPONSES: Record<string, { text: string; suggestions: string[] }> 
   },
 };
 
+// Función para obtener estilos de posición según preferencia
+const getPositionStyle = (position: AIIconPosition) => {
+  switch (position) {
+    case 'bottom-right':
+      return { bottom: 100, right: 20 };
+    case 'bottom-left':
+      return { bottom: 100, left: 20 };
+    case 'bottom-center':
+      return { bottom: 100, left: '50%', marginLeft: -24 };
+    case 'top-right':
+      return { top: 100, right: 20 };
+    case 'top-left':
+      return { top: 100, left: 20 };
+    default:
+      return { bottom: 100, right: 20 };
+  }
+};
+
 export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
   const [isOpen, setIsOpen] = useState(visible);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
+  
+  // Preferencias del dashboard para posición del icono
+  const { preferences } = useDashboardPreferences();
   
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -266,18 +288,22 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
     );
   };
 
+  // Obtener posición dinámica del icono
+  const positionStyle = getPositionStyle(preferences.aiIconPosition);
+
   return (
     <>
       {/* Botón flotante */}
-      {!isOpen && (
+      {!isOpen && preferences.aiIconVisible && (
         <Animated.View
           style={[
             styles.fab,
+            positionStyle,
             { backgroundColor: accent, transform: [{ scale: pulseAnim }] },
           ]}
         >
           <Pressable onPress={handleOpen} style={styles.fabButton}>
-            <IconSymbol name="brain" size={28} color="#FFFFFF" />
+            <IconSymbol name="brain" size={22} color="#FFFFFF" />
           </Pressable>
         </Animated.View>
       )}
@@ -417,11 +443,10 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 100,
-    right: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    // Posición dinámica aplicada desde getPositionStyle()
+    width: 48, // Reducido de 60
+    height: 48, // Reducido de 60
+    borderRadius: 24, // Reducido de 30
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

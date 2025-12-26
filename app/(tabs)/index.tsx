@@ -3,10 +3,11 @@
  * Pantalla principal de Piano Emotion Manager
  * 
  * Refactorizado para usar componentes modulares en components/dashboard/
+ * Con soporte para personalización de secciones y posición del icono IA
  */
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +17,7 @@ import { GlobalSearchBar } from '@/components/global-search-bar';
 import { HamburgerMenu } from '@/components/hamburger-menu';
 import { PianoEmotionStore } from '@/components/piano-emotion-store';
 import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import {
   DashboardHeader,
   DashboardStats,
@@ -26,17 +28,27 @@ import {
   DashboardPredictions,
   DashboardRecentServices,
 } from '@/components/dashboard';
+import { DashboardSettingsPanel } from '@/components/dashboard/dashboard-settings-panel';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
 import { useWhatsNew } from '@/hooks/use-whats-new';
 import { useResponsive } from '@/hooks/use-responsive';
-import { Spacing } from '@/constants/theme';
+import { useDashboardPreferences, DashboardSectionId } from '@/hooks/use-dashboard-preferences';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { Spacing, BorderRadius } from '@/constants/theme';
 
 export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isMobile, isDesktop, horizontalPadding } = useResponsive();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [showSettings, setShowSettings] = useState(false);
+  
+  // Preferencias del dashboard
+  const dashboardPreferences = useDashboardPreferences();
+  const { visibleSections, isLoading: prefsLoading } = dashboardPreferences;
+  
+  const accent = useThemeColor({}, 'accent');
 
   // Datos
   const { clients } = useClientsData();
@@ -96,6 +108,52 @@ export default function DashboardScreen() {
     setSelectedMonth(new Date());
   }, []);
 
+  // Renderizar sección según ID
+  const renderSection = useCallback((sectionId: DashboardSectionId) => {
+    switch (sectionId) {
+      case 'alerts':
+        return (
+          <DashboardAlerts 
+            key={sectionId}
+            urgentCount={stats.urgentCount} 
+            pendingCount={stats.pendingCount} 
+          />
+        );
+      case 'quick_actions':
+        return <DashboardQuickActionsOnly key={sectionId} />;
+      case 'predictions':
+        return <DashboardPredictions key={sectionId} />;
+      case 'stats':
+        return (
+          <DashboardStats
+            key={sectionId}
+            stats={stats}
+            selectedMonth={selectedMonth}
+            onPreviousMonth={navigatePreviousMonth}
+            onNextMonth={navigateNextMonth}
+            onGoToCurrentMonth={goToCurrentMonth}
+          />
+        );
+      case 'recent_services':
+        return (
+          <DashboardRecentServices 
+            key={sectionId}
+            services={recentServices}
+            clients={clients}
+            pianos={pianos}
+          />
+        );
+      case 'access_shortcuts':
+        return <DashboardAccessShortcuts key={sectionId} urgentCount={stats.urgentCount} />;
+      case 'advanced_tools':
+        return <DashboardAdvancedTools key={sectionId} />;
+      case 'store':
+        return <PianoEmotionStore key={sectionId} collapsed={true} />;
+      default:
+        return null;
+    }
+  }, [stats, selectedMonth, navigatePreviousMonth, navigateNextMonth, goToCurrentMonth, recentServices, clients, pianos]);
+
   // Estilos condicionales para web
   const containerStyle = Platform.OS === 'web' 
     ? [styles.container, { 
@@ -122,6 +180,11 @@ export default function DashboardScreen() {
         </LinearGradient>
       );
 
+  const handleOpenSettings = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowSettings(true);
+  };
+
   return (
     <>
       <OnboardingTutorial />
@@ -140,56 +203,37 @@ export default function DashboardScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={[styles.mainContainer, isDesktop && styles.mainContainerDesktop]}>
-            {/* Barra de búsqueda y menú */}
+            {/* Barra de búsqueda, menú y botón de configuración */}
             <View style={styles.topBar}>
               <View style={styles.searchBarContainer}>
                 <GlobalSearchBar />
               </View>
+              <Pressable 
+                onPress={handleOpenSettings} 
+                style={[styles.settingsButton, { borderColor: accent }]}
+                accessibilityLabel="Personalizar dashboard"
+                accessibilityHint="Abre el panel para reordenar secciones y configurar el asistente IA"
+              >
+                <IconSymbol name="slider.horizontal.3" size={20} color={accent} />
+              </Pressable>
               <HamburgerMenu />
             </View>
 
-            {/* 1. Header */}
+            {/* Header siempre visible */}
             <DashboardHeader />
 
-            {/* 2. Alertas */}
-            <DashboardAlerts 
-              urgentCount={stats.urgentCount} 
-              pendingCount={stats.pendingCount} 
-            />
-
-            {/* 3. Acciones Rápidas */}
-            <DashboardQuickActionsOnly />
-
-            {/* 4. Predicciones IA */}
-            <DashboardPredictions />
-
-            {/* 5. Este Mes - Estadísticas */}
-            <DashboardStats
-              stats={stats}
-              selectedMonth={selectedMonth}
-              onPreviousMonth={navigatePreviousMonth}
-              onNextMonth={navigateNextMonth}
-              onGoToCurrentMonth={goToCurrentMonth}
-            />
-
-            {/* 6. Servicios recientes */}
-            <DashboardRecentServices 
-              services={recentServices}
-              clients={clients}
-              pianos={pianos}
-            />
-
-            {/* 7. Accesos Rápidos */}
-            <DashboardAccessShortcuts urgentCount={stats.urgentCount} />
-
-            {/* 8. Herramientas Avanzadas */}
-            <DashboardAdvancedTools />
-
-            {/* 9. Tienda */}
-            <PianoEmotionStore collapsed={true} />
+            {/* Secciones dinámicas según preferencias */}
+            {visibleSections.map(section => renderSection(section.id))}
           </View>
         </ScrollView>
       </GradientWrapper>
+
+      {/* Panel de configuración del dashboard */}
+      <DashboardSettingsPanel
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        preferences={dashboardPreferences}
+      />
     </>
   );
 }
@@ -221,5 +265,11 @@ const styles = StyleSheet.create({
   },
   searchBarContainer: {
     flex: 1,
+  },
+  settingsButton: {
+    padding: 8,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    backgroundColor: 'rgba(255,255,255,0.8)',
   },
 });
