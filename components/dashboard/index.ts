@@ -11,5 +11,8 @@ export { DashboardHeader } from './dashboard-header';
 export { DashboardStats } from './dashboard-stats';
 export { DashboardAlerts } from './dashboard-alerts';
 export { DashboardQuickActions } from './dashboard-quick-actions';
+export { DashboardQuickActionsOnly } from './dashboard-quick-actions-only';
+export { DashboardAccessShortcuts } from './dashboard-access-shortcuts';
+export { DashboardAdvancedTools } from './dashboard-advanced-tools';
 export { DashboardPredictions } from './dashboard-predictions';
 export { DashboardRecentServices } from './dashboard-recent-services';

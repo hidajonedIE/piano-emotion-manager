@@ -20,7 +20,9 @@ import {
   DashboardHeader,
   DashboardStats,
   DashboardAlerts,
-  DashboardQuickActions,
+  DashboardQuickActionsOnly,
+  DashboardAccessShortcuts,
+  DashboardAdvancedTools,
   DashboardPredictions,
   DashboardRecentServices,
 } from '@/components/dashboard';
@@ -146,19 +148,22 @@ export default function DashboardScreen() {
               <HamburgerMenu />
             </View>
 
-            {/* Header */}
+            {/* 1. Header */}
             <DashboardHeader />
 
-            {/* Alertas */}
+            {/* 2. Alertas */}
             <DashboardAlerts 
               urgentCount={stats.urgentCount} 
               pendingCount={stats.pendingCount} 
             />
 
-            {/* Predicciones IA */}
+            {/* 3. Acciones Rápidas */}
+            <DashboardQuickActionsOnly />
+
+            {/* 4. Predicciones IA */}
             <DashboardPredictions />
 
-            {/* Este Mes - Estadísticas */}
+            {/* 5. Este Mes - Estadísticas */}
             <DashboardStats
               stats={stats}
               selectedMonth={selectedMonth}
@@ -167,17 +172,20 @@ export default function DashboardScreen() {
               onGoToCurrentMonth={goToCurrentMonth}
             />
 
-            {/* Servicios recientes */}
+            {/* 6. Servicios recientes */}
             <DashboardRecentServices 
               services={recentServices}
               clients={clients}
               pianos={pianos}
             />
 
-            {/* Acciones rápidas y módulos (Accesos Rápidos + Herramientas Avanzadas) */}
-            <DashboardQuickActions urgentCount={stats.urgentCount} />
+            {/* 7. Accesos Rápidos */}
+            <DashboardAccessShortcuts urgentCount={stats.urgentCount} />
 
-            {/* Tienda */}
+            {/* 8. Herramientas Avanzadas */}
+            <DashboardAdvancedTools />
+
+            {/* 9. Tienda */}
             <PianoEmotionStore collapsed={true} />
           </View>
         </ScrollView>
