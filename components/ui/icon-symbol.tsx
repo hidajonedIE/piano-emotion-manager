@@ -114,6 +114,7 @@ const MAPPING = {
   "dollarsign.circle.fill": "attach-money",
   
   // AI & Brain
+  "brain": "psychology",
   "brain.head.profile": "psychology",
   
   // Import/Export

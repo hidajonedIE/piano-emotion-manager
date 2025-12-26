@@ -142,8 +142,10 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
     const newDate = new Date(currentDate);
     if (viewMode === 'month') {
       newDate.setMonth(newDate.getMonth() - 1);
-    } else {
+    } else if (viewMode === 'week') {
       newDate.setDate(newDate.getDate() - 7);
+    } else {
+      newDate.setDate(newDate.getDate() - 1);
     }
     setCurrentDate(newDate);
   };
@@ -153,8 +155,10 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
     const newDate = new Date(currentDate);
     if (viewMode === 'month') {
       newDate.setMonth(newDate.getMonth() + 1);
-    } else {
+    } else if (viewMode === 'week') {
       newDate.setDate(newDate.getDate() + 7);
+    } else {
+      newDate.setDate(newDate.getDate() + 1);
     }
     setCurrentDate(newDate);
   };
@@ -184,13 +188,15 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
   const getHeaderTitle = () => {
     if (viewMode === 'month') {
       return `${MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-    } else {
+    } else if (viewMode === 'week') {
       const startOfWeek = weekDays[0];
       const endOfWeek = weekDays[6];
       if (startOfWeek && endOfWeek) {
         return `${startOfWeek.day} - ${endOfWeek.day} ${MONTHS[currentDate.getMonth()]}`;
       }
       return '';
+    } else {
+      return `${currentDate.getDate()} de ${MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
     }
   };
 
@@ -250,6 +256,113 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
       </View>
     </View>
   );
+
+  // Generar horas del día para la vista diaria
+  const dayHours = useMemo(() => {
+    const hours = [];
+    for (let i = 6; i <= 22; i++) {
+      hours.push({
+        hour: i,
+        label: `${String(i).padStart(2, '0')}:00`,
+      });
+    }
+    return hours;
+  }, []);
+
+  // Obtener eventos del día actual
+  const currentDayEvents = useMemo(() => {
+    const dateStr = formatLocalDate(currentDate);
+    return eventsByDate[dateStr] || [];
+  }, [currentDate, eventsByDate]);
+
+  const renderDayView = () => {
+    const dateStr = formatLocalDate(currentDate);
+    const dayOfWeek = DAYS_SHORT[currentDate.getDay()];
+    const isToday = dateStr === today;
+
+    return (
+      <View style={styles.dayView}>
+        {/* Cabecera del día */}
+        <View style={[styles.dayHeader, isToday && { backgroundColor: `${accent}10` }]}>
+          <ThemedText style={[styles.dayHeaderWeekday, { color: textSecondary }]}>
+            {dayOfWeek}
+          </ThemedText>
+          <ThemedText style={[styles.dayHeaderDate, isToday && { color: accent }]}>
+            {currentDate.getDate()}
+          </ThemedText>
+          <ThemedText style={[styles.dayHeaderMonth, { color: textSecondary }]}>
+            {MONTHS[currentDate.getMonth()]}
+          </ThemedText>
+        </View>
+
+        {/* Timeline de horas */}
+        <ScrollView style={styles.dayTimelineScroll} showsVerticalScrollIndicator={false}>
+          <View style={styles.dayTimeline}>
+            {dayHours.map((hourData) => {
+              const hourEvents = currentDayEvents.filter((event) => {
+                const eventHour = parseInt(event.startTime.split(':')[0], 10);
+                return eventHour === hourData.hour;
+              });
+
+              return (
+                <View key={hourData.hour} style={[styles.dayHourRow, { borderBottomColor: borderColor }]}>
+                  <View style={styles.dayHourLabel}>
+                    <ThemedText style={[styles.dayHourText, { color: textSecondary }]}>
+                      {hourData.label}
+                    </ThemedText>
+                  </View>
+                  <View style={styles.dayHourContent}>
+                    {hourEvents.map((event) => (
+                      <Pressable
+                        key={event.id}
+                        style={[
+                          styles.dayEventCard,
+                          { 
+                            backgroundColor: `${accent}15`,
+                            borderLeftColor: event.status === 'completed' ? success : accent,
+                          },
+                        ]}
+                        onPress={() => onEventPress?.(event)}
+                      >
+                        <View style={styles.dayEventHeader}>
+                          <ThemedText style={[styles.dayEventTime, { color: accent }]}>
+                            {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}
+                          </ThemedText>
+                          {event.status && (
+                            <View style={[
+                              styles.dayEventStatus,
+                              { backgroundColor: event.status === 'completed' ? success : warning },
+                            ]} />
+                          )}
+                        </View>
+                        <ThemedText style={styles.dayEventTitle} numberOfLines={2}>
+                          {event.title}
+                        </ThemedText>
+                        {event.subtitle && (
+                          <ThemedText style={[styles.dayEventSubtitle, { color: textSecondary }]} numberOfLines={1}>
+                            {event.subtitle}
+                          </ThemedText>
+                        )}
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </ScrollView>
+
+        {/* Resumen de eventos del día */}
+        {currentDayEvents.length > 0 && (
+          <View style={[styles.daySummary, { borderTopColor: borderColor }]}>
+            <ThemedText style={[styles.daySummaryText, { color: textSecondary }]}>
+              {currentDayEvents.length} {currentDayEvents.length === 1 ? 'cita' : 'citas'} programadas
+            </ThemedText>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const renderWeekView = () => (
     <View style={styles.weekView}>
@@ -333,7 +446,7 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
             style={[styles.viewModeButton, { backgroundColor: `${accent}15` }]}
           >
             <IconSymbol
-              name={viewMode === 'month' ? 'list.bullet' : 'square.grid.2x2.fill'}
+              name={viewMode === 'month' ? 'list.bullet' : viewMode === 'week' ? 'calendar' : 'square.grid.2x2.fill'}
               size={18}
               color={accent}
             />
@@ -342,7 +455,9 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
       </View>
       
       {/* Vista del calendario */}
-      {viewMode === 'month' ? renderMonthView() : renderWeekView()}
+      {viewMode === 'month' && renderMonthView()}
+      {viewMode === 'week' && renderWeekView()}
+      {viewMode === 'day' && renderDayView()}
     </View>
   );
 }
@@ -491,5 +606,91 @@ const styles = StyleSheet.create({
   weekEventTitle: {
     fontSize: 11,
     marginTop: 2,
+  },
+
+  // Vista diaria
+  dayView: {
+    minHeight: 400,
+  },
+  dayHeader: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  dayHeaderWeekday: {
+    fontSize: 14,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+  },
+  dayHeaderDate: {
+    fontSize: 36,
+    fontWeight: '700',
+    marginVertical: 4,
+  },
+  dayHeaderMonth: {
+    fontSize: 14,
+  },
+  dayTimelineScroll: {
+    maxHeight: 350,
+  },
+  dayTimeline: {
+    paddingVertical: Spacing.xs,
+  },
+  dayHourRow: {
+    flexDirection: 'row',
+    minHeight: 60,
+    borderBottomWidth: 1,
+  },
+  dayHourLabel: {
+    width: 60,
+    paddingHorizontal: Spacing.sm,
+    paddingTop: Spacing.xs,
+  },
+  dayHourText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  dayHourContent: {
+    flex: 1,
+    paddingRight: Spacing.sm,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  dayEventCard: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    borderLeftWidth: 4,
+  },
+  dayEventHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dayEventTime: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  dayEventStatus: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  dayEventTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  dayEventSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  daySummary: {
+    padding: Spacing.sm,
+    borderTopWidth: 1,
+    alignItems: 'center',
+  },
+  daySummaryText: {
+    fontSize: 12,
   },
 });

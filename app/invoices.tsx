@@ -192,6 +192,45 @@ export default function InvoicesScreen() {
         )}
       />
 
+      {/* Filtros de fecha */}
+      <View style={styles.dateFiltersRow}>
+        <ThemedText style={[styles.dateFilterLabel, { color: textSecondary }]}>Periodo:</ThemedText>
+        <FlatList
+          horizontal
+          data={['all', 'thisMonth', 'lastMonth', 'thisYear'] as const}
+          keyExtractor={(item) => item}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.dateFiltersContainer}
+          renderItem={({ item }) => {
+            const labels = {
+              all: 'Todo',
+              thisMonth: 'Este mes',
+              lastMonth: 'Mes anterior',
+              thisYear: 'Este año',
+            };
+            return (
+              <Pressable
+                style={[
+                  styles.dateFilterChip,
+                  { borderColor },
+                  dateFilter === item && { backgroundColor: `${accent}20`, borderColor: accent },
+                ]}
+                onPress={() => setDateFilter(item)}
+              >
+                <ThemedText
+                  style={[
+                    styles.dateFilterText,
+                    { color: dateFilter === item ? accent : textSecondary },
+                  ]}
+                >
+                  {labels[item]}
+                </ThemedText>
+              </Pressable>
+            );
+          }}
+        />
+      </View>
+
       {/* Lista de facturas */}
       <FlatList
         data={filteredInvoices}
@@ -275,6 +314,30 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 13,
+    fontWeight: '500',
+  },
+  dateFiltersRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  dateFilterLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginRight: Spacing.sm,
+  },
+  dateFiltersContainer: {
+    gap: Spacing.xs,
+  },
+  dateFilterChip: {
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  dateFilterText: {
+    fontSize: 12,
     fontWeight: '500',
   },
   listContent: {

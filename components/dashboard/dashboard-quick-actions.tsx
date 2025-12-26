@@ -130,7 +130,7 @@ export function DashboardQuickActions({ urgentCount = 0 }: DashboardQuickActions
       {/* Acciones rápidas */}
       <Accordion 
         title="Acciones Rápidas" 
-        defaultOpen={false}
+        defaultOpen={true}
         icon="bolt.fill"
         iconColor="#C9A227"
       >
@@ -153,7 +153,7 @@ export function DashboardQuickActions({ urgentCount = 0 }: DashboardQuickActions
       {/* Accesos Rápidos */}
       <Accordion 
         title="Accesos Rápidos" 
-        defaultOpen={false}
+        defaultOpen={true}
         icon="square.grid.2x2.fill"
         iconColor="#3B82F6"
         badge={urgentCount > 0 ? urgentCount : undefined}

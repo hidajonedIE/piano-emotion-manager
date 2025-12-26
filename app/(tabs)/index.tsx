@@ -178,7 +178,7 @@ export default function DashboardScreen() {
             />
 
             {/* Tienda */}
-            <PianoEmotionStore />
+            <PianoEmotionStore collapsed={true} />
           </View>
         </ScrollView>
       </GradientWrapper>
