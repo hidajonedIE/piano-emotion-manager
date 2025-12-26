@@ -67,6 +67,31 @@ export interface WorkCompletedNotificationData {
   notes?: string;
 }
 
+export interface StockAlertItem {
+  name: string;
+  currentStock: number;
+  minStock: number;
+  category?: string;
+}
+
+export interface StockAlertData {
+  recipientEmail: string;
+  criticalItems: StockAlertItem[];
+  lowStockItems: StockAlertItem[];
+  inventoryUrl?: string;
+}
+
+export interface StockReportData {
+  recipientEmail: string;
+  period: 'daily' | 'weekly' | 'monthly';
+  totalItems: number;
+  inStockItems: number;
+  lowStockItems: number;
+  outOfStockItems: number;
+  totalValue: number;
+  recentMovements: number;
+}
+
 // ==========================================
 // CONFIGURACIÓN
 // ==========================================
@@ -416,6 +441,175 @@ Piano Emotion Manager
     return this.send({
       to: data.managerEmail,
       subject: `✅ Trabajo completado: ${data.serviceType} - ${data.clientName}`,
+      html,
+    });
+  }
+  
+  // ==========================================
+  // NOTIFICACIONES DE STOCK
+  // ==========================================
+  
+  async sendStockAlert(data: StockAlertData): Promise<{ success: boolean }> {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 30px; }
+    .alert-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+    .alert-box.critical { background: #fee2e2; border-left-color: #ef4444; }
+    .item-list { margin: 20px 0; }
+    .item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #e5e7eb; }
+    .item:last-child { border-bottom: none; }
+    .item-name { font-weight: 500; }
+    .item-stock { color: #ef4444; font-weight: bold; }
+    .item-stock.warning { color: #f59e0b; }
+    .footer { padding: 20px; background: #f9fafb; text-align: center; color: #6b7280; font-size: 12px; }
+    .btn { display: inline-block; padding: 12px 24px; background: #f59e0b; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚠️ Alerta de Stock Bajo</h1>
+    </div>
+    <div class="content">
+      <div class="alert-box ${data.criticalItems.length > 0 ? 'critical' : ''}">
+        <strong>${data.criticalItems.length > 0 ? '¡Atención!' : 'Aviso:'}</strong>
+        ${data.criticalItems.length > 0 
+          ? `Hay ${data.criticalItems.length} artículo(s) con stock crítico que requieren atención inmediata.`
+          : `Hay ${data.lowStockItems.length} artículo(s) con stock bajo.`
+        }
+      </div>
+      
+      ${data.criticalItems.length > 0 ? `
+      <h3 style="color: #ef4444;">🚨 Stock Crítico (0 unidades)</h3>
+      <div class="item-list">
+        ${data.criticalItems.map(item => `
+        <div class="item">
+          <span class="item-name">${item.name}</span>
+          <span class="item-stock">${item.currentStock} / ${item.minStock} mín.</span>
+        </div>
+        `).join('')}
+      </div>
+      ` : ''}
+      
+      ${data.lowStockItems.length > 0 ? `
+      <h3 style="color: #f59e0b;">⚠️ Stock Bajo</h3>
+      <div class="item-list">
+        ${data.lowStockItems.map(item => `
+        <div class="item">
+          <span class="item-name">${item.name}</span>
+          <span class="item-stock warning">${item.currentStock} / ${item.minStock} mín.</span>
+        </div>
+        `).join('')}
+      </div>
+      ` : ''}
+      
+      <p style="color: #6b7280; margin-top: 20px;">
+        Este es un resumen automático generado el ${new Date().toLocaleDateString('es-ES', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}.
+      </p>
+      
+      <a href="${data.inventoryUrl || '#'}" class="btn">Ver Inventario Completo</a>
+    </div>
+    <div class="footer">
+      <p>Piano Emotion Manager - Gestión de Inventario</p>
+      <p>Puedes configurar las alertas de stock en Ajustes > Inventario</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+    
+    return this.send({
+      to: data.recipientEmail,
+      subject: `⚠️ Alerta de Stock: ${data.criticalItems.length > 0 ? 'Artículos críticos' : 'Stock bajo'} - ${data.criticalItems.length + data.lowStockItems.length} artículo(s)`,
+      html,
+    });
+  }
+  
+  async sendStockReportSummary(data: StockReportData): Promise<{ success: boolean }> {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 30px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+    .stat-card { background: #f9fafb; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 28px; font-weight: bold; color: #1f2937; }
+    .stat-label { font-size: 12px; color: #6b7280; margin-top: 5px; }
+    .stat-card.warning .stat-value { color: #f59e0b; }
+    .stat-card.danger .stat-value { color: #ef4444; }
+    .stat-card.success .stat-value { color: #10b981; }
+    .footer { padding: 20px; background: #f9fafb; text-align: center; color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Resumen de Inventario</h1>
+    </div>
+    <div class="content">
+      <p>Hola, aquí tienes el resumen ${data.period === 'daily' ? 'diario' : data.period === 'weekly' ? 'semanal' : 'mensual'} de tu inventario:</p>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">${data.totalItems}</div>
+          <div class="stat-label">Total Artículos</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-value">${data.inStockItems}</div>
+          <div class="stat-label">En Stock</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-value">${data.lowStockItems}</div>
+          <div class="stat-label">Stock Bajo</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-value">${data.outOfStockItems}</div>
+          <div class="stat-label">Sin Stock</div>
+        </div>
+      </div>
+      
+      <p style="color: #6b7280;">
+        Valor total del inventario: <strong>€${data.totalValue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</strong>
+      </p>
+      
+      ${data.recentMovements > 0 ? `
+      <p style="color: #6b7280;">
+        Movimientos en el período: <strong>${data.recentMovements}</strong>
+      </p>
+      ` : ''}
+    </div>
+    <div class="footer">
+      <p>Piano Emotion Manager - Gestión de Inventario</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+    
+    return this.send({
+      to: data.recipientEmail,
+      subject: `📊 Resumen de Inventario ${data.period === 'daily' ? 'Diario' : data.period === 'weekly' ? 'Semanal' : 'Mensual'} - ${new Date().toLocaleDateString('es-ES')}`,
       html,
     });
   }
