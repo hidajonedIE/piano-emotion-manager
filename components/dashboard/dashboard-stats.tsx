@@ -368,10 +368,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   calendarButton: {
-    padding: 6,
+    padding: 8,
     borderRadius: 8,
-    minWidth: 32,
-    minHeight: 32,
+    minWidth: 44,
+    minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
