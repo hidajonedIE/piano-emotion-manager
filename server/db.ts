@@ -68,6 +68,14 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
+    // Siempre establecer plan professional para nuevos usuarios
+    values.subscriptionPlan = 'professional';
+    values.subscriptionStatus = 'active';
+    
+    // También actualizar usuarios existentes a professional si no tienen plan
+    updateSet.subscriptionPlan = 'professional';
+    updateSet.subscriptionStatus = 'active';
+
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
