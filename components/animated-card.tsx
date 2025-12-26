@@ -19,19 +19,42 @@ interface AnimatedCardProps {
   color: string;
   onPress: () => void;
   size?: 'small' | 'medium';
+  disabled?: boolean;
+  badge?: string;
+  badgeColor?: string;
+  premium?: boolean; // Mantener compatibilidad con código existente
 }
 
-export function AnimatedCard({ icon, label, color, onPress, size = 'medium' }: AnimatedCardProps) {
+export function AnimatedCard({ 
+  icon, 
+  label, 
+  color, 
+  onPress, 
+  size = 'medium',
+  disabled = false,
+  badge,
+  badgeColor = '#F59E0B',
+  premium = false,
+}: AnimatedCardProps) {
   const scale = useSharedValue(1);
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
+
+  // Si premium está activo y no hay badge, usar badge PRO
+  const displayBadge = badge || (premium ? 'PRO' : undefined);
+  const displayBadgeColor = badge ? badgeColor : '#F59E0B';
+  
+  // Color efectivo (gris si está deshabilitado)
+  const effectiveColor = disabled ? '#9CA3AF' : color;
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(1.08, { damping: 15, stiffness: 400 });
+    if (!disabled) {
+      scale.value = withSpring(1.08, { damping: 15, stiffness: 400 });
+    }
   };
 
   const handlePressOut = () => {
@@ -53,9 +76,10 @@ export function AnimatedCard({ icon, label, color, onPress, size = 'medium' }: A
         styles.card,
         animatedStyle,
         { 
-          backgroundColor: cardBg, 
-          borderColor,
+          backgroundColor: disabled ? '#F3F4F6' : cardBg, 
+          borderColor: disabled ? '#E5E7EB' : borderColor,
           width: cardSize,
+          opacity: disabled ? 0.8 : 1,
         }
       ]}
       onPressIn={handlePressIn}
@@ -64,17 +88,36 @@ export function AnimatedCard({ icon, label, color, onPress, size = 'medium' }: A
       onHoverIn={handlePressIn}
       onHoverOut={handlePressOut}
     >
+      {/* Badge */}
+      {displayBadge && (
+        <View style={[styles.badge, { backgroundColor: displayBadgeColor }]}>
+          <ThemedText style={styles.badgeText}>{displayBadge}</ThemedText>
+        </View>
+      )}
+      
+      {/* Icono con candado si está deshabilitado */}
       <View style={[
         styles.iconContainer, 
         { 
-          backgroundColor: `${color}15`,
+          backgroundColor: `${effectiveColor}15`,
           width: iconContainerSize,
           height: iconContainerSize,
         }
       ]}>
-        <IconSymbol name={icon as any} size={iconSize} color={color} />
+        <IconSymbol name={icon as any} size={iconSize} color={effectiveColor} />
+        {disabled && (
+          <View style={styles.lockOverlay}>
+            <IconSymbol name="lock.fill" size={12} color="#6B7280" />
+          </View>
+        )}
       </View>
-      <ThemedText style={styles.label}>{label}</ThemedText>
+      
+      <ThemedText style={[
+        styles.label,
+        disabled && styles.labelDisabled,
+      ]}>
+        {label}
+      </ThemedText>
     </AnimatedPressable>
   );
 }
@@ -86,16 +129,44 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     gap: Spacing.xs,
+    position: 'relative',
   },
   iconContainer: {
     borderRadius: BorderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  lockOverlay: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 2,
   },
   label: {
     fontSize: 12,
     fontWeight: '500',
     textAlign: 'center',
     lineHeight: 16,
+  },
+  labelDisabled: {
+    color: '#9CA3AF',
+  },
+  badge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '700',
   },
 });
