@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-export { AccountingService, createAccountingService } from './accounting.service';
+export { AccountingService, createAccountingService } from './accounting.service.js';
 
 export type {
   AccountInput,
@@ -11,4 +11,4 @@ export type {
   TransactionFilters,
   FinancialSummary,
   CashFlowData,
-} from './accounting.service';
+} from './accounting.service.js';
