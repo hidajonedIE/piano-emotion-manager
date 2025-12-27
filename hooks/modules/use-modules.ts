@@ -131,8 +131,8 @@ export function useSubscription() {
 
   const changePlan = trpc.modules.changePlan.useMutation();
 
-  // TEMPORARY: Forzar plan professional durante desarrollo
-  const plan = 'professional';
+  // Usar el plan real del servidor
+  const plan = planFromServer || 'free';
 
   const isLoading = subscriptionLoading || planLoading || plansLoading || usageLoading;
 
