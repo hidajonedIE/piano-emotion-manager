@@ -1,9 +1,10 @@
 /**
  * Dashboard Sortable Web Component
  * Drag & drop DIRECTO sin modo edición
- * Long press para activar el drag, arrastrar y soltar
+ * El drag se activa SOLO desde el handle (indicador de 4 puntos)
+ * Los clics en el resto de la sección funcionan normalmente
  */
-import { memo, useCallback, useState, useRef } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
   DndContext,
@@ -28,10 +29,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { BorderRadius, Spacing } from '@/constants/theme';
 import { DashboardSectionId, DashboardSectionConfig } from '@/hooks/use-dashboard-preferences';
 
 interface DashboardSortableWebProps {
@@ -53,7 +51,7 @@ const dropAnimation: DropAnimation = {
   }),
 };
 
-// Componente de item sortable - SIEMPRE draggable
+// Componente de item sortable
 interface SortableItemProps {
   section: DashboardSectionConfig;
   isDragging: boolean;
@@ -71,6 +69,7 @@ const SortableItem = memo(function SortableItem({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging: isItemDragging,
@@ -86,70 +85,71 @@ const SortableItem = memo(function SortableItem({
   if (!section.visible) return null;
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style}
-      {...attributes}
-      {...listeners}
-    >
+    <div ref={setNodeRef} style={style}>
       <div
         style={{
           marginBottom: 0,
           borderRadius: 16,
           overflow: 'hidden',
           opacity: isItemDragging ? 0.3 : 1,
-          cursor: 'grab',
-          transition: 'opacity 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
+          transition: 'opacity 0.2s ease, box-shadow 0.2s ease',
           boxShadow: isItemDragging ? '0 8px 32px rgba(0,0,0,0.2)' : 'none',
           position: 'relative',
         }}
       >
-        {/* Indicador visual de que es draggable - aparece al hover en la esquina inferior izquierda */}
+        {/* Handle de drag - SOLO este elemento activa el drag */}
         <div
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
           style={{
             position: 'absolute',
             bottom: 8,
             left: 8,
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            backgroundColor: 'rgba(0,0,0,0.6)',
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: 'rgba(0,0,0,0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             opacity: 0,
             transition: 'opacity 0.2s ease',
-            zIndex: 10,
-            pointerEvents: 'none',
+            zIndex: 100,
+            cursor: 'grab',
           }}
-          className="drag-indicator"
+          className="drag-handle"
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div style={{ display: 'flex', gap: 2 }}>
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div style={{ display: 'flex', gap: 3 }}>
+              <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFFFFF' }} />
+              <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFFFFF' }} />
             </div>
-            <div style={{ display: 'flex', gap: 2 }}>
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
+            <div style={{ display: 'flex', gap: 3 }}>
+              <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFFFFF' }} />
+              <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFFFFF' }} />
             </div>
           </div>
         </div>
         
+        {/* Contenido de la sección - clics funcionan normalmente */}
         {renderSection(section.id)}
       </div>
       
-      {/* CSS para mostrar indicador en hover */}
+      {/* CSS para mostrar handle en hover */}
       <style>{`
-        div:hover > .drag-indicator {
+        div:hover > .drag-handle {
           opacity: 1 !important;
+        }
+        .drag-handle:active {
+          cursor: grabbing !important;
         }
       `}</style>
     </div>
   );
 });
 
-// Componente de overlay para el drag - muestra preview mientras arrastras
+// Componente de overlay para el drag
 interface DragOverlayContentProps {
   section: DashboardSectionConfig;
   accent: string;
@@ -167,7 +167,6 @@ const DragOverlayContent = memo(function DragOverlayContent({
         borderRadius: 16,
         overflow: 'hidden',
         boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
-        transform: 'scale(1.02)',
         border: `3px solid ${accent}`,
         backgroundColor: '#FFFFFF',
         cursor: 'grabbing',
@@ -182,7 +181,7 @@ const DragOverlayContent = memo(function DragOverlayContent({
 
 export const DashboardSortableWeb = memo(function DashboardSortableWeb({
   sections,
-  isEditMode, // Ya no se usa, pero mantenemos la prop por compatibilidad
+  isEditMode,
   onReorder,
   onToggleVisibility,
   renderSection,
@@ -190,17 +189,16 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
   const accent = useThemeColor({}, 'accent');
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Sensores: pointer con delay para distinguir click de drag
+  // Sensores: sin delay porque el drag solo se activa desde el handle
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 200, // 200ms de long press para activar drag
-        tolerance: 5, // Tolerancia de movimiento durante el delay
+        distance: 5, // Solo 5px de movimiento para activar
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 200,
+        delay: 100, // Pequeño delay en touch para evitar activación accidental
         tolerance: 5,
       },
     }),
@@ -211,7 +209,6 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-    // Feedback visual: cambiar cursor
     document.body.style.cursor = 'grabbing';
   }, []);
 
