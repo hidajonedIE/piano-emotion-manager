@@ -77,7 +77,7 @@ export function usePianosData() {
   });
 
   // Convertir pianos del servidor al formato local
-  const pianos: Piano[] = (serverPianos || []).map(serverToLocalPiano);
+  const pianos: Piano[] = (serverPianos?.items || []).map(serverToLocalPiano);
 
   // Añadir piano
   const addPiano = useCallback(
