@@ -292,25 +292,42 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [modalFeature, setModalFeature] = useState<FeatureKey | null>(null);
   
-  // Fetch subscription from backend
-  // TODO: Replace with actual tRPC query
+  // Fetch subscription from backend using tRPC
+  const subscriptionQuery = trpc.advanced.subscription.getCurrentPlan.useQuery(undefined, {
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+  
+  // Update current plan when subscription data is loaded
   useEffect(() => {
-    // Simulate loading subscription
-    const loadSubscription = async () => {
-      try {
-        // In production: const result = await trpc.subscription.getCurrent.query();
-        // For now, default to free
-        setCurrentPlan('free');
-      } catch (error) {
-        console.error('Failed to load subscription:', error);
-        setCurrentPlan('free');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadSubscription();
-  }, []);
+    if (subscriptionQuery.data) {
+      // Map backend plan names to frontend plan names
+      const planMap: Record<string, SubscriptionPlan> = {
+        'FREE': 'free',
+        'free': 'free',
+        'PROFESSIONAL': 'professional_advanced',
+        'professional': 'professional_advanced',
+        'PREMIUM_IA': 'enterprise_advanced',
+        'premium_ia': 'enterprise_advanced',
+      };
+      const backendPlan = subscriptionQuery.data.plan?.toString() || 'free';
+      const mappedPlan = planMap[backendPlan] || 'professional_advanced';
+      setCurrentPlan(mappedPlan);
+      setIsLoading(false);
+    } else if (subscriptionQuery.error) {
+      console.error('Failed to load subscription:', subscriptionQuery.error);
+      // Default to professional_advanced on error to avoid blocking users
+      setCurrentPlan('professional_advanced');
+      setIsLoading(false);
+    }
+  }, [subscriptionQuery.data, subscriptionQuery.error]);
+  
+  // Set loading state based on query status
+  useEffect(() => {
+    if (subscriptionQuery.isLoading) {
+      setIsLoading(true);
+    }
+  }, [subscriptionQuery.isLoading]);
   
   // Get plan info
   const planInfo = useMemo(() => {
