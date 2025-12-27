@@ -121,7 +121,7 @@ export default function ServicesScreen() {
       >
         <ScreenHeader 
           title={t('navigation.services')} 
-          icon="wrench.fill"
+          icon="wrench.fill" showBackButton={true}
         />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="services" />
@@ -140,7 +140,7 @@ export default function ServicesScreen() {
       <ScreenHeader 
         title={t('navigation.services')} 
         subtitle={`${filteredServices.length} ${filteredServices.length === 1 ? t('services.title').toLowerCase().slice(0, -1) : t('services.title').toLowerCase()}${totalCost > 0 ? ` · €${totalCost.toFixed(0)}` : ''}`}
-        icon="wrench.fill"
+        icon="wrench.fill" showBackButton={true}
       />
 
       <View style={styles.searchContainer}>
@@ -184,7 +184,7 @@ export default function ServicesScreen() {
 
       {filteredServices.length === 0 ? (
         <EmptyState
-          icon="wrench.fill"
+          icon="wrench.fill" showBackButton={true}
           title={search || filter !== 'all' ? t('common.noResults') : t('services.noServices')}
           message={
             search || filter !== 'all'
