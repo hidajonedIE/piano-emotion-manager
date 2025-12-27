@@ -25,6 +25,8 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { useModuleAccess } from '@/hooks/modules/use-module-access';
+import { Linking } from 'react-native';
 
 type BusinessMode = 'individual' | 'team';
 
@@ -76,6 +78,9 @@ export default function BusinessSettingsScreen() {
   const [settings, setSettings] = useState<BusinessSettings>(DEFAULT_SETTINGS);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const { hasModuleAccess } = useModuleAccess();
+  const hasTeamManagement = hasModuleAccess('team_management');
+
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -98,22 +103,47 @@ export default function BusinessSettingsScreen() {
   };
 
   const handleModeChange = (mode: BusinessMode) => {
-    if (mode === 'team' && settings.mode === 'individual') {
-      Alert.alert(
-        'Cambiar a modo Empresa',
-        'Al activar el modo empresa podrás:\n\n• Añadir técnicos a tu equipo\n• Asignar trabajos automáticamente\n• Gestionar permisos por rol\n• Ver reportes de productividad\n\n¿Deseas continuar?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Activar',
-            onPress: () => {
-              updateSetting('mode', 'team');
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Verificar si intenta cambiar a modo equipo
+    if (mode === 'team') {
+      // Verificar si tiene acceso al módulo de gestión de equipos
+      if (!hasTeamManagement) {
+        Alert.alert(
+          'Función Premium',
+          'La gestión de equipos requiere una suscripción Professional o superior.\n\nCon el plan Professional podrás:\n\n• Gestionar equipos de técnicos\n• Asignar trabajos automáticamente\n• Controlar permisos por rol\n• Ver reportes de productividad\n\n¿Deseas actualizar tu plan?',
+          [
+            { text: 'Ahora no', style: 'cancel' },
+            {
+              text: 'Ver Planes',
+              onPress: () => {
+                router.push('/settings/subscription');
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+        return;
+      }
+
+      // Si tiene acceso, mostrar confirmación
+      if (settings.mode === 'individual') {
+        Alert.alert(
+          'Cambiar a modo Empresa',
+          'Al activar el modo empresa podrás:\n\n• Añadir técnicos a tu equipo\n• Asignar trabajos automáticamente\n• Gestionar permisos por rol\n• Ver reportes de productividad\n\n¿Deseas continuar?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Activar',
+              onPress: () => {
+                updateSetting('mode', 'team');
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              },
+            },
+          ]
+        );
+      } else {
+        updateSetting('mode', mode);
+      }
     } else {
+      // Cambiar a modo individual (siempre permitido)
       updateSetting('mode', mode);
     }
   };
