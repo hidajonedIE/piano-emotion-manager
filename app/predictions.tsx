@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -57,6 +57,7 @@ export default function PredictionsScreen() {
 
   const [activeTab, setActiveTab] = useState<TabType>('revenue');
   const [refreshing, setRefreshing] = useState(false);
+  const contentScrollRef = useRef<ScrollView>(null);
 
   // Queries tRPC para obtener datos del backend
   const revenueQuery = trpc.advanced.predictions.getRevenue.useQuery(
@@ -570,7 +571,11 @@ export default function PredictionsScreen() {
               styles.tab,
               activeTab === tab.id && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary },
             ]}
-            onPress={() => setActiveTab(tab.id as TabType)}
+            onPress={() => {
+              setActiveTab(tab.id as TabType);
+              // Resetear scroll al cambiar de tab
+              contentScrollRef.current?.scrollTo({ y: 0, animated: false });
+            }}
           >
             <Ionicons 
               name={tab.icon as any} 
@@ -591,6 +596,7 @@ export default function PredictionsScreen() {
 
       {/* Content */}
       <ScrollView
+        ref={contentScrollRef}
         style={styles.content}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -644,26 +650,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabContent: {
-    padding: 16,
+    padding: 12,
   },
   summaryCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: 10,
   },
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   summaryTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    marginLeft: 10,
+    marginLeft: 8,
   },
   summaryDescription: {
-    fontSize: 14,
+    fontSize: 13,
   },
   loadingIndicator: {
     flexDirection: 'row',
@@ -671,19 +677,19 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   predictionCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   predictionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   predictionPeriod: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   confidenceBadge: {
@@ -694,12 +700,12 @@ const styles = StyleSheet.create({
   predictionValue: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   valueText: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
-    marginRight: 8,
+    marginRight: 6,
   },
   factorsList: {
     flexDirection: 'row',
@@ -712,24 +718,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   churnCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   churnHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   churnInfo: {
     flex: 1,
   },
   clientName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   daysSince: {
     fontSize: 13,
@@ -761,20 +767,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   maintenanceCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   maintenanceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   maintenanceIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -783,9 +789,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pianoInfo: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   clientNameSmall: {
     fontSize: 13,
@@ -794,8 +800,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 12,
+    gap: 8,
+    marginBottom: 8,
   },
   maintenanceDetail: {
     flexDirection: 'row',
@@ -813,26 +819,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   workloadCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   weekTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   workloadStats: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   workloadStat: {
     flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
   },
   statLabel: {
@@ -853,19 +859,19 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   inventoryCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   inventoryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   itemName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     flex: 1,
   },
@@ -878,14 +884,14 @@ const styles = StyleSheet.create({
   },
   inventoryStats: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   inventoryStat: {
     flex: 1,
     alignItems: 'center',
   },
   inventoryValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
   },
   inventoryLabel: {
@@ -897,7 +903,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 8,
     gap: 6,
   },
