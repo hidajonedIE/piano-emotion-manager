@@ -96,7 +96,7 @@ export const subscriptionPlans = mysqlTable('subscription_plans', {
   id: int('id').autoincrement().primaryKey(),
   
   // Identificador del plan
-  code: mysqlEnum('code', ['free', 'professional', 'professional', 'premium']).notNull().unique(),
+  code: mysqlEnum('code', ['free', 'professional', 'premium']).notNull().unique(),
   
   // Información del plan
   name: varchar('name', { length: 100 }).notNull(),
@@ -134,7 +134,7 @@ export const subscriptions = mysqlTable('subscriptions', {
   organizationId: int('organizationId').notNull(),
   
   // Plan actual
-  planCode: mysqlEnum('planCode', ['free', 'professional', 'professional', 'premium']).notNull(),
+  planCode: mysqlEnum('planCode', ['free', 'professional', 'premium']).notNull(),
   
   // Estado
   status: mysqlEnum('status', ['active', 'trial', 'past_due', 'cancelled', 'expired']).notNull().default('trial'),
