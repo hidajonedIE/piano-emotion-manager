@@ -2,27 +2,14 @@ import { useEffect, useState } from "react";
 import { Platform, View, ActivityIndicator, StyleSheet, Text } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-
-// Try to import Clerk hooks - they may not be available if Clerk is not configured
-let useClerkAuth: any = null;
-let useClerkUser: any = null;
-
-try {
-  const clerk = require("@clerk/clerk-expo");
-  useClerkAuth = clerk.useAuth;
-  useClerkUser = clerk.useUser;
-} catch (e) {
-}
-
-// Fallback hook for when Clerk is not available
-import { useAuth as useLegacyAuth } from "@/hooks/use-auth-legacy";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 
 type AuthGuardProps = {
   children: React.ReactNode;
 };
 
 // Rutas que no requieren autenticación
-const PUBLIC_ROUTES = ["/login", "/sign-up", "/portal", "/api/", "/oauth/callback"];
+const PUBLIC_ROUTES = ["/login", "/sign-up", "/portal", "/api/"];
 
 // Completar el flujo de autenticación en web
 if (Platform.OS === "web") {
@@ -34,16 +21,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const pathname = usePathname();
   const [redirecting, setRedirecting] = useState(false);
 
-  // Use Clerk if available, otherwise use legacy auth
-  const clerkAuth = useClerkAuth?.() || { isLoaded: true, isSignedIn: false };
-  const legacyAuth = useLegacyAuth();
-  
-  // Determine if Clerk is being used
-  const usingClerk = useClerkAuth !== null;
-  
-  // Get authentication state
-  const isLoaded = usingClerk ? clerkAuth.isLoaded : !legacyAuth.loading;
-  const isSignedIn = usingClerk ? clerkAuth.isSignedIn : legacyAuth.isAuthenticated;
+  // Usar Clerk para autenticación
+  const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
 
   useEffect(() => {
     // No hacer nada mientras carga
@@ -56,21 +36,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
     // Si no está autenticado, redirigir a login
     if (!isSignedIn && !redirecting) {
       setRedirecting(true);
-      
-      if (usingClerk) {
-        // Redirect to Clerk login page
-        router.replace("/login");
-      } else {
-        // Redirect to demo login for legacy auth
-        if (Platform.OS === "web" && typeof window !== "undefined") {
-          const currentUrl = encodeURIComponent(window.location.pathname);
-          window.location.href = `/api/auth/demo-login?redirect=${currentUrl}`;
-        } else {
-          router.replace("/login");
-        }
-      }
+      router.replace("/login");
     }
-  }, [isLoaded, isSignedIn, pathname, redirecting, router, usingClerk]);
+  }, [isLoaded, isSignedIn, pathname, redirecting, router]);
 
   // Mostrar loading mientras carga
   if (!isLoaded) {
