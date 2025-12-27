@@ -94,7 +94,7 @@ const SortableItem = memo(function SortableItem({
     >
       <div
         style={{
-          marginBottom: 2,
+          marginBottom: 0,
           borderRadius: 16,
           overflow: 'hidden',
           opacity: isItemDragging ? 0.3 : 1,
@@ -276,6 +276,6 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 2,
+    gap: 8,
   },
 });
