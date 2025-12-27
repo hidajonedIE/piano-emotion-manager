@@ -96,7 +96,7 @@ export const subscriptionPlans = mysqlTable('subscription_plans', {
   id: int('id').autoincrement().primaryKey(),
   
   // Identificador del plan
-  code: mysqlEnum('code', ['free', 'starter', 'professional', 'enterprise']).notNull().unique(),
+  code: mysqlEnum('code', ['free', 'professional', 'professional', 'premium']).notNull().unique(),
   
   // Información del plan
   name: varchar('name', { length: 100 }).notNull(),
@@ -134,7 +134,7 @@ export const subscriptions = mysqlTable('subscriptions', {
   organizationId: int('organizationId').notNull(),
   
   // Plan actual
-  planCode: mysqlEnum('planCode', ['free', 'starter', 'professional', 'enterprise']).notNull(),
+  planCode: mysqlEnum('planCode', ['free', 'professional', 'professional', 'premium']).notNull(),
   
   // Estado
   status: mysqlEnum('status', ['active', 'trial', 'past_due', 'cancelled', 'expired']).notNull().default('trial'),
@@ -252,7 +252,7 @@ export const subscriptionHistoryRelations = relations(subscriptionHistory, ({ on
 // ============================================================================
 
 export type ModuleType = 'core' | 'free' | 'premium' | 'addon';
-export type SubscriptionPlan = 'free' | 'starter' | 'professional' | 'enterprise';
+export type SubscriptionPlan = 'free' | 'professional' | 'professional' | 'premium';
 export type SubscriptionStatus = 'active' | 'trial' | 'past_due' | 'cancelled' | 'expired';
 
 export type Module = typeof modules.$inferSelect;
