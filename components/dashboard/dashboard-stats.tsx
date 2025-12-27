@@ -345,33 +345,34 @@ const styles = StyleSheet.create({
   monthNavigation: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2, // Reducido para que las flechas estén más pegadas al botón Hoy
+    gap: 0, // Sin gap - las flechas pegadas al botón Hoy
   },
   monthNavButton: {
-    padding: 4, // Reducido para móvil
-    minWidth: 32, // Reducido para móvil
-    minHeight: 32,
+    padding: 2,
+    minWidth: 24,
+    minHeight: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
   todayButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
     borderWidth: 1,
-    minHeight: 32,
+    minHeight: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
   todayButtonText: {
-    fontSize: 14, // Aumentado para mejor legibilidad en móvil
+    fontSize: 12,
     fontWeight: '600',
   },
   calendarButton: {
-    padding: 8,
+    padding: 6,
     borderRadius: 8,
-    minWidth: 44,
-    minHeight: 44,
+    minWidth: 36,
+    minHeight: 36,
+    marginLeft: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
