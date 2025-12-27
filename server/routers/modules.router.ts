@@ -6,7 +6,7 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc.js";
 import { getDb } from "../db.js";
-import { users, userSubscriptions } from "../../drizzle/schema.js";
+import { users } from "../../drizzle/schema.js";
 import { getModulesForPlan, DEFAULT_PLANS, getPlanByCode, type ModuleInfo } from "../data/modules-data.js";
 import type { SubscriptionPlan } from "../../drizzle/modules-schema.js";
 
@@ -21,13 +21,23 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
   try {
     const db = getDb();
     
-    // Buscar suscripción activa del usuario
-    const subscription = await db.query.userSubscriptions.findFirst({
-      where: eq(userSubscriptions.userId, userId),
+    // Buscar usuario y su suscripción
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, parseInt(userId)),
     });
 
-    if (subscription && subscription.status === 'active') {
-      return subscription.plan as SubscriptionPlan;
+    if (user && user.subscriptionStatus === 'active') {
+      // Mapear el plan de la tabla users al tipo SubscriptionPlan
+      const planMap: Record<string, SubscriptionPlan> = {
+        'free': 'free',
+        'starter': 'free',
+        'professional': 'professional',
+        'enterprise': 'premium',
+        'premium_ia': 'premium',
+        'premium': 'premium',
+      };
+      
+      return planMap[user.subscriptionPlan] || 'free';
     }
 
     // Si no tiene suscripción activa, devolver plan gratuito
@@ -105,15 +115,25 @@ export const modulesRouter = router({
 
     try {
       const db = getDb();
-      const subscription = await db.query.userSubscriptions.findFirst({
-        where: eq(userSubscriptions.userId, userId),
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, parseInt(userId)),
       });
 
-      if (subscription) {
+      if (user) {
+        // Mapear el plan de la tabla users al tipo SubscriptionPlan
+        const planMap: Record<string, SubscriptionPlan> = {
+          'free': 'free',
+          'starter': 'free',
+          'professional': 'professional',
+          'enterprise': 'premium',
+          'premium_ia': 'premium',
+          'premium': 'premium',
+        };
+        
         return {
-          plan: subscription.plan,
-          status: subscription.status,
-          expiresAt: subscription.expiresAt,
+          plan: planMap[user.subscriptionPlan] || 'free',
+          status: user.subscriptionStatus,
+          expiresAt: user.subscriptionEndDate,
         };
       }
 
