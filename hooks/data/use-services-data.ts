@@ -81,7 +81,7 @@ export function useServicesData() {
   });
 
   // Convertir servicios del servidor al formato local
-  const services: Service[] = (serverServices || []).map(serverToLocalService);
+  const services: Service[] = (serverServices?.items || []).map(serverToLocalService);
 
   // Añadir servicio
   const addService = useCallback(
