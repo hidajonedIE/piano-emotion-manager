@@ -12,78 +12,25 @@ import { getModulesForPlan, type ModuleInfo } from "../data/modules-data.js";
 export const modulesRouter = router({
   // Obtener módulos con estado
   getModulesWithStatus: publicProcedure.query(async ({ ctx }): Promise<ModuleInfo[]> => {
-    // Obtener el plan actual del usuario desde la BD
-    let userPlan: 'free' | 'premium' | 'enterprise' = 'free';
-    
-    try {
-      if (ctx?.userId) {
-        const db = await getDb();
-        if (!db) return getModulesForPlan(userPlan);
-        const [user] = await db
-          .select({ plan: users.subscriptionPlan, planExpiresAt: users.planExpiresAt })
-          .from(users)
-          .where(eq(users.id, ctx.userId));
-        
-        if (user?.plan) {
-          // Verificar si el plan no ha expirado
-          if (!user.planExpiresAt || new Date(user.planExpiresAt) > new Date()) {
-            userPlan = user.plan as 'free' | 'premium' | 'enterprise';
-          }
-        }
-      }
-    } catch (error) {
-      // Error silencioso - usar plan free por defecto
-    }
-    
-    return getModulesForPlan(userPlan);
+    // TEMPORARY: Devolver módulos para plan professional durante desarrollo
+    // Esto asegura que todos los usuarios tengan acceso completo
+    return getModulesForPlan('professional');
   }),
 
   // Obtener suscripción actual
-  getCurrentSubscription: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      const db = await getDb();
-      if (!db) return { plan: 'free', status: 'active', expiresAt: null };
-      const [user] = await db
-        .select({ 
-          plan: users.subscriptionPlan, 
-          status: users.subscriptionStatus,
-          expiresAt: users.planExpiresAt 
-        })
-        .from(users)
-        .where(eq(users.id, ctx.userId));
-      
-      return {
-        plan: user?.plan || 'free',
-        status: user?.status || 'active',
-        expiresAt: user?.expiresAt || null,
-      };
-    } catch (error) {
-      return {
-        plan: 'free',
-        status: 'active',
-        expiresAt: null,
-      };
-    }
+  getCurrentSubscription: publicProcedure.query(async () => {
+    // TEMPORARY: Devolver professional durante desarrollo
+    return { plan: 'professional', status: 'active', expiresAt: null };
   }),
 
   // Obtener plan actual
-  getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      const db = await getDb();
-      if (!db) return 'free';
-      const [user] = await db
-        .select({ plan: users.subscriptionPlan })
-        .from(users)
-        .where(eq(users.id, ctx.userId));
-      
-      return user?.plan || 'free';
-    } catch (error) {
-      return 'free';
-    }
+  getCurrentPlan: publicProcedure.query(async () => {
+    // TEMPORARY: Devolver professional durante desarrollo
+    return 'professional';
   }),
 
   // Obtener planes disponibles
-  getAvailablePlans: protectedProcedure.query(async () => {
+  getAvailablePlans: publicProcedure.query(async () => {
     return [
       {
         code: 'free',
@@ -125,7 +72,7 @@ export const modulesRouter = router({
   }),
 
   // Obtener uso de recursos
-  getResourceUsage: protectedProcedure.query(async () => {
+  getResourceUsage: publicProcedure.query(async () => {
     return {
       users: { current: 1, limit: 1, percentage: 100 },
       clients: { current: 0, limit: 50, percentage: 0 },
