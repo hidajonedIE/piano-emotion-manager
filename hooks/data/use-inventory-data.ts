@@ -71,7 +71,7 @@ export function useInventoryData() {
   });
 
   // Convertir inventario del servidor al formato local
-  const materials: Material[] = (serverInventory || []).map(serverToLocalMaterial);
+  const materials: Material[] = (serverInventory?.items || []).map(serverToLocalMaterial);
 
   // Calcular items con stock bajo
   const lowStockItems = useMemo(() => {
