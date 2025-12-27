@@ -111,7 +111,7 @@ export default function PianosScreen() {
       >
         <ScreenHeader 
           title={t('navigation.pianos')} 
-          icon="pianokeys"
+          icon="pianokeys"          showBackButton={true}
         />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="pianos" />
@@ -130,7 +130,7 @@ export default function PianosScreen() {
       <ScreenHeader 
         title={t('navigation.pianos')} 
         subtitle={`${pianos.length} ${pianos.length === 1 ? 'piano' : 'pianos'}`}
-        icon="pianokeys"
+        icon="pianokeys"          showBackButton={true}
       />
 
       <View style={styles.searchContainer}>
@@ -171,7 +171,7 @@ export default function PianosScreen() {
 
       {filteredPianos.length === 0 ? (
         <EmptyState
-          icon="pianokeys"
+          icon="pianokeys"          showBackButton={true}
           title={search || filter !== 'all' ? t('common.noResults') : t('pianos.noPianos')}
           message={
             search || filter !== 'all'
