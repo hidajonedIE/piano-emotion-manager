@@ -124,7 +124,7 @@ export default function ClientsScreen() {
       >
         <ScreenHeader 
           title={t('navigation.clients')} 
-          icon="person.2.fill"
+          icon="person.2.fill" showBackButton={true}
         />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="clients" />
@@ -143,7 +143,7 @@ export default function ClientsScreen() {
       <ScreenHeader 
         title={t('navigation.clients')} 
         subtitle={`${clients.length} ${clients.length === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`}
-        icon="person.2.fill"
+        icon="person.2.fill" showBackButton={true}
       />
 
       <View style={styles.searchContainer}>
@@ -223,7 +223,7 @@ export default function ClientsScreen() {
 
       {filteredClients.length === 0 ? (
         <EmptyState
-          icon="person.2.fill"
+          icon="person.2.fill" showBackButton={true}
           title={search ? t('common.noResults') : t('clients.noClients')}
           message={
             search
