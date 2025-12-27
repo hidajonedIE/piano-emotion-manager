@@ -240,11 +240,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 8,
+    gap: 4,
   },
   mainContainer: {
     flex: 1,
-    gap: 8,
+    gap: 4,
     width: '100%',
   },
   mainContainerDesktop: {

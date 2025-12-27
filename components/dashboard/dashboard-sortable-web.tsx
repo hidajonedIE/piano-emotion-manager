@@ -275,6 +275,6 @@ export const DashboardSortableWeb = memo(function DashboardSortableWeb({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 8,
+    gap: 4,
   },
 });

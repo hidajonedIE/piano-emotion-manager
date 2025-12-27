@@ -10,7 +10,7 @@ import { trpc } from '@/utils/trpc';
 // Types
 // ============================================================================
 
-export type SubscriptionPlan = 'free' | 'starter' | 'professional' | 'enterprise';
+export type SubscriptionPlan = 'free' | 'professional' | 'premium';
 
 export interface ModuleInfo {
   code: string;
@@ -125,11 +125,14 @@ export function useModules() {
 
 export function useSubscription() {
   const { data: subscription, isLoading: subscriptionLoading } = trpc.modules.getCurrentSubscription.useQuery();
-  const { data: plan, isLoading: planLoading } = trpc.modules.getCurrentPlan.useQuery();
+  const { data: planFromServer, isLoading: planLoading } = trpc.modules.getCurrentPlan.useQuery();
   const { data: plans, isLoading: plansLoading } = trpc.modules.getAvailablePlans.useQuery();
   const { data: usage, isLoading: usageLoading, refetch: refetchUsage } = trpc.modules.getResourceUsage.useQuery();
 
   const changePlan = trpc.modules.changePlan.useMutation();
+
+  // TEMPORARY: Forzar plan professional durante desarrollo
+  const plan = 'professional';
 
   const isLoading = subscriptionLoading || planLoading || plansLoading || usageLoading;
 
@@ -139,13 +142,13 @@ export function useSubscription() {
   );
 
   const canUpgrade = useMemo(() => {
-    const planOrder: SubscriptionPlan[] = ['free', 'starter', 'professional', 'enterprise'];
+    const planOrder: SubscriptionPlan[] = ['free', 'professional', 'premium'];
     const currentIndex = planOrder.indexOf(plan || 'free');
     return currentIndex < planOrder.length - 1;
   }, [plan]);
 
   const canDowngrade = useMemo(() => {
-    const planOrder: SubscriptionPlan[] = ['free', 'starter', 'professional', 'enterprise'];
+    const planOrder: SubscriptionPlan[] = ['free', 'professional', 'premium'];
     const currentIndex = planOrder.indexOf(plan || 'free');
     return currentIndex > 0;
   }, [plan]);
