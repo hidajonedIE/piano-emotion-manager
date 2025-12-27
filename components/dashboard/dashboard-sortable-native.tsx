@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionContainer: {
-    marginBottom: 2,
+    marginBottom: 4,
     borderRadius: 16,
     overflow: 'hidden',
   },
