@@ -122,7 +122,7 @@ export function useClientsData() {
   });
 
   // Convertir clientes del servidor al formato local
-  const clients: Client[] = (serverClients || []).map(serverToLocalClient);
+  const clients: Client[] = (serverClients?.items || []).map(serverToLocalClient);
 
   // Añadir cliente con manejo de errores mejorado
   const addClient = useCallback(
