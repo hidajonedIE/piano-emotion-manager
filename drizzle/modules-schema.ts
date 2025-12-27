@@ -66,7 +66,7 @@ export const modules = mysqlTable('modules', {
   color: varchar('color', { length: 7 }),
   
   // Tipo y disponibilidad
-  type: mysqlEnum('type', ['core', 'free', 'premium', 'addon']).notNull(),
+  type: mysqlEnum('type', ['free', 'professional', 'premium']).notNull(),
   
   // Planes que incluyen este módulo
   includedInPlans: json('includedInPlans').$type<string[]>().default([]),
