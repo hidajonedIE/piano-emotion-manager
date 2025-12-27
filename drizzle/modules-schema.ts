@@ -26,6 +26,7 @@ import { relations } from 'drizzle-orm';
 export const moduleTypeEnum = mysqlEnum('type', [
 
   'free',        // Módulo gratuito opcional
+  'professional', // Módulo profesional (30€/año)
   'premium',     // Módulo premium (requiere suscripción)
 
 ]);
