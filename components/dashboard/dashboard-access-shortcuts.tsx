@@ -31,7 +31,7 @@ const MODULE_ACTIONS = [
   { key: 'import', icon: 'square.and.arrow.down.fill', label: 'Importar', color: '#22C55E' },
   { key: 'routes', icon: 'map.fill', label: 'Rutas', color: '#F97316' },
   { key: 'settings', icon: 'gearshape.fill', label: 'Configuración', color: '#64748B' },
-;
+];
 
 // Mapeo de rutas
 const ROUTE_MAP: Record<string, string> = {
