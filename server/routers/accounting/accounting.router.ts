@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '@/server/trpc';
-import { createAccountingService } from '@/server/services/accounting';
+import { router, protectedProcedure } from '../../trpc.js';
+import { createAccountingService } from '../../services/accounting/index.js';
 
 // ============================================================================
 // Input Schemas
