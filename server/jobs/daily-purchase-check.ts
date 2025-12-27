@@ -20,8 +20,8 @@ import {
 } from '../services/purchase-verification.service';
 import { createWooCommerceService } from '../services/woocommerce.service';
 import type { AccountTier, TechnicianAccountStatus, DistributorPremiumConfig } from '../db/premium-schema';
-import { db } from '@/drizzle/db';
-import { users } from '@/drizzle/schema';
+import { db } from '../../drizzle/db.js';
+import { users } from '../../drizzle/schema.js';
 import { eq, and, lt, or, isNull, sql } from 'drizzle-orm';
 
 // ============================================
