@@ -32,9 +32,9 @@ export const moduleTypeEnum = mysqlEnum('type', [
 
 export const subscriptionPlanEnum = mysqlEnum('plan_code', [
   'free',        // Plan gratuito
-  'starter',     // Plan inicial
+  
   'professional', // Plan profesional
-  'enterprise',  // Plan empresarial
+  'premium',     // Plan premium (50€/año)
 ]);
 
 export const subscriptionStatusEnum = mysqlEnum('status', [
