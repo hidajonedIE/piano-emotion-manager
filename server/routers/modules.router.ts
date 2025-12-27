@@ -36,36 +36,27 @@ export const modulesRouter = router({
         code: 'free',
         name: 'Gratuito',
         description: 'Para técnicos independientes que empiezan',
-        monthlyPrice: '0',
+        monthlyPrice: null,
         yearlyPrice: '0',
-        features: ['Gestión básica de clientes', 'Registro de pianos', 'Calendario simple', 'Facturación básica'],
-        isPopular: false,
-      },
-      {
-        code: 'starter',
-        name: 'Inicial',
-        description: 'Para técnicos que quieren crecer',
-        monthlyPrice: '9.99',
-        yearlyPrice: '99.99',
-        features: ['Todo lo del plan Gratuito', 'Facturación electrónica', 'Sincronización calendario', 'Tienda online', 'Soporte por email'],
+        features: ['Gestión básica de clientes', 'Registro de pianos', 'Calendario simple', 'Facturación básica', 'Piano Emotion Store'],
         isPopular: false,
       },
       {
         code: 'professional',
         name: 'Profesional',
-        description: 'Para empresas con equipos de técnicos',
-        monthlyPrice: '29.99',
-        yearlyPrice: '299.99',
-        features: ['Todo lo del plan Inicial', 'Gestión de equipos', 'Inventario', 'Contabilidad', 'Reportes avanzados', 'CRM', 'Soporte prioritario'],
+        description: 'Para técnicos que quieren crecer su negocio',
+        monthlyPrice: null,
+        yearlyPrice: '30',
+        features: ['Todo lo del plan Gratuito', 'Gestión de equipos', 'Facturación electrónica', 'Sincronización calendario', 'Reportes básicos', 'Soporte por email'],
         isPopular: true,
       },
       {
-        code: 'enterprise',
-        name: 'Empresarial',
-        description: 'Para grandes empresas con necesidades avanzadas',
-        monthlyPrice: '99.99',
-        yearlyPrice: '999.99',
-        features: ['Todo lo del plan Profesional', 'Usuarios ilimitados', 'Marca blanca', 'API personalizada', 'Soporte dedicado', 'SLA garantizado'],
+        code: 'premium',
+        name: 'Premium',
+        description: 'Para empresas con necesidades avanzadas',
+        monthlyPrice: null,
+        yearlyPrice: '50',
+        features: ['Todo lo del plan Profesional', 'Contabilidad', 'CRM Avanzado', 'Reportes avanzados', 'Asistente IA', 'Soporte prioritario'],
         isPopular: false,
       },
     ];
@@ -95,7 +86,7 @@ export const modulesRouter = router({
   // Cambiar plan
   changePlan: protectedProcedure
     .input(z.object({
-      planCode: z.enum(['free', 'starter', 'professional', 'enterprise']),
+      planCode: z.enum(['free', 'professional', 'premium']),
       billingCycle: z.enum(['monthly', 'yearly']),
     }))
     .mutation(async () => {
