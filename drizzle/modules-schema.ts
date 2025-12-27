@@ -24,10 +24,10 @@ import { relations } from 'drizzle-orm';
 // ============================================================================
 
 export const moduleTypeEnum = mysqlEnum('type', [
-  'core',        // Módulo básico incluido en todos los planes
+
   'free',        // Módulo gratuito opcional
   'premium',     // Módulo premium (requiere suscripción)
-  'addon',       // Complemento de pago único
+
 ]);
 
 export const subscriptionPlanEnum = mysqlEnum('plan_code', [
