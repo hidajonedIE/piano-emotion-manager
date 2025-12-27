@@ -405,7 +405,7 @@ export const advancedRouter = router({
             'Sync Google/Outlook',
             'Pasarelas de pago',
             '2 GB almacenamiento',
-            'Soporte prioritario',
+            'Soporte prioritario por email',
           ],
         },
         {
@@ -434,7 +434,7 @@ export const advancedRouter = router({
             'Marca blanca (tienda exclusiva)',
             'API personalizada',
             '5 GB almacenamiento',
-            'Soporte premium 24/7',
+            'Soporte prioritario por email',
           ],
         },
       ];
