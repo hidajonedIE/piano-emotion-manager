@@ -210,6 +210,7 @@ export default function AgendaScreen() {
         title="Agenda" 
         subtitle={`${pendingCount} ${pendingCount === 1 ? 'cita pendiente' : 'citas pendientes'}`}
         icon="calendar"
+        showBackButton={true}
         rightAction={
           <Pressable
             onPress={() => {
