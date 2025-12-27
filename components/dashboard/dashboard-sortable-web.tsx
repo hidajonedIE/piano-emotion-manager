@@ -98,20 +98,19 @@ const SortableItem = memo(function SortableItem({
         }}
       >
         {/* Handle de drag - SOLO este elemento activa el drag */}
-        {/* Posicionado en el borde derecho, centrado verticalmente */}
+        {/* Posicionado en la esquina superior derecha, pequeño y discreto */}
         <div
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
           style={{
             position: 'absolute',
-            top: '50%',
-            right: 4,
-            transform: 'translateY(-50%)',
-            width: 24,
-            height: 40,
-            borderRadius: 12,
-            backgroundColor: 'rgba(0,0,0,0.4)',
+            top: 8,
+            right: 8,
+            width: 16,
+            height: 16,
+            borderRadius: 4,
+            backgroundColor: 'rgba(0,0,0,0.3)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -122,18 +121,15 @@ const SortableItem = memo(function SortableItem({
           }}
           className="drag-handle"
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div style={{ display: 'flex', gap: 3 }}>
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
+          {/* 4 puntos pequeños en cuadrícula 2x2 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ display: 'flex', gap: 2 }}>
+              <div style={{ width: 2, height: 2, borderRadius: 1, backgroundColor: '#FFFFFF' }} />
+              <div style={{ width: 2, height: 2, borderRadius: 1, backgroundColor: '#FFFFFF' }} />
             </div>
-            <div style={{ display: 'flex', gap: 3 }}>
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
-            </div>
-            <div style={{ display: 'flex', gap: 3 }}>
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
-              <div style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF' }} />
+            <div style={{ display: 'flex', gap: 2 }}>
+              <div style={{ width: 2, height: 2, borderRadius: 1, backgroundColor: '#FFFFFF' }} />
+              <div style={{ width: 2, height: 2, borderRadius: 1, backgroundColor: '#FFFFFF' }} />
             </div>
           </div>
         </div>
