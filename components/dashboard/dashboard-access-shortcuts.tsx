@@ -31,7 +31,7 @@ const MODULE_ACTIONS = [
   { key: 'import', icon: 'square.and.arrow.down.fill', label: 'Importar', color: '#22C55E' },
   { key: 'routes', icon: 'map.fill', label: 'Rutas', color: '#F97316' },
   { key: 'settings', icon: 'gearshape.fill', label: 'Configuración', color: '#64748B' },
-];
+;
 
 // Mapeo de rutas
 const ROUTE_MAP: Record<string, string> = {
@@ -58,7 +58,7 @@ const ROUTE_MAP: Record<string, string> = {
 };
 
 interface DashboardAccessShortcutsProps {
-  urgentCount?: number;
+  badge?: number;
 }
 
 export function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessShortcutsProps) {
@@ -78,8 +78,8 @@ export function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessSho
       defaultOpen={false}
       icon="square.grid.2x2.fill"
       iconColor="#3B82F6"
-      badge={urgentCount > 0 ? urgentCount : undefined}
-      badgeColor="#EF4444"
+      
+      
     >
       <View style={styles.centeredGrid}>
         {MODULE_ACTIONS.map((action) => (
