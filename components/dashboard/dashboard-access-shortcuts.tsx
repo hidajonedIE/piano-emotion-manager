@@ -30,6 +30,7 @@ const MODULE_ACTIONS = [
   { key: 'predictions', icon: 'brain.head.profile', label: 'Predicciones IA', color: '#8B5CF6' },
   { key: 'import', icon: 'square.and.arrow.down.fill', label: 'Importar', color: '#22C55E' },
   { key: 'routes', icon: 'map.fill', label: 'Rutas', color: '#F97316' },
+  { key: 'subscription', icon: 'star.circle.fill', label: 'Planes', color: '#F59E0B' },
   { key: 'settings', icon: 'gearshape.fill', label: 'Configuración', color: '#64748B' },
 ];
 
@@ -55,6 +56,7 @@ const ROUTE_MAP: Record<string, string> = {
   predictions: '/predictions',
   import: '/import',
   routes: '/routes',
+  subscription: '/settings/subscription',
 };
 
 interface DashboardAccessShortcutsProps {
