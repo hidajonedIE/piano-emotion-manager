@@ -4,24 +4,36 @@
  */
 import { useState } from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, Alert, StyleSheet } from 'react-native';
-import { trpc } from '@/lib/trpc';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function SeedDataButton() {
   const [isLoading, setIsLoading] = useState(false);
-  const seedMutation = trpc.seed.seedTestData.useMutation();
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   const handleSeed = async () => {
     if (isLoading) return;
 
     try {
       setIsLoading(true);
-      const result = await seedMutation.mutateAsync();
+      
+      const response = await fetch('/api/seed-test-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al insertar datos');
+      }
+
+      const result = await response.json();
       
       // Invalidar queries para recargar datos
-      await utils.clients.listAll.invalidate();
-      await utils.pianos.list.invalidate();
-      await utils.services.list.invalidate();
+      await queryClient.invalidateQueries({ queryKey: ['clients'] });
+      await queryClient.invalidateQueries({ queryKey: ['pianos'] });
+      await queryClient.invalidateQueries({ queryKey: ['services'] });
 
       Alert.alert(
         '✅ Datos insertados',
@@ -29,6 +41,7 @@ export function SeedDataButton() {
         [{ text: 'OK' }]
       );
     } catch (error) {
+      console.error('Error seeding data:', error);
       Alert.alert(
         '❌ Error',
         error instanceof Error ? error.message : 'Error al insertar datos',
