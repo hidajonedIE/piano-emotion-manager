@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 
 import { OnboardingTutorial } from '@/components/onboarding-tutorial';
+import { SeedDataButton } from '@/components/seed-data-button';
 import { GlobalSearchBar } from '@/components/global-search-bar';
 import { HamburgerMenu } from '@/components/hamburger-menu';
 import { PianoEmotionStore } from '@/components/piano-emotion-store';
@@ -234,6 +235,9 @@ export default function DashboardScreen() {
 
             {/* Header siempre visible */}
             <DashboardHeader />
+
+            {/* Botón temporal para seed data */}
+            {clients.length === 0 && <SeedDataButton />}
 
             {/* Secciones con drag & drop directo (long press para arrastrar) */}
             <DashboardDraggableWeb

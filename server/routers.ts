@@ -24,6 +24,7 @@ import {
   serviceRatesRouter,
   modulesRouter,
   advancedRouter,
+  seedRouter,
 } from "./routers/index.js";
 import { licenseRouter } from "./routers/license/index.js";
 
@@ -52,6 +53,9 @@ export const appRouter = router({
   
   // Funcionalidades avanzadas
   advanced: advancedRouter,
+  
+  // Seed de datos de prueba
+  seed: seedRouter,
   
   // Sistema de licencias
   license: licenseRouter,
