@@ -36,6 +36,8 @@ import { useRecommendations } from '@/hooks/use-recommendations';
 import { useWhatsNew } from '@/hooks/use-whats-new';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useDashboardPreferences, DashboardSectionId } from '@/hooks/use-dashboard-preferences';
+import { useUser } from '@clerk/clerk-expo';
+import { useEffect } from 'react';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Spacing, BorderRadius } from '@/constants/theme';
 
@@ -57,11 +59,28 @@ export default function DashboardScreen() {
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');
 
+  // Usuario autenticado
+  const { user } = useUser();
+
   // Datos
   const { clients } = useClientsData();
   const { pianos } = usePianosData();
   const { services } = useServicesData();
   const { urgentCount, pendingCount } = useRecommendations(pianos, services);
+
+  // DEBUG: Loguear datos cargados
+  useEffect(() => {
+    console.log('='.repeat(60));
+    console.log('🔍 DEBUG - Dashboard Data:');
+    console.log('User ID (Clerk):', user?.id);
+    console.log('User Email:', user?.primaryEmailAddress?.emailAddress);
+    console.log('Clients loaded:', clients.length);
+    console.log('Pianos loaded:', pianos.length);
+    console.log('Services loaded:', services.length);
+    console.log('Urgent alerts:', urgentCount);
+    console.log('Pending alerts:', pendingCount);
+    console.log('='.repeat(60));
+  }, [user, clients.length, pianos.length, services.length, urgentCount, pendingCount]);
   const { hasUnseenUpdates, markAsSeen } = useWhatsNew();
 
   // Servicios recientes
