@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
+import { useAuth } from '@/hooks/use-auth';
 
 interface MenuItem {
   key: string;
@@ -62,6 +63,7 @@ export function HamburgerMenu() {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { logout } = useAuth();
   
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -69,17 +71,21 @@ export function HamburgerMenu() {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const accent = useThemeColor({}, 'accent');
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback(async () => {
     setIsOpen(false);
     
     // Pequeño delay para cerrar el modal primero
-    setTimeout(() => {
+    setTimeout(async () => {
       if (Platform.OS === 'web') {
         const confirmed = window.confirm('¿Estás seguro de que quieres cerrar sesión?');
         if (confirmed) {
-          AsyncStorage.clear().finally(() => {
-            window.location.href = '/api/auth/logout';
-          });
+          try {
+            await logout();
+            await AsyncStorage.clear();
+            router.replace('/login' as any);
+          } catch (err) {
+            console.error('Error al cerrar sesión:', err);
+          }
         }
       } else {
         Alert.alert(
@@ -92,6 +98,7 @@ export function HamburgerMenu() {
               style: 'destructive',
               onPress: async () => {
                 try {
+                  await logout();
                   await AsyncStorage.clear();
                   router.replace('/login' as any);
                 } catch (err) {
