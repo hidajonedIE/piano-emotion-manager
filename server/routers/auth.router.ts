@@ -3,8 +3,8 @@
  * Gestión de autenticación
  */
 import { COOKIE_NAME } from "../../shared/const.js";
-import { getSessionCookieOptions } from "../.core/cookies.js";
-import { publicProcedure, router } from "../.core/trpc.js";
+import { getSessionCookieOptions } from "../_core/cookies.js";
+import { publicProcedure, router } from "../_core/trpc.js";
 
 export const authRouter = router({
   me: publicProcedure.query((opts) => opts.ctx.user),

@@ -3,7 +3,7 @@
  * Funcionalidades avanzadas (Team, CRM, Reports, Accounting, Shop, Calendar, Predictions, Chat)
  */
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../.core/trpc.js";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { storageRouter } from "./storage/index.js";
 
@@ -241,7 +241,7 @@ export const advancedRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         try {
-          const { pianoAssistantChat } = await import('../.core/gemini.js');
+          const { pianoAssistantChat } = await import('../_core/gemini.js');
           
           const clients = await db.getClients(ctx.user.openId);
           const services = await db.getServices(ctx.user.openId);
@@ -269,7 +269,7 @@ export const advancedRouter = router({
 
     checkAvailability: protectedProcedure.query(async () => {
       try {
-        const { checkGeminiAvailability } = await import('../.core/gemini.js');
+        const { checkGeminiAvailability } = await import('../_core/gemini.js');
         const available = await checkGeminiAvailability();
         return { available, provider: 'gemini' };
       } catch {
@@ -291,7 +291,7 @@ export const advancedRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         try {
-          const { createCheckoutSession, STRIPE_PRICES } = await import('../.core/stripe.js');
+          const { createCheckoutSession, STRIPE_PRICES } = await import('../_core/stripe.js');
           
           const priceId = input.plan === 'PREMIUM_IA' 
             ? STRIPE_PRICES.PREMIUM_IA 
@@ -326,7 +326,7 @@ export const advancedRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         try {
-          const { createPortalSession } = await import('../.core/stripe.js');
+          const { createPortalSession } = await import('../_core/stripe.js');
           const user = await db.getUserByOpenId(ctx.user.openId);
           
           if (!(user as Record<string, unknown>)?.stripeCustomerId) {

@@ -242,7 +242,7 @@ function getLanguageName(langCode: string): string {
  *
  * ```ts
  * // In server/routers.ts
- * import { transcribeAudio } from "./.core/voiceTranscription";
+ * import { transcribeAudio } from "./_core/voiceTranscription";
  *
  * export const voiceRouter = router({
  *   transcribe: protectedProcedure

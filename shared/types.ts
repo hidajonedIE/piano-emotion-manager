@@ -4,4 +4,4 @@
  */
 
 export type * from "../drizzle/schema";
-export * from "./.core/errors";
+export * from "./_core/errors";

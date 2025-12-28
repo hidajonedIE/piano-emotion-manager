@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure } from '../../.core/trpc.js';
+import { router, protectedProcedure } from '../../_core/trpc.js';
 import { createDistributorService } from '../../services/distributor/distributor.service.js';
 
 // ============================================================================

@@ -5,8 +5,8 @@
  * Este archivo importa y combina todos los routers modulares.
  * Cada dominio tiene su propio archivo en server/routers/
  */
-import { router } from "./.core/trpc.js";
-import { systemRouter } from "./.core/systemRouter.js";
+import { router } from "./_core/trpc.js";
+import { systemRouter } from "./_core/systemRouter.js";
 
 // Importar routers modulares
 import {

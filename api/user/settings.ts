@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { getDb } from '../../server/db.js';
 import { users } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
-import { getAuthenticatedUserId } from '../../server/.core/clerk';
+import { getAuthenticatedUserId } from '../../server/_core/clerk';
 import { applyCorsHeaders } from '../../server/security/cors.config.js';
 import { applyRateLimit } from '../../server/security/rate-limit.js';
 

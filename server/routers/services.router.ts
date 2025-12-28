@@ -3,7 +3,7 @@
  * Gestión de servicios con validación mejorada, paginación y funcionalidades avanzadas
  */
 import { z } from "zod";
-import { protectedProcedure, router } from "../.core/trpc.js";
+import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 
 // ============================================================================

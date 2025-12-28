@@ -3,7 +3,7 @@
  * Gestión de clientes con validación mejorada y paginación
  */
 import { z } from "zod";
-import { protectedProcedure, router } from "../.core/trpc.js";
+import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 
 // ============================================================================

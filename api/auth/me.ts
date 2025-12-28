@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { COOKIE_NAME } from "../../shared/const.js";
-import { sdk } from "../../server/.core/sdk.js";
-import { verifyClerkSession, getOrCreateUserFromClerk } from "../../server/.core/clerk.js";
+import { sdk } from "../../server/_core/sdk.js";
+import { verifyClerkSession, getOrCreateUserFromClerk } from "../../server/_core/clerk.js";
 import { getDb } from "../../server/db.js";
 import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";

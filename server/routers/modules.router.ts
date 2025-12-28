@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { publicProcedure, protectedProcedure, router } from "../.core/trpc.js";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc.js";
 import { getDb } from "../db.js";
 import { users } from "../../drizzle/schema.js";
 import { getModulesForPlan, DEFAULT_PLANS, getPlanByCode, type ModuleInfo } from "../data/modules-data.js";

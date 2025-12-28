@@ -5,7 +5,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from '../../server/routers.js';
-import { createContext } from '../../server/.core/context.js';
+import { createContext } from '../../server/_core/context.js';
 import { applyCorsHeaders, isOriginAllowed } from '../../server/security/cors.config.js';
 import { applyRateLimit, getClientIdentifier } from '../../server/security/rate-limit.js';
 
