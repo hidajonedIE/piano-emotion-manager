@@ -2,14 +2,14 @@
  * API endpoint para corregir el ownerId de los clientes
  * 
  * Este endpoint actualiza el ownerId de todos los clientes que tienen
- * 'jnavarrete-inboundemotion' al openId correcto del usuario autenticado en Clerk
+ * 'jnavarrete-inboundemotion' al openId del usuario autenticado en Clerk
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { verifyClerkSession } from '../server/_core/clerk';
 import { getDb } from '../server/db';
 import { users, clients } from '../drizzle/schema';
 import { eq } from 'drizzle-orm';
 
-const TARGET_EMAIL = 'jnavarrete@inboundemotion.com';
 const OLD_OWNER_ID = 'jnavarrete-inboundemotion';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -22,6 +22,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // 1. Verificar que el usuario esté autenticado con Clerk
+    const clerkUser = await verifyClerkSession(req);
+
+    if (!clerkUser) {
+      return res.status(401).json({
+        error: 'Not authenticated',
+        message: 'You must be logged in to execute this fix'
+      });
+    }
+
+    const correctOpenId = clerkUser.id;
+
+    // 2. Conectar a la base de datos
     const db = await getDb();
     if (!db) {
       return res.status(500).json({
@@ -30,31 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // 1. Buscar el usuario por email
-    const targetUsers = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, TARGET_EMAIL))
-      .limit(1);
-
-    if (targetUsers.length === 0) {
-      return res.status(404).json({
-        error: 'User not found',
-        message: `No user found with email ${TARGET_EMAIL}. User must log in at least once.`
-      });
-    }
-
-    const targetUser = targetUsers[0];
-    const correctOpenId = targetUser.openId;
-
-    if (!correctOpenId) {
-      return res.status(400).json({
-        error: 'Invalid user',
-        message: 'User does not have an openId'
-      });
-    }
-
-    // 2. Verificar cuántos clientes tienen el ownerId incorrecto
+    // 3. Verificar cuántos clientes tienen el ownerId incorrecto
     const clientsToUpdate = await db
       .select()
       .from(clients)
@@ -65,20 +54,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         success: true,
         message: 'No clients to update. ownerId is already correct.',
         user: {
-          email: targetUser.email,
-          openId: correctOpenId,
+          id: clerkUser.id,
+          email: clerkUser.email,
+          name: clerkUser.name,
         },
         clientsUpdated: 0
       });
     }
 
-    // 3. Actualizar los clientes
+    // 4. Actualizar los clientes
     await db
       .update(clients)
       .set({ ownerId: correctOpenId })
       .where(eq(clients.ownerId, OLD_OWNER_ID));
 
-    // 4. Verificar la actualización
+    // 5. Verificar la actualización
     const updatedClients = await db
       .select()
       .from(clients)
@@ -88,10 +78,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       success: true,
       message: 'ownerId updated successfully',
       user: {
-        id: targetUser.id,
-        email: targetUser.email,
-        name: targetUser.name,
-        openId: correctOpenId,
+        id: clerkUser.id,
+        email: clerkUser.email,
+        name: clerkUser.name,
       },
       oldOwnerId: OLD_OWNER_ID,
       newOwnerId: correctOpenId,
@@ -103,6 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
     });
   }
 }
