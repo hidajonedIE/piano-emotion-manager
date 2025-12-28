@@ -55,8 +55,12 @@ interface DatabaseUser {
 // ============================================================================
 
 // Initialize Clerk client
+const secretKey = process.env.CLERK_SECRET_KEY;
+console.log("[Clerk Init] CLERK_SECRET_KEY exists:", !!secretKey);
+console.log("[Clerk Init] CLERK_SECRET_KEY starts with:", secretKey?.substring(0, 15));
+
 const clerkClient = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY,
+  secretKey: secretKey,
 });
 
 export { clerkClient };
