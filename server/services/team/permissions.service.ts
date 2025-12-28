@@ -450,17 +450,17 @@ export class PermissionsService {
    */
   private async getUserZones(userId: number, organizationId: number): Promise<{ id: number; name: string }[]> {
     try {
-      const { serviceZones, technicianZoneAssignments } = await import('@/drizzle/team-schema');
+      const { serviceZones, technicianZones } = await import('@/drizzle/team-schema');
       
       const zones = await db
         .select({
           id: serviceZones.id,
           name: serviceZones.name,
         })
-        .from(technicianZoneAssignments)
-        .innerJoin(serviceZones, eq(serviceZones.id, technicianZoneAssignments.zoneId))
+        .from(technicianZones)
+        .innerJoin(serviceZones, eq(serviceZones.id, technicianZones.zoneId))
         .where(and(
-          eq(technicianZoneAssignments.technicianId, userId),
+          eq(technicianZones.technicianId, userId),
           eq(serviceZones.organizationId, organizationId)
         ));
       
