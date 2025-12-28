@@ -25,7 +25,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { useModuleAccess } from '@/hooks/modules/use-module-access';
+import { useModuleAccess } from '@/hooks/modules/use-modules';
 import { Linking } from 'react-native';
 
 type BusinessMode = 'individual' | 'team';

@@ -55,6 +55,34 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
     onToggle(value);
   };
 
+  // Determinar el badge según el tipo
+  const renderBadge = () => {
+    if (module.type === 'free') {
+      return (
+        <View style={styles.freeBadge}>
+          <Text style={styles.freeBadgeText}>Gratis</Text>
+        </View>
+      );
+    }
+    if (module.type === 'professional') {
+      return (
+        <View style={styles.professionalBadge}>
+          <Ionicons name="briefcase" size={10} color="#fff" />
+          <Text style={styles.professionalBadgeText}>Professional</Text>
+        </View>
+      );
+    }
+    if (module.type === 'premium') {
+      return (
+        <View style={styles.premiumBadge}>
+          <Ionicons name="star" size={10} color="#fff" />
+          <Text style={styles.premiumBadgeText}>Premium</Text>
+        </View>
+      );
+    }
+    return null;
+  };
+
   return (
     <View style={[styles.moduleCard, !module.isAvailable && styles.moduleCardDisabled]}>
       <View style={styles.moduleHeader}>
@@ -64,17 +92,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
         <View style={styles.moduleInfo}>
           <View style={styles.moduleTitleRow}>
             <Text style={styles.moduleName}>{module.name}</Text>
-            {module.type === 'premium' && (
-              <View style={styles.premiumBadge}>
-                <Ionicons name="star" size={10} color="#fff" />
-                <Text style={styles.premiumBadgeText}>Premium</Text>
-              </View>
-            )}
-            {module.type === 'addon' && (
-              <View style={styles.addonBadge}>
-                <Text style={styles.addonBadgeText}>Add-on</Text>
-              </View>
-            )}
+            {renderBadge()}
           </View>
           <Text style={styles.moduleDescription} numberOfLines={2}>
             {module.description}
@@ -82,12 +100,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
         </View>
       </View>
       <View style={styles.moduleActions}>
-        {module.type === 'core' ? (
-          <View style={styles.coreIndicator}>
-            <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-            <Text style={styles.coreText}>{t('modules.alwaysActive')}</Text>
-          </View>
-        ) : module.requiresUpgrade ? (
+        {module.requiresUpgrade ? (
           <TouchableOpacity style={styles.upgradeButton} onPress={onUpgrade}>
             <Ionicons name="arrow-up-circle" size={16} color="#fff" />
             <Text style={styles.upgradeButtonText}>{t('modules.upgrade')}</Text>
@@ -249,72 +262,87 @@ export const ModulesSettings: React.FC = () => {
         </View>
       )}
 
-      {/* Módulos principales */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('modules.coreModules')}</Text>
-        <Text style={styles.sectionSubtitle}>{t('modules.coreModulesDesc')}</Text>
-        {coreModules.map((module) => (
-          <ModuleCard
-            key={module.code}
-            module={module}
-            onToggle={(enabled) => handleToggle(module.code, enabled)}
-            isToggling={isToggling}
-            onUpgrade={handleUpgrade}
-          />
-        ))}
-      </View>
-
       {/* Módulos gratuitos */}
       {freeModules.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('modules.freeModules')}</Text>
+          <View style={styles.sectionHeaderWithBadge}>
+            <Text style={styles.sectionTitle}>{t('modules.freeModules')}</Text>
+            <View style={styles.freeBadge}>
+              <Text style={styles.freeBadgeText}>Gratis</Text>
+            </View>
+          </View>
           <Text style={styles.sectionSubtitle}>{t('modules.freeModulesDesc')}</Text>
-          {freeModules.map((module) => (
-            <ModuleCard
-              key={module.code}
-              module={module}
-              onToggle={(enabled) => handleToggle(module.code, enabled)}
-              isToggling={isToggling}
-              onUpgrade={handleUpgrade}
-            />
-          ))}
+          <View style={styles.freeModulesContainer}>
+            {freeModules.map((module) => (
+              <ModuleCard
+                key={module.code}
+                module={module}
+                onToggle={(enabled) => handleToggle(module.code, enabled)}
+                isToggling={isToggling}
+                onUpgrade={handleUpgrade}
+              />
+            ))}
+          </View>
         </View>
       )}
 
-      {/* Módulos premium */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('modules.premiumModules')}</Text>
-          <View style={styles.premiumIndicator}>
-            <Ionicons name="star" size={14} color="#f59e0b" />
-          </View>
+      {/* Separador visual */}
+      <View style={styles.premiumSeparator}>
+        <View style={styles.separatorLine} />
+        <View style={styles.separatorBadge}>
+          <Ionicons name="lock-closed" size={12} color="#6b7280" />
+          <Text style={styles.separatorText}>Módulos de Pago</Text>
         </View>
-        <Text style={styles.sectionSubtitle}>{t('modules.premiumModulesDesc')}</Text>
-        {premiumModules.map((module) => (
-          <ModuleCard
-            key={module.code}
-            module={module}
-            onToggle={(enabled) => handleToggle(module.code, enabled)}
-            isToggling={isToggling}
-            onUpgrade={handleUpgrade}
-          />
-        ))}
+        <View style={styles.separatorLine} />
       </View>
 
-      {/* Add-ons */}
-      {addonModules.length > 0 && (
+      {/* Módulos Professional */}
+      {addonModules.filter(m => m.type === 'professional').length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('modules.addons')}</Text>
-          <Text style={styles.sectionSubtitle}>{t('modules.addonsDesc')}</Text>
-          {addonModules.map((module) => (
-            <ModuleCard
-              key={module.code}
-              module={module}
-              onToggle={(enabled) => handleToggle(module.code, enabled)}
-              isToggling={isToggling}
-              onUpgrade={handleUpgrade}
-            />
-          ))}
+          <View style={styles.sectionHeaderWithBadge}>
+            <Text style={styles.sectionTitle}>Módulos Professional</Text>
+            <View style={styles.professionalBadge}>
+              <Ionicons name="briefcase" size={12} color="#fff" />
+              <Text style={styles.professionalBadgeText}>Professional</Text>
+            </View>
+          </View>
+          <Text style={styles.sectionSubtitle}>Funcionalidades avanzadas para profesionales</Text>
+          <View style={styles.paidModulesContainer}>
+            {addonModules.filter(m => m.type === 'professional').map((module) => (
+              <ModuleCard
+                key={module.code}
+                module={module}
+                onToggle={(enabled) => handleToggle(module.code, enabled)}
+                isToggling={isToggling}
+                onUpgrade={handleUpgrade}
+              />
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Módulos Premium */}
+      {premiumModules.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderWithBadge}>
+            <Text style={styles.sectionTitle}>{t('modules.premiumModules')}</Text>
+            <View style={styles.premiumBadge}>
+              <Ionicons name="star" size={12} color="#fff" />
+              <Text style={styles.premiumBadgeText}>Premium</Text>
+            </View>
+          </View>
+          <Text style={styles.sectionSubtitle}>{t('modules.premiumModulesDesc')}</Text>
+          <View style={styles.paidModulesContainer}>
+            {premiumModules.map((module) => (
+              <ModuleCard
+                key={module.code}
+                module={module}
+                onToggle={(enabled) => handleToggle(module.code, enabled)}
+                isToggling={isToggling}
+                onUpgrade={handleUpgrade}
+              />
+            ))}
+          </View>
         </View>
       )}
 
@@ -340,24 +368,59 @@ const styles = StyleSheet.create({
   section: {
     padding: 16,
   },
-  sectionHeader: {
+  sectionHeaderWithBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginBottom: 4,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 13,
     color: '#6b7280',
     marginBottom: 12,
   },
-  premiumIndicator: {
-    marginBottom: 4,
+  // Separador visual entre módulos gratuitos y de pago
+  premiumSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginVertical: 8,
+  },
+  separatorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e5e7eb',
+  },
+  separatorBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+  },
+  separatorText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+  },
+  // Contenedores con fondo diferente
+  freeModulesContainer: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    padding: 8,
+  },
+  paidModulesContainer: {
+    backgroundColor: '#fef3c7',
+    borderRadius: 12,
+    padding: 8,
   },
   // Plan Card
   planCard: {
@@ -471,29 +534,45 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
   },
+  // Badges
+  freeBadge: {
+    backgroundColor: '#10b981',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  freeBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+    textTransform: 'uppercase',
+  },
+  professionalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  professionalBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+  },
   premiumBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: 3,
     backgroundColor: '#f59e0b',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
   premiumBadgeText: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  addonBadge: {
-    backgroundColor: '#8b5cf6',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  addonBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#fff',
   },
   moduleDescription: {
@@ -504,16 +583,6 @@ const styles = StyleSheet.create({
   moduleActions: {
     marginTop: 12,
     alignItems: 'flex-end',
-  },
-  coreIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  coreText: {
-    fontSize: 12,
-    color: '#10b981',
-    fontWeight: '500',
   },
   upgradeButton: {
     flexDirection: 'row',
