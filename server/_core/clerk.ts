@@ -132,7 +132,9 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       return null;
     }
 
+    const jwtKey = process.env.CLERK_JWT_KEY;
     const payload = await verifyToken(sessionToken, {
+      jwtKey: jwtKey || undefined,
       secretKey,
     });
 
