@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { verifyClerkSession } from '../server/_core/clerk';
-import { getDb } from '../server/db';
-import { clients, pianos, services } from '../drizzle/schema';
+import { clerkClient } from '@clerk/clerk-sdk-node';
+import { getDb } from '../server/db.js';
+import { clients, pianos, services } from '../drizzle/schema.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
@@ -10,14 +10,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Verify user is authenticated
-    const user = await verifyClerkSession(req);
-    if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    // Get session token from cookie
+    const sessionToken = req.cookies['__session'];
+    if (!sessionToken) {
+      return res.status(401).json({ error: 'Unauthorized - No session token' });
     }
 
+    // Verify session with Clerk
+    let session;
+    try {
+      session = await clerkClient.sessions.verifySession(sessionToken, sessionToken);
+    } catch (error) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid session' });
+    }
+
+    if (!session || !session.userId) {
+      return res.status(401).json({ error: 'Unauthorized - No user ID' });
+    }
+
+    // Get user from Clerk
+    const clerkUser = await clerkClient.users.getUser(session.userId);
+    const ownerId = clerkUser.id;
+
     const db = await getDb();
-    const ownerId = user.openId;
 
     // Insert test clients
     const [client1] = await db.insert(clients).values({
