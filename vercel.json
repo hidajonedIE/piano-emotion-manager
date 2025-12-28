@@ -1,13 +1,11 @@
 {
-  "buildCommand": "pnpm run build && npx expo export --platform web",
+  "buildCommand": "pnpm run build && npx expo export --platform web --output-dir web-build",
   "installCommand": "pnpm install",
+  "outputDirectory": "web-build",
   "framework": null,
   "functions": {
     "api/**/*.ts": {
       "runtime": "@vercel/node@5.5.16"
     }
-  },
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/dist/$1" }
-  ]
+  }
 }
