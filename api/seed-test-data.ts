@@ -1,7 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import { createClerkClient } from '@clerk/backend';
 import { getDb } from '../server/db.js';
 import { clients, pianos, services } from '../drizzle/schema.js';
+
+const clerkClient = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
