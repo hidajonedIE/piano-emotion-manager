@@ -66,17 +66,62 @@ export { clerkClient };
 // ============================================================================
 
 /**
+ * Parse cookies from Cookie header
+ */
+function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+  if (!cookieHeader) return {};
+  
+  const cookies: Record<string, string> = {};
+  cookieHeader.split(';').forEach(cookie => {
+    const [name, ...rest] = cookie.trim().split('=');
+    if (name && rest.length > 0) {
+      cookies[name] = decodeURIComponent(rest.join('='));
+    }
+  });
+  return cookies;
+}
+
+/**
+ * Get session token from request (supports both Bearer token and cookies)
+ */
+function getSessionToken(req: VercelRequest): string | null {
+  // 1. Try Authorization header (used by native apps)
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.substring(7);
+  }
+
+  // 2. Try cookies (used by web apps)
+  const cookieHeader = req.headers.cookie;
+  if (cookieHeader) {
+    const cookies = parseCookies(cookieHeader);
+    
+    // Clerk uses __session cookie for session token in web
+    // Try different possible cookie names
+    const sessionToken = 
+      cookies['__session'] || 
+      cookies['__clerk_session'] ||
+      cookies['clerk-session'];
+    
+    if (sessionToken) {
+      return sessionToken;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Verify the Clerk session token from the request
+ * Supports both Bearer token (native) and cookie-based auth (web)
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
-    // Get the session token from the Authorization header or cookie
-    const authHeader = req.headers.authorization;
-    const sessionToken = authHeader?.startsWith("Bearer ") 
-      ? authHeader.substring(7) 
-      : null;
+    // Get the session token from Authorization header or cookies
+    const sessionToken = getSessionToken(req);
 
     if (!sessionToken) {
+      console.log("[Clerk] No session token found in request");
       return null;
     }
 
@@ -92,6 +137,7 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     });
 
     if (!payload || !payload.sub) {
+      console.log("[Clerk] Invalid token payload");
       return null;
     }
 
