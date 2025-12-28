@@ -237,7 +237,7 @@ export default function DashboardScreen() {
             <DashboardHeader />
 
             {/* Botón temporal para seed data */}
-            {clients.length === 0 && <SeedDataButton />}
+            <SeedDataButton />
 
             {/* Secciones con drag & drop directo (long press para arrastrar) */}
             <DashboardDraggableWeb

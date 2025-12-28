@@ -5,7 +5,7 @@
  * 'jnavarrete-inboundemotion' al openId del usuario autenticado en Clerk
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { verifyClerkSession } from '../server/_core/clerk';
+import { verifyClerkSession } from '../server/.core/clerk';
 import { getDb } from '../server/db';
 import { users, clients } from '../drizzle/schema';
 import { eq } from 'drizzle-orm';

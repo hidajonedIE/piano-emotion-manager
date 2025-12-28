@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
-import { sdk } from "../../server/_core/sdk.js";
+import { sdk } from "../../server/.core/sdk.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {

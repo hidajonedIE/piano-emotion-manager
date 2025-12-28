@@ -2,7 +2,7 @@
  * Endpoint temporal para depuración: obtener información del usuario autenticado
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { verifyClerkSession } from '../server/_core/clerk';
+import { verifyClerkSession } from '../server/.core/clerk';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
