@@ -11,6 +11,7 @@ import { systemRouter } from "./_core/systemRouter.js";
 // Importar routers modulares
 import {
   authRouter,
+  testAuthRouter,
   clientsRouter,
   pianosRouter,
   servicesRouter,
@@ -34,6 +35,7 @@ export const appRouter = router({
   
   // Autenticación
   auth: authRouter,
+  testAuth: testAuthRouter,
   
   // Entidades principales
   clients: clientsRouter,

@@ -16,6 +16,7 @@ export { remindersRouter } from './reminders.router.js';
 
 // Routers de configuración
 export { authRouter } from './auth.router.js';
+export { testAuthRouter } from './test-auth.router.js';
 export { businessInfoRouter } from './business-info.router.js';
 export { serviceRatesRouter } from './service-rates.router.js';
 export { modulesRouter } from './modules.router.js';
