@@ -1,4 +1,4 @@
-import { createClerkClient, verifyToken } from "@clerk/backend";
+import { createClerkClient } from "@clerk/backend";
 import type { VercelRequest } from "@vercel/node";
 import type { MySql2Database } from "drizzle-orm/mysql2";
 import type { MySqlTableWithColumns } from "drizzle-orm/mysql-core";
@@ -136,9 +136,53 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       return null;
     }
 
-    const payload = await verifyToken(sessionToken, {
-      secretKey,
+    // Use Clerk's authenticateRequest for proper verification
+    const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+      console.error("[Clerk] CLERK_PUBLISHABLE_KEY not configured");
+      return null;
+    }
+
+    // Create a minimal Request object for authenticateRequest
+    const url = `https://pianoemotion.com${req.url || ''}`;
+    const headers = new Headers();
+    
+    // Add Authorization header if present
+    if (req.headers.authorization) {
+      headers.set('Authorization', req.headers.authorization);
+    }
+    
+    // Add Cookie header if present
+    if (req.headers.cookie) {
+      headers.set('Cookie', req.headers.cookie);
+    }
+    
+    const request = new Request(url, {
+      headers,
+      method: req.method || 'GET',
     });
+
+    // Use Clerk's authenticateRequest method
+    const authResult = await clerkClient.authenticateRequest(request, {
+      authorizedParties: ['https://pianoemotion.com', 'http://localhost:3000'],
+      jwtKey: process.env.CLERK_JWT_KEY,
+    });
+
+    if (!authResult.isSignedIn || !authResult.toAuth().userId) {
+      console.log("[Clerk] User not signed in or no user ID");
+      return null;
+    }
+
+    const userId = authResult.toAuth().userId;
+    if (!userId) {
+      console.log("[Clerk] No user ID in auth result");
+      return null;
+    }
+
+    // Get user details from Clerk
+    const user = await clerkClient.users.getUser(userId);
+    
+    const payload = { sub: user.id };
 
     if (!payload || !payload.sub) {
       console.log("[Clerk] Invalid token payload");
