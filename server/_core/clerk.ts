@@ -163,6 +163,10 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       method: req.method || 'GET',
     });
 
+    // Debug: Verify CLERK_JWT_KEY is available
+    console.log('[Clerk Debug] CLERK_JWT_KEY available:', !!process.env.CLERK_JWT_KEY);
+    console.log('[Clerk Debug] CLERK_JWT_KEY length:', process.env.CLERK_JWT_KEY?.length || 0);
+    
     // Use Clerk's authenticateRequest method
     const authResult = await clerkClient.authenticateRequest(request, {
       publishableKey,
