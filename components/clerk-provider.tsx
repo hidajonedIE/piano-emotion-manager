@@ -9,7 +9,7 @@ type ClerkProviderProps = {
 
 // Clerk publishable key - this is public and safe to include in client code
 // Get your key from: https://dashboard.clerk.com/
-const CLERK_PUBLISHABLE_KEY = "pk_test_c2luY2VyZS1jaGltcC02My5jbGVyay5hY2NvdW50cy5kZXYk";
+const CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsucGlhbm9lbW90aW9uLmNvbSQ";
 
 // Get the publishable key from environment variables with fallback
 function getPublishableKey(): string {
