@@ -137,7 +137,8 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     }
 
     // Use Clerk's authenticateRequest for proper verification
-    const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    // Note: CLERK_PUBLISHABLE_KEY is available on the server, NEXT_PUBLIC_* vars are for client only
+    const publishableKey = process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
     if (!publishableKey) {
       console.error("[Clerk] CLERK_PUBLISHABLE_KEY not configured");
       return null;
