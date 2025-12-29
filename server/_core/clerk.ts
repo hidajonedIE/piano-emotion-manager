@@ -181,16 +181,6 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
 
     // Get user details from Clerk
     const user = await clerkClient.users.getUser(userId);
-    
-    const payload = { sub: user.id };
-
-    if (!payload || !payload.sub) {
-      console.log("[Clerk] Invalid token payload");
-      return null;
-    }
-
-    // Get the user details from Clerk
-    const user = await clerkClient.users.getUser(payload.sub);
 
     return {
       id: user.id,
