@@ -166,6 +166,7 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     // Use Clerk's authenticateRequest method
     const authResult = await clerkClient.authenticateRequest(request, {
       publishableKey,
+      secretKey: process.env.CLERK_SECRET_KEY,
       authorizedParties: ['https://pianoemotion.com', 'http://localhost:3000'],
     });
 
