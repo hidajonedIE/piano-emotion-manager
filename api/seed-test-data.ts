@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { verifyClerkSession } from '../server/_core/clerk.js';
 import { getDb } from '../server/db.js';
 import { clients, pianos, services } from '../drizzle/schema.js';
+import { eq } from 'drizzle-orm';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
@@ -20,42 +21,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const db = await getDb();
 
     // Insert test clients
-    const [client1] = await db.insert(clients).values({
+    const client1Result = await db.insert(clients).values({
       name: 'María García',
       email: 'maria.garcia@example.com',
       phone: '+34 612 345 678',
       address: 'Calle Mayor 15, Madrid',
       ownerId,
-    }).returning();
+    });
+    const client1Id = Number(client1Result.insertId);
 
-    const [client2] = await db.insert(clients).values({
+    const client2Result = await db.insert(clients).values({
       name: 'Juan Martínez',
       email: 'juan.martinez@example.com',
       phone: '+34 623 456 789',
       address: 'Avenida Diagonal 123, Barcelona',
       ownerId,
-    }).returning();
+    });
+    const client2Id = Number(client2Result.insertId);
 
     // Insert test pianos
-    const [piano1] = await db.insert(pianos).values({
+    const piano1Result = await db.insert(pianos).values({
       brand: 'Yamaha',
       model: 'U1',
       serialNumber: 'Y123456',
       year: 2015,
       type: 'vertical',
-      clientId: client1.id,
+      clientId: client1Id,
       ownerId,
-    }).returning();
+    });
+    const piano1Id = Number(piano1Result.insertId);
 
-    const [piano2] = await db.insert(pianos).values({
+    const piano2Result = await db.insert(pianos).values({
       brand: 'Kawai',
       model: 'K-300',
       serialNumber: 'K789012',
       year: 2018,
       type: 'vertical',
-      clientId: client2.id,
+      clientId: client2Id,
       ownerId,
-    }).returning();
+    });
+    const piano2Id = Number(piano2Result.insertId);
 
     // Insert test services - one URGENT and one PENDING
     // Urgent: last service was 14 months ago
@@ -63,7 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     urgentDate.setMonth(urgentDate.getMonth() - 14);
     
     await db.insert(services).values({
-      pianoId: piano1.id,
+      pianoId: piano1Id,
       serviceType: 'afinacion',
       date: urgentDate,
       notes: 'Afinación realizada hace 14 meses - URGENTE',
@@ -76,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     pendingDate.setMonth(pendingDate.getMonth() - 11);
     
     await db.insert(services).values({
-      pianoId: piano2.id,
+      pianoId: piano2Id,
       serviceType: 'afinacion',
       date: pendingDate,
       notes: 'Afinación realizada hace 11 meses - PENDIENTE',
