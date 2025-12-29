@@ -117,6 +117,10 @@ function getSessionToken(req: VercelRequest): string | null {
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
+    // DEBUG: Log all cookies to identify the correct cookie name
+    console.log("[Clerk DEBUG] All cookies:", JSON.stringify(req.cookies || {}));
+    console.log("[Clerk DEBUG] Authorization header:", req.headers?.authorization);
+    
     // Get the session token from Authorization header or cookies
     const sessionToken = getSessionToken(req);
 
