@@ -307,7 +307,8 @@ export const advancedRouter = router({
           
           return session;
         } catch (error) {
-          throw new Error('No se pudo crear la sesión de pago');
+          console.error('[createCheckout] Error:', error);
+          throw new Error(`No se pudo crear la sesión de pago: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }),
 
@@ -340,7 +341,8 @@ export const advancedRouter = router({
           
           return session;
         } catch (error) {
-          throw new Error('No se pudo acceder al portal de suscripción');
+          console.error('[createPortal] Error:', error);
+          throw new Error(`No se pudo acceder al portal de suscripción: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }),
 
