@@ -163,15 +163,10 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       method: req.method || 'GET',
     });
 
-    // Debug: Verify CLERK_JWT_KEY is available
-    console.log('[Clerk Debug] CLERK_JWT_KEY available:', !!process.env.CLERK_JWT_KEY);
-    console.log('[Clerk Debug] CLERK_JWT_KEY length:', process.env.CLERK_JWT_KEY?.length || 0);
-    
     // Use Clerk's authenticateRequest method
     const authResult = await clerkClient.authenticateRequest(request, {
       publishableKey,
       secretKey: process.env.CLERK_SECRET_KEY,
-      jwtKey: process.env.CLERK_JWT_KEY,
       authorizedParties: ['https://pianoemotion.com', 'http://localhost:3000'],
     });
 
