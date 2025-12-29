@@ -136,11 +136,8 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       return null;
     }
 
-    const publishableKey = process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "pk_test_c2luY2VyZS1jaGltcC02My5jbGVyay5hY2NvdW50cy5kZXYk";
-    
     const payload = await verifyToken(sessionToken, {
       secretKey,
-      publishableKey,
     });
 
     if (!payload || !payload.sub) {
