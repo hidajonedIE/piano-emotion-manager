@@ -1,6 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { SESSION_TOKEN_KEY, USER_INFO_KEY } from "@/constants/oauth";
+import { getClerkInstance } from "@clerk/clerk-expo";
 
 export type User = {
   id: number;
@@ -13,18 +14,16 @@ export type User = {
 
 export async function getSessionToken(): Promise<string | null> {
   try {
-    // Web platform: get token from Clerk
+    // Web platform: get token from Clerk using getClerkInstance
     if (Platform.OS === "web") {
-      // Try to get Clerk session token from window.__clerk
-      if (typeof window !== "undefined" && (window as any).__clerk) {
-        const clerk = (window as any).__clerk;
-        const session = await clerk.session;
-        if (session) {
-          const token = await session.getToken();
-          return token;
-        }
+      try {
+        const clerkInstance = getClerkInstance();
+        const token = await clerkInstance.session?.getToken();
+        return token || null;
+      } catch (error) {
+        console.error("[Auth] Failed to get Clerk token:", error);
+        return null;
       }
-      return null;
     }
 
     // Use SecureStore for native
