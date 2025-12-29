@@ -13,8 +13,17 @@ export type User = {
 
 export async function getSessionToken(): Promise<string | null> {
   try {
-    // Web platform uses cookie-based auth, no manual token management needed
+    // Web platform: get token from Clerk
     if (Platform.OS === "web") {
+      // Try to get Clerk session token from window.__clerk
+      if (typeof window !== "undefined" && (window as any).__clerk) {
+        const clerk = (window as any).__clerk;
+        const session = await clerk.session;
+        if (session) {
+          const token = await session.getToken();
+          return token;
+        }
+      }
       return null;
     }
 
