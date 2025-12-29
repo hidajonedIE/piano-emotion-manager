@@ -55,12 +55,8 @@ interface DatabaseUser {
 // ============================================================================
 
 // Initialize Clerk client
-const secretKey = process.env.CLERK_SECRET_KEY;
-console.log("[Clerk Init] CLERK_SECRET_KEY exists:", !!secretKey);
-console.log("[Clerk Init] CLERK_SECRET_KEY starts with:", secretKey?.substring(0, 15));
-
 const clerkClient = createClerkClient({
-  secretKey: secretKey,
+  secretKey: process.env.CLERK_SECRET_KEY,
 });
 
 export { clerkClient };
@@ -121,10 +117,6 @@ function getSessionToken(req: VercelRequest): string | null {
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
-    // Log all cookies for debugging
-    console.log("[Clerk] All cookies:", req.cookies);
-    console.log("[Clerk] Cookie header:", req.headers.cookie);
-    
     // Get the session token from Authorization header or cookies
     const sessionToken = getSessionToken(req);
 
@@ -140,9 +132,7 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       return null;
     }
 
-    const jwtKey = process.env.CLERK_JWT_KEY;
     const payload = await verifyToken(sessionToken, {
-      jwtKey: jwtKey || undefined,
       secretKey,
     });
 
