@@ -62,14 +62,14 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
   const renderBadge = () => {
     if (module.type === 'free') {
       return (
-        <View style={styles.freeBadge}>
+        <View style={[styles.freeBadge, isMobile && styles.badgeMobile]}>
           <Text style={styles.freeBadgeText}>Gratis</Text>
         </View>
       );
     }
     if (module.type === 'professional') {
       return (
-        <View style={styles.professionalBadge}>
+        <View style={[styles.professionalBadge, isMobile && styles.badgeMobile]}>
           <Ionicons name="briefcase" size={10} color="#fff" />
           <Text style={styles.professionalBadgeText}>Pro</Text>
         </View>
@@ -77,7 +77,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
     }
     if (module.type === 'premium') {
       return (
-        <View style={styles.premiumBadge}>
+        <View style={[styles.premiumBadge, isMobile && styles.badgeMobile]}>
           <Ionicons name="star" size={10} color="#fff" />
           <Text style={styles.premiumBadgeText}>Premium</Text>
         </View>
@@ -601,6 +601,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: '#fff',
+  },
+  badgeMobile: {
+    position: 'relative',
+    left: 0,
   },
   moduleDescription: {
     fontSize: 12,
