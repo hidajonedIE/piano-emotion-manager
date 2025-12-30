@@ -2,11 +2,11 @@
 // Actualizado: Planes ANUALES
 
 export const STRIPE_CONFIG = {
-  // Plan Profesional - €25/año
+  // Plan Profesional - €30/año
   PROFESSIONAL: {
-    productId: 'prod_TfhreYCI7tYvIX',
-    priceId: 'price_1SiMs5DpmJIxYFlvtjusxQdp',
-    price: 25,
+    productId: 'prod_ThLivL3U5TO7Zy',
+    priceId: 'price_1SjwykDiwMrzMnxywKMWJddg',
+    price: 30,
     currency: 'EUR',
     interval: 'year',
     name: 'Plan Profesional',
@@ -22,8 +22,8 @@ export const STRIPE_CONFIG = {
   
   // Plan Premium IA - €50/año
   PREMIUM_IA: {
-    productId: 'prod_Tfhs42udQYHa6F',
-    priceId: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',
+    productId: 'prod_ThLivL3U5TO7Zy',
+    priceId: 'price_1Sjx48DiwMrzMnxyB91U7HOs',
     price: 50,
     currency: 'EUR',
     interval: 'year',
