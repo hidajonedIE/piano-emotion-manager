@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#1f2937',
-    maxWidth: 155,
+    maxWidth: 220,
   },
   // Badges
   freeBadge: {
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     position: 'absolute',
-    left: 165,
+    left: 230,
   },
   freeBadgeText: {
     fontSize: 10,
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     position: 'absolute',
-    left: 165,
+    left: 230,
   },
   professionalBadgeText: {
     fontSize: 10,
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     position: 'absolute',
-    left: 165,
+    left: 230,
   },
   premiumBadgeText: {
     fontSize: 10,
