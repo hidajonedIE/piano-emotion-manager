@@ -61,6 +61,13 @@ export default function SettingsLayout() {
           presentation: 'card',
         }} 
       />
+      <Stack.Screen 
+        name="invitations" 
+        options={{ 
+          title: 'Gestión de Invitaciones',
+          presentation: 'card',
+        }} 
+      />
     </Stack>
   );
 }
