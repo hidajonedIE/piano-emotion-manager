@@ -1073,6 +1073,30 @@ export default function SettingsIndexScreen() {
           </View>
         </Accordion>
 
+        {/* ========== ADMINISTRACIÓN ========== */}
+        <Accordion
+          title="Administración"
+          icon="person.badge.key.fill"
+          iconColor="#8B5CF6"
+          defaultOpen={false}
+        >
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <Pressable
+              style={[styles.linkRow, { borderBottomWidth: 0 }]}
+              onPress={() => router.push('/settings/invitations' as any)}
+            >
+              <View style={styles.linkRowContent}>
+                <IconSymbol name="envelope.badge.fill" size={20} color={accent} />
+                <View>
+                  <ThemedText style={styles.linkText}>Gestionar Invitaciones</ThemedText>
+                  <ThemedText style={[styles.linkSubtext, { color: textSecondary }]}>Invita nuevos usuarios a la aplicación</ThemedText>
+                </View>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+            </Pressable>
+          </View>
+        </Accordion>
+
         {/* ========== LEGAL ========== */}
         <Accordion
           title="Legal y Privacidad"

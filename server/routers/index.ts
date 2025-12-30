@@ -20,6 +20,7 @@ export { testAuthRouter } from './test-auth.router.js';
 export { businessInfoRouter } from './business-info.router.js';
 export { serviceRatesRouter } from './service-rates.router.js';
 export { modulesRouter } from './modules.router.js';
+export { invitationsRouter } from './invitations.router.js';
 
 // Routers avanzados
 export { advancedRouter } from './advanced.router.js';

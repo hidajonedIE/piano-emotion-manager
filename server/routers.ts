@@ -24,6 +24,7 @@ import {
   businessInfoRouter,
   serviceRatesRouter,
   modulesRouter,
+  invitationsRouter,
   advancedRouter,
   seedRouter,
 } from "./routers/index.js";
@@ -52,6 +53,7 @@ export const appRouter = router({
   businessInfo: businessInfoRouter,
   serviceRates: serviceRatesRouter,
   modules: modulesRouter,
+  invitations: invitationsRouter,
   
   // Funcionalidades avanzadas
   advanced: advancedRouter,
