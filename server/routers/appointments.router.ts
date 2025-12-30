@@ -1,31 +1,28 @@
 /**
- * Appointments Router
- * Gestión de citas con vistas múltiples, detección de conflictos y recordatorios
+ * Appointments Router (OPTIMIZED)
+ * Gestión de citas con paginación en DB, eager loading y caché
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
+import { appointments, clients, pianos } from "../../drizzle/schema.js";
+import { eq, and, or, gte, lte, asc, desc, count, sql } from "drizzle-orm";
+import * as cache from "../cache.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
 // ============================================================================
 
-/**
- * Estados de cita
- */
 const appointmentStatusSchema = z.enum([
   "scheduled",
   "confirmed",
   "in_progress",
   "completed",
   "cancelled",
-  "no_show", // Cliente no se presentó
+  "no_show",
   "rescheduled",
 ]);
 
-/**
- * Tipos de servicio para citas
- */
 const serviceTypeSchema = z.enum([
   "tuning",
   "repair",
@@ -42,67 +39,64 @@ const serviceTypeSchema = z.enum([
   "other",
 ]);
 
-/**
- * Esquema de recordatorio
- */
 const reminderSchema = z.object({
   type: z.enum(["email", "sms", "whatsapp", "push"]),
-  minutesBefore: z.number().int().min(0).max(10080), // Hasta 1 semana antes
+  minutesBefore: z.number().int().min(0).max(10080),
   sent: z.boolean().default(false),
   sentAt: z.string().optional(),
 });
 
-/**
- * Esquema de recurrencia
- */
 const recurrenceSchema = z.object({
   type: z.enum(["daily", "weekly", "biweekly", "monthly", "yearly"]),
-  interval: z.number().int().min(1).max(12).default(1), // Cada X días/semanas/meses
-  endDate: z.string().optional(), // Fecha de fin de recurrencia
-  occurrences: z.number().int().min(1).max(52).optional(), // Número de ocurrencias
-  daysOfWeek: z.array(z.number().int().min(0).max(6)).optional(), // Para recurrencia semanal
+  interval: z.number().int().min(1).max(12).default(1),
+  endDate: z.string().optional(),
+  occurrences: z.number().int().min(1).max(52).optional(),
+  daysOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
 }).optional().nullable();
 
-/**
- * Esquema base de cita
- */
 const appointmentBaseSchema = z.object({
   clientId: z.number().int().positive(),
   pianoId: z.number().int().positive().optional().nullable(),
-  title: z.string().min(1, "El título es obligatorio").max(255),
+  title: z.string().min(1).max(255),
   date: z.string().or(z.date()),
-  startTime: z.string().optional(), // Hora de inicio (HH:MM)
-  endTime: z.string().optional(), // Hora de fin (HH:MM)
-  duration: z.number().int().min(15).max(480).default(60), // Duración en minutos
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  duration: z.number().int().min(15).max(480).default(60),
   serviceType: serviceTypeSchema.optional().nullable(),
   status: appointmentStatusSchema.default("scheduled"),
   notes: z.string().max(2000).optional().nullable(),
-  internalNotes: z.string().max(2000).optional().nullable(), // Notas internas
+  internalNotes: z.string().max(2000).optional().nullable(),
   address: z.string().max(500).optional().nullable(),
-  // Coordenadas para navegación
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
-  // Recordatorios
   reminders: z.array(reminderSchema).max(5).optional(),
-  // Recurrencia
   recurrence: recurrenceSchema,
-  // Técnico asignado (para equipos)
   technicianId: z.string().optional().nullable(),
   technicianName: z.string().optional().nullable(),
-  // Color para el calendario
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-  // Prioridad
   priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
-  // Estimación de precio
   estimatedPrice: z.number().min(0).optional().nullable(),
 });
 
 /**
- * Esquema de filtros para vista de calendario
+ * Esquema de paginación para citas
  */
+const paginationSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(20),
+  sortBy: z.enum(["date", "status", "clientId", "createdAt"]).default("date"),
+  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+  status: appointmentStatusSchema.optional(),
+  serviceType: serviceTypeSchema.optional(),
+  clientId: z.number().optional(),
+  technicianId: z.string().optional(),
+});
+
 const calendarViewSchema = z.object({
   view: z.enum(["day", "week", "month"]).default("month"),
-  date: z.string(), // Fecha central de la vista
+  date: z.string(),
   technicianId: z.string().optional(),
   status: appointmentStatusSchema.optional(),
   serviceType: serviceTypeSchema.optional(),
@@ -113,9 +107,6 @@ const calendarViewSchema = z.object({
 // UTILIDADES
 // ============================================================================
 
-/**
- * Calcula el rango de fechas para una vista de calendario
- */
 function getDateRange(view: "day" | "week" | "month", centerDate: Date): { start: Date; end: Date } {
   const start = new Date(centerDate);
   const end = new Date(centerDate);
@@ -127,7 +118,7 @@ function getDateRange(view: "day" | "week" | "month", centerDate: Date): { start
       break;
     case "week":
       const dayOfWeek = start.getDay();
-      const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Lunes como inicio
+      const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
       start.setDate(diff);
       start.setHours(0, 0, 0, 0);
       end.setDate(start.getDate() + 6);
@@ -145,9 +136,6 @@ function getDateRange(view: "day" | "week" | "month", centerDate: Date): { start
   return { start, end };
 }
 
-/**
- * Detecta conflictos de horario
- */
 function detectConflicts(
   appointments: Array<{ id?: number; date: Date | string; duration: number; technicianId?: string | null }>,
   newAppointment: { id?: number; date: Date | string; duration: number; technicianId?: string | null }
@@ -158,17 +146,13 @@ function detectConflicts(
   const newEnd = newStart + (newAppointment.duration || 60) * 60 * 1000;
   
   for (const apt of appointments) {
-    // No comparar consigo mismo
     if (apt.id && newAppointment.id && apt.id === newAppointment.id) continue;
-    
-    // Solo comparar si es el mismo técnico (o si no hay técnico asignado)
     if (newAppointment.technicianId && apt.technicianId && 
         newAppointment.technicianId !== apt.technicianId) continue;
     
     const aptStart = new Date(apt.date).getTime();
     const aptEnd = aptStart + (apt.duration || 60) * 60 * 1000;
     
-    // Calcular solapamiento
     const overlapStart = Math.max(newStart, aptStart);
     const overlapEnd = Math.min(newEnd, aptEnd);
     const overlap = overlapEnd - overlapStart;
@@ -176,7 +160,7 @@ function detectConflicts(
     if (overlap > 0 && apt.id) {
       conflicts.push({
         id: apt.id,
-        overlap: Math.round(overlap / 60000), // Minutos de solapamiento
+        overlap: Math.round(overlap / 60000),
       });
     }
   }
@@ -184,9 +168,6 @@ function detectConflicts(
   return conflicts;
 }
 
-/**
- * Genera citas recurrentes
- */
 function generateRecurringAppointments(
   baseAppointment: z.infer<typeof appointmentBaseSchema>,
   maxOccurrences: number = 52
@@ -203,19 +184,18 @@ function generateRecurringAppointments(
   let count = 0;
   
   while (currentDate <= maxDate && count < maxCount) {
-    // Para recurrencia semanal con días específicos
     if (type === "weekly" && daysOfWeek && daysOfWeek.length > 0) {
       const currentDay = currentDate.getDay();
       if (daysOfWeek.includes(currentDay)) {
         appointments.push({
           ...baseAppointment,
           date: currentDate.toISOString(),
-          recurrence: null, // Las citas generadas no son recurrentes
+          recurrence: null,
         });
         count++;
       }
       currentDate.setDate(currentDate.getDate() + 1);
-      if (currentDate.getDay() === 1) { // Nuevo lunes
+      if (currentDate.getDay() === 1) {
         currentDate.setDate(currentDate.getDate() + (interval - 1) * 7);
       }
     } else {
@@ -226,7 +206,6 @@ function generateRecurringAppointments(
       });
       count++;
       
-      // Avanzar según el tipo de recurrencia
       switch (type) {
         case "daily":
           currentDate.setDate(currentDate.getDate() + interval);
@@ -256,48 +235,110 @@ function generateRecurringAppointments(
 
 export const appointmentsRouter = router({
   /**
-   * Lista de citas con filtros
+   * Lista de citas con paginación optimizada y eager loading
    */
   list: protectedProcedure
-    .input(z.object({
-      dateFrom: z.string().optional(),
-      dateTo: z.string().optional(),
-      status: appointmentStatusSchema.optional(),
-      clientId: z.number().optional(),
-      technicianId: z.string().optional(),
-    }).optional())
+    .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
-      const appointments = await db.getAppointments(ctx.user.openId);
+      const pagination = input || { page: 1, limit: 20, sortBy: "date", sortOrder: "asc" };
       
-      let filtered = appointments;
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          items: [],
+          pagination: {
+            page: pagination.page,
+            limit: pagination.limit,
+            total: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        };
+      }
+
+      // Construir condiciones WHERE
+      const whereClauses = [eq(appointments.odId, ctx.user.openId)];
       
-      if (input?.dateFrom) {
-        const fromDate = new Date(input.dateFrom);
-        filtered = filtered.filter(apt => new Date(apt.date) >= fromDate);
+      if (pagination.dateFrom) {
+        whereClauses.push(gte(appointments.date, new Date(pagination.dateFrom)));
       }
       
-      if (input?.dateTo) {
-        const toDate = new Date(input.dateTo);
-        filtered = filtered.filter(apt => new Date(apt.date) <= toDate);
+      if (pagination.dateTo) {
+        whereClauses.push(lte(appointments.date, new Date(pagination.dateTo)));
       }
       
-      if (input?.status) {
-        filtered = filtered.filter(apt => apt.status === input.status);
+      if (pagination.status) {
+        whereClauses.push(eq(appointments.status, pagination.status));
       }
       
-      if (input?.clientId) {
-        filtered = filtered.filter(apt => apt.clientId === input.clientId);
+      if (pagination.serviceType) {
+        whereClauses.push(eq(appointments.serviceType, pagination.serviceType));
       }
       
-      if (input?.technicianId) {
-        filtered = filtered.filter(apt => apt.technicianId === input.technicianId);
+      if (pagination.clientId) {
+        whereClauses.push(eq(appointments.clientId, pagination.clientId));
       }
-      
-      return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Construir ORDER BY
+      const sortColumn = appointments[pagination.sortBy as keyof typeof appointments];
+      const orderByClause = pagination.sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+
+      // EAGER LOADING: Consulta con leftJoin para cargar cliente y piano en una sola query
+      const offset = (pagination.page - 1) * pagination.limit;
+      const items = await database
+        .select({
+          // Appointment fields
+          id: appointments.id,
+          odId: appointments.odId,
+          clientId: appointments.clientId,
+          pianoId: appointments.pianoId,
+          title: appointments.title,
+          date: appointments.date,
+          duration: appointments.duration,
+          serviceType: appointments.serviceType,
+          status: appointments.status,
+          notes: appointments.notes,
+          address: appointments.address,
+          createdAt: appointments.createdAt,
+          updatedAt: appointments.updatedAt,
+          // Client fields (eager loaded)
+          clientName: clients.name,
+          clientEmail: clients.email,
+          clientPhone: clients.phone,
+          // Piano fields (eager loaded)
+          pianoBrand: pianos.brand,
+          pianoModel: pianos.model,
+        })
+        .from(appointments)
+        .leftJoin(clients, eq(appointments.clientId, clients.id))
+        .leftJoin(pianos, eq(appointments.pianoId, pianos.id))
+        .where(and(...whereClauses))
+        .orderBy(orderByClause)
+        .limit(pagination.limit)
+        .offset(offset);
+
+      // Consulta de conteo total
+      const [{ total }] = await database
+        .select({ total: count() })
+        .from(appointments)
+        .where(and(...whereClauses));
+
+      const totalPages = Math.ceil(total / pagination.limit);
+
+      return {
+        items,
+        pagination: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total,
+          totalPages,
+          hasMore: pagination.page < totalPages,
+        },
+      };
     }),
   
   /**
-   * Vista de calendario (día, semana, mes)
+   * Vista de calendario optimizada con eager loading
    */
   calendarView: protectedProcedure
     .input(calendarViewSchema)
@@ -305,37 +346,67 @@ export const appointmentsRouter = router({
       const centerDate = new Date(input.date);
       const { start, end } = getDateRange(input.view, centerDate);
       
-      const appointments = await db.getAppointments(ctx.user.openId);
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          view: input.view,
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+          appointments: [],
+          byDay: {},
+          totalCount: 0,
+        };
+      }
+
+      // Construir condiciones WHERE
+      const whereClauses = [
+        eq(appointments.odId, ctx.user.openId),
+        gte(appointments.date, start),
+        lte(appointments.date, end),
+      ];
       
-      // Filtrar por rango de fechas
-      let filtered = appointments.filter(apt => {
-        const aptDate = new Date(apt.date);
-        return aptDate >= start && aptDate <= end;
-      });
-      
-      // Aplicar filtros adicionales
       if (input.status) {
-        filtered = filtered.filter(apt => apt.status === input.status);
+        whereClauses.push(eq(appointments.status, input.status));
       }
       
       if (input.serviceType) {
-        filtered = filtered.filter(apt => apt.serviceType === input.serviceType);
+        whereClauses.push(eq(appointments.serviceType, input.serviceType));
       }
       
       if (input.clientId) {
-        filtered = filtered.filter(apt => apt.clientId === input.clientId);
+        whereClauses.push(eq(appointments.clientId, input.clientId));
       }
-      
-      if (input.technicianId) {
-        filtered = filtered.filter(apt => apt.technicianId === input.technicianId);
-      }
-      
-      // Ordenar por fecha y hora
-      filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      
-      // Agrupar por día para vista de semana/mes
-      const byDay: Record<string, typeof filtered> = {};
-      for (const apt of filtered) {
+
+      // EAGER LOADING: Cargar citas con cliente y piano
+      const items = await database
+        .select({
+          id: appointments.id,
+          odId: appointments.odId,
+          clientId: appointments.clientId,
+          pianoId: appointments.pianoId,
+          title: appointments.title,
+          date: appointments.date,
+          duration: appointments.duration,
+          serviceType: appointments.serviceType,
+          status: appointments.status,
+          notes: appointments.notes,
+          address: appointments.address,
+          createdAt: appointments.createdAt,
+          updatedAt: appointments.updatedAt,
+          clientName: clients.name,
+          clientEmail: clients.email,
+          pianoBrand: pianos.brand,
+          pianoModel: pianos.model,
+        })
+        .from(appointments)
+        .leftJoin(clients, eq(appointments.clientId, clients.id))
+        .leftJoin(pianos, eq(appointments.pianoId, pianos.id))
+        .where(and(...whereClauses))
+        .orderBy(asc(appointments.date));
+
+      // Agrupar por día
+      const byDay: Record<string, typeof items> = {};
+      for (const apt of items) {
         const dayKey = new Date(apt.date).toISOString().split("T")[0];
         if (!byDay[dayKey]) byDay[dayKey] = [];
         byDay[dayKey].push(apt);
@@ -345,18 +416,51 @@ export const appointmentsRouter = router({
         view: input.view,
         startDate: start.toISOString(),
         endDate: end.toISOString(),
-        appointments: filtered,
+        appointments: items,
         byDay,
-        totalCount: filtered.length,
+        totalCount: items.length,
       };
     }),
   
   /**
-   * Obtener cita por ID
+   * Obtener cita por ID con eager loading
    */
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getAppointment(ctx.user.openId, input.id)),
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return undefined;
+
+      const [result] = await database
+        .select({
+          id: appointments.id,
+          odId: appointments.odId,
+          clientId: appointments.clientId,
+          pianoId: appointments.pianoId,
+          title: appointments.title,
+          date: appointments.date,
+          duration: appointments.duration,
+          serviceType: appointments.serviceType,
+          status: appointments.status,
+          notes: appointments.notes,
+          address: appointments.address,
+          createdAt: appointments.createdAt,
+          updatedAt: appointments.updatedAt,
+          clientName: clients.name,
+          clientEmail: clients.email,
+          clientPhone: clients.phone,
+          clientAddress: clients.address,
+          pianoBrand: pianos.brand,
+          pianoModel: pianos.model,
+          pianoSerialNumber: pianos.serialNumber,
+        })
+        .from(appointments)
+        .leftJoin(clients, eq(appointments.clientId, clients.id))
+        .leftJoin(pianos, eq(appointments.pianoId, pianos.id))
+        .where(and(eq(appointments.odId, ctx.user.openId), eq(appointments.id, input.id)));
+
+      return result;
+    }),
   
   /**
    * Crear nueva cita
@@ -415,31 +519,36 @@ export const appointmentsRouter = router({
       id: z.number(),
     }).merge(appointmentBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const { id, date, recurrence, ...data } = input;
+      const { id, ...data } = input;
       
-      // Detectar conflictos si se cambia la fecha o duración
-      let conflicts: Array<{ id: number; overlap: number }> = [];
-      if (date || data.duration) {
+      // Detectar conflictos si se actualiza la fecha o duración
+      if (data.date || data.duration) {
         const existingAppointments = await db.getAppointments(ctx.user.openId);
         const currentAppointment = await db.getAppointment(ctx.user.openId, id);
         
-        conflicts = detectConflicts(existingAppointments, {
-          id,
-          date: date || currentAppointment?.date || new Date(),
-          duration: data.duration || currentAppointment?.duration || 60,
-          technicianId: data.technicianId ?? currentAppointment?.technicianId,
-        });
+        if (currentAppointment) {
+          const conflicts = detectConflicts(existingAppointments, {
+            id,
+            date: data.date || currentAppointment.date,
+            duration: data.duration || currentAppointment.duration,
+            technicianId: data.technicianId !== undefined ? data.technicianId : currentAppointment.technicianId,
+          });
+          
+          await db.updateAppointment(ctx.user.openId, id, {
+            ...data,
+            date: data.date ? new Date(data.date) : undefined,
+          });
+          
+          return { success: true, conflicts };
+        }
       }
       
-      const updated = await db.updateAppointment(ctx.user.openId, id, {
+      await db.updateAppointment(ctx.user.openId, id, {
         ...data,
-        ...(date ? { date: new Date(date) } : {}),
+        date: data.date ? new Date(data.date) : undefined,
       });
       
-      return {
-        appointment: updated,
-        conflicts,
-      };
+      return { success: true, conflicts: [] };
     }),
   
   /**
@@ -450,163 +559,51 @@ export const appointmentsRouter = router({
     .mutation(({ ctx, input }) => db.deleteAppointment(ctx.user.openId, input.id)),
   
   /**
-   * Cambiar estado de cita
-   */
-  updateStatus: protectedProcedure
-    .input(z.object({
-      id: z.number(),
-      status: appointmentStatusSchema,
-    }))
-    .mutation(({ ctx, input }) => db.updateAppointment(ctx.user.openId, input.id, { status: input.status })),
-  
-  /**
-   * Verificar conflictos para una fecha/hora
-   */
-  checkConflicts: protectedProcedure
-    .input(z.object({
-      date: z.string(),
-      duration: z.number().default(60),
-      technicianId: z.string().optional(),
-      excludeId: z.number().optional(),
-    }))
-    .query(async ({ ctx, input }) => {
-      const appointments = await db.getAppointments(ctx.user.openId);
-      
-      const conflicts = detectConflicts(appointments, {
-        id: input.excludeId,
-        date: input.date,
-        duration: input.duration,
-        technicianId: input.technicianId,
-      });
-      
-      return {
-        hasConflicts: conflicts.length > 0,
-        conflicts,
-      };
-    }),
-  
-  /**
-   * Obtener próximas citas
+   * Obtener próximas citas (con caché)
    */
   getUpcoming: protectedProcedure
     .input(z.object({
-      limit: z.number().int().min(1).max(50).default(10),
-      daysAhead: z.number().int().min(1).max(365).default(30),
+      daysAhead: z.number().int().min(1).max(90).default(7),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const limit = input?.limit || 10;
-      const daysAhead = input?.daysAhead || 30;
+      const daysAhead = input?.daysAhead || 7;
+      const cacheKey = `upcoming_appointments:${ctx.user.openId}:${daysAhead}`;
       
-      const appointments = await db.getAppointments(ctx.user.openId);
+      // Intentar obtener del caché
+      const cached = await cache.getCachedValue<any[]>(cacheKey);
+      if (cached) return cached;
+
+      const database = await db.getDb();
+      if (!database) return [];
+
       const now = new Date();
-      const cutoff = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
-      
-      return appointments
-        .filter(apt => {
-          const aptDate = new Date(apt.date);
-          return aptDate >= now && aptDate <= cutoff && apt.status !== "cancelled";
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + daysAhead);
+
+      const items = await database
+        .select({
+          id: appointments.id,
+          title: appointments.title,
+          date: appointments.date,
+          duration: appointments.duration,
+          status: appointments.status,
+          clientName: clients.name,
+          pianoBrand: pianos.brand,
         })
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, limit);
-    }),
-  
-  /**
-   * Obtener citas de hoy
-   */
-  getToday: protectedProcedure.query(async ({ ctx }) => {
-    const appointments = await db.getAppointments(ctx.user.openId);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    return appointments
-      .filter(apt => {
-        const aptDate = new Date(apt.date);
-        return aptDate >= today && aptDate < tomorrow;
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }),
-  
-  /**
-   * Obtener estadísticas de citas
-   */
-  getStats: protectedProcedure
-    .input(z.object({
-      period: z.enum(["week", "month", "year"]).default("month"),
-    }).optional())
-    .query(async ({ ctx, input }) => {
-      const appointments = await db.getAppointments(ctx.user.openId);
-      const now = new Date();
+        .from(appointments)
+        .leftJoin(clients, eq(appointments.clientId, clients.id))
+        .leftJoin(pianos, eq(appointments.pianoId, pianos.id))
+        .where(and(
+          eq(appointments.odId, ctx.user.openId),
+          gte(appointments.date, now),
+          lte(appointments.date, futureDate)
+        ))
+        .orderBy(asc(appointments.date))
+        .limit(20);
+
+      // Cachear por 10 minutos
+      await cache.setCachedValue(cacheKey, items, 600);
       
-      let startDate: Date;
-      switch (input?.period || "month") {
-        case "week":
-          startDate = new Date(now);
-          startDate.setDate(startDate.getDate() - 7);
-          break;
-        case "month":
-          startDate = new Date(now);
-          startDate.setMonth(startDate.getMonth() - 1);
-          break;
-        case "year":
-          startDate = new Date(now);
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          break;
-      }
-      
-      const periodAppointments = appointments.filter(apt => new Date(apt.date) >= startDate);
-      
-      return {
-        total: periodAppointments.length,
-        completed: periodAppointments.filter(apt => apt.status === "completed").length,
-        cancelled: periodAppointments.filter(apt => apt.status === "cancelled").length,
-        noShow: periodAppointments.filter(apt => apt.status === "no_show").length,
-        upcoming: appointments.filter(apt => new Date(apt.date) > now && apt.status !== "cancelled").length,
-        byStatus: {
-          scheduled: periodAppointments.filter(apt => apt.status === "scheduled").length,
-          confirmed: periodAppointments.filter(apt => apt.status === "confirmed").length,
-          in_progress: periodAppointments.filter(apt => apt.status === "in_progress").length,
-          completed: periodAppointments.filter(apt => apt.status === "completed").length,
-          cancelled: periodAppointments.filter(apt => apt.status === "cancelled").length,
-          no_show: periodAppointments.filter(apt => apt.status === "no_show").length,
-          rescheduled: periodAppointments.filter(apt => apt.status === "rescheduled").length,
-        },
-        completionRate: periodAppointments.length > 0
-          ? (periodAppointments.filter(apt => apt.status === "completed").length / periodAppointments.length) * 100
-          : 0,
-      };
-    }),
-  
-  /**
-   * Convertir cita a servicio
-   */
-  convertToService: protectedProcedure
-    .input(z.object({ appointmentId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      const appointment = await db.getAppointment(ctx.user.openId, input.appointmentId);
-      if (!appointment) {
-        throw new Error("Cita no encontrada");
-      }
-      
-      // Crear servicio basado en la cita
-      const service = await db.createService({
-        clientId: appointment.clientId,
-        pianoId: appointment.pianoId || 0,
-        serviceType: appointment.serviceType || "other",
-        date: new Date(appointment.date),
-        duration: appointment.duration,
-        notes: appointment.notes,
-        status: "scheduled",
-        appointmentId: appointment.id,
-        odId: ctx.user.openId,
-      });
-      
-      // Actualizar estado de la cita
-      await db.updateAppointment(ctx.user.openId, input.appointmentId, {
-        status: "completed",
-      });
-      
-      return service;
+      return items;
     }),
 });
