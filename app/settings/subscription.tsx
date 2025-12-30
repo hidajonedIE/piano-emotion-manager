@@ -129,7 +129,7 @@ export default function SubscriptionScreen() {
               {plans?.find(p => p.id === currentPlan?.plan)?.name || 'Plan Gratuito'}
             </Text>
           </View>
-          {currentPlan?.plan !== 'FREE' && (
+          {currentPlan?.plan !== 'FREE' && currentPlan?.status === 'active' && (
             <TouchableOpacity 
               style={styles.manageButton}
               onPress={handleManageSubscription}
