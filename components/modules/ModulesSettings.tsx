@@ -528,14 +528,13 @@ const styles = StyleSheet.create({
   moduleTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    position: 'relative',
+    minHeight: 20,
   },
   moduleName: {
     fontSize: 15,
     fontWeight: '600',
     color: '#1f2937',
-    minWidth: 180,
-    maxWidth: 180,
   },
   // Badges
   freeBadge: {
@@ -543,6 +542,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    position: 'absolute',
+    left: 200,
   },
   freeBadgeText: {
     fontSize: 10,
@@ -558,6 +559,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    position: 'absolute',
+    left: 200,
   },
   professionalBadgeText: {
     fontSize: 10,
@@ -572,6 +575,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    position: 'absolute',
+    left: 200,
   },
   premiumBadgeText: {
     fontSize: 10,
