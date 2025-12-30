@@ -1,10 +1,10 @@
-import { pgTable, text, timestamp, boolean, uuid } from 'drizzle-orm/pg-core';
+import { mysqlTable, text, timestamp, boolean, varchar } from 'drizzle-orm/mysql-core';
 
-export const invitations = pgTable('invitations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: text('email').notNull().unique(),
-  invitedBy: text('invited_by').notNull(), // Email del admin que invitó
-  token: text('token').notNull().unique(), // Token único para la invitación
+export const invitations = mysqlTable('invitations', {
+  id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: varchar('email', { length: 320 }).notNull(),
+  invitedBy: varchar('invited_by', { length: 320 }).notNull(), // Email del admin que invitó
+  token: varchar('token', { length: 255 }).notNull().unique(), // Token único para la invitación
   used: boolean('used').notNull().default(false),
   usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),

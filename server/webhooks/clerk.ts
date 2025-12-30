@@ -9,8 +9,8 @@
 import { Webhook } from 'svix';
 import { WebhookEvent } from '@clerk/clerk-sdk-node';
 import { validateInvitation, markInvitationAsUsed } from '../middleware/invitation-guard.js';
-import { db } from '../db/index.js';
-import { users } from '../db/schema.js';
+import * as db from '../db.js';
+import { users } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET || '';
@@ -62,15 +62,17 @@ export async function handleClerkWebhook(
 
       // Crear el usuario en nuestra base de datos
       try {
-        await db.insert(users).values({
-          id,
-          email,
-          firstName: first_name || '',
-          lastName: last_name || '',
-          subscriptionPlan: 'free',
-          subscriptionStatus: 'active',
-          createdAt: new Date(),
-        });
+        const database = await db.getDb();
+        if (database) {
+          await database.insert(users).values({
+            openId: id,
+            email,
+            name: first_name && last_name ? `${first_name} ${last_name}` : first_name || last_name || null,
+            subscriptionPlan: 'free',
+            subscriptionStatus: 'active',
+            createdAt: new Date(),
+          });
+        }
       } catch (dbError) {
         console.error('Error creating user in database:', dbError);
         // Continuar aunque falle la creación en DB
@@ -87,14 +89,16 @@ export async function handleClerkWebhook(
       if (primaryEmail?.email_address) {
         // Actualizar datos del usuario en nuestra base de datos
         try {
-          await db
-            .update(users)
-            .set({
-              email: primaryEmail.email_address,
-              firstName: first_name || '',
-              lastName: last_name || '',
-            })
-            .where(eq(users.id, id));
+          const database = await db.getDb();
+          if (database) {
+            await database
+              .update(users)
+              .set({
+                email: primaryEmail.email_address,
+                name: first_name && last_name ? `${first_name} ${last_name}` : first_name || last_name || null,
+              })
+              .where(eq(users.openId, id));
+          }
         } catch (dbError) {
           console.error('Error updating user in database:', dbError);
         }
@@ -109,7 +113,10 @@ export async function handleClerkWebhook(
       
       if (id) {
         try {
-          await db.delete(users).where(eq(users.id, id));
+          const database = await db.getDb();
+          if (database) {
+            await database.delete(users).where(eq(users.openId, id));
+          }
         } catch (dbError) {
           console.error('Error deleting user from database:', dbError);
         }

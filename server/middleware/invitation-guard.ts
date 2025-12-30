@@ -7,8 +7,8 @@
  */
 
 import { TRPCError } from '@trpc/server';
-import { db } from '../db/index.js';
-import { invitations } from '../db/schema.js';
+import * as db from '../db.js';
+import { invitations } from '../../drizzle/invitations-schema.js';
 import { eq, and } from 'drizzle-orm';
 
 /**
@@ -26,8 +26,14 @@ export async function validateInvitation(email: string): Promise<boolean> {
   }
 
   try {
+    const database = await db.getDb();
+    if (!database) {
+      console.error('Database not available for invitation validation');
+      return false;
+    }
+
     // Buscar invitación válida para este email
-    const invitation = await db
+    const invitation = await database
       .select()
       .from(invitations)
       .where(
@@ -66,7 +72,15 @@ export async function markInvitationAsUsed(email: string): Promise<void> {
   }
 
   try {
-    await db
+    const database = await db.getDb();
+    if (!database) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible',
+      });
+    }
+
+    await database
       .update(invitations)
       .set({
         used: true,

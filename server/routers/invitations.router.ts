@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { router, protectedProcedure } from '../trpc';
-import { db } from '../db';
-import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema';
-import { eq, and } from 'drizzle-orm';
+import { router, protectedProcedure } from '../_core/trpc.js';
+import * as db from '../db.js';
+import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
+import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { TRPCError } from '@trpc/server';
 
@@ -23,8 +23,16 @@ export const invitationsRouter = router({
         });
       }
 
+      const database = await db.getDb();
+      if (!database) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Base de datos no disponible',
+        });
+      }
+
       // Verificar si ya existe una invitación para este email
-      const existing = await db
+      const existing = await database
         .select()
         .from(invitations)
         .where(eq(invitations.email, input.email))
@@ -44,15 +52,21 @@ export const invitationsRouter = router({
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
 
-      const [invitation] = await db
-        .insert(invitations)
-        .values({
-          email: input.email,
-          invitedBy: ctx.user.email,
-          token,
-          expiresAt,
-        })
-        .returning();
+      const id = crypto.randomUUID();
+
+      await database.insert(invitations).values({
+        id,
+        email: input.email,
+        invitedBy: ctx.user.email,
+        token,
+        expiresAt,
+      });
+
+      const [invitation] = await database
+        .select()
+        .from(invitations)
+        .where(eq(invitations.id, id))
+        .limit(1);
 
       return {
         success: true,
@@ -71,10 +85,18 @@ export const invitationsRouter = router({
       });
     }
 
-    const allInvitations = await db
+    const database = await db.getDb();
+    if (!database) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible',
+      });
+    }
+
+    const allInvitations = await database
       .select()
       .from(invitations)
-      .orderBy(invitations.createdAt);
+      .orderBy(desc(invitations.createdAt));
 
     return allInvitations;
   }),
@@ -92,7 +114,15 @@ export const invitationsRouter = router({
         return { valid: true, isAdmin: true };
       }
 
-      const [invitation] = await db
+      const database = await db.getDb();
+      if (!database) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Base de datos no disponible',
+        });
+      }
+
+      const [invitation] = await database
         .select()
         .from(invitations)
         .where(
@@ -122,7 +152,15 @@ export const invitationsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      await db
+      const database = await db.getDb();
+      if (!database) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Base de datos no disponible',
+        });
+      }
+
+      await database
         .update(invitations)
         .set({
           used: true,
@@ -137,7 +175,7 @@ export const invitationsRouter = router({
   revoke: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -149,7 +187,15 @@ export const invitationsRouter = router({
         });
       }
 
-      await db
+      const database = await db.getDb();
+      if (!database) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Base de datos no disponible',
+        });
+      }
+
+      await database
         .update(invitations)
         .set({
           used: true,
