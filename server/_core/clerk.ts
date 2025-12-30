@@ -117,6 +117,16 @@ function getSessionToken(req: VercelRequest): string | null {
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
+    // ========== TEMPORARY BYPASS FOR DEBUGGING - REMOVE AFTER TESTING ==========
+    console.log("[DEBUG] Bypassing Clerk authentication completely for testing");
+    return {
+      id: "user_mock_test_bypass_complete",
+      email: "test@pianoemotion.com",
+      name: "Test User (Complete Bypass)",
+      imageUrl: "",
+    };
+    // ========== END BYPASS ==========
+    
     // DEBUG: Log all cookies to identify the correct cookie name
     console.log("[Clerk DEBUG] All cookies:", JSON.stringify(req.cookies || {}));
     console.log("[Clerk DEBUG] Authorization header:", req.headers?.authorization);
@@ -163,15 +173,36 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       method: req.method || 'GET',
     });
 
-    // TEMPORARY BYPASS FOR DEBUGGING - REMOVE AFTER TESTING
-    console.log("[DEBUG] Bypassing Clerk authentication for testing");
-    
-    // Return mock user for testing
+    // Use Clerk's authenticateRequest method
+    const authResult = await clerkClient.authenticateRequest(request, {
+      publishableKey,
+      secretKey: process.env.CLERK_SECRET_KEY,
+      authorizedParties: [
+        'https://pianoemotion.com',
+        'https://piano-emotion-manager.vercel.app',
+        'http://localhost:3000'
+      ],
+    });
+
+    if (!authResult.isSignedIn || !authResult.toAuth().userId) {
+      console.log("[Clerk] User not signed in or no user ID");
+      return null;
+    }
+
+    const userId = authResult.toAuth().userId;
+    if (!userId) {
+      console.log("[Clerk] No user ID in auth result");
+      return null;
+    }
+
+    // Get user details from Clerk
+    const user = await clerkClient.users.getUser(userId);
+
     return {
-      id: "user_mock_test_123",
-      email: "test@pianoemotion.com",
-      name: "Test User (Bypass)",
-      imageUrl: "",
+      id: user.id,
+      email: user.emailAddresses[0]?.emailAddress || "",
+      name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Usuario",
+      imageUrl: user.imageUrl,
     };
   } catch (error) {
     console.error("[Clerk] Error verifying session:", error);
