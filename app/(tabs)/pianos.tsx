@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { PianoCard, EmptyState } from '@/components/cards';
@@ -14,62 +14,56 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslation } from '@/hooks/use-translation';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Piano, PianoCategory, getClientFullName } from '@/types';
+import { useDebounce } from '@/hooks/use-debounce';
 
 type FilterType = 'all' | PianoCategory;
 
 export default function PianosScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { pianos, loading, refresh } = usePianosData();
-  const { getClient } = useClientsData();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Debounce search para evitar demasiadas peticiones
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Hook con filtrado en backend
+  const { 
+    pianos, 
+    totalPianos,
+    loading, 
+    refresh,
+    loadMore,
+    hasMore,
+    isLoadingMore,
+    brands,
+  } = usePianosData({
+    search: debouncedSearch,
+    category: filter !== 'all' ? filter : undefined,
+    pageSize: 30,
+  });
+
+  const { getClient } = useClientsData();
 
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
 
-  // Filtrar pianos
-  const filteredPianos = useMemo(() => {
-    let result = pianos;
-
-    // Filtrar por categoría
-    if (filter !== 'all') {
-      result = result.filter((p) => p.category === filter);
-    }
-
-    // Filtrar por búsqueda
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
-      result = result.filter((p) => {
-        const client = getClient(p.clientId);
-        return (
-          p.brand.toLowerCase().includes(searchLower) ||
-          p.model.toLowerCase().includes(searchLower) ||
-          p.serialNumber?.toLowerCase().includes(searchLower) ||
-          (client ? getClientFullName(client).toLowerCase().includes(searchLower) : false)
-        );
-      });
-    }
-
-    return result;
-  }, [pianos, filter, search, getClient]);
-
-  const handlePianoPress = (piano: Piano) => {
+  const handlePianoPress = useCallback((piano: Piano) => {
     router.push({
       pathname: '/piano/[id]',
       params: { id: piano.id },
     });
-  };
+  }, [router]);
 
-  const handleAddPiano = () => {
+  const handleAddPiano = useCallback(() => {
     router.push({
       pathname: '/piano/[id]',
       params: { id: 'new' },
     });
-  };
+  }, [router]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -78,6 +72,12 @@ export default function PianosScreen() {
     }
     setRefreshing(false);
   }, [refresh]);
+
+  const handleEndReached = useCallback(() => {
+    if (hasMore && !isLoadingMore) {
+      loadMore();
+    }
+  }, [hasMore, isLoadingMore, loadMore]);
 
   const renderItem = useCallback(
     ({ item }: { item: Piano }) => {
@@ -90,8 +90,17 @@ export default function PianosScreen() {
         />
       );
     },
-    [getClient]
+    [getClient, handlePianoPress]
   );
+
+  const renderFooter = useCallback(() => {
+    if (!isLoadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={accent} />
+      </View>
+    );
+  }, [isLoadingMore, accent]);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: t('common.all') },
@@ -111,7 +120,8 @@ export default function PianosScreen() {
       >
         <ScreenHeader 
           title={t('navigation.pianos')} 
-          icon="pianokeys"          showBackButton={true}
+          icon="pianokeys"
+          showBackButton={true}
         />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="pianos" />
@@ -129,8 +139,9 @@ export default function PianosScreen() {
     >
       <ScreenHeader 
         title={t('navigation.pianos')} 
-        subtitle={`${pianos.length} ${pianos.length === 1 ? 'piano' : 'pianos'}`}
-        icon="pianokeys"          showBackButton={true}
+        subtitle={`${totalPianos} ${totalPianos === 1 ? 'piano' : 'pianos'}`}
+        icon="pianokeys"
+        showBackButton={true}
       />
 
       <View style={styles.searchContainer}>
@@ -169,9 +180,10 @@ export default function PianosScreen() {
         ))}
       </View>
 
-      {filteredPianos.length === 0 ? (
+      {pianos.length === 0 ? (
         <EmptyState
-          icon="pianokeys"          showBackButton={true}
+          icon="pianokeys"
+          showBackButton={true}
           title={search || filter !== 'all' ? t('common.noResults') : t('pianos.noPianos')}
           message={
             search || filter !== 'all'
@@ -181,11 +193,14 @@ export default function PianosScreen() {
         />
       ) : (
         <FlatList
-          data={filteredPianos}
+          data={pianos}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -238,6 +253,10 @@ const styles = StyleSheet.create({
   loadingState: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerLoader: {
+    paddingVertical: Spacing.md,
     alignItems: 'center',
   },
 });

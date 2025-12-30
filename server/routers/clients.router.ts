@@ -107,10 +107,20 @@ export const clientsRouter = router({
   /**
    * Lista de clientes con paginación optimizada en base de datos
    */
-  list: protectedProcedure
-    .input(paginationSchema.optional())
-    .query(async ({ ctx, input }) => {
-      const pagination = input || { page: 1, limit: 20, sortBy: "name", sortOrder: "asc" };
+list: protectedProcedure
+     .input(
+        z.object({
+          limit: z.number().min(1).max(100).default(30),
+          cursor: z.number().optional(), // <-- Cursor para paginación
+          search: z.string().optional(),
+          region: z.string().optional(),
+          routeGroup: z.string().optional(),
+          sortBy: z.string().default("name"),
+          sortOrder: z.enum(["asc", "desc"]).default("asc"),
+        })
+      )
+     .query(async ({ ctx, input }) => {
+       const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
       
       const database = await db.getDb();
       if (!database) {
@@ -157,7 +167,7 @@ export const clientsRouter = router({
       const orderByClause = pagination.sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       // Consulta de datos con paginación
-      const offset = (pagination.page - 1) * pagination.limit;
+      const offset = cursor || 0;
       const items = await database
         .select()
         .from(clients)
@@ -174,15 +184,16 @@ export const clientsRouter = router({
 
       const totalPages = Math.ceil(total / pagination.limit);
 
+      let nextCursor: number | undefined = undefined;
+      if (items.length > limit) {
+        items.pop(); // Eliminar el extra
+        nextCursor = offset + limit;
+      }
+
       return {
         items,
-        pagination: {
-          page: pagination.page,
-          limit: pagination.limit,
-          total,
-          totalPages,
-          hasMore: pagination.page < totalPages,
-        },
+        nextCursor,
+        total,
       };
     }),
   
@@ -194,9 +205,23 @@ export const clientsRouter = router({
   /**
    * Obtener cliente por ID
    */
-  get: protectedProcedure
+  getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getClient(ctx.user.openId, input.id)),
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      const [client] = await database
+        .select()
+        .from(clients)
+        .where(and(eq(clients.id, input.id), eq(clients.odId, ctx.user.openId)));
+
+      if (!client) {
+        throw new Error("Cliente no encontrado");
+      }
+
+      return client;
+    }),
   
   /**
    * Crear nuevo cliente

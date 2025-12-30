@@ -104,8 +104,8 @@ const serviceBaseSchema = z.object({
  * Esquema de paginación para servicios
  */
 const paginationSchema = z.object({
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20),
+  limit: z.number().int().min(1).max(100).default(30),
+  cursor: z.number().optional(),
   sortBy: z.enum(["date", "cost", "serviceType", "createdAt"]).default("date"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   search: z.string().optional(),
@@ -129,7 +129,7 @@ export const servicesRouter = router({
   list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
-      const pagination = input || { page: 1, limit: 20, sortBy: "date", sortOrder: "desc" };
+      const { limit = 30, cursor, sortBy = "date", sortOrder = "desc", search, serviceType, status, clientId, pianoId, dateFrom, dateTo, hasPendingSignature } = input || {};
       
       const database = await db.getDb();
       if (!database) {
@@ -154,41 +154,45 @@ export const servicesRouter = router({
       // Construir condiciones WHERE
       const whereClauses = [eq(services.odId, ctx.user.openId)];
       
-      if (pagination.search) {
+      if (search) {
         whereClauses.push(
           or(
-            ilike(services.notes, `%${pagination.search}%`),
-            ilike(services.technicianNotes, `%${pagination.search}%`)
+            ilike(services.notes, `%${search}%`),
+            ilike(services.technicianNotes, `%${search}%`)
           )!
         );
       }
       
-      if (pagination.serviceType) {
-        whereClauses.push(eq(services.serviceType, pagination.serviceType));
+      if (serviceType) {
+        whereClauses.push(eq(services.serviceType, serviceType));
       }
       
-      if (pagination.clientId) {
-        whereClauses.push(eq(services.clientId, pagination.clientId));
+      if (status) {
+        whereClauses.push(eq(services.status, status));
       }
       
-      if (pagination.pianoId) {
-        whereClauses.push(eq(services.pianoId, pagination.pianoId));
+      if (clientId) {
+        whereClauses.push(eq(services.clientId, clientId));
       }
       
-      if (pagination.dateFrom) {
-        whereClauses.push(gte(services.date, new Date(pagination.dateFrom)));
+      if (pianoId) {
+        whereClauses.push(eq(services.pianoId, pianoId));
       }
       
-      if (pagination.dateTo) {
-        whereClauses.push(lte(services.date, new Date(pagination.dateTo)));
+      if (dateFrom) {
+        whereClauses.push(gte(services.date, new Date(dateFrom)));
+      }
+      
+      if (dateTo) {
+        whereClauses.push(lte(services.date, new Date(dateTo)));
       }
 
       // Construir ORDER BY
-      const sortColumn = services[pagination.sortBy as keyof typeof services];
-      const orderByClause = pagination.sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+      const sortColumn = services[sortBy as keyof typeof services];
+      const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       // EAGER LOADING: Consulta con leftJoin para cargar cliente y piano
-      const offset = (pagination.page - 1) * pagination.limit;
+      const offset = cursor || 0;
       const items = await database
         .select({
           // Service fields
@@ -226,7 +230,7 @@ export const servicesRouter = router({
         .leftJoin(pianos, eq(services.pianoId, pianos.id))
         .where(and(...whereClauses))
         .orderBy(orderByClause)
-        .limit(pagination.limit)
+        .limit(limit + 1)
         .offset(offset);
 
       // Consulta de conteo total
@@ -241,17 +245,16 @@ export const servicesRouter = router({
         .from(services)
         .where(eq(services.odId, ctx.user.openId));
 
-      const totalPages = Math.ceil(total / pagination.limit);
+      let nextCursor: number | undefined = undefined;
+      if (items.length > limit) {
+        items.pop();
+        nextCursor = offset + limit;
+      }
 
       return {
         items,
-        pagination: {
-          page: pagination.page,
-          limit: pagination.limit,
-          total,
-          totalPages,
-          hasMore: pagination.page < totalPages,
-        },
+        nextCursor,
+        total,
         stats: {
           total,
           totalRevenue: Number(totalRevenue) || 0,

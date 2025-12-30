@@ -62,8 +62,8 @@ const accessoriesSchema = z.object({
  * Esquema de paginación para pianos
  */
 const paginationSchema = z.object({
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20),
+  limit: z.number().int().min(1).max(100).default(30),
+  cursor: z.number().optional(),
   sortBy: z.enum(["brand", "model", "year", "createdAt", "updatedAt"]).default("brand"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
   search: z.string().optional(),
@@ -126,7 +126,7 @@ export const pianosRouter = router({
   list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
-      const pagination = input || { page: 1, limit: 20, sortBy: "brand", sortOrder: "asc" };
+      const { limit = 30, cursor, sortBy = "brand", sortOrder = "asc", search, category, brand, condition, clientId, yearFrom, yearTo } = input || {};
       
       const database = await db.getDb();
       if (!database) {
@@ -150,52 +150,52 @@ export const pianosRouter = router({
       // Construir condiciones WHERE
       const whereClauses = [eq(pianos.odId, ctx.user.openId)];
       
-      if (pagination.search) {
+      if (search) {
         whereClauses.push(
           or(
-            ilike(pianos.brand, `%${pagination.search}%`),
-            ilike(pianos.model, `%${pagination.search}%`),
-            ilike(pianos.serialNumber, `%${pagination.search}%`)
+            ilike(pianos.brand, `%${search}%`),
+            ilike(pianos.model, `%${search}%`),
+            ilike(pianos.serialNumber, `%${search}%`)
           )!
         );
       }
       
-      if (pagination.category) {
-        whereClauses.push(eq(pianos.category, pagination.category));
+      if (category) {
+        whereClauses.push(eq(pianos.category, category));
       }
       
-      if (pagination.brand) {
-        whereClauses.push(ilike(pianos.brand, pagination.brand));
+      if (brand) {
+        whereClauses.push(ilike(pianos.brand, brand));
       }
       
-      if (pagination.condition) {
-        whereClauses.push(eq(pianos.condition, pagination.condition));
+      if (condition) {
+        whereClauses.push(eq(pianos.condition, condition));
       }
       
-      if (pagination.clientId) {
-        whereClauses.push(eq(pianos.clientId, pagination.clientId));
+      if (clientId) {
+        whereClauses.push(eq(pianos.clientId, clientId));
       }
       
-      if (pagination.yearFrom) {
-        whereClauses.push(gte(pianos.year, pagination.yearFrom));
+      if (yearFrom) {
+        whereClauses.push(gte(pianos.year, yearFrom));
       }
       
-      if (pagination.yearTo) {
-        whereClauses.push(lte(pianos.year, pagination.yearTo));
+      if (yearTo) {
+        whereClauses.push(lte(pianos.year, yearTo));
       }
 
       // Construir ORDER BY
-      const sortColumn = pianos[pagination.sortBy as keyof typeof pianos];
-      const orderByClause = pagination.sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+      const sortColumn = pianos[sortBy as keyof typeof pianos];
+      const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       // Consulta de datos con paginación
-      const offset = (pagination.page - 1) * pagination.limit;
+      const offset = cursor || 0;
       const items = await database
         .select()
         .from(pianos)
         .where(and(...whereClauses))
         .orderBy(orderByClause)
-        .limit(pagination.limit)
+        .limit(limit + 1)
         .offset(offset);
 
       // Consulta de conteo total
@@ -226,17 +226,18 @@ export const pianosRouter = router({
         byCondition[condition] = result.count;
       }
 
-      const totalPages = Math.ceil(total / pagination.limit);
+      
+
+      let nextCursor: number | undefined = undefined;
+      if (items.length > limit) {
+        items.pop();
+        nextCursor = offset + limit;
+      }
 
       return {
         items,
-        pagination: {
-          page: pagination.page,
-          limit: pagination.limit,
-          total,
-          totalPages,
-          hasMore: pagination.page < totalPages,
-        },
+        nextCursor,
+        total,
         stats: {
           total,
           byCategory: {
