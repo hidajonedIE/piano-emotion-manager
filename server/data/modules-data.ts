@@ -193,6 +193,15 @@ export const DEFAULT_MODULES: Array<{
   },
   // Professional modules
   {
+    code: 'electronic_invoicing',
+    name: 'Facturación Electrónica',
+    description: 'Facturas electrónicas con validación fiscal',
+    icon: 'receipt',
+    color: '#14b8a6',
+    type: 'professional',
+    includedInPlans: ['professional', 'premium'],
+  },
+  {
     code: 'inventory_advanced',
     name: 'Inventario Avanzado',
     description: 'Gestión avanzada de inventario con alertas y proveedores',
