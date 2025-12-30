@@ -13,6 +13,7 @@ import {
   Switch,
   Alert,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useModules, useSubscription } from '@/hooks/modules';
@@ -46,6 +47,8 @@ interface ModuleCardProps {
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, onUpgrade }) => {
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
 
   const handleToggle = (value: boolean) => {
     if (module.requiresUpgrade) {
@@ -90,10 +93,11 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
           <Ionicons name={(module.icon as any) || 'cube'} size={24} color="#fff" />
         </View>
         <View style={styles.moduleInfo}>
-          <View style={styles.moduleTitleRow}>
-            <Text style={styles.moduleName} numberOfLines={1}>{module.name}</Text>
-            {renderBadge()}
+          <View style={[styles.moduleTitleRow, isMobile && styles.moduleTitleRowMobile]}>
+            <Text style={[styles.moduleName, isMobile && styles.moduleNameMobile]} numberOfLines={1}>{module.name}</Text>
+            {!isMobile && renderBadge()}
           </View>
+          {isMobile && <View style={styles.badgeRowMobile}>{renderBadge()}</View>}
           <Text style={styles.moduleDescription} numberOfLines={2}>
             {module.description}
           </Text>
@@ -536,6 +540,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     maxWidth: 220,
+  },
+  moduleTitleRowMobile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    minHeight: 20,
+  },
+  moduleNameMobile: {
+    maxWidth: '100%',
+  },
+  badgeRowMobile: {
+    flexDirection: 'row',
+    marginTop: 4,
+    marginBottom: 2,
   },
   // Badges
   freeBadge: {
