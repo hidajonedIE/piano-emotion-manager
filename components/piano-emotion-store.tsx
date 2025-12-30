@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   content: {
-    // Padding is now handled by container
+    padding: 16,
   },
   banner: {
     borderRadius: 12,
