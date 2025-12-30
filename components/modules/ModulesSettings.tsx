@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#1f2937',
-    maxWidth: 220,
+    maxWidth: 260,
   },
   moduleTitleRowMobile: {
     flexDirection: 'row',
