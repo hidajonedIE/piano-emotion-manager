@@ -117,16 +117,7 @@ function getSessionToken(req: VercelRequest): string | null {
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
-    // ========== TEMPORARY BYPASS FOR DEBUGGING - REMOVE AFTER TESTING ==========
-    console.log("[DEBUG] Bypassing Clerk authentication completely for testing");
-    return {
-      id: "user_mock_test_bypass_complete",
-      email: "test@pianoemotion.com",
-      name: "Test User (Complete Bypass)",
-      imageUrl: "",
-    };
-    // ========== END BYPASS ==========
-    
+
     // DEBUG: Log all cookies to identify the correct cookie name
     console.log("[Clerk DEBUG] All cookies:", JSON.stringify(req.cookies || {}));
     console.log("[Clerk DEBUG] Authorization header:", req.headers?.authorization);
