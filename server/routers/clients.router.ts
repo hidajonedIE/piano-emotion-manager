@@ -1,10 +1,13 @@
 /**
  * Clients Router
- * Gestión de clientes con validación mejorada y paginación
+ * Gestión de clientes con validación mejorada y paginación optimizada
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
+import { clients } from "../../drizzle/schema.js";
+import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
+import * as cache from "../cache.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -102,56 +105,75 @@ const paginationSchema = z.object({
 
 export const clientsRouter = router({
   /**
-   * Lista de clientes con paginación y filtros
+   * Lista de clientes con paginación optimizada en base de datos
    */
   list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const pagination = input || { page: 1, limit: 20, sortBy: "name", sortOrder: "asc" };
       
-      // Obtener todos los clientes (la paginación se hace en memoria por ahora)
-      // TODO: Implementar paginación a nivel de base de datos
-      const allClients = await db.getClients(ctx.user.openId);
-      
-      // Filtrar
-      let filtered = allClients;
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          items: [],
+          pagination: {
+            page: pagination.page,
+            limit: pagination.limit,
+            total: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        };
+      }
+
+      // Construir condiciones WHERE
+      const whereClauses = [eq(clients.odId, ctx.user.openId)];
       
       if (pagination.search) {
-        const searchLower = pagination.search.toLowerCase();
-        filtered = filtered.filter(c => 
-          c.name.toLowerCase().includes(searchLower) ||
-          c.email?.toLowerCase().includes(searchLower) ||
-          c.phone?.includes(searchLower) ||
-          c.city?.toLowerCase().includes(searchLower)
+        whereClauses.push(
+          or(
+            ilike(clients.name, `%${pagination.search}%`),
+            ilike(clients.email, `%${pagination.search}%`),
+            ilike(clients.phone, `%${pagination.search}%`),
+            ilike(clients.city, `%${pagination.search}%`)
+          )!
         );
       }
       
       if (pagination.clientType) {
-        filtered = filtered.filter(c => c.clientType === pagination.clientType);
+        whereClauses.push(eq(clients.clientType, pagination.clientType));
       }
       
       if (pagination.region) {
-        filtered = filtered.filter(c => c.region === pagination.region);
+        whereClauses.push(eq(clients.region, pagination.region));
       }
       
       if (pagination.routeGroup) {
-        filtered = filtered.filter(c => c.routeGroup === pagination.routeGroup);
+        whereClauses.push(eq(clients.routeGroup, pagination.routeGroup));
       }
-      
-      // Ordenar
-      filtered.sort((a, b) => {
-        const aVal = a[pagination.sortBy as keyof typeof a] ?? "";
-        const bVal = b[pagination.sortBy as keyof typeof b] ?? "";
-        const comparison = String(aVal).localeCompare(String(bVal));
-        return pagination.sortOrder === "asc" ? comparison : -comparison;
-      });
-      
-      // Paginar
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pagination.limit);
+
+      // Construir ORDER BY
+      const sortColumn = clients[pagination.sortBy as keyof typeof clients];
+      const orderByClause = pagination.sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+
+      // Consulta de datos con paginación
       const offset = (pagination.page - 1) * pagination.limit;
-      const items = filtered.slice(offset, offset + pagination.limit);
-      
+      const items = await database
+        .select()
+        .from(clients)
+        .where(and(...whereClauses))
+        .orderBy(orderByClause)
+        .limit(pagination.limit)
+        .offset(offset);
+
+      // Consulta de conteo total
+      const [{ total }] = await database
+        .select({ total: count() })
+        .from(clients)
+        .where(and(...whereClauses));
+
+      const totalPages = Math.ceil(total / pagination.limit);
+
       return {
         items,
         pagination: {
@@ -201,6 +223,10 @@ export const clientsRouter = router({
         address = parts.join(", ");
       }
       
+      // Invalidar caché de regiones y grupos de ruta
+      await cache.deleteCachedValue(`regions:${ctx.user.openId}`);
+      await cache.deleteCachedValue(`routeGroups:${ctx.user.openId}`);
+      
       return db.createClient({
         ...input,
         address,
@@ -237,6 +263,10 @@ export const clientsRouter = router({
         updateData.address = parts.join(", ");
       }
       
+      // Invalidar caché de regiones y grupos de ruta
+      await cache.deleteCachedValue(`regions:${ctx.user.openId}`);
+      await cache.deleteCachedValue(`routeGroups:${ctx.user.openId}`);
+      
       return db.updateClient(ctx.user.openId, id, updateData);
     }),
   
@@ -245,24 +275,66 @@ export const clientsRouter = router({
    */
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => db.deleteClient(ctx.user.openId, input.id)),
+    .mutation(async ({ ctx, input }) => {
+      // Invalidar caché de regiones y grupos de ruta
+      await cache.deleteCachedValue(`regions:${ctx.user.openId}`);
+      await cache.deleteCachedValue(`routeGroups:${ctx.user.openId}`);
+      
+      return db.deleteClient(ctx.user.openId, input.id);
+    }),
   
   /**
-   * Obtener regiones únicas (para filtros)
+   * Obtener regiones únicas (con caché)
    */
   getRegions: protectedProcedure.query(async ({ ctx }) => {
-    const clients = await db.getClients(ctx.user.openId);
-    const regions = [...new Set(clients.map(c => c.region).filter(Boolean))];
-    return regions.sort();
+    const cacheKey = `regions:${ctx.user.openId}`;
+    
+    // Intentar obtener del caché
+    const cached = await cache.getCachedValue<string[]>(cacheKey);
+    if (cached) return cached;
+
+    const database = await db.getDb();
+    if (!database) return [];
+
+    // Consulta optimizada con SELECT DISTINCT
+    const regionsQuery = await database
+      .selectDistinct({ region: clients.region })
+      .from(clients)
+      .where(and(eq(clients.odId, ctx.user.openId), isNotNull(clients.region)));
+    
+    const result = regionsQuery.map(r => r.region!).sort();
+
+    // Cachear por 1 hora
+    await cache.setCachedValue(cacheKey, result, 3600);
+    
+    return result;
   }),
   
   /**
-   * Obtener grupos de ruta únicos (para filtros)
+   * Obtener grupos de ruta únicos (con caché)
    */
   getRouteGroups: protectedProcedure.query(async ({ ctx }) => {
-    const clients = await db.getClients(ctx.user.openId);
-    const groups = [...new Set(clients.map(c => c.routeGroup).filter(Boolean))];
-    return groups.sort();
+    const cacheKey = `routeGroups:${ctx.user.openId}`;
+    
+    // Intentar obtener del caché
+    const cached = await cache.getCachedValue<string[]>(cacheKey);
+    if (cached) return cached;
+
+    const database = await db.getDb();
+    if (!database) return [];
+
+    // Consulta optimizada con SELECT DISTINCT
+    const groupsQuery = await database
+      .selectDistinct({ routeGroup: clients.routeGroup })
+      .from(clients)
+      .where(and(eq(clients.odId, ctx.user.openId), isNotNull(clients.routeGroup)));
+    
+    const result = groupsQuery.map(g => g.routeGroup!).sort();
+
+    // Cachear por 1 hora
+    await cache.setCachedValue(cacheKey, result, 3600);
+    
+    return result;
   }),
   
   /**
@@ -275,59 +347,31 @@ export const clientsRouter = router({
       excludeId: z.number().optional(),
     }))
     .query(async ({ ctx, input }) => {
-      const clients = await db.getClients(ctx.user.openId);
+      const database = await db.getDb();
+      if (!database) return [];
+
+      const whereClauses = [eq(clients.odId, ctx.user.openId)];
       
-      return clients.filter(c => {
-        if (input.excludeId && c.id === input.excludeId) return false;
-        
-        if (input.name) {
-          const nameSimilarity = calculateSimilarity(c.name.toLowerCase(), input.name.toLowerCase());
-          if (nameSimilarity > 0.8) return true;
-        }
-        
-        if (input.email && c.email) {
-          if (c.email.toLowerCase() === input.email.toLowerCase()) return true;
-        }
-        
-        return false;
-      });
+      if (input.excludeId) {
+        whereClauses.push(sql`${clients.id} != ${input.excludeId}`);
+      }
+
+      // Búsqueda exacta por email (más eficiente que Levenshtein)
+      if (input.email) {
+        whereClauses.push(ilike(clients.email, input.email));
+      }
+
+      // Búsqueda por similitud de nombre (usando LIKE en lugar de Levenshtein)
+      if (input.name) {
+        whereClauses.push(ilike(clients.name, `%${input.name}%`));
+      }
+
+      const duplicates = await database
+        .select()
+        .from(clients)
+        .where(and(...whereClauses))
+        .limit(10); // Limitar resultados para evitar sobrecarga
+
+      return duplicates;
     }),
 });
-
-/**
- * Calcula la similitud entre dos strings (algoritmo de Levenshtein normalizado)
- */
-function calculateSimilarity(str1: string, str2: string): number {
-  const longer = str1.length > str2.length ? str1 : str2;
-  const shorter = str1.length > str2.length ? str2 : str1;
-  
-  if (longer.length === 0) return 1.0;
-  
-  const editDistance = levenshteinDistance(longer, shorter);
-  return (longer.length - editDistance) / longer.length;
-}
-
-function levenshteinDistance(str1: string, str2: string): number {
-  const matrix: number[][] = [];
-  
-  for (let i = 0; i <= str1.length; i++) {
-    matrix[i] = [i];
-  }
-  
-  for (let j = 0; j <= str2.length; j++) {
-    matrix[0][j] = j;
-  }
-  
-  for (let i = 1; i <= str1.length; i++) {
-    for (let j = 1; j <= str2.length; j++) {
-      const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
-  }
-  
-  return matrix[str1.length][str2.length];
-}
