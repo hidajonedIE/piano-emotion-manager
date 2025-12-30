@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Image, Linking, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, Linking, ScrollView, useWindowDimensions } from 'react-native';
 import { IconSymbol } from './ui/icon-symbol';
 
 // Categorías de productos que estarán disponibles en la tienda
@@ -111,6 +111,8 @@ interface PianoEmotionStoreProps {
 export function PianoEmotionStore({ collapsed: collapsedProp = false, onToggle }: PianoEmotionStoreProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [internalCollapsed, setInternalCollapsed] = useState(collapsedProp);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
 
   // Si no se pasa onToggle, usar estado interno
   const collapsed = onToggle ? collapsedProp : internalCollapsed;
@@ -167,13 +169,14 @@ export function PianoEmotionStore({ collapsed: collapsedProp = false, onToggle }
                   key={category.id}
                   style={[
                     styles.categoryCard,
+                    { width: isDesktop ? 90 : 70, padding: isDesktop ? 12 : 8 },
                     selectedCategory === category.id && styles.categoryCardSelected,
                   ]}
                   onPress={() => setSelectedCategory(
                     selectedCategory === category.id ? null : category.id
                   )}
                 >
-                  <Text style={styles.categoryIcon}>{category.icon}</Text>
+                  <Text style={[styles.categoryIcon, { fontSize: isDesktop ? 32 : 20 }]}>{category.icon}</Text>
                   <Text style={styles.categoryName}>{category.name}</Text>
                   {category.comingSoon && (
                     <View style={styles.comingSoonBadge}>
