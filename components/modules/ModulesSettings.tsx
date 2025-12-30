@@ -94,7 +94,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
         </View>
         <View style={styles.moduleInfo}>
           <View style={[styles.moduleTitleRow, isMobile && styles.moduleTitleRowMobile]}>
-            <Text style={[styles.moduleName, isMobile && styles.moduleNameMobile]} numberOfLines={1}>{module.name}</Text>
+            <Text style={[styles.moduleName, isMobile && styles.moduleNameMobile]} numberOfLines={isMobile ? 2 : 1}>{module.name}</Text>
             {!isMobile && renderBadge()}
           </View>
           {isMobile && <View style={styles.badgeRowMobile}>{renderBadge()}</View>}
