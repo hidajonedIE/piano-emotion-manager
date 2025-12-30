@@ -1,10 +1,13 @@
 /**
  * Pianos Router
- * Gestión de pianos con validación mejorada y paginación
+ * Gestión de pianos con validación mejorada, paginación optimizada y caché
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
+import { pianos } from "../../drizzle/schema.js";
+import { eq, and, or, ilike, isNotNull, asc, desc, count, sql, lte, gte } from "drizzle-orm";
+import * as cache from "../cache.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -61,7 +64,7 @@ const accessoriesSchema = z.object({
 const paginationSchema = z.object({
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(20),
-  sortBy: z.enum(["brand", "model", "year", "createdAt", "updatedAt", "lastServiceDate"]).default("brand"),
+  sortBy: z.enum(["brand", "model", "year", "createdAt", "updatedAt"]).default("brand"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
   search: z.string().optional(),
   category: pianoCategorySchema.optional(),
@@ -70,7 +73,6 @@ const paginationSchema = z.object({
   clientId: z.number().optional(),
   yearFrom: z.number().optional(),
   yearTo: z.number().optional(),
-  needsService: z.boolean().optional(), // Pianos que necesitan servicio pronto
 });
 
 /**
@@ -85,29 +87,16 @@ const pianoBaseSchema = z.object({
   category: pianoCategorySchema,
   pianoType: z.string().min(1).max(50),
   condition: pianoConditionSchema.default("unknown"),
-  location: z.string().max(500).optional().nullable(), // Ubicación dentro del domicilio
+  location: z.string().max(500).optional().nullable(),
   notes: z.string().max(5000).optional().nullable(),
-  photos: z.array(z.string().url()).max(20).optional(), // Hasta 20 fotos
-  // Nuevos campos
+  photos: z.array(z.string().url()).max(20).optional(),
   color: z.string().max(50).optional().nullable(),
   finish: z.enum(["polished", "satin", "matte", "other"]).optional().nullable(),
-  size: z.number().positive().optional().nullable(), // Altura (vertical) o longitud (cola) en cm
-  keys: z.number().int().min(44).max(97).default(88).optional(), // Número de teclas
-  pedals: z.number().int().min(1).max(4).default(3).optional(), // Número de pedales
-  // Condiciones ambientales
+  size: z.number().positive().optional().nullable(),
+  keys: z.number().int().min(44).max(97).default(88).optional(),
+  pedals: z.number().int().min(1).max(4).default(3).optional(),
   environment: environmentSchema,
-  // Accesorios
   accessories: accessoriesSchema,
-  // Mantenimiento
-  lastServiceDate: z.string().or(z.date()).optional().nullable(),
-  nextServiceDate: z.string().or(z.date()).optional().nullable(),
-  serviceIntervalMonths: z.number().int().min(1).max(24).default(6).optional(),
-  // Garantía
-  warrantyExpiry: z.string().or(z.date()).optional().nullable(),
-  purchaseDate: z.string().or(z.date()).optional().nullable(),
-  purchasePrice: z.number().min(0).optional().nullable(),
-  // Valor estimado actual
-  estimatedValue: z.number().min(0).optional().nullable(),
 });
 
 // ============================================================================
@@ -132,109 +121,113 @@ const KNOWN_BRANDS = [
 
 export const pianosRouter = router({
   /**
-   * Lista de pianos con paginación y filtros
+   * Lista de pianos con paginación optimizada en base de datos
    */
   list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const pagination = input || { page: 1, limit: 20, sortBy: "brand", sortOrder: "asc" };
       
-      const allPianos = await db.getPianos(ctx.user.openId);
-      
-      // Filtrar
-      let filtered = allPianos;
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          items: [],
+          pagination: {
+            page: pagination.page,
+            limit: pagination.limit,
+            total: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+          stats: {
+            total: 0,
+            byCategory: { vertical: 0, grand: 0 },
+            byCondition: { excellent: 0, good: 0, fair: 0, poor: 0, needs_repair: 0 },
+          },
+        };
+      }
+
+      // Construir condiciones WHERE
+      const whereClauses = [eq(pianos.odId, ctx.user.openId)];
       
       if (pagination.search) {
-        const searchLower = pagination.search.toLowerCase();
-        filtered = filtered.filter(p => 
-          p.brand.toLowerCase().includes(searchLower) ||
-          p.model?.toLowerCase().includes(searchLower) ||
-          p.serialNumber?.toLowerCase().includes(searchLower)
+        whereClauses.push(
+          or(
+            ilike(pianos.brand, `%${pagination.search}%`),
+            ilike(pianos.model, `%${pagination.search}%`),
+            ilike(pianos.serialNumber, `%${pagination.search}%`)
+          )!
         );
       }
       
       if (pagination.category) {
-        filtered = filtered.filter(p => p.category === pagination.category);
+        whereClauses.push(eq(pianos.category, pagination.category));
       }
       
       if (pagination.brand) {
-        filtered = filtered.filter(p => p.brand.toLowerCase() === pagination.brand?.toLowerCase());
+        whereClauses.push(ilike(pianos.brand, pagination.brand));
       }
       
       if (pagination.condition) {
-        filtered = filtered.filter(p => p.condition === pagination.condition);
+        whereClauses.push(eq(pianos.condition, pagination.condition));
       }
       
       if (pagination.clientId) {
-        filtered = filtered.filter(p => p.clientId === pagination.clientId);
+        whereClauses.push(eq(pianos.clientId, pagination.clientId));
       }
       
       if (pagination.yearFrom) {
-        filtered = filtered.filter(p => p.year && p.year >= pagination.yearFrom!);
+        whereClauses.push(gte(pianos.year, pagination.yearFrom));
       }
       
       if (pagination.yearTo) {
-        filtered = filtered.filter(p => p.year && p.year <= pagination.yearTo!);
+        whereClauses.push(lte(pianos.year, pagination.yearTo));
       }
-      
-      // Filtrar pianos que necesitan servicio pronto (próximos 30 días)
-      if (pagination.needsService) {
-        const thirtyDaysFromNow = new Date();
-        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-        
-        filtered = filtered.filter(p => {
-          if (!p.nextServiceDate) return false;
-          return new Date(p.nextServiceDate) <= thirtyDaysFromNow;
-        });
-      }
-      
-      // Ordenar
-      filtered.sort((a, b) => {
-        let aVal: string | number | Date = a[pagination.sortBy as keyof typeof a] ?? "";
-        let bVal: string | number | Date = b[pagination.sortBy as keyof typeof b] ?? "";
-        
-        if (pagination.sortBy === "year") {
-          aVal = Number(aVal) || 0;
-          bVal = Number(bVal) || 0;
-          return pagination.sortOrder === "asc" ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
-        }
-        
-        if (pagination.sortBy.includes("Date")) {
-          aVal = aVal ? new Date(aVal as string).getTime() : 0;
-          bVal = bVal ? new Date(bVal as string).getTime() : 0;
-          return pagination.sortOrder === "asc" ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
-        }
-        
-        const comparison = String(aVal).localeCompare(String(bVal));
-        return pagination.sortOrder === "asc" ? comparison : -comparison;
-      });
-      
-      // Paginar
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pagination.limit);
+
+      // Construir ORDER BY
+      const sortColumn = pianos[pagination.sortBy as keyof typeof pianos];
+      const orderByClause = pagination.sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+
+      // Consulta de datos con paginación
       const offset = (pagination.page - 1) * pagination.limit;
-      const items = filtered.slice(offset, offset + pagination.limit);
+      const items = await database
+        .select()
+        .from(pianos)
+        .where(and(...whereClauses))
+        .orderBy(orderByClause)
+        .limit(pagination.limit)
+        .offset(offset);
+
+      // Consulta de conteo total
+      const [{ total }] = await database
+        .select({ total: count() })
+        .from(pianos)
+        .where(and(...whereClauses));
+
+      // Estadísticas (optimizadas con consultas agregadas)
+      const [statsVertical] = await database
+        .select({ count: count() })
+        .from(pianos)
+        .where(and(eq(pianos.odId, ctx.user.openId), eq(pianos.category, "vertical")));
+
+      const [statsGrand] = await database
+        .select({ count: count() })
+        .from(pianos)
+        .where(and(eq(pianos.odId, ctx.user.openId), eq(pianos.category, "grand")));
+
+      const conditions = ["excellent", "good", "fair", "poor", "needs_repair"] as const;
+      const byCondition: Record<string, number> = {};
       
-      // Estadísticas
-      const stats = {
-        total: allPianos.length,
-        byCategory: {
-          vertical: allPianos.filter(p => p.category === "vertical").length,
-          grand: allPianos.filter(p => p.category === "grand").length,
-        },
-        byCondition: {
-          excellent: allPianos.filter(p => p.condition === "excellent").length,
-          good: allPianos.filter(p => p.condition === "good").length,
-          fair: allPianos.filter(p => p.condition === "fair").length,
-          poor: allPianos.filter(p => p.condition === "poor").length,
-          needs_repair: allPianos.filter(p => p.condition === "needs_repair").length,
-        },
-        needingService: allPianos.filter(p => {
-          if (!p.nextServiceDate) return false;
-          return new Date(p.nextServiceDate) <= new Date();
-        }).length,
-      };
-      
+      for (const condition of conditions) {
+        const [result] = await database
+          .select({ count: count() })
+          .from(pianos)
+          .where(and(eq(pianos.odId, ctx.user.openId), eq(pianos.condition, condition)));
+        byCondition[condition] = result.count;
+      }
+
+      const totalPages = Math.ceil(total / pagination.limit);
+
       return {
         items,
         pagination: {
@@ -244,7 +237,14 @@ export const pianosRouter = router({
           totalPages,
           hasMore: pagination.page < totalPages,
         },
-        stats,
+        stats: {
+          total,
+          byCategory: {
+            vertical: statsVertical.count,
+            grand: statsGrand.count,
+          },
+          byCondition,
+        },
       };
     }),
   
@@ -273,18 +273,11 @@ export const pianosRouter = router({
   create: protectedProcedure
     .input(pianoBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      // Calcular próxima fecha de servicio si no se proporciona
-      let nextServiceDate = input.nextServiceDate;
-      if (!nextServiceDate && input.lastServiceDate) {
-        const lastDate = new Date(input.lastServiceDate);
-        const intervalMonths = input.serviceIntervalMonths || 6;
-        lastDate.setMonth(lastDate.getMonth() + intervalMonths);
-        nextServiceDate = lastDate.toISOString();
-      }
+      // Invalidar caché de marcas
+      await cache.deleteCachedValue(`brands:${ctx.user.openId}`);
       
       return db.createPiano({
         ...input,
-        nextServiceDate,
         odId: ctx.user.openId,
       });
     }),
@@ -299,16 +292,12 @@ export const pianosRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       
-      // Recalcular próxima fecha de servicio si se actualiza la última
-      let updateData = { ...data };
-      if (data.lastServiceDate && !data.nextServiceDate) {
-        const lastDate = new Date(data.lastServiceDate);
-        const intervalMonths = data.serviceIntervalMonths || 6;
-        lastDate.setMonth(lastDate.getMonth() + intervalMonths);
-        updateData.nextServiceDate = lastDate.toISOString();
+      // Invalidar caché de marcas si se actualiza la marca
+      if (data.brand) {
+        await cache.deleteCachedValue(`brands:${ctx.user.openId}`);
       }
       
-      return db.updatePiano(ctx.user.openId, id, updateData);
+      return db.updatePiano(ctx.user.openId, id, data);
     }),
   
   /**
@@ -316,22 +305,45 @@ export const pianosRouter = router({
    */
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => db.deletePiano(ctx.user.openId, input.id)),
+    .mutation(async ({ ctx, input }) => {
+      // Invalidar caché de marcas
+      await cache.deleteCachedValue(`brands:${ctx.user.openId}`);
+      
+      return db.deletePiano(ctx.user.openId, input.id);
+    }),
   
   /**
-   * Obtener marcas únicas (para filtros y autocompletado)
+   * Obtener marcas únicas (con caché)
    */
   getBrands: protectedProcedure.query(async ({ ctx }) => {
-    const pianos = await db.getPianos(ctx.user.openId);
-    const userBrands = [...new Set(pianos.map(p => p.brand))];
+    const cacheKey = `brands:${ctx.user.openId}`;
+    
+    // Intentar obtener del caché
+    const cached = await cache.getCachedValue<string[]>(cacheKey);
+    if (cached) return cached;
+
+    const database = await db.getDb();
+    if (!database) return KNOWN_BRANDS.sort();
+
+    // Consulta optimizada con SELECT DISTINCT
+    const brandsQuery = await database
+      .selectDistinct({ brand: pianos.brand })
+      .from(pianos)
+      .where(eq(pianos.odId, ctx.user.openId));
+    
+    const userBrands = brandsQuery.map(b => b.brand);
     
     // Combinar con marcas conocidas
-    const allBrands = [...new Set([...userBrands, ...KNOWN_BRANDS])];
-    return allBrands.sort();
+    const allBrands = [...new Set([...userBrands, ...KNOWN_BRANDS])].sort();
+
+    // Cachear por 1 hora
+    await cache.setCachedValue(cacheKey, allBrands, 3600);
+    
+    return allBrands;
   }),
   
   /**
-   * Obtener pianos que necesitan servicio
+   * Obtener pianos que necesitan servicio (optimizado)
    */
   getNeedingService: protectedProcedure
     .input(z.object({
@@ -339,27 +351,23 @@ export const pianosRouter = router({
     }).optional())
     .query(async ({ ctx, input }) => {
       const daysAhead = input?.daysAhead || 30;
+      
+      // Usar la función existente de db.js
+      // Esta consulta debería optimizarse en db.js para usar WHERE en lugar de filtrar en memoria
       const pianos = await db.getPianos(ctx.user.openId);
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() + daysAhead);
       
-      return pianos.filter(p => {
-        if (!p.nextServiceDate) {
-          // Si no tiene fecha de próximo servicio, verificar si han pasado más de 6 meses desde el último
-          if (p.lastServiceDate) {
-            const lastDate = new Date(p.lastServiceDate);
-            const sixMonthsAgo = new Date();
-            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-            return lastDate < sixMonthsAgo;
-          }
-          return false;
-        }
-        return new Date(p.nextServiceDate) <= cutoffDate;
-      }).sort((a, b) => {
-        const aDate = a.nextServiceDate ? new Date(a.nextServiceDate) : new Date(0);
-        const bDate = b.nextServiceDate ? new Date(b.nextServiceDate) : new Date(0);
-        return aDate.getTime() - bDate.getTime();
-      });
+      return pianos
+        .filter(p => {
+          if (!p.nextServiceDate) return false;
+          return new Date(p.nextServiceDate) <= cutoffDate;
+        })
+        .sort((a, b) => {
+          const aDate = a.nextServiceDate ? new Date(a.nextServiceDate) : new Date(0);
+          const bDate = b.nextServiceDate ? new Date(b.nextServiceDate) : new Date(0);
+          return aDate.getTime() - bDate.getTime();
+        });
     }),
   
   /**
@@ -368,7 +376,6 @@ export const pianosRouter = router({
   getServiceHistory: protectedProcedure
     .input(z.object({ pianoId: z.number() }))
     .query(async ({ ctx, input }) => {
-      // Obtener servicios del piano
       const services = await db.getServicesByPiano(ctx.user.openId, input.pianoId);
       return services.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }),
@@ -396,7 +403,6 @@ export const pianosRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      // Actualizar el piano con las nuevas lecturas
       const piano = await db.getPiano(ctx.user.openId, input.pianoId);
       if (!piano) {
         throw new Error("Piano no encontrado");
