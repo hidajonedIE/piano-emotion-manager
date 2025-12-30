@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     position: 'absolute',
-    left: 200,
+    left: 165,
   },
   freeBadgeText: {
     fontSize: 10,
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     position: 'absolute',
-    left: 200,
+    left: 165,
   },
   professionalBadgeText: {
     fontSize: 10,
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     position: 'absolute',
-    left: 200,
+    left: 165,
   },
   premiumBadgeText: {
     fontSize: 10,
