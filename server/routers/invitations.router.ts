@@ -5,6 +5,7 @@ import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { TRPCError } from '@trpc/server';
+import { getCached, setCached, deleteCached } from '../cache.js';
 
 export const invitationsRouter = router({
   // Crear una nueva invitación (solo admins)
@@ -53,6 +54,7 @@ export const invitationsRouter = router({
       expiresAt.setDate(expiresAt.getDate() + 7);
 
       const id = crypto.randomUUID();
+      const now = new Date();
 
       await database.insert(invitations).values({
         id,
@@ -62,11 +64,17 @@ export const invitationsRouter = router({
         expiresAt,
       });
 
-      const [invitation] = await database
-        .select()
-        .from(invitations)
-        .where(eq(invitations.id, id))
-        .limit(1);
+      // Construir respuesta en memoria sin segunda consulta
+      const invitation = {
+        id,
+        email: input.email,
+        invitedBy: ctx.user.email,
+        token,
+        expiresAt,
+        used: false,
+        usedAt: null,
+        createdAt: now,
+      };
 
       return {
         success: true,
@@ -114,6 +122,13 @@ export const invitationsRouter = router({
         return { valid: true, isAdmin: true };
       }
 
+      // Intentar obtener del caché primero
+      const cacheKey = `invitation:validate:${input.email}`;
+      const cached = await getCached<{ valid: boolean; reason?: string; invitation?: any }>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
       const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
@@ -134,14 +149,23 @@ export const invitationsRouter = router({
         .limit(1);
 
       if (!invitation) {
-        return { valid: false, reason: 'Invitación no encontrada' };
+        const result = { valid: false, reason: 'Invitación no encontrada' };
+        // Cachear resultado negativo por 5 minutos
+        await setCached(cacheKey, result, 300);
+        return result;
       }
 
       if (new Date() > invitation.expiresAt) {
-        return { valid: false, reason: 'Invitación expirada' };
+        const result = { valid: false, reason: 'Invitación expirada' };
+        // Cachear resultado negativo por 5 minutos
+        await setCached(cacheKey, result, 300);
+        return result;
       }
 
-      return { valid: true, invitation };
+      const result = { valid: true, invitation };
+      // Cachear resultado positivo por 10 minutos
+      await setCached(cacheKey, result, 600);
+      return result;
     }),
 
   // Marcar invitación como usada
@@ -160,6 +184,13 @@ export const invitationsRouter = router({
         });
       }
 
+      // Obtener el email de la invitación antes de marcarla como usada
+      const [invitation] = await database
+        .select()
+        .from(invitations)
+        .where(eq(invitations.token, input.token))
+        .limit(1);
+
       await database
         .update(invitations)
         .set({
@@ -167,6 +198,11 @@ export const invitationsRouter = router({
           usedAt: new Date(),
         })
         .where(eq(invitations.token, input.token));
+
+      // Invalidar caché de validación para este email
+      if (invitation) {
+        await deleteCached(`invitation:validate:${invitation.email}`);
+      }
 
       return { success: true };
     }),
@@ -195,6 +231,13 @@ export const invitationsRouter = router({
         });
       }
 
+      // Obtener el email de la invitación antes de revocarla
+      const [invitation] = await database
+        .select()
+        .from(invitations)
+        .where(eq(invitations.id, input.id))
+        .limit(1);
+
       await database
         .update(invitations)
         .set({
@@ -202,6 +245,11 @@ export const invitationsRouter = router({
           usedAt: new Date(),
         })
         .where(eq(invitations.id, input.id));
+
+      // Invalidar caché de validación para este email
+      if (invitation) {
+        await deleteCached(`invitation:validate:${invitation.email}`);
+      }
 
       return { success: true };
     }),
