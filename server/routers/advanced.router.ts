@@ -290,6 +290,8 @@ export const advancedRouter = router({
         cancelUrl: z.string().url(),
       }))
       .mutation(async ({ ctx, input }) => {
+        console.log('[createCheckout DEBUG] ctx.user:', JSON.stringify(ctx.user, null, 2));
+        console.log('[createCheckout DEBUG] input:', JSON.stringify(input, null, 2));
         try {
           const { createCheckoutSession, STRIPE_PRICES } = await import('../_core/stripe.js');
           
