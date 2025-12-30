@@ -18,7 +18,7 @@ export interface ModuleInfo {
   description: string | null;
   icon: string | null;
   color: string | null;
-  type: 'core' | 'free' | 'premium' | 'addon';
+  type: 'core' | 'free' | 'professional' | 'premium' | 'addon';
   isEnabled: boolean;
   isAvailable: boolean;
   requiresUpgrade: boolean;
@@ -89,6 +89,11 @@ export function useModules() {
     [modules]
   );
 
+  const professionalModules = useMemo(
+    () => modules?.filter((m) => m.type === 'professional') || [],
+    [modules]
+  );
+
   const premiumModules = useMemo(
     () => modules?.filter((m) => m.type === 'premium') || [],
     [modules]
@@ -108,6 +113,7 @@ export function useModules() {
     modules: modules || [],
     coreModules,
     freeModules,
+    professionalModules,
     premiumModules,
     addonModules,
     enabledModules,

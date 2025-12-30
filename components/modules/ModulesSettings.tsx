@@ -167,6 +167,7 @@ export const ModulesSettings: React.FC = () => {
   const {
     coreModules,
     freeModules,
+    professionalModules,
     premiumModules,
     addonModules,
     isLoading: modulesLoading,
@@ -297,7 +298,7 @@ export const ModulesSettings: React.FC = () => {
       </View>
 
       {/* Módulos Professional */}
-      {addonModules.filter(m => m.type === 'professional').length > 0 && (
+      {professionalModules.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeaderWithBadge}>
             <Text style={styles.sectionTitle}>Módulos Professional</Text>
@@ -308,7 +309,7 @@ export const ModulesSettings: React.FC = () => {
           </View>
           <Text style={styles.sectionSubtitle}>Funcionalidades avanzadas para profesionales</Text>
           <View style={styles.paidModulesContainer}>
-            {addonModules.filter(m => m.type === 'professional').map((module) => (
+            {professionalModules.map((module) => (
               <ModuleCard
                 key={module.code}
                 module={module}
