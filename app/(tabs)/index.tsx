@@ -175,7 +175,7 @@ export default function DashboardScreen() {
       case 'advanced_tools':
         return <DashboardAdvancedTools key={sectionId} />;
       case 'store':
-        return <PianoEmotionStore key={sectionId} collapsed={false} />;
+        return <PianoEmotionStore key={sectionId} collapsed={true} />;
       default:
         return null;
     }
