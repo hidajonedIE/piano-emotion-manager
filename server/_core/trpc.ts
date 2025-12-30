@@ -12,10 +12,16 @@ export const publicProcedure = t.procedure;
 
 const requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
+  
+  console.log('[DEBUG] requireUser middleware - ctx.user:', ctx.user ? { id: ctx.user.id, openId: ctx.user.openId, email: ctx.user.email } : 'null/undefined');
+  console.log('[DEBUG] requireUser middleware - ctx.user exists:', !!ctx.user);
 
   if (!ctx.user) {
+    console.log('[DEBUG] requireUser middleware - REJECTING request: ctx.user is null/undefined');
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
+  
+  console.log('[DEBUG] requireUser middleware - ALLOWING request: ctx.user is valid');
 
   return next({
     ctx: {
