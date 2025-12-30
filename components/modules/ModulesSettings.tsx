@@ -528,13 +528,14 @@ const styles = StyleSheet.create({
   moduleTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 8,
   },
   moduleName: {
     fontSize: 15,
     fontWeight: '600',
     color: '#1f2937',
-    flex: 1,
+    minWidth: 180,
+    maxWidth: 180,
   },
   // Badges
   freeBadge: {
