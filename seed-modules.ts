@@ -19,6 +19,17 @@ async function seedModules() {
         includedInPlans: module.includedInPlans,
       });
     } else {
+      // Actualizar módulo existente
+      await db.update(modules)
+        .set({
+          name: module.name,
+          description: module.description,
+          icon: module.icon,
+          color: module.color,
+          type: module.type,
+          includedInPlans: module.includedInPlans,
+        })
+        .where(eq(modules.code, module.code));
     }
   }
 }
@@ -44,6 +55,22 @@ async function seedPlans() {
         isPopular: plan.isPopular,
       });
     } else {
+      // Actualizar plan existente
+      await db.update(subscriptionPlans)
+        .set({
+          name: plan.name,
+          description: plan.description,
+          monthlyPrice: plan.monthlyPrice.toString(),
+          yearlyPrice: plan.yearlyPrice.toString(),
+          maxUsers: plan.maxUsers,
+          maxClients: plan.maxClients,
+          maxPianos: plan.maxPianos,
+          maxInvoicesPerMonth: plan.maxInvoicesPerMonth,
+          maxStorageMb: plan.maxStorageMb,
+          features: plan.features,
+          isPopular: plan.isPopular,
+        })
+        .where(eq(subscriptionPlans.code, plan.code));
     }
   }
 }
