@@ -182,15 +182,6 @@ export const DEFAULT_MODULES: Array<{
     type: 'free',
     includedInPlans: ['free', 'professional', 'premium'],
   },
-  {
-    code: 'shop',
-    name: 'Piano Emotion Store',
-    description: 'Acceso a tiendas de proveedores integradas',
-    icon: 'cart',
-    color: '#84cc16',
-    type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
-  },
   // Pro modules
   {
     code: 'electronic_invoicing',
