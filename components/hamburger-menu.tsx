@@ -21,7 +21,6 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   // Navegación principal
   { key: 'home', label: 'Inicio', icon: 'house.fill', route: '/', color: '#6366F1' },
-  { key: 'subscription', label: 'Mi Suscripción', icon: 'crown.fill', route: '/settings/subscription', color: '#F59E0B' },
   { key: 'clients', label: 'Clientes', icon: 'person.2.fill', route: '/clients', color: '#6366F1' },
   { key: 'pianos', label: 'Pianos', icon: 'pianokeys', route: '/pianos', color: '#10B981' },
   { key: 'services', label: 'Servicios', icon: 'wrench.fill', route: '/services', color: '#F59E0B' },
@@ -54,7 +53,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: 'stats', label: 'Estadísticas', icon: 'chart.pie.fill', route: '/stats', color: '#10B981' },
   { key: 'rates', label: 'Tarifas', icon: 'list.bullet', route: '/rates', color: '#EC4899' },
   { key: 'business', label: 'Datos Fiscales', icon: 'person.text.rectangle.fill', route: '/business-info', color: '#6B7280' },
-  { key: 'modules', label: 'Módulos', icon: 'square.grid.2x2.fill', route: '/settings/modules', color: '#8B5CF6' },
+  { key: 'modules', label: 'Módulos y Plan', icon: 'square.grid.2x2.fill', route: '/settings/modules', color: '#8B5CF6' },
   { key: 'settings', label: 'Configuración', icon: 'gearshape.fill', route: '/settings', color: '#64748B' },
   { key: 'help', label: 'Ayuda', icon: 'questionmark.circle.fill', route: '/help', color: '#0EA5E9' },
 ];

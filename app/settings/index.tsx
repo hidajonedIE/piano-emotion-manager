@@ -563,22 +563,7 @@ export default function SettingsIndexScreen() {
           </View>
         </Accordion>
 
-        {/* ========== MÓDULOS (Enlace a página dedicada) ========== */}
-        <Pressable
-          style={[styles.linkCard, { backgroundColor: cardBg, borderColor }]}
-          onPress={() => router.push('/settings/modules' as any)}
-        >
-          <View style={[styles.linkIcon, { backgroundColor: '#8B5CF615' }]}>
-            <IconSymbol name="square.grid.2x2.fill" size={24} color="#8B5CF6" />
-          </View>
-          <View style={styles.linkContent}>
-            <ThemedText style={styles.linkTitle}>Módulos y Plan</ThemedText>
-            <ThemedText style={[styles.linkDescription, { color: textSecondary }]}>
-              Gestiona los módulos activos y tu suscripción
-            </ThemedText>
-          </View>
-          <IconSymbol name="chevron.right" size={20} color={textSecondary} />
-        </Pressable>
+ 
 
         {/* ========== INVENTARIO ========== */}
         <Accordion
