@@ -11,6 +11,7 @@ import { AnimatedCard } from '@/components/animated-card';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Spacing, BorderRadius } from '@/constants/theme';
+import { useUserTier } from '@/hooks/use-user-tier';
 
 // Tipos de plan
 type PlanTier = 'free' | 'pro' | 'premium';
@@ -94,8 +95,11 @@ interface DashboardAdvancedToolsProps {
   userTier?: PlanTier;
 }
 
-export function DashboardAdvancedTools({ userTier = 'free' }: DashboardAdvancedToolsProps) {
+export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdvancedToolsProps) {
   const router = useRouter();
+  const { tier: tierFromHook, isLoading } = useUserTier();
+  const userTier = userTierProp || tierFromHook;
+  
   const [upgradeModal, setUpgradeModal] = useState<{ visible: boolean; tier: 'pro' | 'premium' | null }>({
     visible: false,
     tier: null,
