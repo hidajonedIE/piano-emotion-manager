@@ -1,10 +1,11 @@
-import { db } from './drizzle/db';
+import { getDb } from './drizzle/db';
 import { modules, subscriptionPlans } from './drizzle/modules-schema';
 import { eq } from 'drizzle-orm';
 import { DEFAULT_MODULES, DEFAULT_PLANS } from './server/data/modules-data';
 
 async function seedModules() {
   for (const module of DEFAULT_MODULES) {
+    const db = await getDb();
     const existing = await db.query.modules.findFirst({
       where: eq(modules.code, module.code),
     });
@@ -35,6 +36,7 @@ async function seedModules() {
 }
 
 async function seedPlans() {
+  const db = await getDb();
   for (const plan of DEFAULT_PLANS) {
     const existing = await db.query.subscriptionPlans.findFirst({
       where: eq(subscriptionPlans.code, plan.code),
