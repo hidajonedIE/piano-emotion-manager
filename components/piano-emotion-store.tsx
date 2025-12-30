@@ -377,7 +377,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1A1A1A',
-    marginBottom: 12,
   },
   seeAllLink: {
     fontSize: 14,
