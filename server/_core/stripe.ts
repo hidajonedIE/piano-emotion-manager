@@ -5,10 +5,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-12-15.clover',
 });
 
-// Stripe Price IDs (Test Mode) - PRECIOS ANUALES
+// Detect if we're in test or live mode based on the secret key
+const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_');
+
+// Stripe Price IDs - Detecta automáticamente test/live según la clave
 export const STRIPE_PRICES = {
-  PROFESSIONAL: 'price_1SiNNrDpmJIxYFlvPsgsL3iX', // €30/año
-  PREMIUM_IA: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',   // €50/año
+  PROFESSIONAL: isTestMode 
+    ? 'price_1SjwykDiwMrzMnxywKMWJddg'  // Test: €30/año
+    : 'price_1SjzWuDiwMrzMnxyFX5OBKLK',  // Live: €30/año
+  PREMIUM_IA: isTestMode
+    ? 'price_1Sjx48DiwMrzMnxyB91U7HOs'  // Test: €50/año  
+    : 'price_1SjzdBDiwMrzMnxyg2KZwX8h',  // Live: €50/año
 } as const;
 
 export type SubscriptionPlan = 'FREE' | 'PROFESSIONAL' | 'PREMIUM_IA';
