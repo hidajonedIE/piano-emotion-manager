@@ -108,8 +108,13 @@ interface PianoEmotionStoreProps {
   onToggle?: () => void;
 }
 
-export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionStoreProps) {
+export function PianoEmotionStore({ collapsed: collapsedProp = false, onToggle }: PianoEmotionStoreProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [internalCollapsed, setInternalCollapsed] = useState(collapsedProp);
+
+  // Si no se pasa onToggle, usar estado interno
+  const collapsed = onToggle ? collapsedProp : internalCollapsed;
+  const handleToggle = onToggle || (() => setInternalCollapsed(!internalCollapsed));
 
   const openPianoEmotion = () => {
     Linking.openURL('https://www.pianoemotion.es');
@@ -122,7 +127,7 @@ export function PianoEmotionStore({ collapsed = false, onToggle }: PianoEmotionS
   return (
     <View style={styles.container}>
       {/* Header */}
-      <Pressable style={styles.header} onPress={onToggle}>
+      <Pressable style={styles.header} onPress={handleToggle}>
         <View style={styles.headerLeft}>
           <View style={styles.logoContainer}>
             <Text style={styles.logoText}>🎹</Text>
