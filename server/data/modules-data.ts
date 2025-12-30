@@ -385,7 +385,7 @@ export const DEFAULT_PLANS: PlanInfo[] = [
     features: [
       'Hasta 100 clientes',
       'Hasta 200 pianos',
-      'Hasta 50 servicios/mes',
+      'Hasta 100 servicios/mes',
       'Hasta 100 facturas/mes',
       'Calendario completo',
       'Inventario básico',
