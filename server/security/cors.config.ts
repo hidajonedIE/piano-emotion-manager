@@ -9,6 +9,8 @@
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
   // Production
+  'https://pianoemotion.com',
+  'https://www.pianoemotion.com',
   'https://piano-emotion-manager.vercel.app',
   'https://www.piano-emotion-manager.vercel.app',
   
