@@ -91,7 +91,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
         </View>
         <View style={styles.moduleInfo}>
           <View style={styles.moduleTitleRow}>
-            <Text style={styles.moduleName}>{module.name}</Text>
+            <Text style={styles.moduleName} numberOfLines={1}>{module.name}</Text>
             {renderBadge()}
           </View>
           <Text style={styles.moduleDescription} numberOfLines={2}>
@@ -535,6 +535,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#1f2937',
+    maxWidth: 155,
   },
   // Badges
   freeBadge: {
