@@ -380,7 +380,7 @@ export const advancedRouter = router({
         },
         {
           id: 'PROFESSIONAL',
-          name: 'Plan Profesional',
+          name: 'Plan Pro',
           price: 30,
           currency: 'EUR',
           interval: 'year',
@@ -427,7 +427,7 @@ export const advancedRouter = router({
             storage: '5 GB',
           },
           features: [
-            'Todo lo del Plan Profesional',
+            'Todo lo del Plan Pro',
             'Asistente de chat con IA (Gemini)',
             'Predicciones con IA',
             'Generación automática de emails',

@@ -68,7 +68,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
       return (
         <View style={styles.professionalBadge}>
           <Ionicons name="briefcase" size={10} color="#fff" />
-          <Text style={styles.professionalBadgeText}>Professional</Text>
+          <Text style={styles.professionalBadgeText}>Pro</Text>
         </View>
       );
     }
@@ -297,14 +297,14 @@ export const ModulesSettings: React.FC = () => {
         <View style={styles.separatorLine} />
       </View>
 
-      {/* Módulos Professional */}
+      {/* Módulos Pro */}
       {professionalModules.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeaderWithBadge}>
-            <Text style={styles.sectionTitle}>Módulos Professional</Text>
+            <Text style={styles.sectionTitle}>Módulos Pro</Text>
             <View style={styles.professionalBadge}>
               <Ionicons name="briefcase" size={12} color="#fff" />
-              <Text style={styles.professionalBadgeText}>Professional</Text>
+              <Text style={styles.professionalBadgeText}>Pro</Text>
             </View>
           </View>
           <Text style={styles.sectionSubtitle}>Funcionalidades avanzadas para profesionales</Text>

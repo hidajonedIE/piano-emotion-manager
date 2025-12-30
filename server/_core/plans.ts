@@ -27,7 +27,7 @@ export interface PlanFeatures {
   fiscalData: boolean;
   importExport: boolean;
   
-  // Funcionalidades Profesionales (Plan Profesional y Premium)
+  // Funcionalidades Pro (Plan Pro y Premium)
   communications: boolean;      // WhatsApp, Email
   marketing: boolean;           // Campañas de marketing
   advancedCRM: boolean;         // CRM avanzado
@@ -97,7 +97,7 @@ export const PLANS: Record<PlanType, Plan> = {
       fiscalData: true,
       importExport: true,
       
-      // Profesionales - NO
+      // Pro - NO
       communications: false,
       marketing: false,
       advancedCRM: false,
@@ -126,7 +126,7 @@ export const PLANS: Record<PlanType, Plan> = {
   
   professional: {
     id: 'professional',
-    name: 'Plan Profesional',
+    name: 'Plan Pro',
     price: 30,
     billingPeriod: 'year',
     stripePriceId: 'price_1SiNNrDpmJIxYFlvPsgsL3iX',
@@ -152,7 +152,7 @@ export const PLANS: Record<PlanType, Plan> = {
       fiscalData: true,
       importExport: true,
       
-      // Profesionales - SÍ
+      // Pro - SÍ
       communications: true,
       marketing: true,
       advancedCRM: true,
@@ -207,7 +207,7 @@ export const PLANS: Record<PlanType, Plan> = {
       fiscalData: true,
       importExport: true,
       
-      // Profesionales - SÍ
+      // Pro - SÍ
       communications: true,
       marketing: true,
       advancedCRM: true,

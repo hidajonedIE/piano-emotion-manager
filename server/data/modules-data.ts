@@ -191,7 +191,7 @@ export const DEFAULT_MODULES: Array<{
     type: 'free',
     includedInPlans: ['free', 'professional', 'premium'],
   },
-  // Professional modules
+  // Pro modules
   {
     code: 'electronic_invoicing',
     name: 'Facturación Electrónica',
@@ -400,7 +400,7 @@ export const DEFAULT_PLANS: PlanInfo[] = [
   },
   {
     code: 'professional',
-    name: 'Plan Profesional',
+    name: 'Plan Pro',
     description: '€30/año',
     monthlyPrice: 2.5,
     yearlyPrice: 30,
@@ -442,7 +442,7 @@ export const DEFAULT_PLANS: PlanInfo[] = [
     maxInvoicesPerMonth: null,
     maxStorageMb: 5000,
     features: [
-      'Todo lo del Plan Profesional',
+      'Todo lo del Plan Pro',
       'Asistente de chat con IA (Gemini)',
       'Predicciones con IA',
       'Generación automática de emails',
