@@ -389,7 +389,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     width: '100%',
-    minHeight: 220,
   },
   categoryCard: {
     backgroundColor: '#F8F9FA',
