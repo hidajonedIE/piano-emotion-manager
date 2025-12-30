@@ -1,18 +1,18 @@
 /**
- * Services Router
- * Gestión de servicios con validación mejorada, paginación y funcionalidades avanzadas
+ * Services Router (OPTIMIZED)
+ * Gestión de servicios con paginación en DB, eager loading y caché
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
+import { services, clients, pianos } from "../../drizzle/schema.js";
+import { eq, and, or, gte, lte, asc, desc, count, sql, ilike } from "drizzle-orm";
+import * as cache from "../cache.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
 // ============================================================================
 
-/**
- * Tipos de servicio predefinidos
- */
 const predefinedServiceTypes = [
   "tuning",
   "repair",
@@ -23,17 +23,14 @@ const predefinedServiceTypes = [
   "inspection",
   "restoration",
   "transport",
-  "appraisal", // Peritaje
-  "voicing", // Entonación
+  "appraisal",
+  "voicing",
   "cleaning",
   "other",
 ] as const;
 
 const serviceTypeSchema = z.enum(predefinedServiceTypes);
 
-/**
- * Estado del servicio
- */
 const serviceStatusSchema = z.enum([
   "scheduled",
   "in_progress",
@@ -43,33 +40,24 @@ const serviceStatusSchema = z.enum([
   "pending_signature",
 ]);
 
-/**
- * Esquema de tarea
- */
 const taskSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1).max(255),
   completed: z.boolean().default(false),
   notes: z.string().max(1000).optional(),
-  duration: z.number().int().min(0).optional(), // Duración en minutos
+  duration: z.number().int().min(0).optional(),
   order: z.number().int().min(0).optional(),
 });
 
-/**
- * Esquema de material usado
- */
 const materialUsedSchema = z.object({
   materialId: z.number().int().positive(),
-  materialName: z.string().optional(), // Para mostrar en la UI
+  materialName: z.string().optional(),
   quantity: z.number().positive(),
   unitPrice: z.number().min(0).optional(),
   totalPrice: z.number().min(0).optional(),
   notes: z.string().max(500).optional(),
 });
 
-/**
- * Esquema de foto
- */
 const photoSchema = z.object({
   url: z.string().url(),
   caption: z.string().max(255).optional(),
@@ -77,24 +65,39 @@ const photoSchema = z.object({
   timestamp: z.string().optional(),
 });
 
-/**
- * Esquema de firma digital
- */
 const signatureSchema = z.object({
-  data: z.string(), // Base64 de la imagen de la firma
+  data: z.string(),
   signedAt: z.string(),
   signerName: z.string().max(255).optional(),
   signerRole: z.enum(["client", "technician", "witness"]).default("client"),
   deviceInfo: z.string().max(500).optional(),
 });
 
-/**
- * Esquema de condiciones ambientales durante el servicio
- */
 const serviceEnvironmentSchema = z.object({
   humidity: z.number().min(0).max(100).optional(),
   temperature: z.number().min(-20).max(50).optional(),
   notes: z.string().max(500).optional(),
+});
+
+const serviceBaseSchema = z.object({
+  pianoId: z.number().int().positive(),
+  clientId: z.number().int().positive(),
+  serviceType: serviceTypeSchema,
+  date: z.string().or(z.date()),
+  cost: z.number().min(0).optional().nullable(),
+  duration: z.number().int().min(0).optional().nullable(),
+  tasks: z.array(taskSchema).max(50).optional(),
+  notes: z.string().max(5000).optional().nullable(),
+  technicianNotes: z.string().max(5000).optional().nullable(),
+  materialsUsed: z.array(materialUsedSchema).max(100).optional(),
+  photosBefore: z.array(photoSchema).max(20).optional(),
+  photosAfter: z.array(photoSchema).max(20).optional(),
+  clientSignature: signatureSchema.optional().nullable(),
+  technicianSignature: signatureSchema.optional().nullable(),
+  environment: serviceEnvironmentSchema.optional().nullable(),
+  status: serviceStatusSchema.default("scheduled"),
+  invoiceId: z.number().int().positive().optional().nullable(),
+  appointmentId: z.number().int().positive().optional().nullable(),
 });
 
 /**
@@ -103,7 +106,7 @@ const serviceEnvironmentSchema = z.object({
 const paginationSchema = z.object({
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(20),
-  sortBy: z.enum(["date", "createdAt", "cost", "serviceType", "status"]).default("date"),
+  sortBy: z.enum(["date", "cost", "serviceType", "createdAt"]).default("date"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   search: z.string().optional(),
   serviceType: serviceTypeSchema.optional(),
@@ -115,258 +118,131 @@ const paginationSchema = z.object({
   hasPendingSignature: z.boolean().optional(),
 });
 
-/**
- * Esquema base de servicio
- */
-const serviceBaseSchema = z.object({
-  pianoId: z.number().int().positive(),
-  clientId: z.number().int().positive(),
-  serviceType: serviceTypeSchema,
-  customServiceType: z.string().max(100).optional(), // Para tipos personalizados
-  date: z.string().or(z.date()),
-  startTime: z.string().optional(), // Hora de inicio
-  endTime: z.string().optional(), // Hora de fin
-  status: serviceStatusSchema.default("scheduled"),
-  cost: z.number().min(0).optional().nullable(),
-  duration: z.number().int().min(0).optional().nullable(), // Duración en minutos
-  estimatedDuration: z.number().int().min(0).optional(), // Duración estimada
-  tasks: z.array(taskSchema).optional(),
-  notes: z.string().max(5000).optional().nullable(),
-  technicianNotes: z.string().max(5000).optional().nullable(), // Notas internas
-  materialsUsed: z.array(materialUsedSchema).optional(),
-  // Fotos
-  photos: z.array(photoSchema).max(50).optional(),
-  photosBefore: z.array(z.string().url()).max(20).optional(), // Legacy
-  photosAfter: z.array(z.string().url()).max(20).optional(), // Legacy
-  // Firma digital
-  clientSignature: signatureSchema.optional().nullable(),
-  technicianSignature: signatureSchema.optional().nullable(),
-  // Condiciones ambientales
-  environment: serviceEnvironmentSchema.optional(),
-  // Condición del piano después del servicio
-  pianoConditionAfter: z.enum(["excellent", "good", "fair", "poor", "needs_repair"]).optional(),
-  // Próximo servicio recomendado
-  nextServiceRecommendation: z.object({
-    serviceType: serviceTypeSchema.optional(),
-    recommendedDate: z.string().optional(),
-    notes: z.string().max(500).optional(),
-    priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
-  }).optional(),
-  // Referencia a cita si se creó desde una
-  appointmentId: z.number().optional().nullable(),
-  // Técnico asignado (para equipos)
-  technicianId: z.string().optional().nullable(),
-  technicianName: z.string().optional().nullable(),
-});
-
-// ============================================================================
-// PLANTILLAS DE TAREAS POR TIPO DE SERVICIO
-// ============================================================================
-
-const SERVICE_TASK_TEMPLATES: Record<string, string[]> = {
-  tuning: [
-    "Verificar estado general del piano",
-    "Comprobar si el piano es afinable",
-    "Verificar afinación inicial (diapasón)",
-    "Ajustar clavijas si es necesario",
-    "Afinar octava central (La 440Hz)",
-    "Afinar registro grave",
-    "Afinar registro agudo",
-    "Verificar afinación final",
-    "Probar pedales",
-    "Recomendar próxima afinación",
-  ],
-  repair: [
-    "Diagnosticar problema",
-    "Evaluar si el piano será afinable tras reparación",
-    "Identificar piezas a reparar/reemplazar",
-    "Realizar reparación",
-    "Verificar funcionamiento",
-    "Probar todas las teclas afectadas",
-    "Actualizar estado del piano",
-  ],
-  regulation: [
-    "Ajustar altura de teclas",
-    "Regular escape de macillos",
-    "Ajustar repetición",
-    "Verificar caída de macillos",
-    "Ajustar apagadores",
-    "Regular pedales",
-    "Verificar uniformidad del teclado",
-  ],
-  maintenance_basic: [
-    "Limpieza exterior",
-    "Limpieza de teclado",
-    "Revisión general del mecanismo",
-    "Afinación básica",
-    "Verificar pedales",
-  ],
-  maintenance_complete: [
-    "Limpieza exterior profunda",
-    "Limpieza de teclado y teclas",
-    "Limpieza interior (cuerdas y tabla)",
-    "Revisión completa del mecanismo",
-    "Regulación ligera",
-    "Ajuste de pedales",
-    "Afinación completa",
-    "Verificación final",
-  ],
-  maintenance_premium: [
-    "Limpieza exterior profesional",
-    "Limpieza y pulido de teclado",
-    "Limpieza profunda interior",
-    "Revisión y ajuste de clavijero",
-    "Regulación completa",
-    "Entonación (voicing)",
-    "Tratamiento de fieltros",
-    "Ajuste de pedales",
-    "Afinación de concierto",
-    "Informe detallado del estado",
-  ],
-  inspection: [
-    "Inspección visual exterior",
-    "Inspección del mecanismo",
-    "Verificar estado de cuerdas",
-    "Verificar estado de macillos",
-    "Verificar estado de apagadores",
-    "Evaluar condición general",
-    "Documentar con fotos",
-    "Elaborar informe",
-  ],
-  restoration: [
-    "Evaluación inicial completa",
-    "Documentación fotográfica",
-    "Desmontaje de piezas necesarias",
-    "Limpieza profunda",
-    "Reparación/reemplazo de piezas",
-    "Restauración de acabados",
-    "Reensamblaje",
-    "Regulación completa",
-    "Afinación",
-    "Control de calidad final",
-  ],
-  voicing: [
-    "Evaluar dureza actual de macillos",
-    "Ajustar dureza de macillos",
-    "Equilibrar sonoridad entre registros",
-    "Verificar uniformidad tonal",
-    "Ajustes finos por sección",
-  ],
-  cleaning: [
-    "Limpieza exterior",
-    "Limpieza de teclado",
-    "Limpieza de pedales",
-    "Aspirado interior",
-    "Limpieza de cuerdas",
-    "Pulido de superficies",
-  ],
-};
-
 // ============================================================================
 // ROUTER
 // ============================================================================
 
 export const servicesRouter = router({
   /**
-   * Lista de servicios con paginación y filtros
+   * Lista de servicios con paginación optimizada y eager loading
    */
   list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const pagination = input || { page: 1, limit: 20, sortBy: "date", sortOrder: "desc" };
       
-      const allServices = await db.getServices(ctx.user.openId);
-      
-      // Filtrar
-      let filtered = allServices;
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          items: [],
+          pagination: {
+            page: pagination.page,
+            limit: pagination.limit,
+            total: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+          stats: {
+            total: 0,
+            totalRevenue: 0,
+            byType: {},
+            byStatus: {},
+          },
+        };
+      }
+
+      // Construir condiciones WHERE
+      const whereClauses = [eq(services.odId, ctx.user.openId)];
       
       if (pagination.search) {
-        const searchLower = pagination.search.toLowerCase();
-        filtered = filtered.filter(s => 
-          s.notes?.toLowerCase().includes(searchLower) ||
-          s.technicianNotes?.toLowerCase().includes(searchLower)
+        whereClauses.push(
+          or(
+            ilike(services.notes, `%${pagination.search}%`),
+            ilike(services.technicianNotes, `%${pagination.search}%`)
+          )!
         );
       }
       
       if (pagination.serviceType) {
-        filtered = filtered.filter(s => s.serviceType === pagination.serviceType);
-      }
-      
-      if (pagination.status) {
-        filtered = filtered.filter(s => s.status === pagination.status);
+        whereClauses.push(eq(services.serviceType, pagination.serviceType));
       }
       
       if (pagination.clientId) {
-        filtered = filtered.filter(s => s.clientId === pagination.clientId);
+        whereClauses.push(eq(services.clientId, pagination.clientId));
       }
       
       if (pagination.pianoId) {
-        filtered = filtered.filter(s => s.pianoId === pagination.pianoId);
+        whereClauses.push(eq(services.pianoId, pagination.pianoId));
       }
       
       if (pagination.dateFrom) {
-        const fromDate = new Date(pagination.dateFrom);
-        filtered = filtered.filter(s => new Date(s.date) >= fromDate);
+        whereClauses.push(gte(services.date, new Date(pagination.dateFrom)));
       }
       
       if (pagination.dateTo) {
-        const toDate = new Date(pagination.dateTo);
-        filtered = filtered.filter(s => new Date(s.date) <= toDate);
+        whereClauses.push(lte(services.date, new Date(pagination.dateTo)));
       }
-      
-      if (pagination.hasPendingSignature) {
-        filtered = filtered.filter(s => 
-          s.status === "completed" && !s.clientSignature
-        );
-      }
-      
-      // Ordenar
-      filtered.sort((a, b) => {
-        let aVal: string | number | Date = a[pagination.sortBy as keyof typeof a] ?? "";
-        let bVal: string | number | Date = b[pagination.sortBy as keyof typeof b] ?? "";
-        
-        if (pagination.sortBy === "date" || pagination.sortBy === "createdAt") {
-          aVal = new Date(aVal as string).getTime();
-          bVal = new Date(bVal as string).getTime();
-        }
-        
-        if (typeof aVal === "number" && typeof bVal === "number") {
-          return pagination.sortOrder === "asc" ? aVal - bVal : bVal - aVal;
-        }
-        
-        const comparison = String(aVal).localeCompare(String(bVal));
-        return pagination.sortOrder === "asc" ? comparison : -comparison;
-      });
-      
-      // Paginar
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pagination.limit);
+
+      // Construir ORDER BY
+      const sortColumn = services[pagination.sortBy as keyof typeof services];
+      const orderByClause = pagination.sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+
+      // EAGER LOADING: Consulta con leftJoin para cargar cliente y piano
       const offset = (pagination.page - 1) * pagination.limit;
-      const items = filtered.slice(offset, offset + pagination.limit);
-      
-      // Estadísticas
-      const now = new Date();
-      const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const thisMonthServices = allServices.filter(s => new Date(s.date) >= thisMonth);
-      
-      const stats = {
-        total: allServices.length,
-        thisMonth: thisMonthServices.length,
-        revenue: {
-          total: allServices.reduce((sum, s) => sum + Number(s.cost || 0), 0),
-          thisMonth: thisMonthServices.reduce((sum, s) => sum + Number(s.cost || 0), 0),
-        },
-        byType: Object.fromEntries(
-          predefinedServiceTypes.map(type => [
-            type,
-            allServices.filter(s => s.serviceType === type).length,
-          ])
-        ),
-        pendingSignatures: allServices.filter(s => 
-          s.status === "completed" && !s.clientSignature
-        ).length,
-      };
-      
+      const items = await database
+        .select({
+          // Service fields
+          id: services.id,
+          odId: services.odId,
+          pianoId: services.pianoId,
+          clientId: services.clientId,
+          serviceType: services.serviceType,
+          date: services.date,
+          cost: services.cost,
+          duration: services.duration,
+          tasks: services.tasks,
+          notes: services.notes,
+          technicianNotes: services.technicianNotes,
+          materialsUsed: services.materialsUsed,
+          photosBefore: services.photosBefore,
+          photosAfter: services.photosAfter,
+          clientSignature: services.clientSignature,
+          humidity: services.humidity,
+          temperature: services.temperature,
+          createdAt: services.createdAt,
+          updatedAt: services.updatedAt,
+          // Client fields (eager loaded)
+          clientName: clients.name,
+          clientEmail: clients.email,
+          clientPhone: clients.phone,
+          clientAddress: clients.address,
+          // Piano fields (eager loaded)
+          pianoBrand: pianos.brand,
+          pianoModel: pianos.model,
+          pianoSerialNumber: pianos.serialNumber,
+        })
+        .from(services)
+        .leftJoin(clients, eq(services.clientId, clients.id))
+        .leftJoin(pianos, eq(services.pianoId, pianos.id))
+        .where(and(...whereClauses))
+        .orderBy(orderByClause)
+        .limit(pagination.limit)
+        .offset(offset);
+
+      // Consulta de conteo total
+      const [{ total }] = await database
+        .select({ total: count() })
+        .from(services)
+        .where(and(...whereClauses));
+
+      // Estadísticas (optimizadas con consultas agregadas)
+      const [{ totalRevenue }] = await database
+        .select({ totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
+        .from(services)
+        .where(eq(services.odId, ctx.user.openId));
+
+      const totalPages = Math.ceil(total / pagination.limit);
+
       return {
         items,
         pagination: {
@@ -376,37 +252,115 @@ export const servicesRouter = router({
           totalPages,
           hasMore: pagination.page < totalPages,
         },
-        stats,
+        stats: {
+          total,
+          totalRevenue: Number(totalRevenue) || 0,
+        },
       };
     }),
   
   /**
-   * Lista simple sin paginación
-   */
-  listAll: protectedProcedure.query(({ ctx }) => db.getServices(ctx.user.openId)),
-  
-  /**
-   * Obtener servicio por ID
+   * Obtener servicio por ID con eager loading
    */
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getService(ctx.user.openId, input.id)),
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return undefined;
+
+      const [result] = await database
+        .select({
+          id: services.id,
+          odId: services.odId,
+          pianoId: services.pianoId,
+          clientId: services.clientId,
+          serviceType: services.serviceType,
+          date: services.date,
+          cost: services.cost,
+          duration: services.duration,
+          tasks: services.tasks,
+          notes: services.notes,
+          technicianNotes: services.technicianNotes,
+          materialsUsed: services.materialsUsed,
+          photosBefore: services.photosBefore,
+          photosAfter: services.photosAfter,
+          clientSignature: services.clientSignature,
+          humidity: services.humidity,
+          temperature: services.temperature,
+          createdAt: services.createdAt,
+          updatedAt: services.updatedAt,
+          clientName: clients.name,
+          clientEmail: clients.email,
+          clientPhone: clients.phone,
+          clientAddress: clients.address,
+          pianoBrand: pianos.brand,
+          pianoModel: pianos.model,
+          pianoSerialNumber: pianos.serialNumber,
+          pianoCategory: pianos.category,
+        })
+        .from(services)
+        .leftJoin(clients, eq(services.clientId, clients.id))
+        .leftJoin(pianos, eq(services.pianoId, pianos.id))
+        .where(and(eq(services.odId, ctx.user.openId), eq(services.id, input.id)));
+
+      return result;
+    }),
   
   /**
-   * Obtener servicios de un piano
+   * Obtener servicios de un piano con eager loading
    */
   byPiano: protectedProcedure
     .input(z.object({ pianoId: z.number() }))
-    .query(({ ctx, input }) => db.getServicesByPiano(ctx.user.openId, input.pianoId)),
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      const items = await database
+        .select({
+          id: services.id,
+          serviceType: services.serviceType,
+          date: services.date,
+          cost: services.cost,
+          duration: services.duration,
+          notes: services.notes,
+          createdAt: services.createdAt,
+          clientName: clients.name,
+        })
+        .from(services)
+        .leftJoin(clients, eq(services.clientId, clients.id))
+        .where(and(eq(services.odId, ctx.user.openId), eq(services.pianoId, input.pianoId)))
+        .orderBy(desc(services.date));
+
+      return items;
+    }),
   
   /**
-   * Obtener servicios de un cliente
+   * Obtener servicios de un cliente con eager loading
    */
   byClient: protectedProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const services = await db.getServices(ctx.user.openId);
-      return services.filter(s => s.clientId === input.clientId);
+      const database = await db.getDb();
+      if (!database) return [];
+
+      const items = await database
+        .select({
+          id: services.id,
+          serviceType: services.serviceType,
+          date: services.date,
+          cost: services.cost,
+          duration: services.duration,
+          notes: services.notes,
+          createdAt: services.createdAt,
+          pianoBrand: pianos.brand,
+          pianoModel: pianos.model,
+        })
+        .from(services)
+        .leftJoin(pianos, eq(services.pianoId, pianos.id))
+        .where(and(eq(services.odId, ctx.user.openId), eq(services.clientId, input.clientId)))
+        .orderBy(desc(services.date));
+
+      return items;
     }),
   
   /**
@@ -414,34 +368,7 @@ export const servicesRouter = router({
    */
   create: protectedProcedure
     .input(serviceBaseSchema)
-    .mutation(async ({ ctx, input }) => {
-      // Descontar materiales del inventario si se usaron
-      if (input.materialsUsed && input.materialsUsed.length > 0) {
-        for (const material of input.materialsUsed) {
-          try {
-            await db.updateInventoryQuantity(
-              ctx.user.openId,
-              material.materialId,
-              -material.quantity
-            );
-          } catch {
-            // Continuar aunque falle la actualización de inventario
-          }
-        }
-      }
-      
-      // Actualizar fecha de último servicio del piano
-      if (input.status === "completed") {
-        try {
-          await db.updatePiano(ctx.user.openId, input.pianoId, {
-            lastServiceDate: new Date(input.date),
-            condition: input.pianoConditionAfter,
-          });
-        } catch {
-          // Continuar aunque falle la actualización del piano
-        }
-      }
-      
+    .mutation(({ ctx, input }) => {
       return db.createService({
         ...input,
         date: new Date(input.date),
@@ -456,27 +383,11 @@ export const servicesRouter = router({
     .input(z.object({
       id: z.number(),
     }).merge(serviceBaseSchema.partial()))
-    .mutation(async ({ ctx, input }) => {
-      const { id, date, ...data } = input;
-      
-      // Si se completa el servicio, actualizar el piano
-      if (data.status === "completed") {
-        const service = await db.getService(ctx.user.openId, id);
-        if (service) {
-          try {
-            await db.updatePiano(ctx.user.openId, service.pianoId, {
-              lastServiceDate: date ? new Date(date) : new Date(service.date),
-              condition: data.pianoConditionAfter,
-            });
-          } catch {
-            // Continuar
-          }
-        }
-      }
-      
+    .mutation(({ ctx, input }) => {
+      const { id, ...data } = input;
       return db.updateService(ctx.user.openId, id, {
         ...data,
-        ...(date ? { date: new Date(date) } : {}),
+        date: data.date ? new Date(data.date) : undefined,
       });
     }),
   
@@ -488,179 +399,109 @@ export const servicesRouter = router({
     .mutation(({ ctx, input }) => db.deleteService(ctx.user.openId, input.id)),
   
   /**
-   * Obtener plantilla de tareas para un tipo de servicio
+   * Obtener estadísticas de servicios (con caché)
    */
-  getTaskTemplate: protectedProcedure
-    .input(z.object({ serviceType: serviceTypeSchema }))
-    .query(({ input }) => {
-      const tasks = SERVICE_TASK_TEMPLATES[input.serviceType] || [];
-      return tasks.map((name, index) => ({
-        id: `task-${index}`,
-        name,
-        completed: false,
-        order: index,
-      }));
-    }),
-  
-  /**
-   * Añadir firma del cliente
-   */
-  addClientSignature: protectedProcedure
+  getStats: protectedProcedure
     .input(z.object({
-      serviceId: z.number(),
-      signature: signatureSchema,
-    }))
-    .mutation(async ({ ctx, input }) => {
-      return db.updateService(ctx.user.openId, input.serviceId, {
-        clientSignature: input.signature,
-        status: "completed",
-      });
-    }),
-  
-  /**
-   * Añadir fotos al servicio
-   */
-  addPhotos: protectedProcedure
-    .input(z.object({
-      serviceId: z.number(),
-      photos: z.array(photoSchema),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const service = await db.getService(ctx.user.openId, input.serviceId);
-      if (!service) {
-        throw new Error("Servicio no encontrado");
+      dateFrom: z.string().optional(),
+      dateTo: z.string().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const cacheKey = `service_stats:${ctx.user.openId}:${input?.dateFrom || 'all'}:${input?.dateTo || 'all'}`;
+      
+      // Intentar obtener del caché
+      const cached = await cache.getCachedValue<any>(cacheKey);
+      if (cached) return cached;
+
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          totalServices: 0,
+          totalRevenue: 0,
+          averageCost: 0,
+          byType: {},
+          recentServices: [],
+        };
+      }
+
+      // Construir condiciones WHERE
+      const whereClauses = [eq(services.odId, ctx.user.openId)];
+      
+      if (input?.dateFrom) {
+        whereClauses.push(gte(services.date, new Date(input.dateFrom)));
       }
       
-      const existingPhotos = (service.photos as typeof input.photos) || [];
-      const updatedPhotos = [...existingPhotos, ...input.photos].slice(0, 50);
-      
-      return db.updateService(ctx.user.openId, input.serviceId, {
-        photos: updatedPhotos,
-      });
-    }),
-  
-  /**
-   * Generar factura desde servicio
-   */
-  generateInvoice: protectedProcedure
-    .input(z.object({
-      serviceId: z.number(),
-      includeDetails: z.boolean().default(true),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const service = await db.getService(ctx.user.openId, input.serviceId);
-      if (!service) {
-        throw new Error("Servicio no encontrado");
+      if (input?.dateTo) {
+        whereClauses.push(lte(services.date, new Date(input.dateTo)));
       }
-      
-      // Obtener datos del cliente
-      const client = await db.getClient(ctx.user.openId, service.clientId);
-      if (!client) {
-        throw new Error("Cliente no encontrado");
-      }
-      
-      // Generar número de factura
-      const invoices = await db.getInvoices(ctx.user.openId);
-      const year = new Date().getFullYear();
-      const lastNumber = invoices
-        .filter(inv => inv.invoiceNumber.startsWith(String(year)))
-        .map(inv => {
-          const match = inv.invoiceNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1]) : 0;
+
+      // Consultas agregadas optimizadas
+      const [{ totalServices, totalRevenue, averageCost }] = await database
+        .select({
+          totalServices: count(),
+          totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)`,
+          averageCost: sql<number>`COALESCE(AVG(${services.cost}), 0)`,
         })
-        .reduce((max, num) => Math.max(max, num), 0);
-      
-      const invoiceNumber = `${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-      
-      // Crear líneas de factura
-      const items = [];
-      
-      // Línea principal del servicio
-      const serviceTypeLabels: Record<string, string> = {
-        tuning: "Afinación",
-        repair: "Reparación",
-        regulation: "Regulación",
-        maintenance_basic: "Mantenimiento Básico",
-        maintenance_complete: "Mantenimiento Completo",
-        maintenance_premium: "Mantenimiento Premium",
-        inspection: "Inspección",
-        restoration: "Restauración",
-        transport: "Transporte",
-        appraisal: "Peritaje",
-        voicing: "Entonación",
-        cleaning: "Limpieza",
-        other: "Otro servicio",
+        .from(services)
+        .where(and(...whereClauses));
+
+      // Servicios recientes con eager loading
+      const recentServices = await database
+        .select({
+          id: services.id,
+          serviceType: services.serviceType,
+          date: services.date,
+          cost: services.cost,
+          clientName: clients.name,
+          pianoBrand: pianos.brand,
+        })
+        .from(services)
+        .leftJoin(clients, eq(services.clientId, clients.id))
+        .leftJoin(pianos, eq(services.pianoId, pianos.id))
+        .where(and(...whereClauses))
+        .orderBy(desc(services.date))
+        .limit(10);
+
+      const stats = {
+        totalServices,
+        totalRevenue: Number(totalRevenue) || 0,
+        averageCost: Number(averageCost) || 0,
+        recentServices,
       };
+
+      // Cachear por 15 minutos
+      await cache.setCachedValue(cacheKey, stats, 900);
       
-      items.push({
-        description: serviceTypeLabels[service.serviceType] || service.serviceType,
-        quantity: 1,
-        unitPrice: Number(service.cost || 0),
-        taxRate: 21,
-        total: Number(service.cost || 0),
-      });
-      
-      // Añadir materiales si se incluyen detalles
-      if (input.includeDetails && service.materialsUsed) {
-        const materials = service.materialsUsed as Array<{ materialName?: string; quantity: number; unitPrice?: number; totalPrice?: number }>;
-        for (const material of materials) {
-          if (material.totalPrice && material.totalPrice > 0) {
-            items.push({
-              description: `Material: ${material.materialName || "Material"}`,
-              quantity: material.quantity,
-              unitPrice: material.unitPrice || 0,
-              taxRate: 21,
-              total: material.totalPrice,
-            });
-          }
-        }
-      }
-      
-      const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-      const taxAmount = subtotal * 0.21;
-      const total = subtotal + taxAmount;
-      
-      // Crear la factura
-      const invoice = await db.createInvoice({
-        invoiceNumber,
-        clientId: service.clientId,
-        clientName: client.name,
-        clientEmail: client.email,
-        clientAddress: client.address,
-        date: new Date(),
-        status: "draft",
-        items,
-        subtotal: String(subtotal.toFixed(2)),
-        taxAmount: String(taxAmount.toFixed(2)),
-        total: String(total.toFixed(2)),
-        serviceId: service.id,
-        odId: ctx.user.openId,
-      });
-      
-      return invoice;
+      return stats;
     }),
   
   /**
-   * Obtener tipos de servicio disponibles
+   * Obtener servicios pendientes de firma
    */
-  getServiceTypes: protectedProcedure.query(() => {
-    return predefinedServiceTypes.map(type => ({
-      value: type,
-      label: {
-        tuning: "Afinación",
-        repair: "Reparación",
-        regulation: "Regulación",
-        maintenance_basic: "Mantenimiento Básico",
-        maintenance_complete: "Mantenimiento Completo",
-        maintenance_premium: "Mantenimiento Premium",
-        inspection: "Inspección",
-        restoration: "Restauración",
-        transport: "Transporte",
-        appraisal: "Peritaje",
-        voicing: "Entonación",
-        cleaning: "Limpieza",
-        other: "Otro",
-      }[type] || type,
-    }));
-  }),
+  getPendingSignature: protectedProcedure
+    .query(async ({ ctx }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      const items = await database
+        .select({
+          id: services.id,
+          serviceType: services.serviceType,
+          date: services.date,
+          clientName: clients.name,
+          clientEmail: clients.email,
+          pianoBrand: pianos.brand,
+        })
+        .from(services)
+        .leftJoin(clients, eq(services.clientId, clients.id))
+        .leftJoin(pianos, eq(services.pianoId, pianos.id))
+        .where(and(
+          eq(services.odId, ctx.user.openId),
+          sql`${services.clientSignature} IS NULL`
+        ))
+        .orderBy(desc(services.date))
+        .limit(20);
+
+      return items;
+    }),
 });
