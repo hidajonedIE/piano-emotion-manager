@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     position: 'absolute',
-    left: 230,
+    left: 270,
   },
   premiumBadgeText: {
     fontSize: 10,
