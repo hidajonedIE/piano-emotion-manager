@@ -2,11 +2,11 @@
  * Hook de Pianos basado en tRPC
  * Piano Emotion Manager
  * 
- * Este hook reemplaza la versión de AsyncStorage por una que usa tRPC
- * para sincronización con el servidor.
+ * Este hook maneja la sincronización de pianos con el servidor,
+ * incluyendo paginación infinita y filtrado en backend.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { trpc } from '@/utils/trpc';
 import type { Piano } from '@/types';
 
@@ -49,35 +49,80 @@ function serverToLocalPiano(server: ServerPiano): Piano {
   };
 }
 
-export function usePianosData() {
+interface UsePianosDataOptions {
+  search?: string;
+  brand?: string | null;
+  category?: string | null;
+  clientId?: string | null;
+  pageSize?: number;
+}
+
+export function usePianosData(options: UsePianosDataOptions = {}) {
+  const { search, brand, category, clientId, pageSize = 30 } = options;
   const utils = trpc.useUtils();
 
-  // Query para obtener todos los pianos
-  const { data: serverPianos, isLoading: loading, refetch } = trpc.pianos.list.useQuery(undefined, {
-    staleTime: 5 * 60 * 1000, // 5 minutos
+  // Query con paginación infinita
+  const { 
+    data,
+    isLoading: loading, 
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch 
+  } = trpc.pianos.list.useInfiniteQuery(
+    {
+      limit: pageSize,
+      search: search || undefined,
+      brand: brand || undefined,
+      category: category || undefined,
+      clientId: clientId ? parseInt(clientId, 10) : undefined,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 5 * 60 * 1000, // 5 minutos
+    }
+  );
+
+  // Query para marcas (agregación cacheada)
+  const { data: brandsData } = trpc.pianos.getBrands.useQuery(undefined, {
+    staleTime: 60 * 60 * 1000, // 1 hora
   });
 
   // Mutations
   const createMutation = trpc.pianos.create.useMutation({
     onSuccess: () => {
       utils.pianos.list.invalidate();
+      utils.pianos.getBrands.invalidate();
     },
   });
 
   const updateMutation = trpc.pianos.update.useMutation({
     onSuccess: () => {
       utils.pianos.list.invalidate();
+      utils.pianos.getBrands.invalidate();
     },
   });
 
   const deleteMutation = trpc.pianos.delete.useMutation({
     onSuccess: () => {
       utils.pianos.list.invalidate();
+      utils.pianos.getBrands.invalidate();
     },
   });
 
   // Convertir pianos del servidor al formato local
-  const pianos: Piano[] = (serverPianos?.items || []).map(serverToLocalPiano);
+  const pianos: Piano[] = useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap(page => 
+      (page.items || []).map(serverToLocalPiano)
+    );
+  }, [data]);
+
+  // Total de pianos
+  const totalPianos = data?.pages[0]?.total || 0;
+
+  // Marcas desde el backend
+  const brands = brandsData || [];
 
   // Añadir piano
   const addPiano = useCallback(
@@ -146,8 +191,16 @@ export function usePianosData() {
     [pianos]
   );
 
+  // Cargar más pianos
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   return {
     pianos,
+    totalPianos,
     loading,
     addPiano,
     updatePiano,
@@ -155,6 +208,10 @@ export function usePianosData() {
     getPiano,
     getPianosByClient,
     refresh: refetch,
+    loadMore,
+    hasMore: hasNextPage,
+    isLoadingMore: isFetchingNextPage,
+    brands,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

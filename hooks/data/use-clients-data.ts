@@ -3,10 +3,10 @@
  * Piano Emotion Manager
  * 
  * Este hook maneja la sincronización de clientes con el servidor,
- * incluyendo manejo de errores y estados de carga.
+ * incluyendo paginación infinita y filtrado en backend.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { trpc } from '@/utils/trpc';
 import type { Client } from '@/types';
 
@@ -24,6 +24,7 @@ type ServerClient = {
   city?: string | null;
   region?: string | null;
   postalCode?: string | null;
+  routeGroup?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -52,6 +53,9 @@ function serverToLocalClient(server: ServerClient): Client {
       province: server.region || undefined,
       postalCode: server.postalCode || undefined,
     } : undefined,
+    city: server.city || undefined,
+    region: server.region || undefined,
+    routeGroup: server.routeGroup || undefined,
     notes: server.notes || undefined,
     createdAt: server.createdAt instanceof Date 
       ? server.createdAt.toISOString() 
@@ -62,43 +66,74 @@ function serverToLocalClient(server: ServerClient): Client {
   };
 }
 
-export function useClientsData() {
+interface UseClientsDataOptions {
+  search?: string;
+  region?: string | null;
+  routeGroup?: string | null;
+  pageSize?: number;
+}
+
+export function useClientsData(options: UseClientsDataOptions = {}) {
+  const { search, region, routeGroup, pageSize = 30 } = options;
   const utils = trpc.useUtils();
   const [error, setError] = useState<string | null>(null);
 
-  // Query para obtener todos los clientes (usando listAll para evitar paginación)
+  // Query con paginación infinita
   const { 
-    data: serverClients, 
+    data,
     isLoading: loading, 
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch,
     error: queryError 
-  } = trpc.clients.listAll.useQuery(undefined, {
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    retry: 2,
-    onError: (err) => {
-      console.error('Error al cargar clientes:', err);
-      setError('Error al cargar los clientes');
+  } = trpc.clients.list.useInfiniteQuery(
+    {
+      limit: pageSize,
+      search: search || undefined,
+      region: region || undefined,
+      routeGroup: routeGroup || undefined,
     },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      retry: 2,
+      onError: (err) => {
+        console.error('Error al cargar clientes:', err);
+        setError('Error al cargar los clientes');
+      },
+    }
+  );
+
+  // Queries para agregaciones (regiones y rutas)
+  const { data: regionsData } = trpc.clients.getRegions.useQuery(undefined, {
+    staleTime: 60 * 60 * 1000, // 1 hora
+  });
+
+  const { data: routeGroupsData } = trpc.clients.getRouteGroups.useQuery(undefined, {
+    staleTime: 60 * 60 * 1000, // 1 hora
   });
 
   // Mutations con manejo de errores
   const createMutation = trpc.clients.create.useMutation({
     onSuccess: () => {
-      utils.clients.listAll.invalidate();
       utils.clients.list.invalidate();
+      utils.clients.getRegions.invalidate();
+      utils.clients.getRouteGroups.invalidate();
       setError(null);
     },
     onError: (err) => {
       console.error('Error al crear cliente:', err);
       setError(err.message || 'Error al crear el cliente');
-      throw err; // Re-lanzar para que el componente pueda manejarlo
+      throw err;
     },
   });
 
   const updateMutation = trpc.clients.update.useMutation({
     onSuccess: () => {
-      utils.clients.listAll.invalidate();
       utils.clients.list.invalidate();
+      utils.clients.getRegions.invalidate();
+      utils.clients.getRouteGroups.invalidate();
       setError(null);
     },
     onError: (err) => {
@@ -110,8 +145,9 @@ export function useClientsData() {
 
   const deleteMutation = trpc.clients.delete.useMutation({
     onSuccess: () => {
-      utils.clients.listAll.invalidate();
       utils.clients.list.invalidate();
+      utils.clients.getRegions.invalidate();
+      utils.clients.getRouteGroups.invalidate();
       setError(null);
     },
     onError: (err) => {
@@ -122,7 +158,19 @@ export function useClientsData() {
   });
 
   // Convertir clientes del servidor al formato local
-  const clients: Client[] = (serverClients?.items || []).map(serverToLocalClient);
+  const clients: Client[] = useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap(page => 
+      (page.items || []).map(serverToLocalClient)
+    );
+  }, [data]);
+
+  // Total de clientes
+  const totalClients = data?.pages[0]?.total || 0;
+
+  // Regiones y rutas desde el backend
+  const regions = regionsData || [];
+  const routeGroups = routeGroupsData || [];
 
   // Añadir cliente con manejo de errores mejorado
   const addClient = useCallback(
@@ -173,6 +221,7 @@ export function useClientsData() {
           city: client.address?.city || null,
           postalCode: client.address?.postalCode || null,
           region: client.address?.province || null,
+          routeGroup: client.routeGroup || null,
         });
 
         return serverToLocalClient(result as ServerClient);
@@ -204,6 +253,7 @@ export function useClientsData() {
       if (updates.type !== undefined) updateData.clientType = updates.type;
       if (updates.notes !== undefined) updateData.notes = updates.notes || null;
       if (updates.taxId !== undefined) updateData.taxId = updates.taxId || null;
+      if (updates.routeGroup !== undefined) updateData.routeGroup = updates.routeGroup || null;
 
       // Dirección estructurada
       if (updates.address) {
@@ -259,8 +309,16 @@ export function useClientsData() {
     setError(null);
   }, []);
 
+  // Cargar más clientes
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   return {
     clients,
+    totalClients,
     loading,
     error: error || (queryError?.message ?? null),
     addClient,
@@ -269,6 +327,11 @@ export function useClientsData() {
     getClient,
     refresh: refetch,
     clearError,
+    loadMore,
+    hasMore: hasNextPage,
+    isLoadingMore: isFetchingNextPage,
+    regions,
+    routeGroups,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

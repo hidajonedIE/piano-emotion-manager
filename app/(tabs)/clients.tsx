@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -8,80 +8,52 @@ import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
-import { ThemedView } from '@/components/themed-view';
-import { useClientsData, usePianosData } from '@/hooks/data';
+import { useClientsData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
 import { Spacing } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
-import { Pressable, ScrollView } from 'react-native';
+import { Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius } from '@/constants/theme';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export default function ClientsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { clients, loading, refresh } = useClientsData();
-  const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Debounce search para evitar demasiadas peticiones
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Hook con filtrado en backend
+  const { 
+    clients, 
+    totalClients,
+    loading, 
+    refresh,
+    loadMore,
+    hasMore,
+    isLoadingMore,
+    regions,
+    routeGroups,
+  } = useClientsData({
+    search: debouncedSearch,
+    region: selectedRegion,
+    routeGroup: selectedRoute,
+    pageSize: 30,
+  });
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
 
-  // Obtener regiones y rutas únicas
-  const regions = useMemo(() => {
-    const uniqueRegions = [...new Set(clients.map(c => c.region).filter(Boolean))];
-    return uniqueRegions.sort();
-  }, [clients]);
-
-  const routeGroups = useMemo(() => {
-    const uniqueRoutes = [...new Set(clients.map(c => c.routeGroup).filter(Boolean))];
-    return uniqueRoutes.sort();
-  }, [clients]);
-
-  // Filtrar clientes por búsqueda, región y ruta
-  const filteredClients = useMemo(() => {
-    let filtered = clients;
-    
-    // Filtrar por región
-    if (selectedRegion) {
-      filtered = filtered.filter(c => c.region === selectedRegion);
-    }
-    
-    // Filtrar por grupo de ruta
-    if (selectedRoute) {
-      filtered = filtered.filter(c => c.routeGroup === selectedRoute);
-    }
-    
-    // Filtrar por búsqueda
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(
-        (c) =>
-          getClientFullName(c).toLowerCase().includes(searchLower) ||
-          c.phone?.includes(search) ||
-          c.email?.toLowerCase().includes(searchLower) ||
-          c.city?.toLowerCase().includes(searchLower) ||
-          c.region?.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    return filtered;
-  }, [clients, search, selectedRegion, selectedRoute]);
-
   const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
-
-  // Contar pianos por cliente
-  const getPianoCount = useCallback(
-    (clientId: string) => pianos.filter((p) => p.clientId === clientId).length,
-    [pianos]
-  );
 
   const handleClientPress = useCallback((client: Client) => {
     router.push({
@@ -102,16 +74,31 @@ export default function ClientsScreen() {
     setRefreshing(false);
   }, [refresh]);
 
+  const handleEndReached = useCallback(() => {
+    if (hasMore && !isLoadingMore) {
+      loadMore();
+    }
+  }, [hasMore, isLoadingMore, loadMore]);
+
   const renderItem = useCallback(
     ({ item }: { item: Client }) => (
       <ClientCard
         client={item}
-        pianoCount={getPianoCount(item.id)}
+        pianoCount={0} // Se puede optimizar después con un endpoint específico
         onPress={() => handleClientPress(item)}
       />
     ),
-    [getPianoCount]
+    [handleClientPress]
   );
+
+  const renderFooter = useCallback(() => {
+    if (!isLoadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={accent} />
+      </View>
+    );
+  }, [isLoadingMore, accent]);
 
   // Mostrar animación de carga inicial
   if (loading && clients.length === 0) {
@@ -142,7 +129,7 @@ export default function ClientsScreen() {
     >
       <ScreenHeader 
         title={t('navigation.clients')} 
-        subtitle={`${clients.length} ${clients.length === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`}
+        subtitle={`${totalClients} ${totalClients === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`}
         icon="person.2.fill" showBackButton={true}
       />
 
@@ -221,7 +208,7 @@ export default function ClientsScreen() {
         )}
       </View>
 
-      {filteredClients.length === 0 ? (
+      {clients.length === 0 ? (
         <EmptyState
           icon="person.2.fill" showBackButton={true}
           title={search ? t('common.noResults') : t('clients.noClients')}
@@ -233,20 +220,14 @@ export default function ClientsScreen() {
         />
       ) : (
         <FlatList
-          data={filteredClients}
+          data={clients}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          removeClippedSubviews={true}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          initialNumToRender={10}
-          getItemLayout={(_, index) => ({
-            length: 88,
-            offset: 88 * index,
-            index,
-          })}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -320,6 +301,10 @@ const styles = StyleSheet.create({
   loadingState: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerLoader: {
+    paddingVertical: Spacing.md,
     alignItems: 'center',
   },
 });
