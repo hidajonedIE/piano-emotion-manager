@@ -1,13 +1,9 @@
 {
   "buildCommand": "pnpm run build && npx expo export --platform web",
+  "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "framework": null,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@5.5.16"
-    }
-  },
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/dist/$1" }
-  ]
+  "env": {
+    "ENABLE_EXPERIMENTAL_COREPACK": "1"
+  }
 }
