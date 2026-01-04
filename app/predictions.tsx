@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet as RNStyleSheet } from 'react-native';
 import {
   View,
   ScrollView,
@@ -49,6 +50,21 @@ const MOCK_DATA = {
     { itemName: 'Clavijas de afinación', currentStock: 45, monthlyUsage: 8, monthsUntilMin: 4.2, urgency: 'low' as const },
   ],
 };
+
+// Inyectar CSS global para forzar la altura del contenedor de tabs
+if (typeof document !== 'undefined' && !document.getElementById('tabs-container-css')) {
+  const style = document.createElement('style');
+  style.id = 'tabs-container-css';
+  style.textContent = `
+    [data-testid="tabs-container"],
+    div[style*="borderBottomWidth"][style*="maxHeight"] {
+      height: 32px !important;
+      max-height: 32px !important;
+      overflow: hidden !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export default function PredictionsScreen() {
   const router = useRouter();
