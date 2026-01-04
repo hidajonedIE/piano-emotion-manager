@@ -182,7 +182,7 @@ export const DEFAULT_MODULES: Array<{
     type: 'free',
     includedInPlans: ['free', 'professional', 'premium'],
   },
-  // Pro modules
+  // Pro modules (Professional and Premium)
   {
     code: 'electronic_invoicing',
     name: 'Facturación Electrónica',
@@ -273,7 +273,7 @@ export const DEFAULT_MODULES: Array<{
     type: 'professional',
     includedInPlans: ['professional', 'premium'],
   },
-  // Premium IA modules
+  // Premium IA modules (Premium only)
   {
     code: 'ai_chat',
     name: 'Asistente de Chat con IA (Gemini)',
