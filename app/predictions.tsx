@@ -625,12 +625,12 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    height: 52,
+    height: 40,
     flex: 0,
     flexShrink: 0,
   },
   tabsContent: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 0,
     gap: 2,
     alignItems: 'center',
@@ -639,13 +639,13 @@ const styles = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    minHeight: 36,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    minHeight: 28,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: 'transparent',
-    marginRight: 8,
+    marginRight: 6,
   },
   tabLabel: {
     fontSize: 14,
