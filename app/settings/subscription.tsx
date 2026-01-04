@@ -30,8 +30,12 @@ export default function SubscriptionScreen() {
   // Obtener planes disponibles
   const { data: plansData, isLoading: plansLoading, error: plansError } = trpc.advanced.subscription.getPlans.useQuery();
   
+  // Debug
+  console.log('Plans data:', plansData);
+  console.log('Plans error:', plansError);
+  
   // Fallback si la consulta falla
-  const plans = plansData || [
+  const plans = (plansData && plansData.length > 0) ? plansData : [
     {
       id: 'FREE',
       name: 'Plan Gratuito',
@@ -203,6 +207,10 @@ export default function SubscriptionScreen() {
   };
 
   const isLoading = plansLoading || currentPlanLoading;
+  
+  // Debug
+  console.log('Plans array:', plans);
+  console.log('Is loading:', isLoading);
 
   if (isLoading) {
     return (
