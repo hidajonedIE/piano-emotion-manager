@@ -139,8 +139,8 @@ export function DashboardHelp() {
 
 const styles = StyleSheet.create({
   container: {
+    marginHorizontal: 16,
     marginBottom: 16,
-    padding: 16,
     borderRadius: 12,
     backgroundColor: '#fff',
     shadowColor: '#000',
@@ -148,12 +148,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   headerContent: {
     flex: 1,
@@ -165,8 +168,10 @@ const styles = StyleSheet.create({
   },
 
   contentContainer: {
-    marginTop: 16,
+    marginTop: 0,
     maxHeight: 400,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   loadingContainer: {
     paddingVertical: 32,
