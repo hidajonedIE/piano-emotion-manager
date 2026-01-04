@@ -88,7 +88,7 @@ const SortableItem = memo(function SortableItem({
     <div ref={setNodeRef} style={style}>
       <div
         style={{
-          marginBottom: 16,
+          marginBottom: 0,
           borderRadius: 16,
           overflow: 'hidden',
           opacity: isItemDragging ? 0.3 : 1,
