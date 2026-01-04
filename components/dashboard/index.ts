@@ -16,6 +16,7 @@ export { DashboardAccessShortcuts } from './dashboard-access-shortcuts';
 export { DashboardAdvancedTools } from './dashboard-advanced-tools';
 export { DashboardPredictions } from './dashboard-predictions';
 export { DashboardRecentServices } from './dashboard-recent-services';
+export { DashboardHelp } from './dashboard-help';
 export { DashboardSettingsPanel } from './dashboard-settings-panel';
 export { DashboardDraggable } from './dashboard-draggable';
 export { DashboardDraggableWeb } from './dashboard-draggable-web';

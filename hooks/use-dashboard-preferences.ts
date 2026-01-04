@@ -17,6 +17,7 @@ export type DashboardSectionId =
   | 'recent_services'
   | 'access_shortcuts'
   | 'advanced_tools'
+  | 'help'
   | 'store';
 
 // Configuración de una sección
@@ -49,7 +50,8 @@ const DEFAULT_SECTIONS: DashboardSectionConfig[] = [
   { id: 'recent_services', title: 'Servicios Recientes', visible: true, order: 4 },
   { id: 'access_shortcuts', title: 'Accesos Rápidos', visible: true, order: 5 },
   { id: 'advanced_tools', title: 'Herramientas Avanzadas', visible: true, order: 6 },
-  { id: 'store', title: 'Tienda', visible: true, order: 7 },
+  { id: 'help', title: 'Ayuda', visible: true, order: 7 },
+  { id: 'store', title: 'Tienda', visible: true, order: 8 },
 ];
 
 // Posición por defecto: abajo derecha

@@ -30,6 +30,7 @@ import {
   DashboardAdvancedTools,
   DashboardPredictions,
   DashboardRecentServices,
+  DashboardHelp,
   DashboardDraggableWeb,
 } from '@/components/dashboard';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
@@ -174,6 +175,8 @@ export default function DashboardScreen() {
         return <DashboardAccessShortcuts key={sectionId} urgentCount={stats.urgentCount} />;
       case 'advanced_tools':
         return <DashboardAdvancedTools key={sectionId} />;
+      case 'help':
+        return <DashboardHelp key={sectionId} />;
       case 'store':
         return <PianoEmotionStore key={sectionId} collapsed={true} />;
       default:
