@@ -105,7 +105,11 @@ export function DashboardHelp() {
                     onPress={() => toggleSection(section.id)}
                   >
                     <View style={styles.sectionHeaderContent}>
-                      <ThemedText style={styles.sectionIcon}>{section.icon}</ThemedText>
+                      <IconSymbol
+                        name={section.icon as any}
+                        size={20}
+                        color={section.iconColor || accent}
+                      />
                       <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
                     </View>
                     <IconSymbol
