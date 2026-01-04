@@ -277,16 +277,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     backgroundColor: '#1A1A1A',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   logoText: {
-    fontSize: 24,
+    fontSize: 20,
   },
   headerTextContainer: {
     flex: 1,
