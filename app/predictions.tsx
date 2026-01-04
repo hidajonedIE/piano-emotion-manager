@@ -625,14 +625,13 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    height: 40,
   },
   tabsContent: {
     paddingHorizontal: 12,
-    paddingVertical: 0,
+    paddingVertical: 2,
     gap: 2,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   tab: {
     flexDirection: 'row',
