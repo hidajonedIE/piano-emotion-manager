@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
   },
   tabsContent: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 0,
     gap: 2,
     alignItems: 'center',
     justifyContent: 'flex-start',
