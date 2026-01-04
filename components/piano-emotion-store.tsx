@@ -268,8 +268,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   headerLeft: {
     flexDirection: 'row',
