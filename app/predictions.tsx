@@ -628,8 +628,8 @@ const styles = StyleSheet.create({
   },
   tabsContent: {
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
+    paddingVertical: 4,
+    gap: 4,
   },
   tab: {
     flexDirection: 'row',
