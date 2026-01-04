@@ -58,9 +58,11 @@ if (typeof document !== 'undefined' && !document.getElementById('tabs-container-
   style.textContent = `
     [data-testid="tabs-container"],
     div[style*="borderBottomWidth"][style*="maxHeight"] {
-      height: 44px !important;
-      max-height: 44px !important;
+      height: 52px !important;
+      max-height: 52px !important;
       overflow: hidden !important;
+      padding-left: 16px !important;
+      padding-right: 16px !important;
     }
   `;
   document.head.appendChild(style);
@@ -641,10 +643,11 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    maxHeight: 44,
+    maxHeight: 52,
     overflow: 'hidden',
     flex: 0,
     flexShrink: 0,
+    paddingHorizontal: 16,
   },
   tabsContent: {
     paddingHorizontal: 8,
