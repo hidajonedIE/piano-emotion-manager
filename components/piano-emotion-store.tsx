@@ -254,14 +254,15 @@ export function PianoEmotionStore({ collapsed: collapsedProp = false, onToggle }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
     marginBottom: 16,
+    borderRadius: 12,
+    backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
