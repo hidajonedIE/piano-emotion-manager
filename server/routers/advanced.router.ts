@@ -241,6 +241,10 @@ export const advancedRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         try {
+          // ✅ VERIFICAR LÍMITES DE SUSCRIPCIÓN
+          const { requireAIFeature, recordAIUsage } = await import('../_core/subscription-middleware.js');
+          const { usage, limit } = await requireAIFeature(ctx.user.openId, 'chat');
+          
           const { pianoAssistantChat } = await import('../_core/gemini.js');
           
           const clients = await db.getClients(ctx.user.openId);
@@ -253,12 +257,25 @@ export const advancedRouter = router({
             pendingServices,
           });
           
+          // ✅ REGISTRAR USO
+          await recordAIUsage(ctx.user.openId, 'chat', response.tokensUsed || 0);
+          
           return {
             success: true,
-            response,
+            response: response.text || response,
             suggestions: generateSuggestions(input.message),
+            usage: {
+              current: usage + 1,
+              limit,
+              remaining: limit - usage - 1,
+            },
           };
         } catch (error) {
+          // Si es un error de límites, lanzarlo
+          if (error instanceof Error && error.message.includes('límite')) {
+            throw error;
+          }
+          
           return {
             success: false,
             response: getFallbackResponse(input.message),

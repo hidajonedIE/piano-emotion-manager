@@ -25,6 +25,7 @@ export { invitationsRouter } from './invitations.router.js';
 // Routers avanzados
 export { advancedRouter } from './advanced.router.js';
 export { seedRouter } from './seed.router.js';
+export { usageRouter } from './usage.router.js';
 
 // Routers de equipos (existentes)
 export { teamRouter, organizationsRouter, membersRouter, workAssignmentsRouter } from './team.router.js';

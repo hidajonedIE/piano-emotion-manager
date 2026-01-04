@@ -27,8 +27,15 @@ import {
   invitationsRouter,
   advancedRouter,
   seedRouter,
+  usageRouter,
 } from "./routers/index.js";
 import { licenseRouter } from "./routers/license/index.js";
+import { aiGenerationRouter } from "./routers/ai-generation.router.js";
+import { calendarRouter } from "./routers/calendar.router.js";
+import { clientPortalRouter } from "./routers/client-portal.router.js";
+import { portalAdminRouter } from "./routers/portal-admin.router.js";
+import { timelineRouter } from "./routers/timeline.router.js";
+import { exportRouter } from "./routers/export.router.js";
 
 export const appRouter = router({
   // Sistema
@@ -58,11 +65,30 @@ export const appRouter = router({
   // Funcionalidades avanzadas
   advanced: advancedRouter,
   
+  // Uso y límites de suscripción
+  usage: usageRouter,
+  
+  // Generación de contenido con IA
+  aiGeneration: aiGenerationRouter,
+  
   // Seed de datos de prueba
   seed: seedRouter,
   
   // Sistema de licencias
   license: licenseRouter,
+  
+  // Sincronización de calendario
+  calendar: calendarRouter,
+  
+  // Portal de clientes
+  clientPortal: clientPortalRouter,
+  portalAdmin: portalAdminRouter,
+  
+  // Timeline de actividad
+  timeline: timelineRouter,
+  
+  // Exportación de datos
+  export: exportRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -24,8 +24,17 @@ export const predictionsRouter = router({
    * Obtiene el resumen completo de todas las predicciones
    */
   getSummary: protectedProcedure.query(async ({ ctx }) => {
+    // ✅ VERIFICAR LÍMITES DE SUSCRIPCIÓN
+    const { requireAIFeature, recordAIUsage } = await import('../../_core/subscription-middleware.js');
+    await requireAIFeature(ctx.user.openId, 'prediction');
+    
     const service = createPredictionService(ctx.organizationId);
-    return service.getPredictionsSummary(ctx.organizationId);
+    const result = await service.getPredictionsSummary(ctx.organizationId);
+    
+    // ✅ REGISTRAR USO
+    await recordAIUsage(ctx.user.openId, 'prediction');
+    
+    return result;
   }),
 
   /**
