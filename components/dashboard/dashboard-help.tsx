@@ -1,78 +1,99 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export function DashboardHelp() {
   const router = useRouter();
+  const [isExpanded, setIsExpanded] = useState(false);
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');
+  const textTertiary = useThemeColor({}, 'textTertiary');
 
   const helpTopics = [
     {
       title: '¿Cómo empiezo?',
       description: 'Primeros pasos para usar la aplicación',
-      icon: '🚀',
+      icon: 'star.fill',
     },
     {
       title: 'Gestión de Clientes',
       description: 'Aprende a gestionar tus clientes',
-      icon: '👥',
+      icon: 'person.2.fill',
     },
     {
       title: 'Gestión de Pianos',
       description: 'Registra y gestiona tus pianos',
-      icon: '🎹',
+      icon: 'pianokeys',
     },
     {
       title: 'Servicios',
       description: 'Cómo registrar y facturar servicios',
-      icon: '🔧',
+      icon: 'wrench.and.screwdriver.fill',
     },
   ];
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText type="subtitle" style={styles.title}>
-          ❓ Ayuda
-        </ThemedText>
-        <ThemedText style={[styles.subtitle, { color: textSecondary }]}>
-          Encuentra respuestas a tus preguntas
-        </ThemedText>
-      </View>
-
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.topicsContainer}
-        contentContainerStyle={styles.topicsContent}
+      {/* Header colapsable */}
+      <Pressable
+        style={styles.header}
+        onPress={() => setIsExpanded(!isExpanded)}
       >
-        {helpTopics.map((topic, index) => (
-          <Pressable
-            key={index}
-            style={[styles.topicCard, { borderLeftColor: accent }]}
+        <View style={styles.headerContent}>
+          <ThemedText type="subtitle" style={styles.title}>
+            ❓ Ayuda
+          </ThemedText>
+          <ThemedText style={[styles.subtitle, { color: textSecondary }]}>
+            Encuentra respuestas a tus preguntas
+          </ThemedText>
+        </View>
+        <IconSymbol
+          name={isExpanded ? 'chevron.up' : 'chevron.down'}
+          size={20}
+          color={textTertiary}
+        />
+      </Pressable>
+
+      {/* Contenido expandible */}
+      {isExpanded && (
+        <>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.topicsContainer}
+            contentContainerStyle={styles.topicsContent}
+          >
+            {helpTopics.map((topic, index) => (
+              <Pressable
+                key={index}
+                style={[styles.topicCard, { borderLeftColor: accent }]}
+                onPress={() => router.push('/help')}
+              >
+                <View style={[styles.topicIconContainer, { backgroundColor: accent + '20' }]}>
+                  <IconSymbol name={topic.icon} size={24} color={accent} />
+                </View>
+                <ThemedText style={styles.topicTitle}>{topic.title}</ThemedText>
+                <ThemedText style={[styles.topicDescription, { color: textSecondary }]}>
+                  {topic.description}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </ScrollView>
+
+          <Pressable 
+            style={[styles.viewAllButton, { backgroundColor: accent }]}
             onPress={() => router.push('/help')}
           >
-            <ThemedText style={styles.topicIcon}>{topic.icon}</ThemedText>
-            <ThemedText style={styles.topicTitle}>{topic.title}</ThemedText>
-            <ThemedText style={[styles.topicDescription, { color: textSecondary }]}>
-              {topic.description}
+            <ThemedText style={styles.viewAllButtonText}>
+              Ver toda la ayuda →
             </ThemedText>
           </Pressable>
-        ))}
-      </ScrollView>
-
-      <Pressable 
-        style={[styles.viewAllButton, { backgroundColor: accent }]}
-        onPress={() => router.push('/help')}
-      >
-        <ThemedText style={styles.viewAllButtonText}>
-          Ver toda la ayuda →
-        </ThemedText>
-      </Pressable>
+        </>
+      )}
     </ThemedView>
   );
 }
@@ -90,7 +111,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   header: {
-    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 0,
+  },
+  headerContent: {
+    flex: 1,
   },
   title: {
     fontSize: 18,
@@ -99,10 +126,11 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: 0,
   },
   topicsContainer: {
     marginBottom: 16,
+    marginTop: 16,
   },
   topicsContent: {
     gap: 12,
@@ -116,8 +144,12 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#2D5A27',
   },
-  topicIcon: {
-    fontSize: 24,
+  topicIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
   },
   topicTitle: {
