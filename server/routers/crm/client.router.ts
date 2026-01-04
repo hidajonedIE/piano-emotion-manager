@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../../trpc.js';
-import { createClientService } from '../../services/crm/index.js';
+import { router, protectedProcedure } from '../../trpc';
+import { createClientService } from '../../services/crm/index';
 
 // ============================================================================
 // Input Schemas

@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { router, protectedProcedure } from '../_core/trpc.js';
-import * as db from '../db.js';
-import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
+import { router, protectedProcedure } from '../_core/trpc';
+import * as db from '../db';
+import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { TRPCError } from '@trpc/server';
-import { getCached, setCached, deleteCached } from '../cache.js';
+import { getCached, setCached, deleteCached } from '../cache';
 
 export const invitationsRouter = router({
   // Crear una nueva invitación (solo admins)

@@ -4,9 +4,9 @@
  */
 
 import { eq, and, gte, sql } from 'drizzle-orm';
-import { getDb } from '../db.js';
-import { aiUsageTracking, type InsertAIUsageTracking } from '../../drizzle/ai-usage-schema.js';
-import type { AIFeature } from './subscription-limits.js';
+import { getDb } from '../db';
+import { aiUsageTracking, type InsertAIUsageTracking } from '../../drizzle/ai-usage-schema';
+import type { AIFeature } from './subscription-limits';
 
 /**
  * Insert a new AI usage record

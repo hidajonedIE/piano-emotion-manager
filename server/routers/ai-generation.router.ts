@@ -5,9 +5,9 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../_core/trpc.js';
-import { requireAIFeature, recordAIUsage } from '../_core/subscription-middleware.js';
-import { generateServiceReport, generateClientEmail } from '../_core/gemini.js';
+import { router, protectedProcedure } from '../_core/trpc';
+import { requireAIFeature, recordAIUsage } from '../_core/subscription-middleware';
+import { generateServiceReport, generateClientEmail } from '../_core/gemini';
 
 export const aiGenerationRouter = router({
   /**

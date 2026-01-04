@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
-import { getUserByOpenId, upsertUser } from "../../server/db/index.js";
-import { sdk } from "../../server/_core/sdk.js";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const";
+import { getUserByOpenId, upsertUser } from "../../server/db/index";
+import { sdk } from "../../server/_core/sdk";
 
 function getQueryParam(req: VercelRequest, key: string): string | undefined {
   const value = req.query[key];

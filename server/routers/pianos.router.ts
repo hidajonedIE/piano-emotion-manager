@@ -3,11 +3,11 @@
  * Gestión de pianos con validación mejorada, paginación optimizada y caché
  */
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
-import { pianos } from "../../drizzle/schema.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import * as db from "../db";
+import { pianos } from "../../drizzle/schema";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql, lte, gte } from "drizzle-orm";
-import * as cache from "../cache.js";
+import * as cache from "../cache";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN

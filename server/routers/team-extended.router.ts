@@ -16,9 +16,9 @@ interface ServiceZoneUpdate {
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { eq, and, gte, lte, desc, sql, between } from "drizzle-orm";
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { permissionsService } from "../services/team/permissions.service.js";
-import { getDb } from "../db.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { permissionsService } from "../services/team/permissions.service";
+import { getDb } from "../db";
 import {
   organizationMembers,
   memberAbsences,
@@ -26,8 +26,8 @@ import {
   technicianZones,
   technicianMetrics,
   workAssignments,
-} from "../../drizzle/team-schema.js";
-import { services, appointments } from "../../drizzle/schema.js";
+} from "../../drizzle/team-schema";
+import { services, appointments } from "../../drizzle/schema";
 
 // ==========================================
 // SCHEMAS DE VALIDACIÓN

@@ -4,7 +4,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getDb } from '../../../server/db.js';
+import { getDb } from '../../../server/db';
 import { distributorPremiumConfig } from '../../../server/db/premium-schema';
 import { eq } from 'drizzle-orm';
 

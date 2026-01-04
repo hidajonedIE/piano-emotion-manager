@@ -3,8 +3,8 @@
  * Sistema de alertas cuando los usuarios alcanzan ciertos umbrales de uso
  */
 
-import { getMonthlyAIUsage } from './ai-usage-db.js';
-import { getFeatureLimit, type AIFeature, type SubscriptionPlan } from './subscription-limits.js';
+import { getMonthlyAIUsage } from './ai-usage-db';
+import { getFeatureLimit, type AIFeature, type SubscriptionPlan } from './subscription-limits';
 
 export interface UsageAlert {
   feature: AIFeature;

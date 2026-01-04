@@ -3,5 +3,5 @@
  * Piano Emotion Manager
  */
 
-export * from './cors.config.js';
-export * from './rate-limit.js';
+export * from './cors.config';
+export * from './rate-limit';

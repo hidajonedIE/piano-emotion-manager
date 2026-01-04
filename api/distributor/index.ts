@@ -7,7 +7,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getDb } from '../../server/db.js';
+import { getDb } from '../../server/db';
 import { distributorPremiumConfig } from '../../server/db/premium-schema';
 import { users } from '../../drizzle/schema';
 import { eq, sql, and, gte, isNotNull } from 'drizzle-orm';

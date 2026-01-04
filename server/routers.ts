@@ -5,8 +5,8 @@
  * Este archivo importa y combina todos los routers modulares.
  * Cada dominio tiene su propio archivo en server/routers/
  */
-import { router } from "./_core/trpc.js";
-import { systemRouter } from "./_core/systemRouter.js";
+import { router } from "./_core/trpc";
+import { systemRouter } from "./_core/systemRouter";
 
 // Importar routers modulares
 import {
@@ -28,14 +28,14 @@ import {
   advancedRouter,
   seedRouter,
   usageRouter,
-} from "./routers/index.js";
-import { licenseRouter } from "./routers/license/index.js";
-import { aiGenerationRouter } from "./routers/ai-generation.router.js";
-import { calendarRouter } from "./routers/calendar.router.js";
-import { clientPortalRouter } from "./routers/client-portal.router.js";
-import { portalAdminRouter } from "./routers/portal-admin.router.js";
-import { timelineRouter } from "./routers/timeline.router.js";
-import { exportRouter } from "./routers/export.router.js";
+} from "./routers/index";
+import { licenseRouter } from "./routers/license/index";
+import { aiGenerationRouter } from "./routers/ai-generation.router";
+import { calendarRouter } from "./routers/calendar.router";
+import { clientPortalRouter } from "./routers/client-portal.router";
+import { portalAdminRouter } from "./routers/portal-admin.router";
+import { timelineRouter } from "./routers/timeline.router";
+import { exportRouter } from "./routers/export.router";
 
 export const appRouter = router({
   // Sistema

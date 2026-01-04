@@ -4,29 +4,29 @@
  */
 
 // Routers de entidades principales
-export { clientsRouter } from './clients.router.js';
-export { pianosRouter } from './pianos.router.js';
-export { servicesRouter } from './services.router.js';
-export { inventoryRouter } from './inventory.router.js';
-export { appointmentsRouter } from './appointments.router.js';
-export { invoicesRouter } from './invoices.router.js';
-export { quotesRouter } from './quotes.router.js';
-export { quoteTemplatesRouter } from './quote-templates.router.js';
-export { remindersRouter } from './reminders.router.js';
+export { clientsRouter } from './clients.router';
+export { pianosRouter } from './pianos.router';
+export { servicesRouter } from './services.router';
+export { inventoryRouter } from './inventory.router';
+export { appointmentsRouter } from './appointments.router';
+export { invoicesRouter } from './invoices.router';
+export { quotesRouter } from './quotes.router';
+export { quoteTemplatesRouter } from './quote-templates.router';
+export { remindersRouter } from './reminders.router';
 
 // Routers de configuración
-export { authRouter } from './auth.router.js';
-export { testAuthRouter } from './test-auth.router.js';
-export { businessInfoRouter } from './business-info.router.js';
-export { serviceRatesRouter } from './service-rates.router.js';
-export { modulesRouter } from './modules.router.js';
-export { invitationsRouter } from './invitations.router.js';
+export { authRouter } from './auth.router';
+export { testAuthRouter } from './test-auth.router';
+export { businessInfoRouter } from './business-info.router';
+export { serviceRatesRouter } from './service-rates.router';
+export { modulesRouter } from './modules.router';
+export { invitationsRouter } from './invitations.router';
 
 // Routers avanzados
-export { advancedRouter } from './advanced.router.js';
-export { seedRouter } from './seed.router.js';
-export { usageRouter } from './usage.router.js';
+export { advancedRouter } from './advanced.router';
+export { seedRouter } from './seed.router';
+export { usageRouter } from './usage.router';
 
 // Routers de equipos (existentes)
-export { teamRouter, organizationsRouter, membersRouter, workAssignmentsRouter } from './team.router.js';
-export { teamExtendedRouter, absencesRouter, metricsRouter, zonesRouter } from './team-extended.router.js';
+export { teamRouter, organizationsRouter, membersRouter, workAssignmentsRouter } from './team.router';
+export { teamExtendedRouter, absencesRouter, metricsRouter, zonesRouter } from './team-extended.router';

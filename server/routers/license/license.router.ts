@@ -7,8 +7,8 @@
 
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure, publicProcedure } from '../../_core/trpc.js';
-import { createLicenseService } from '../../services/license/license.service.js';
+import { router, protectedProcedure, publicProcedure } from '../../_core/trpc';
+import { createLicenseService } from '../../services/license/license.service';
 
 // ============================================================================
 // Schemas

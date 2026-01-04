@@ -3,8 +3,8 @@
  * Gestión de recordatorios
  */
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import * as db from "../db";
 
 export const remindersRouter = router({
   list: protectedProcedure.query(({ ctx }) => db.getReminders(ctx.user.openId)),

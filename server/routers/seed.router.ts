@@ -1,6 +1,6 @@
-import { router, protectedProcedure } from "../_core/trpc.js";
-import { getDb } from "../db.js";
-import { clients, pianos, services } from "../../drizzle/schema.js";
+import { router, protectedProcedure } from "../_core/trpc";
+import { getDb } from "../db";
+import { clients, pianos, services } from "../../drizzle/schema";
 
 export const seedRouter = router({
   seedTestData: protectedProcedure.mutation(async ({ ctx }) => {

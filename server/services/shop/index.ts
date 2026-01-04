@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-export { ShopService, createShopService } from './shop.service.js';
+export { ShopService, createShopService } from './shop.service';
 
 export type {
   ShopInput,
@@ -11,4 +11,4 @@ export type {
   CartItemInput,
   OrderInput,
   ShopAccessResult,
-} from './shop.service.js';
+} from './shop.service';

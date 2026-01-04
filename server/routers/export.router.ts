@@ -5,10 +5,10 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../_core/trpc.js';
+import { router, protectedProcedure } from '../_core/trpc';
 import { getDb } from '../db';
-import * as pdfGen from '../_core/export/pdf-generator.js';
-import * as excelGen from '../_core/export/excel-generator.js';
+import * as pdfGen from '../_core/export/pdf-generator';
+import * as excelGen from '../_core/export/excel-generator';
 
 export const exportRouter = router({
 

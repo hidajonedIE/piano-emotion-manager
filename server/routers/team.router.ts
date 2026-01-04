@@ -7,10 +7,10 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { organizationService } from "../services/team/organization.service.js";
-import { workAssignmentService } from "../services/team/work-assignment.service.js";
-import { permissionsService } from "../services/team/permissions.service.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { organizationService } from "../services/team/organization.service";
+import { workAssignmentService } from "../services/team/work-assignment.service";
+import { permissionsService } from "../services/team/permissions.service";
 
 // ==========================================
 // SCHEMAS DE VALIDACIÓN

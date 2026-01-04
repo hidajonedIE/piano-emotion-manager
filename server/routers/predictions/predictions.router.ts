@@ -6,9 +6,9 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../../trpc.js';
-import { PredictionService } from '../../services/analytics/prediction.service.js';
-import { db } from '../../db.js';
+import { router, protectedProcedure } from '../../trpc';
+import { PredictionService } from '../../services/analytics/prediction.service';
+import { db } from '../../db';
 
 // Crear instancia del servicio de predicciones
 const createPredictionService = (organizationId: string) => {

@@ -3,8 +3,8 @@
  * Gestión de tarifas de servicios
  */
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import * as db from "../db";
 
 export const serviceRatesRouter = router({
   list: protectedProcedure.query(({ ctx }) => db.getServiceRates(ctx.user.openId)),

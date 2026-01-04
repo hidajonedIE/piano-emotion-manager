@@ -6,8 +6,8 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { applyCorsHeaders, isOriginAllowed } from "../security/cors.config.js";
-import { applyRateLimit } from "../security/rate-limit.js";
+import { applyCorsHeaders, isOriginAllowed } from "../security/cors.config";
+import { applyRateLimit } from "../security/rate-limit";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
