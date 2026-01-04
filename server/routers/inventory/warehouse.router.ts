@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../../trpc';
-import { warehouseService } from '../../services/inventory';
+import { router, protectedProcedure } from '../../trpc.js';
+import { warehouseService } from '../../services/inventory.js';
 
 // Schemas de validación
 const warehouseTypeSchema = z.enum([

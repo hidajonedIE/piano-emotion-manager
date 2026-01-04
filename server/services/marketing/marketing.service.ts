@@ -1,4 +1,4 @@
-import { db } from '../../db';
+import { db } from '../../db.js';
 
 interface RecipientFilters {
   tags?: string[];
@@ -14,8 +14,8 @@ import {
   messageHistory,
   MessageTemplateType,
   CampaignStatus 
-} from '../../../drizzle/marketing-schema';
-import { clients, pianos, services } from '../../../drizzle/schema';
+} from '../../../drizzle/marketing-schema.js';
+import { clients, pianos, services } from '../../../drizzle/schema.js';
 
 /**
  * Variables disponibles para cada tipo de plantilla

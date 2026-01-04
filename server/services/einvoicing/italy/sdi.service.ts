@@ -14,14 +14,14 @@
  * - Intermediarios autorizados
  */
 
-import { BaseEInvoicingService } from '../base.service';
+import { BaseEInvoicingService } from '../base.service.js';
 import {
   SupportedCountry,
   InvoicingSystem,
   EInvoice,
   EInvoiceStatus,
   SendResult,
-} from '../types';
+} from '../types.js';
 
 // Tipos específicos de Italia
 export interface FatturaPAConfig {

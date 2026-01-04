@@ -40,7 +40,7 @@ import type {
   WebhookActionConfig,
   DelayActionConfig,
   ConditionActionConfig,
-} from './workflow.types';
+} from './workflow.types.js';
 
 // Re-exportar tipos para uso externo
 export type {

@@ -5,10 +5,10 @@
  */
 
 import type { Request, Response } from 'express';
-import * as db from './db';
-import * as syncEngine from './sync-engine';
-import * as googleCalendar from './google-calendar';
-import * as microsoftCalendar from './microsoft-calendar';
+import * as db from './db.js';
+import * as syncEngine from './sync-engine.js';
+import * as googleCalendar from './google-calendar.js';
+import * as microsoftCalendar from './microsoft-calendar.js';
 
 /**
  * Handle Google Calendar webhook notification

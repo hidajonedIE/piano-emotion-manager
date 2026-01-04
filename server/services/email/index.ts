@@ -3,11 +3,11 @@
  * Piano Emotion Manager
  */
 
-export { emailService, default } from './email.service';
+export { emailService, default } from './email.service.js';
 export type {
   EmailConfig,
   EmailOptions,
   InvitationEmailData,
   AssignmentNotificationData,
   WorkCompletedNotificationData,
-} from './email.service';
+} from './email.service.js';

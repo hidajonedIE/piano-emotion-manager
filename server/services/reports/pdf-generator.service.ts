@@ -5,8 +5,8 @@
  * Genera reportes en formato PDF con gráficos y tablas
  */
 
-import { AnalyticsService, DateRange, DashboardMetrics } from './analytics.service';
-import type { SectionData, RevenueDataItem, ServiceDataItem, PianoDataItem } from './pdf-generator.types';
+import { AnalyticsService, DateRange, DashboardMetrics } from './analytics.service.js';
+import type { SectionData, RevenueDataItem, ServiceDataItem, PianoDataItem } from './pdf-generator.types.js';
 
 // ============================================================================
 // Types

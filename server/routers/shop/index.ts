@@ -3,5 +3,5 @@
  * Piano Emotion Manager
  */
 
-export { shopRouter } from './shop.router';
-export type { ShopRouter } from './shop.router';
+export { shopRouter } from './shop.router.js';
+export type { ShopRouter } from './shop.router.js';

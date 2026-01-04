@@ -8,8 +8,8 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getDb } from '../../server/db.js';
-import { distributorPremiumConfig } from '../../server/db/premium-schema';
-import { users } from '../../drizzle/schema';
+import { distributorPremiumConfig } from '../../server/db/premium-schema.js';
+import { users } from '../../drizzle/schema.js';
 import { eq, sql, and, gte, isNotNull } from 'drizzle-orm';
 
 // ==========================================

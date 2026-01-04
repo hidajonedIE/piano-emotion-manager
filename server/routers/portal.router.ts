@@ -5,8 +5,8 @@
 
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { db } from '../db';
+import { router, publicProcedure, protectedProcedure } from '../trpc.js';
+import { db } from '../db.js';
 import { clients, pianos, services, appointments, users } from '../../drizzle/schema.js';
 import { eq, and, desc, gte } from 'drizzle-orm';
 import { createHash } from 'crypto';

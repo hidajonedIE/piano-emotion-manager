@@ -15,14 +15,14 @@
  * Moneda: DKK (Corona danesa) - No Euro
  */
 
-import { BaseEInvoicingService } from '../base.service';
+import { BaseEInvoicingService } from '../base.service.js';
 import {
   SupportedCountry,
   InvoicingSystem,
   EInvoice,
   EInvoiceStatus,
   SendResult,
-} from '../types';
+} from '../types.js';
 
 // Tipos de documento OIOUBL
 export type OIOUBLDocumentType = 

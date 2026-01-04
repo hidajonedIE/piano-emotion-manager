@@ -14,7 +14,7 @@ import {
   decryptJSON, 
   maskSensitiveValue,
   isEncryptionConfigured 
-} from '../encryption.service';
+} from '../encryption.service.js';
 
 import type {
   DatabaseConnection,
@@ -53,7 +53,7 @@ import type {
   MaskedPayPalConfig,
   MaskedGatewayConfig,
   SqlParameterValue,
-} from './payment.types';
+} from './payment.types.js';
 
 // Re-exportar tipos para uso externo
 export type {

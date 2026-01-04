@@ -6,7 +6,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import type { AccountTier } from '../db/premium-schema';
+import type { AccountTier } from '../db/premium-schema.js';
 
 // ============================================
 // TIPOS

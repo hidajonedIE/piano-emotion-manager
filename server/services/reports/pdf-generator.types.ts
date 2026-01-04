@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import type { DateRange, DashboardMetrics } from './analytics.service';
+import type { DateRange, DashboardMetrics } from './analytics.service.js';
 
 // ============================================================================
 // Tipos de Sección

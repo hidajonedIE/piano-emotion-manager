@@ -7,9 +7,9 @@
  */
 
 // Servicios
-export { organizationService, OrganizationService } from './organization.service';
-export { workAssignmentService, WorkAssignmentService } from './work-assignment.service';
-export { permissionsService, PermissionsService, requirePermission, createPermissionsChecker } from './permissions.service';
+export { organizationService, OrganizationService } from './organization.service.js';
+export { workAssignmentService, WorkAssignmentService } from './work-assignment.service.js';
+export { permissionsService, PermissionsService, requirePermission, createPermissionsChecker } from './permissions.service.js';
 
 // Tipos de organización
 export type {
@@ -17,7 +17,7 @@ export type {
   UpdateOrganizationInput,
   InviteMemberInput,
   OrganizationWithMembers,
-} from './organization.service';
+} from './organization.service.js';
 
 // Tipos de asignación
 export type {
@@ -26,7 +26,7 @@ export type {
   TechnicianAvailability,
   WorkAssignmentWithDetails,
   DailySchedule,
-} from './work-assignment.service';
+} from './work-assignment.service.js';
 
 // Tipos de permisos
 export type {
@@ -36,4 +36,4 @@ export type {
   Permission,
   OrganizationRole,
   PermissionsContext,
-} from './permissions.service';
+} from './permissions.service.js';

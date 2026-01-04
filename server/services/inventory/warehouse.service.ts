@@ -7,7 +7,7 @@
  */
 
 import { eq, and, desc, asc, sql, isNull } from 'drizzle-orm';
-import { db } from '../../db';
+import { db } from '../../db.js';
 import {
   warehouses,
   warehouseStock,
@@ -15,7 +15,7 @@ import {
   products,
   type WarehouseType,
   type ValuationMethod,
-} from '../../../drizzle/inventory-schema';
+} from '../../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

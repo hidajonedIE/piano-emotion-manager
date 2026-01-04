@@ -5,15 +5,15 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../_core/trpc';
+import { router, protectedProcedure } from '../_core/trpc.js';
 import { nanoid } from 'nanoid';
-import * as db from '../_core/calendar/db';
-import * as googleOAuth from '../_core/calendar/oauth-google';
-import * as microsoftOAuth from '../_core/calendar/oauth-microsoft';
-import * as googleCalendar from '../_core/calendar/google-calendar';
-import * as microsoftCalendar from '../_core/calendar/microsoft-calendar';
-import * as syncEngine from '../_core/calendar/sync-engine';
-import * as webhookHandler from '../_core/calendar/webhook-handler';
+import * as db from '../_core/calendar/db.js';
+import * as googleOAuth from '../_core/calendar/oauth-google.js';
+import * as microsoftOAuth from '../_core/calendar/oauth-microsoft.js';
+import * as googleCalendar from '../_core/calendar/google-calendar.js';
+import * as microsoftCalendar from '../_core/calendar/microsoft-calendar.js';
+import * as syncEngine from '../_core/calendar/sync-engine.js';
+import * as webhookHandler from '../_core/calendar/webhook-handler.js';
 import { TRPCError } from '@trpc/server';
 
 export const calendarRouter = router({

@@ -3,10 +3,10 @@
  * Piano Emotion Manager
  */
 
-export { notificationService, default } from './notification.service';
+export { notificationService, default } from './notification.service.js';
 export type {
   NotificationType,
   NotificationPayload,
   StoredNotification,
   PushToken,
-} from './notification.service';
+} from './notification.service.js';

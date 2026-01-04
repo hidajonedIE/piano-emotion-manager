@@ -13,14 +13,14 @@
  * Para empresas (B2B): ZUGFeRD aceptado
  */
 
-import { BaseEInvoicingService } from '../base.service';
+import { BaseEInvoicingService } from '../base.service.js';
 import {
   SupportedCountry,
   InvoicingSystem,
   EInvoice,
   EInvoiceStatus,
   SendResult,
-} from '../types';
+} from '../types.js';
 
 // Perfiles ZUGFeRD
 export type ZUGFeRDProfile = 

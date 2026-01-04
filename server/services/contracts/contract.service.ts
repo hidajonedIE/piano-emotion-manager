@@ -33,7 +33,7 @@ import type {
   PaymentProcessingResult,
   RenewalProcessingResult,
   getErrorMessage,
-} from './contract.types';
+} from './contract.types.js';
 
 // Re-exportar tipos para uso externo
 export type {

@@ -5,10 +5,10 @@
  */
 
 import { Router } from 'express';
-import { verifactuService, InvoiceData } from '../services/verifactu.service';
-import { verifactuQRService, QRData } from '../services/verifactu-qr.service';
-import { digitalSignatureService } from '../services/digital-signature.service';
-import { verifactuConfig, validateVerifactuConfig } from '../config/verifactu.config';
+import { verifactuService, InvoiceData } from '../services/verifactu.service.js';
+import { verifactuQRService, QRData } from '../services/verifactu-qr.service.js';
+import { digitalSignatureService } from '../services/digital-signature.service.js';
+import { verifactuConfig, validateVerifactuConfig } from '../config/verifactu.config.js';
 
 const router = Router();
 

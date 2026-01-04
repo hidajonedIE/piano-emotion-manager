@@ -4,8 +4,8 @@
  */
 
 // Servicios
-export { ClientService, createClientService } from './client.service';
-export { CampaignService, createCampaignService } from './campaign.service';
+export { ClientService, createClientService } from './client.service.js';
+export { CampaignService, createCampaignService } from './campaign.service.js';
 
 // Tipos
 export type {
@@ -14,9 +14,9 @@ export type {
   ClientWithProfile,
   CommunicationInput,
   TaskInput,
-} from './client.service';
+} from './client.service.js';
 
 export type {
   CampaignInput,
   CampaignStats,
-} from './campaign.service';
+} from './campaign.service.js';

@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../_core/trpc';
-import * as timeline from '../_core/timeline/timeline';
+import { router, protectedProcedure } from '../_core/trpc.js';
+import * as timeline from '../_core/timeline/timeline.js';
 
 export const timelineRouter = router({
   

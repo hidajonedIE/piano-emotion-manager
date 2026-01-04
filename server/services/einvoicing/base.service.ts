@@ -13,7 +13,7 @@ import {
   BaseInvoiceData,
   VAT_RATES,
   DEFAULT_CURRENCY,
-} from './types';
+} from './types.js';
 
 export abstract class BaseEInvoicingService implements IEInvoicingService {
   abstract country: SupportedCountry;

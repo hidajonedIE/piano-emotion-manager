@@ -3,5 +3,5 @@
  * Piano Emotion Manager
  */
 
-export { analyticsRouter } from './analytics.router';
-export type { AnalyticsRouter } from './analytics.router';
+export { analyticsRouter } from './analytics.router.js';
+export type { AnalyticsRouter } from './analytics.router.js';

@@ -6,13 +6,13 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { WooCommerceService, createWooCommerceService, WooCommerceOrder } from './woocommerce.service';
+import { WooCommerceService, createWooCommerceService, WooCommerceOrder } from './woocommerce.service.js';
 import type { 
   AccountTier, 
   TechnicianAccountStatus, 
   DistributorPremiumConfig,
   PurchaseVerificationResult 
-} from '../db/premium-schema';
+} from '../db/premium-schema.js';
 
 // ============================================
 // TIPOS

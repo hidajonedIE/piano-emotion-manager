@@ -22,7 +22,7 @@
  * });
  * ```
  */
-import { ENV } from "./env";
+import { ENV } from "./env.js";
 
 export type TranscribeOptions = {
   audioUrl: string; // URL to the audio file (e.g., S3 URL)
@@ -242,7 +242,7 @@ function getLanguageName(langCode: string): string {
  *
  * ```ts
  * // In server/routers.ts
- * import { transcribeAudio } from "./_core/voiceTranscription";
+ * import { transcribeAudio } from "./_core/voiceTranscription.js";
  *
  * export const voiceRouter = router({
  *   transcribe: protectedProcedure

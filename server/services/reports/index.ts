@@ -4,8 +4,8 @@
  */
 
 // Servicios
-export { AnalyticsService, createAnalyticsService } from './analytics.service';
-export { PDFGeneratorService, createPDFGenerator } from './pdf-generator.service';
+export { AnalyticsService, createAnalyticsService } from './analytics.service.js';
+export { PDFGeneratorService, createPDFGenerator } from './pdf-generator.service.js';
 
 // Tipos de Analytics
 export type {
@@ -18,11 +18,11 @@ export type {
   PianosByBrand,
   MonthlyTrend,
   GeographicDistribution,
-} from './analytics.service';
+} from './analytics.service.js';
 
 // Tipos de PDF Generator
 export type {
   ReportConfig,
   ReportSection,
   GeneratedReport,
-} from './pdf-generator.service';
+} from './pdf-generator.service.js';

@@ -5,9 +5,9 @@
  * 'jnavarrete-inboundemotion' al openId del usuario autenticado en Clerk
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { verifyClerkSession } from '../server/_core/clerk';
-import { getDb } from '../server/db';
-import { users, clients } from '../drizzle/schema';
+import { verifyClerkSession } from '../server/_core/clerk.js';
+import { getDb } from '../server/db.js';
+import { users, clients } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 const OLD_OWNER_ID = 'jnavarrete-inboundemotion';
