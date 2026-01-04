@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     minHeight: 36,
-    borderRadius: 6,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: 'transparent',
     marginRight: 8,
