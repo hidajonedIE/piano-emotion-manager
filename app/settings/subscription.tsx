@@ -28,13 +28,110 @@ export default function SubscriptionScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Obtener planes disponibles
-  const { data: plans, isLoading: plansLoading } = trpc.advanced.subscription.getPlans.useQuery();
+  const { data: plansData, isLoading: plansLoading, error: plansError } = trpc.advanced.subscription.getPlans.useQuery();
+  
+  // Fallback si la consulta falla
+  const plans = plansData || [
+    {
+      id: 'FREE',
+      name: 'Plan Gratuito',
+      price: 0,
+      currency: 'EUR',
+      interval: 'year',
+      limits: {
+        clients: 100,
+        pianos: 200,
+        servicesPerMonth: 100,
+        invoicesPerMonth: 100,
+        storage: '500 MB',
+      },
+      features: [
+        'Hasta 100 clientes',
+        'Hasta 200 pianos',
+        'Hasta 100 servicios/mes',
+        'Hasta 100 facturas/mes',
+        'Calendario completo',
+        'Inventario básico',
+        'Recordatorios',
+        'Contratos',
+        'Mapa de clientes',
+        'Rutas',
+        'Importar/Exportar',
+        '500 MB almacenamiento',
+      ],
+    },
+    {
+      id: 'PROFESSIONAL',
+      name: 'Plan Pro',
+      price: 30,
+      currency: 'EUR',
+      interval: 'year',
+      priceId: 'price_1SiNNrDpmJIxYFlvPsgsL3iX',
+      limits: {
+        clients: -1,
+        pianos: -1,
+        servicesPerMonth: -1,
+        invoicesPerMonth: -1,
+        storage: '2 GB',
+      },
+      features: [
+        'Todo lo del Plan Gratuito',
+        'Clientes ilimitados',
+        'Pianos ilimitados',
+        'Servicios ilimitados',
+        'Facturas ilimitadas',
+        'Comunicaciones (WhatsApp, Email)',
+        'Marketing y campañas',
+        'CRM avanzado',
+        'Equipos (multi-técnico)',
+        'Contabilidad',
+        'Analytics avanzados',
+        'Portal de clientes',
+        'Automatizaciones básicas',
+        'Sync Google/Outlook',
+        'Pasarelas de pago',
+        '2 GB almacenamiento',
+        'Soporte prioritario por email',
+      ],
+    },
+    {
+      id: 'PREMIUM_IA',
+      name: 'Plan Premium IA',
+      price: 50,
+      currency: 'EUR',
+      interval: 'year',
+      priceId: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',
+      limits: {
+        clients: -1,
+        pianos: -1,
+        servicesPerMonth: -1,
+        invoicesPerMonth: -1,
+        storage: '5 GB',
+      },
+      features: [
+        'Todo lo del Plan Pro',
+        'Asistente de chat con IA (Gemini)',
+        'Predicciones con IA',
+        'Generación automática de emails',
+        'Informes de servicio con IA',
+        'Análisis de riesgo de clientes',
+        'Sugerencias de precios inteligentes',
+        'Workflows avanzados',
+        'Marca blanca (tienda exclusiva)',
+        'API personalizada',
+        '5 GB almacenamiento',
+        'Soporte prioritario por email',
+      ],
+    },
+  ];
   
   // DEBUG
   React.useEffect(() => {
-    console.log('[DEBUG] plans:', plans);
+    console.log('[DEBUG] plansData:', plansData);
+    console.log('[DEBUG] plans (with fallback):', plans);
     console.log('[DEBUG] plansLoading:', plansLoading);
-  }, [plans, plansLoading]);
+    console.log('[DEBUG] plansError:', plansError);
+  }, [plansData, plans, plansLoading, plansError]);
   
   // Obtener plan actual del usuario
   const { data: currentPlan, isLoading: currentPlanLoading } = trpc.advanced.subscription.getCurrentPlan.useQuery();
