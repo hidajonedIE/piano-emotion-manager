@@ -625,7 +625,8 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    height: 40,
+    maxHeight: 40,
+    overflow: 'hidden',
     flex: 0,
     flexShrink: 0,
   },
