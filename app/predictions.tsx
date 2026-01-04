@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 0,
+    paddingVertical: 8,
     borderBottomWidth: 1,
   },
   backButton: {
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     gap: 2,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
   },
   tab: {
     flexDirection: 'row',
