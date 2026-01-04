@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    marginVertical: 0,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -267,7 +267,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -275,8 +276,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoContainer: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     borderRadius: 10,
     backgroundColor: '#1A1A1A',
     justifyContent: 'center',
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   logoText: {
-    fontSize: 20,
+    fontSize: 16,
   },
   headerTextContainer: {
     flex: 1,
