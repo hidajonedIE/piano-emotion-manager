@@ -366,6 +366,7 @@ export const advancedRouter = router({
       }),
 
     getPlans: publicProcedure.query(() => {
+      console.log('[DEBUG] getPlans endpoint called');
       return [
         {
           id: 'FREE',
