@@ -628,14 +628,14 @@ const styles = StyleSheet.create({
   },
   tabsContent: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
-    gap: 4,
+    paddingVertical: 0,
+    gap: 2,
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 2,
+    paddingVertical: 0,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'transparent',
