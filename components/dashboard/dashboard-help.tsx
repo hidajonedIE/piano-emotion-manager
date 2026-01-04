@@ -2,66 +2,49 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-interface HelpItem {
-  id: string;
-  section_id: string;
-  question: string;
-  answer: string;
-  order: number;
-}
-
 interface HelpSection {
   id: string;
   title: string;
   icon: string;
-  iconColor: string;
-  order: number;
-  content: HelpItem[];
+  icon_color: string;
+  display_order: number;
 }
 
 export function DashboardHelp() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
   const [sections, setSections] = useState<HelpSection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const textTertiary = useThemeColor({}, 'textTertiary');
 
   useEffect(() => {
-    async function loadHelpData() {
+    async function loadHelpSections() {
       try {
         const response = await fetch('/api/help/sections-with-items');
         if (!response.ok) {
-          throw new Error('Failed to fetch help data');
+          throw new Error('Failed to fetch help sections');
         }
         const data = await response.json();
-        setSections(data);
+        // Solo tomar las primeras 4-5 secciones para el scroll horizontal
+        setSections(data.slice(0, 5));
       } catch (error) {
-        console.error('Error loading help data:', error);
+        console.error('Error loading help sections:', error);
       } finally {
         setLoading(false);
       }
     }
 
-    loadHelpData();
+    loadHelpSections();
   }, []);
-
-  const toggleSection = (sectionId: string) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(sectionId)) {
-      newExpanded.delete(sectionId);
-    } else {
-      newExpanded.add(sectionId);
-    }
-    setExpandedSections(newExpanded);
-  };
 
   return (
     <ThemedView style={styles.container}>
@@ -97,43 +80,40 @@ export function DashboardHelp() {
               </ThemedText>
             </View>
           ) : (
-            <ScrollView style={styles.sectionsContainer}>
-              {sections.map((section) => (
-                <View key={section.id} style={styles.sectionCard}>
+            <>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.topicsContainer}
+                contentContainerStyle={styles.topicsContent}
+              >
+                {sections.map((section) => (
                   <Pressable
-                    style={styles.sectionHeader}
-                    onPress={() => toggleSection(section.id)}
+                    key={section.id}
+                    style={[styles.topicCard, { borderLeftColor: section.icon_color || accent }]}
+                    onPress={() => router.push('/help')}
                   >
-                    <View style={styles.sectionHeaderContent}>
+                    <View style={styles.topicIconContainer}>
                       <IconSymbol
                         name={section.icon as any}
-                        size={20}
-                        color={section.iconColor || accent}
+                        size={24}
+                        color={section.icon_color || accent}
                       />
-                      <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
                     </View>
-                    <IconSymbol
-                      name={expandedSections.has(section.id) ? 'chevron.up' : 'chevron.down'}
-                      size={16}
-                      color={textTertiary}
-                    />
+                    <ThemedText style={styles.topicTitle}>{section.title}</ThemedText>
                   </Pressable>
-
-                  {expandedSections.has(section.id) && (
-                    <View style={styles.sectionContent}>
-                      {section.content.map((item) => (
-                        <View key={item.id} style={styles.faqItem}>
-                          <ThemedText style={styles.question}>{item.question}</ThemedText>
-                          <ThemedText style={[styles.answer, { color: textSecondary }]}>
-                            {item.answer}
-                          </ThemedText>
-                        </View>
-                      ))}
-                    </View>
-                  )}
-                </View>
-              ))}
-            </ScrollView>
+                ))}
+              </ScrollView>
+              
+              <Pressable 
+                style={[styles.viewAllButton, { backgroundColor: accent }]}
+                onPress={() => router.push('/help')}
+              >
+                <ThemedText style={styles.viewAllButtonText}>
+                  Ver toda la ayuda →
+                </ThemedText>
+              </Pressable>
+            </>
           )}
         </View>
       )}
@@ -157,7 +137,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 0,
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
@@ -167,12 +146,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
   },
-
   contentContainer: {
-    marginTop: 0,
-    maxHeight: 400,
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
@@ -193,55 +168,37 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
   },
-  sectionsContainer: {
-    maxHeight: 400,
+  topicsContainer: {
+    marginBottom: 16,
   },
-  sectionCard: {
-    marginBottom: 12,
+  topicsContent: {
+    paddingRight: 16,
+  },
+  topicCard: {
+    width: 140,
+    marginRight: 12,
+    padding: 12,
     borderRadius: 8,
     backgroundColor: '#f9f9f9',
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    overflow: 'hidden',
+    borderLeftWidth: 3,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+  topicIconContainer: {
+    marginBottom: 8,
   },
-  sectionHeaderContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  sectionIcon: {
-    fontSize: 18,
-    marginRight: 8,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    flex: 1,
-  },
-  sectionContent: {
-    borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    backgroundColor: '#fafafa',
-  },
-  faqItem: {
-    marginBottom: 12,
-  },
-  question: {
+  topicTitle: {
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 4,
   },
-  answer: {
-    fontSize: 12,
-    lineHeight: 18,
+  viewAllButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  viewAllButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
