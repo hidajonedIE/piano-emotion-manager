@@ -13,8 +13,9 @@ export function useUserTier(): { tier: UserTier; isLoading: boolean } {
   });
 
   // Mapear el plan de la base de datos al tier del componente
-  const mapPlanToTier = (plan?: string): UserTier => {
-    if (!plan) return 'free';
+  const mapPlanToTier = (plan?: string, subscriptionStatus?: string): UserTier => {
+    // Si no hay plan o la suscripción no está activa, devolver free
+    if (!plan || subscriptionStatus !== 'active') return 'free';
     
     // Mapeo de planes de la base de datos a tiers del UI
     switch (plan) {
@@ -37,7 +38,7 @@ export function useUserTier(): { tier: UserTier; isLoading: boolean } {
     }
   };
 
-  const tier = mapPlanToTier(userData?.subscriptionPlan);
+  const tier = mapPlanToTier(userData?.subscriptionPlan, userData?.subscriptionStatus);
 
   return {
     tier,
