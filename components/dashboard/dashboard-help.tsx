@@ -6,7 +6,6 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { getHelpSectionsWithItems } from '@/app/actions/help-actions';
 
 interface HelpItem {
   id: string;
@@ -38,7 +37,11 @@ export function DashboardHelp() {
   useEffect(() => {
     async function loadHelpData() {
       try {
-        const data = await getHelpSectionsWithItems();
+        const response = await fetch('/api/help/sections-with-items');
+        if (!response.ok) {
+          throw new Error('Failed to fetch help data');
+        }
+        const data = await response.json();
         setSections(data);
       } catch (error) {
         console.error('Error loading help data:', error);
