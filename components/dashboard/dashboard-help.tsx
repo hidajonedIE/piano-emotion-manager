@@ -74,9 +74,6 @@ export function DashboardHelp() {
           <ThemedText type="subtitle" style={styles.title}>
             ❓ Ayuda
           </ThemedText>
-          <ThemedText style={[styles.subtitle, { color: textSecondary }]}>
-            Encuentra respuestas a tus preguntas
-          </ThemedText>
         </View>
         <IconSymbol
           name={isExpanded ? 'chevron.up' : 'chevron.down'}
@@ -166,10 +163,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4,
   },
-  subtitle: {
-    fontSize: 13,
-    marginBottom: 0,
-  },
+
   contentContainer: {
     marginTop: 16,
     maxHeight: 400,
