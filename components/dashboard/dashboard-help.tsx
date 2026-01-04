@@ -139,7 +139,6 @@ export function DashboardHelp() {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 12,
     backgroundColor: '#fff',

@@ -136,7 +136,6 @@ export function PianoEmotionStore({ collapsed: collapsedProp = false, onToggle }
           </View>
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>Piano Emotion Store</Text>
-            <Text style={styles.headerSubtitle}>Tienda de productos para técnicos</Text>
           </View>
         </View>
         <View style={styles.headerRight}>
