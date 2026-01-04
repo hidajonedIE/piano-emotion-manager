@@ -30,6 +30,12 @@ export default function SubscriptionScreen() {
   // Obtener planes disponibles
   const { data: plans, isLoading: plansLoading } = trpc.advanced.subscription.getPlans.useQuery();
   
+  // DEBUG
+  React.useEffect(() => {
+    console.log('[DEBUG] plans:', plans);
+    console.log('[DEBUG] plansLoading:', plansLoading);
+  }, [plans, plansLoading]);
+  
   // Obtener plan actual del usuario
   const { data: currentPlan, isLoading: currentPlanLoading } = trpc.advanced.subscription.getCurrentPlan.useQuery();
 
