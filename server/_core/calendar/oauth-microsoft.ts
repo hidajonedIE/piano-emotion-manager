@@ -3,8 +3,8 @@
  */
 
 import { ConfidentialClientApplication } from '@azure/msal-node';
-import { encrypt, decrypt } from './encryption';
-import type { OAuthTokens } from './types';
+import { encrypt, decrypt } from './encryption.js';
+import type { OAuthTokens } from './types.js';
 
 const MICROSOFT_CLIENT_ID = process.env.MICROSOFT_CALENDAR_CLIENT_ID || '';
 const MICROSOFT_CLIENT_SECRET = process.env.MICROSOFT_CALENDAR_CLIENT_SECRET || '';

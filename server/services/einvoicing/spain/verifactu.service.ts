@@ -5,7 +5,7 @@
  * para la emisión de facturas electrónicas verificables.
  */
 
-import { BaseEInvoicingService, Invoice, EInvoiceResult, ValidationResult } from '../base.service';
+import { BaseEInvoicingService, Invoice, EInvoiceResult, ValidationResult } from '../base.service.js';
 
 interface VerifactuConfig {
   certificatePath?: string;

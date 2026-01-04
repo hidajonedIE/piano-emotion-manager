@@ -4,8 +4,8 @@
  */
 
 import { TRPCError } from '@trpc/server';
-import { getUserByOpenId } from '../db';
-import { getMonthlyAIUsage, trackAIUsage } from './ai-usage-db';
+import { getUserByOpenId } from '../db.js';
+import { getMonthlyAIUsage, trackAIUsage } from './ai-usage-db.js';
 import {
   normalizePlanName,
   hasFeatureAccess,
@@ -13,7 +13,7 @@ import {
   FEATURE_UPGRADE_MESSAGES,
   type AIFeature,
   type SubscriptionPlan,
-} from './subscription-limits';
+} from './subscription-limits.js';
 
 /**
  * Check if user has access to AI features

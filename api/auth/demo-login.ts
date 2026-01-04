@@ -6,10 +6,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const";
-import * as db from "../../server/db";
-import { applyCorsHeaders } from "../../server/security/cors.config";
-import { applyRateLimit } from "../../server/security/rate-limit";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
+import * as db from "../../server/db.js";
+import { applyCorsHeaders } from "../../server/security/cors.config.js";
+import { applyRateLimit } from "../../server/security/rate-limit.js";
 
 // Input validation schema
 const QuerySchema = z.object({

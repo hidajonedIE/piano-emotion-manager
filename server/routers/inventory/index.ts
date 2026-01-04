@@ -3,11 +3,11 @@
  * Piano Emotion Manager
  */
 
-import { router } from '../../trpc';
-import { productRouter } from './product.router';
-import { stockRouter } from './stock.router';
-import { warehouseRouter } from './warehouse.router';
-import { supplierRouter } from './supplier.router';
+import { router } from '../../trpc.js';
+import { productRouter } from './product.router.js';
+import { stockRouter } from './stock.router.js';
+import { warehouseRouter } from './warehouse.router.js';
+import { supplierRouter } from './supplier.router.js';
 
 // Router combinado de inventario
 export const inventoryRouter = router({
@@ -18,7 +18,7 @@ export const inventoryRouter = router({
 });
 
 // Exportar routers individuales
-export { productRouter } from './product.router';
-export { stockRouter } from './stock.router';
-export { warehouseRouter } from './warehouse.router';
-export { supplierRouter } from './supplier.router';
+export { productRouter } from './product.router.js';
+export { stockRouter } from './stock.router.js';
+export { warehouseRouter } from './warehouse.router.js';
+export { supplierRouter } from './supplier.router.js';

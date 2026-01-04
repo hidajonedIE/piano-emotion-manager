@@ -8,8 +8,8 @@
 
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure } from '../../_core/trpc';
-import { createDistributorService } from '../../services/distributor/distributor.service';
+import { router, protectedProcedure } from '../../_core/trpc.js';
+import { createDistributorService } from '../../services/distributor/distributor.service.js';
 
 // ============================================================================
 // Schemas de validación

@@ -12,14 +12,14 @@
  * Perfiles: MINIMUM, BASIC WL, BASIC, EN16931, EXTENDED
  */
 
-import { BaseEInvoicingService } from '../base.service';
+import { BaseEInvoicingService } from '../base.service.js';
 import {
   SupportedCountry,
   InvoicingSystem,
   EInvoice,
   EInvoiceStatus,
   SendResult,
-} from '../types';
+} from '../types.js';
 
 // Perfiles Factur-X
 export type FacturXProfile = 

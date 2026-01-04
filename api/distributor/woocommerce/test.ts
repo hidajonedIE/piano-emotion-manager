@@ -4,8 +4,8 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getDb } from '../../../server/db';
-import { distributorPremiumConfig } from '../../../server/db/premium-schema';
+import { getDb } from '../../../server/db.js';
+import { distributorPremiumConfig } from '../../../server/db/premium-schema.js';
 import { eq } from 'drizzle-orm';
 
 interface WooCommerceTestRequest {

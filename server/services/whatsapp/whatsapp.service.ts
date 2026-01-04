@@ -6,7 +6,7 @@
  */
 
 import { eq, and, desc } from 'drizzle-orm';
-import type { DatabaseConnection, TemplateComponent, TemplateParameter, InteractiveMessage, WebhookBody } from './whatsapp.types';
+import type { DatabaseConnection, TemplateComponent, TemplateParameter, InteractiveMessage, WebhookBody } from './whatsapp.types.js';
 
 // Tipos de mensaje
 export type WhatsAppMessageType = 

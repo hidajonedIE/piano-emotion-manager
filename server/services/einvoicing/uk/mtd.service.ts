@@ -17,7 +17,7 @@
  * @version 1.0.0
  */
 
-import { BaseEInvoicingService, EInvoice, EInvoiceResult, CountryConfig } from '../base.service';
+import { BaseEInvoicingService, EInvoice, EInvoiceResult, CountryConfig } from '../base.service.js';
 
 // ============================================================================
 // Type Definitions

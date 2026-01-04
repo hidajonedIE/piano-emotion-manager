@@ -3,9 +3,9 @@
  * Funcionalidades avanzadas (Team, CRM, Reports, Accounting, Shop, Calendar, Predictions, Chat)
  */
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
-import * as db from "../db";
-import { storageRouter } from "./storage/index";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
+import * as db from "../db.js";
+import { storageRouter } from "./storage/index.js";
 
 // Funciones auxiliares para el chat
 function generateSuggestions(message: string): string[] {

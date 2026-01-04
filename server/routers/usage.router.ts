@@ -3,11 +3,11 @@
  * Endpoints para consultar el uso de recursos y límites de suscripción
  */
 
-import { router, protectedProcedure } from '../_core/trpc';
-import { getAllMonthlyAIUsage, getAIUsageStats } from '../_core/ai-usage-db';
-import { getUserSubscriptionInfo } from '../_core/subscription-middleware';
-import { getAILimits, getDataLimits, normalizePlanName } from '../_core/subscription-limits';
-import { checkUsageAlerts, getAlertsSummary } from '../_core/usage-alerts';
+import { router, protectedProcedure } from '../_core/trpc.js';
+import { getAllMonthlyAIUsage, getAIUsageStats } from '../_core/ai-usage-db.js';
+import { getUserSubscriptionInfo } from '../_core/subscription-middleware.js';
+import { getAILimits, getDataLimits, normalizePlanName } from '../_core/subscription-limits.js';
+import { checkUsageAlerts, getAlertsSummary } from '../_core/usage-alerts.js';
 
 export const usageRouter = router({
   /**

@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../../trpc';
-import { createAnalyticsService, createPDFGenerator } from '../../services/reports/index';
+import { router, protectedProcedure } from '../../trpc.js';
+import { createAnalyticsService, createPDFGenerator } from '../../services/reports/index.js';
 
 // ============================================================================
 // Input Schemas

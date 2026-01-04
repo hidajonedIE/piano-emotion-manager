@@ -20,7 +20,7 @@ import type {
   TeamActivityMember,
   DashboardLayoutRow,
   SqlParameterValue,
-} from './dashboard.types';
+} from './dashboard.types.js';
 
 // Tipos de widget disponibles
 export type WidgetType = 

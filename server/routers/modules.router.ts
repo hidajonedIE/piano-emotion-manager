@@ -4,11 +4,11 @@
  */
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
-import { getDb } from "../db";
-import { users } from "../../drizzle/schema";
-import { getModulesForPlan, DEFAULT_PLANS, getPlanByCode, type ModuleInfo } from "../data/modules-data";
-import type { SubscriptionPlan } from "../../drizzle/modules-schema";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc.js";
+import { getDb } from "../db.js";
+import { users } from "../../drizzle/schema.js";
+import { getModulesForPlan, DEFAULT_PLANS, getPlanByCode, type ModuleInfo } from "../data/modules-data.js";
+import type { SubscriptionPlan } from "../../drizzle/modules-schema.js";
 
 /**
  * Obtiene el plan de suscripción actual del usuario

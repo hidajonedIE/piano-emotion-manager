@@ -6,10 +6,10 @@
  */
 
 // Servicios
-export { ProductService, productService } from './product.service';
-export { StockService, stockService } from './stock.service';
-export { WarehouseService, warehouseService } from './warehouse.service';
-export { SupplierService, supplierService } from './supplier.service';
+export { ProductService, productService } from './product.service.js';
+export { StockService, stockService } from './stock.service.js';
+export { WarehouseService, warehouseService } from './warehouse.service.js';
+export { SupplierService, supplierService } from './supplier.service.js';
 
 // Tipos de Product Service
 export type {
@@ -18,7 +18,7 @@ export type {
   ProductFilters,
   ProductWithStock,
   ProductSearchResult,
-} from './product.service';
+} from './product.service.js';
 
 // Tipos de Stock Service
 export type {
@@ -27,7 +27,7 @@ export type {
   AdjustmentInput,
   StockLevel,
   MovementHistory,
-} from './stock.service';
+} from './stock.service.js';
 
 // Tipos de Warehouse Service
 export type {
@@ -35,7 +35,7 @@ export type {
   UpdateWarehouseInput,
   WarehouseWithStats,
   WarehouseStockSummary,
-} from './warehouse.service';
+} from './warehouse.service.js';
 
 // Tipos de Supplier Service
 export type {
@@ -44,25 +44,25 @@ export type {
   SupplierProductInput,
   CreatePurchaseOrderInput,
   ReceivePurchaseOrderInput,
-} from './supplier.service';
+} from './supplier.service.js';
 
 // Servicios de Integración
 export {
   ServiceIntegrationService,
   createServiceIntegration,
-} from './service-integration.service';
+} from './service-integration.service.js';
 
 export {
   InvoiceIntegrationService,
   createInvoiceIntegration,
-} from './invoice-integration.service';
+} from './invoice-integration.service.js';
 
 // Tipos de Service Integration
 export type {
   ServicePartUsage,
   ServicePartsResult,
   InvoiceLineItem,
-} from './service-integration.service';
+} from './service-integration.service.js';
 
 // Tipos de Invoice Integration
 export type {
@@ -71,4 +71,4 @@ export type {
   InvoiceLine,
   InvoiceSummary,
   ProductForInvoice,
-} from './invoice-integration.service';
+} from './invoice-integration.service.js';

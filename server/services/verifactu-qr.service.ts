@@ -9,7 +9,7 @@
  */
 
 import QRCode from 'qrcode';
-import { verifactuConfig } from '../config/verifactu.config';
+import { verifactuConfig } from '../config/verifactu.config.js';
 
 // ============================================
 // TIPOS
@@ -243,7 +243,7 @@ export const verifactuQRService = new VerifactuQRService();
  * Ejemplo de uso en React:
  * 
  * ```tsx
- * import { VerifactuQR } from './verifactu-qr.service';
+ * import { VerifactuQR } from './verifactu-qr.service.js';
  * 
  * function InvoicePDF({ invoice }) {
  *   const [qrUrl, setQrUrl] = useState('');

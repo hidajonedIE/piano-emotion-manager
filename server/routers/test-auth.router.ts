@@ -1,7 +1,7 @@
 /**
  * Test Auth Router - Para verificar que la autenticación funciona
  */
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc.js";
 
 export const testAuthRouter = router({
   // Endpoint simple para verificar autenticación

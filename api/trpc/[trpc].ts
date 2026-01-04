@@ -4,10 +4,10 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { appRouter } from '../../server/routers';
-import { createContext } from '../../server/_core/context';
-import { applyCorsHeaders, isOriginAllowed } from '../../server/security/cors.config';
-import { applyRateLimit, getClientIdentifier } from '../../server/security/rate-limit';
+import { appRouter } from '../../server/routers.js';
+import { createContext } from '../../server/_core/context.js';
+import { applyCorsHeaders, isOriginAllowed } from '../../server/security/cors.config.js';
+import { applyRateLimit, getClientIdentifier } from '../../server/security/rate-limit.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin as string | undefined;

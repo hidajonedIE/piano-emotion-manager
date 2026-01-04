@@ -5,10 +5,10 @@
  * and external calendars (Google Calendar, Microsoft Calendar)
  */
 
-import * as googleCalendar from './google-calendar';
-import * as microsoftCalendar from './microsoft-calendar';
-import * as db from './db';
-import type { CalendarConnection, ExternalEvent, SyncResult } from './types';
+import * as googleCalendar from './google-calendar.js';
+import * as microsoftCalendar from './microsoft-calendar.js';
+import * as db from './db.js';
+import type { CalendarConnection, ExternalEvent, SyncResult } from './types.js';
 import { nanoid } from 'nanoid';
 
 /**

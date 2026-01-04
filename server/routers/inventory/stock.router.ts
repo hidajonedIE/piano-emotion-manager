@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../../trpc';
-import { stockService } from '../../services/inventory';
+import { router, protectedProcedure } from '../../trpc.js';
+import { stockService } from '../../services/inventory.js';
 
 // Schemas de validación
 const stockMovementTypeSchema = z.enum([

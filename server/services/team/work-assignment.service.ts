@@ -6,7 +6,7 @@
  */
 
 import { eq, and, gte, lte, desc, asc, sql, or } from 'drizzle-orm';
-import { getDb } from '../../db';
+import { getDb } from '../../db.js';
 import {
   workAssignments,
   organizationMembers,
@@ -16,9 +16,9 @@ import {
   WorkAssignment,
   InsertWorkAssignment,
   OrganizationMember,
-} from '../../../drizzle/team-schema';
-import { appointments, services, clients } from '../../../drizzle/schema';
-import { organizationService } from './organization.service';
+} from '../../../drizzle/team-schema.js';
+import { appointments, services, clients } from '../../../drizzle/schema.js';
+import { organizationService } from './organization.service.js';
 
 // ==========================================
 // TIPOS

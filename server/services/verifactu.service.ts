@@ -10,8 +10,8 @@
 
 import * as https from 'https';
 import * as fs from 'fs';
-import { verifactuConfig, getAeatUrl } from '../config/verifactu.config';
-import { digitalSignatureService } from './digital-signature.service';
+import { verifactuConfig, getAeatUrl } from '../config/verifactu.config.js';
+import { digitalSignatureService } from './digital-signature.service.js';
 
 // ============================================
 // TIPOS

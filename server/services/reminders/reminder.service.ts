@@ -32,7 +32,7 @@ import type {
   ClientReminderPreferences,
   ScheduledCount,
   getErrorMessage,
-} from './reminder.types';
+} from './reminder.types.js';
 
 // Re-exportar tipos para uso externo
 export type {

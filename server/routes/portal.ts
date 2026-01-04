@@ -7,7 +7,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { eq, and, desc, lt, isNull } from 'drizzle-orm';
-import { db } from '../db';
+import { db } from '../db.js';
 import {
   portalMagicLinks,
   portalSessions,
@@ -16,8 +16,8 @@ import {
   portalConversations,
   portalMessages,
   portalNotifications,
-} from '../../drizzle/portal-schema';
-import { clients, pianos, services, invoices, appointments } from '../../drizzle/schema';
+} from '../../drizzle/portal-schema.js';
+import { clients, pianos, services, invoices, appointments } from '../../drizzle/schema.js';
 
 const router = Router();
 

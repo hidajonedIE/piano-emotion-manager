@@ -6,7 +6,7 @@
  * Documentación: https://ai.google.dev/gemini-api/docs
  */
 
-import { ENV } from "./env";
+import { ENV } from "./env.js";
 
 // Tipos para la API de Gemini
 export type GeminiRole = "user" | "model";

@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import { InsertUser, users } from "../drizzle/schema";
-import { ENV } from "./_core/env";
+import { InsertUser, users } from "../drizzle/schema.js";
+import { ENV } from "./_core/env.js";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -120,7 +120,7 @@ import {
   reminders, Reminder, InsertReminder,
   quotes, Quote, InsertQuote,
   quoteTemplates, QuoteTemplate, InsertQuoteTemplate,
-} from "../drizzle/schema";
+} from "../drizzle/schema.js";
 
 // ============ CLIENTS ============
 

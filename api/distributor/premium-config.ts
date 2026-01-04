@@ -5,11 +5,11 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
-import { getDb } from '../../server/db';
-import { distributorPremiumConfig } from '../../server/db/premium-schema';
+import { getDb } from '../../server/db.js';
+import { distributorPremiumConfig } from '../../server/db/premium-schema.js';
 import { eq } from 'drizzle-orm';
-import { applyCorsHeaders } from '../../server/security/cors.config';
-import { applyRateLimit } from '../../server/security/rate-limit';
+import { applyCorsHeaders } from '../../server/security/cors.config.js';
+import { applyRateLimit } from '../../server/security/rate-limit.js';
 
 // Input validation schema
 const PremiumConfigUpdateSchema = z.object({

@@ -12,14 +12,14 @@
  * QR Code: Contiene datos fiscales para verificación
  */
 
-import { BaseEInvoicingService } from '../base.service';
+import { BaseEInvoicingService } from '../base.service.js';
 import {
   SupportedCountry,
   InvoicingSystem,
   EInvoice,
   EInvoiceStatus,
   SendResult,
-} from '../types';
+} from '../types.js';
 
 // Tipos de documento portugueses
 export type TipoDocumento = 

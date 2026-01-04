@@ -4,8 +4,8 @@
  */
 
 // Servicios
-export { CalendarService, createCalendarService } from './calendar.service';
-export { CalendarSyncService, createCalendarSyncService } from './sync.service';
+export { CalendarService, createCalendarService } from './calendar.service.js';
+export { CalendarSyncService, createCalendarSyncService } from './sync.service.js';
 
 // Tipos
 export type {
@@ -13,10 +13,10 @@ export type {
   EventFilters,
   TimeSlot,
   DayAvailability,
-} from './calendar.service';
+} from './calendar.service.js';
 
 export type {
   OAuthTokens,
   ExternalEvent,
   SyncResult,
-} from './sync.service';
+} from './sync.service.js';

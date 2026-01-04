@@ -1,4 +1,4 @@
-import type { HttpRequest } from "./context";
+import type { HttpRequest } from "./context.js";
 
 // ============================================================================
 // Tipos

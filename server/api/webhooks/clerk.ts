@@ -6,7 +6,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { handleClerkWebhook } from '../../webhooks/clerk';
+import { handleClerkWebhook } from '../../webhooks/clerk.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Solo permitir POST

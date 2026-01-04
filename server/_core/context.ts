@@ -1,9 +1,9 @@
-import type { User } from "../../drizzle/schema";
+import type { User } from "../../drizzle/schema.js";
 import type { IncomingMessage, ServerResponse } from "http";
-import { sdk } from "./sdk";
-import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk";
-import { getDb } from "../db";
-import { users } from "../../drizzle/schema";
+import { sdk } from "./sdk.js";
+import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
+import { getDb } from "../db.js";
+import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 
 // ============================================================================

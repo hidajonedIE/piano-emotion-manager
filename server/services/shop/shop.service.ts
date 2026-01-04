@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { db } from '../../../drizzle/db';
+import { db } from '../../../drizzle/db.js';
 import { eq, and, desc, asc, sql, inArray } from 'drizzle-orm';
 import {
   shops,
@@ -16,7 +16,7 @@ import {
   type ShopType,
   type OrderStatus,
   type ApprovalStatus,
-} from '../../../drizzle/shop-schema';
+} from '../../../drizzle/shop-schema.js';
 
 // ============================================================================
 // Types

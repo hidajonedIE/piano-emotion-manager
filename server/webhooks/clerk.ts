@@ -8,9 +8,9 @@
 
 import { Webhook } from 'svix';
 import { WebhookEvent } from '@clerk/clerk-sdk-node';
-import { validateInvitation, markInvitationAsUsed } from '../middleware/invitation-guard';
-import * as db from '../db';
-import { users } from '../../drizzle/schema';
+import { validateInvitation, markInvitationAsUsed } from '../middleware/invitation-guard.js';
+import * as db from '../db.js';
+import { users } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET || '';

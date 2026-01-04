@@ -1,5 +1,5 @@
-import { EInvoice, EInvoiceStatus, IEInvoicingService, SendResult, SupportedCountry, InvoicingSystem } from '../types';
-import { BaseEInvoicingService } from '../base.service';
+import { EInvoice, EInvoiceStatus, IEInvoicingService, SendResult, SupportedCountry, InvoicingSystem } from '../types.js';
+import { BaseEInvoicingService } from '../base.service.js';
 import { toXML } from 'jstoxml';
 
 // Tipos UBL para PEPPOL

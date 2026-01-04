@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../../trpc';
-import { createCalendarService, createCalendarSyncService } from '../../services/calendar/index';
+import { router, protectedProcedure } from '../../trpc.js';
+import { createCalendarService, createCalendarSyncService } from '../../services/calendar/index.js';
 
 // ============================================================================
 // Input Schemas

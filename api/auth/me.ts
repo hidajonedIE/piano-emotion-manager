@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { COOKIE_NAME } from "../../shared/const";
-import { sdk } from "../../server/_core/sdk";
-import { verifyClerkSession, getOrCreateUserFromClerk } from "../../server/_core/clerk";
-import { getDb } from "../../server/db";
-import { users } from "../../drizzle/schema";
+import { COOKIE_NAME } from "../../shared/const.js";
+import { sdk } from "../../server/_core/sdk.js";
+import { verifyClerkSession, getOrCreateUserFromClerk } from "../../server/_core/clerk.js";
+import { getDb } from "../../server/db.js";
+import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

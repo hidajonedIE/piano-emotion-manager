@@ -17,11 +17,11 @@ import {
   PurchaseVerificationService, 
   purchaseVerificationService,
   VerificationContext 
-} from '../services/purchase-verification.service';
-import { createWooCommerceService } from '../services/woocommerce.service';
-import type { AccountTier, TechnicianAccountStatus, DistributorPremiumConfig } from '../db/premium-schema';
-import { db } from '../../drizzle/db';
-import { users } from '../../drizzle/schema';
+} from '../services/purchase-verification.service.js';
+import { createWooCommerceService } from '../services/woocommerce.service.js';
+import type { AccountTier, TechnicianAccountStatus, DistributorPremiumConfig } from '../db/premium-schema.js';
+import { db } from '../../drizzle/db.js';
+import { users } from '../../drizzle/schema.js';
 import { eq, and, lt, or, isNull, sql } from 'drizzle-orm';
 
 // ============================================

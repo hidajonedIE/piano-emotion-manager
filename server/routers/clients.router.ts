@@ -3,11 +3,11 @@
  * Gestión de clientes con validación mejorada y paginación optimizada
  */
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
-import * as db from "../db";
-import { clients } from "../../drizzle/schema";
+import { protectedProcedure, router } from "../_core/trpc.js";
+import * as db from "../db.js";
+import { clients } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
-import * as cache from "../cache";
+import * as cache from "../cache.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN

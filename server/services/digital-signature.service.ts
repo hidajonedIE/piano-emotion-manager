@@ -8,7 +8,7 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as forge from 'node-forge';
-import { verifactuConfig } from '../config/verifactu.config';
+import { verifactuConfig } from '../config/verifactu.config.js';
 
 // ============================================
 // TIPOS

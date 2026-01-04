@@ -5,12 +5,12 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
-import { getDb } from '../../server/db';
-import { users } from '../../drizzle/schema';
+import { getDb } from '../../server/db.js';
+import { users } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
-import { getAuthenticatedUserId } from '../../server/_core/clerk';
-import { applyCorsHeaders } from '../../server/security/cors.config';
-import { applyRateLimit } from '../../server/security/rate-limit';
+import { getAuthenticatedUserId } from '../../server/_core/clerk.js';
+import { applyCorsHeaders } from '../../server/security/cors.config.js';
+import { applyRateLimit } from '../../server/security/rate-limit.js';
 
 // Input validation schema
 const ExternalStoreSchema = z.object({

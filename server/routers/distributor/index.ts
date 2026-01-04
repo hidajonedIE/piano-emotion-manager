@@ -1,1 +1,1 @@
-export * from "./distributor.router";
+export * from "./distributor.router.js";

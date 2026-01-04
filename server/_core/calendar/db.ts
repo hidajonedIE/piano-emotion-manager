@@ -2,7 +2,7 @@
  * Database functions for Calendar Sync
  */
 
-import { getDb } from '../../db';
+import { getDb } from '../../db.js';
 import { sql } from 'drizzle-orm';
 import type {
   CalendarConnection,
@@ -12,7 +12,7 @@ import type {
   SyncStatus,
   SyncAction,
   SyncDirection
-} from './types';
+} from './types.js';
 
 // ============================================================================
 // Calendar Connections
