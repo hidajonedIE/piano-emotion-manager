@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     gap: 2,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   tab: {
     flexDirection: 'row',
