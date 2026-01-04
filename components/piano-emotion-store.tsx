@@ -254,7 +254,7 @@ export function PianoEmotionStore({ collapsed: collapsedProp = false, onToggle }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 0,
     borderRadius: 12,
     backgroundColor: '#fff',
     shadowColor: '#000',
