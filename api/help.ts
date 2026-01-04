@@ -6,6 +6,7 @@ const pool = mysql.createPool({
   password: process.env.TIDB_PASSWORD || 'XLi3ZOYRPsk4KNbC',
   database: process.env.TIDB_DATABASE || 'piano_emotion_db',
   port: 4000,
+  ssl: { rejectUnauthorized: true },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -14,7 +15,7 @@ const pool = mysql.createPool({
 export async function getHelpSections() {
   try {
     const connection = await pool.getConnection();
-    const [rows] = await connection.query('SELECT * FROM help_sections ORDER BY `order` ASC');
+    const [rows] = await connection.query('SELECT * FROM help_sections ORDER BY `display_order` ASC');
     connection.release();
     return rows;
   } catch (error) {
@@ -34,7 +35,7 @@ export async function getHelpItems(sectionId?: string) {
       params.push(sectionId);
     }
 
-    query += ' ORDER BY `order` ASC';
+    query += ' ORDER BY `display_order` ASC';
 
     const [rows] = await connection.query(query, params);
     connection.release();
