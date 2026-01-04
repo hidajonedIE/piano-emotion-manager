@@ -1,40 +1,64 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getHelpSectionsWithItems } from '@/app/actions/help-actions';
+
+interface HelpItem {
+  id: string;
+  section_id: string;
+  question: string;
+  answer: string;
+  order: number;
+}
+
+interface HelpSection {
+  id: string;
+  title: string;
+  icon: string;
+  iconColor: string;
+  order: number;
+  content: HelpItem[];
+}
 
 export function DashboardHelp() {
-  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [sections, setSections] = useState<HelpSection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const textTertiary = useThemeColor({}, 'textTertiary');
 
-  const helpTopics = [
-    {
-      title: '¿Cómo empiezo?',
-      description: 'Primeros pasos para usar la aplicación',
-      icon: 'star.fill',
-    },
-    {
-      title: 'Gestión de Clientes',
-      description: 'Aprende a gestionar tus clientes',
-      icon: 'person.2.fill',
-    },
-    {
-      title: 'Gestión de Pianos',
-      description: 'Registra y gestiona tus pianos',
-      icon: 'pianokeys',
-    },
-    {
-      title: 'Servicios',
-      description: 'Cómo registrar y facturar servicios',
-      icon: 'wrench.and.screwdriver.fill',
-    },
-  ];
+  useEffect(() => {
+    async function loadHelpData() {
+      try {
+        const data = await getHelpSectionsWithItems();
+        setSections(data);
+      } catch (error) {
+        console.error('Error loading help data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadHelpData();
+  }, []);
+
+  const toggleSection = (sectionId: string) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionId)) {
+      newExpanded.delete(sectionId);
+    } else {
+      newExpanded.add(sectionId);
+    }
+    setExpandedSections(newExpanded);
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -60,39 +84,54 @@ export function DashboardHelp() {
 
       {/* Contenido expandible */}
       {isExpanded && (
-        <>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.topicsContainer}
-            contentContainerStyle={styles.topicsContent}
-          >
-            {helpTopics.map((topic, index) => (
-              <Pressable
-                key={index}
-                style={[styles.topicCard, { borderLeftColor: accent }]}
-                onPress={() => router.push('/help')}
-              >
-                <View style={[styles.topicIconContainer, { backgroundColor: accent + '20' }]}>
-                  <IconSymbol name={topic.icon} size={24} color={accent} />
-                </View>
-                <ThemedText style={styles.topicTitle}>{topic.title}</ThemedText>
-                <ThemedText style={[styles.topicDescription, { color: textSecondary }]}>
-                  {topic.description}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </ScrollView>
+        <View style={styles.contentContainer}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={accent} />
+              <ThemedText style={styles.loadingText}>Cargando ayuda...</ThemedText>
+            </View>
+          ) : sections.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <ThemedText style={[styles.emptyText, { color: textSecondary }]}>
+                No hay información de ayuda disponible
+              </ThemedText>
+            </View>
+          ) : (
+            <ScrollView style={styles.sectionsContainer}>
+              {sections.map((section) => (
+                <View key={section.id} style={styles.sectionCard}>
+                  <Pressable
+                    style={styles.sectionHeader}
+                    onPress={() => toggleSection(section.id)}
+                  >
+                    <View style={styles.sectionHeaderContent}>
+                      <ThemedText style={styles.sectionIcon}>{section.icon}</ThemedText>
+                      <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
+                    </View>
+                    <IconSymbol
+                      name={expandedSections.has(section.id) ? 'chevron.up' : 'chevron.down'}
+                      size={16}
+                      color={textTertiary}
+                    />
+                  </Pressable>
 
-          <Pressable 
-            style={[styles.viewAllButton, { backgroundColor: accent }]}
-            onPress={() => router.push('/help')}
-          >
-            <ThemedText style={styles.viewAllButtonText}>
-              Ver toda la ayuda →
-            </ThemedText>
-          </Pressable>
-        </>
+                  {expandedSections.has(section.id) && (
+                    <View style={styles.sectionContent}>
+                      {section.content.map((item) => (
+                        <View key={item.id} style={styles.faqItem}>
+                          <ThemedText style={styles.question}>{item.question}</ThemedText>
+                          <ThemedText style={[styles.answer, { color: textSecondary }]}>
+                            {item.answer}
+                          </ThemedText>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+          )}
+        </View>
       )}
     </ThemedView>
   );
@@ -128,48 +167,76 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 0,
   },
-  topicsContainer: {
-    marginBottom: 16,
+  contentContainer: {
     marginTop: 16,
+    maxHeight: 400,
   },
-  topicsContent: {
-    gap: 12,
-    paddingRight: 16,
-  },
-  topicCard: {
-    minWidth: 140,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
-    borderLeftWidth: 4,
-    borderLeftColor: '#2D5A27',
-  },
-  topicIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+  loadingContainer: {
+    paddingVertical: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  topicTitle: {
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+  },
+  emptyContainer: {
+    paddingVertical: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 14,
+  },
+  sectionsContainer: {
+    maxHeight: 400,
+  },
+  sectionCard: {
+    marginBottom: 12,
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#e5e5e5',
+    overflow: 'hidden',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  sectionHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  sectionIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+  },
+  sectionContent: {
+    borderTopWidth: 1,
+    borderTopColor: '#e5e5e5',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#fafafa',
+  },
+  faqItem: {
+    marginBottom: 12,
+  },
+  question: {
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 4,
   },
-  topicDescription: {
-    fontSize: 11,
-    lineHeight: 16,
-  },
-  viewAllButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  viewAllButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
+  answer: {
+    fontSize: 12,
+    lineHeight: 18,
   },
 });
