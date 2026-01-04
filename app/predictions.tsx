@@ -56,11 +56,15 @@ if (typeof document !== 'undefined' && !document.getElementById('tabs-container-
   const style = document.createElement('style');
   style.id = 'tabs-container-css';
   style.textContent = `
-    [data-testid="tabs-container"],
-    div[style*="borderBottomWidth"][style*="maxHeight"] {
+    /* Target the tabs container by looking for borderBottomWidth */
+    div[style*="borderBottomWidth"] {
       height: 52px !important;
       max-height: 52px !important;
       overflow: hidden !important;
+    }
+    
+    /* Add padding to the content inside */
+    div[style*="borderBottomWidth"] > div {
       padding-left: 16px !important;
       padding-right: 16px !important;
     }
