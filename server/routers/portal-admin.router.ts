@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../_core/trpc';
+import { router, protectedProcedure } from '../_core/trpc.js';
 import * as portalDb from '../_core/client-portal/db';
 import { TRPCError } from '@trpc/server';
 

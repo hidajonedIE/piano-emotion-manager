@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { router, protectedProcedure } from '../_core/trpc';
+import { router, protectedProcedure } from '../_core/trpc.js';
 import { nanoid } from 'nanoid';
 import * as db from '../_core/calendar/db';
 import * as googleOAuth from '../_core/calendar/oauth-google';
