@@ -58,8 +58,8 @@ if (typeof document !== 'undefined' && !document.getElementById('tabs-container-
   style.textContent = `
     [data-testid="tabs-container"],
     div[style*="borderBottomWidth"][style*="maxHeight"] {
-      height: 38px !important;
-      max-height: 38px !important;
+      height: 44px !important;
+      max-height: 44px !important;
       overflow: hidden !important;
     }
   `;
@@ -641,7 +641,7 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    maxHeight: 38,
+    maxHeight: 44,
     overflow: 'hidden',
     flex: 0,
     flexShrink: 0,
