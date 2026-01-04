@@ -625,18 +625,19 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
+    height: 48,
   },
   tabsContent: {
     paddingHorizontal: 12,
-    paddingVertical: 0,
+    paddingVertical: 4,
     gap: 2,
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 0,
-    minHeight: 32,
+    paddingVertical: 4,
+    minHeight: 28,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'transparent',
