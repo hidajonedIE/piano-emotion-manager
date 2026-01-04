@@ -467,7 +467,7 @@ export function getModulesForPlan(currentPlan: SubscriptionPlan = 'free'): Modul
     type: module.type,
     includedInPlans: module.includedInPlans,
     isEnabled: module.type === 'core' || module.includedInPlans.includes(currentPlan),
-    isAvailable: module.type === 'core' || module.includedInPlans.includes(currentPlan),
+    isAvailable: true,
     requiresUpgrade: !module.includedInPlans.includes(currentPlan) && module.type !== 'core',
     includedInCurrentPlan: module.includedInPlans.includes(currentPlan),
   }));
