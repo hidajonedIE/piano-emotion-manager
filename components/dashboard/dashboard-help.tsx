@@ -76,7 +76,7 @@ export function DashboardHelp() {
           </ThemedText>
         </View>
         <IconSymbol
-          name={isExpanded ? 'chevron.up' : 'chevron.down'}
+          name={isExpanded ? 'chevron.down' : 'chevron.right'}
           size={20}
           color={textTertiary}
         />
