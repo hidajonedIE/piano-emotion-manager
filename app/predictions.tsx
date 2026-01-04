@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    height: 70,
+    height: 48,
   },
   tabsContent: {
     paddingHorizontal: 12,
