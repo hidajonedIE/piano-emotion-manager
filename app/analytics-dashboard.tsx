@@ -23,9 +23,9 @@ type TimeRange = 'month' | 'quarter' | 'year';
 
 export default function AnalyticsDashboardScreen() {
   const router = useRouter();
-  const { invoices } = useInvoices();
-  const { services } = useServices();
-  const { clients } = useClients();
+  const { invoices = [] } = useInvoices() || {};
+  const { services = [] } = useServices() || {};
+  const { clients = [] } = useClients() || {};
   const [timeRange, setTimeRange] = useState<TimeRange>('year');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
