@@ -7,7 +7,7 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { pianos } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql, lte, gte } from "drizzle-orm";
-// import * as cache from "../cache.js"; // Cache deshabilitado temporalmente
+// Cache system removed to resolve deployment issues
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -274,8 +274,7 @@ export const pianosRouter = router({
   create: protectedProcedure
     .input(pianoBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      // Invalidar caché de marcas
-      // await cache.deleteCachedValue(`brands:${ctx.user.openId}`); // Cache deshabilitado temporalmente
+      // Cache invalidation disabled
       
       return db.createPiano({
         ...input,
@@ -293,11 +292,7 @@ export const pianosRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       
-      // Invalidar caché de marcas si se actualiza la marca
-      // if (data.brand) {
-      //   await cache.deleteCachedValue(`brands:${ctx.user.openId}`); // Cache deshabilitado temporalmente
-      // }ache deshabilitado temporalmente
-      }
+      // Cache invalidation disabled
       
       return db.updatePiano(ctx.user.openId, id, data);
     }),
@@ -308,8 +303,7 @@ export const pianosRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      // Invalidar caché de marcas
-      // await cache.deleteCachedValue(`brands:${ctx.user.openId}`); // Cache deshabilitado temporalmente
+      // Cache invalidation disabled
       
       return db.deletePiano(ctx.user.openId, input.id);
     }),
@@ -320,9 +314,7 @@ export const pianosRouter = router({
   getBrands: protectedProcedure.query(async ({ ctx }) => {
     const cacheKey = `brands:${ctx.user.openId}`;
     
-    // Intentar obtener del caché
-    // const cached = await cache.getCachedValue<string[]>(cacheKey); // Cache deshabilitado temporalmente
-    // if (cached) return cached;
+    // Cache disabled
 
     const database = await db.getDb();
     if (!database) return KNOWN_BRANDS.sort();

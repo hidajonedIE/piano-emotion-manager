@@ -5,7 +5,7 @@ import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { TRPCError } from '@trpc/server';
-// import { getCached, setCached, deleteCached } from '../cache.js';
+// Cache system removed to resolve deployment issues
 
 export const invitationsRouter = router({
   // Crear una nueva invitación (solo admins)
@@ -122,12 +122,7 @@ export const invitationsRouter = router({
         return { valid: true, isAdmin: true };
       }
 
-      // Cache deshabilitado temporalmente para estabilizar el build
-      // const cacheKey = `invitation:validate:${input.email}`;
-      // const cached = await getCached<{ valid: boolean; reason?: string; invitation?: any }>(cacheKey);
-      // if (cached) {
-      //   return cached;
-      // }
+      // Cache disabled
 
       const database = await db.getDb();
       if (!database) {
@@ -150,21 +145,18 @@ export const invitationsRouter = router({
 
       if (!invitation) {
         const result = { valid: false, reason: 'Invitación no encontrada' };
-        // Cache deshabilitado temporalmente
-        // await setCached(cacheKey, result, 300);
+        // Cache disabled
         return result;
       }
 
       if (new Date() > invitation.expiresAt) {
         const result = { valid: false, reason: 'Invitación expirada' };
-        // Cache deshabilitado temporalmente
-        // await setCached(cacheKey, result, 300);
+        // Cache disabled
         return result;
       }
 
       const result = { valid: true, invitation };
-      // Cache deshabilitado temporalmente
-      // await setCached(cacheKey, result, 600);
+      // Cache disabled
       return result;
     }),
 
@@ -199,10 +191,7 @@ export const invitationsRouter = router({
         })
         .where(eq(invitations.token, input.token));
 
-      // Cache deshabilitado temporalmente
-      // if (invitation) {
-      //   await deleteCached(`invitation:validate:${invitation.email}`);
-      // }
+      // Cache disabled
 
       return { success: true };
     }),
@@ -246,10 +235,7 @@ export const invitationsRouter = router({
         })
         .where(eq(invitations.id, input.id));
 
-      // Cache deshabilitado temporalmente
-      // if (invitation) {
-      //   await deleteCached(`invitation:validate:${invitation.email}`);
-      // }
+      // Cache disabled
 
       return { success: true };
     }),

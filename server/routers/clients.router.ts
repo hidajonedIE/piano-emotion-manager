@@ -7,7 +7,7 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { clients } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
-// import * as cache from "../cache.js"; // Cache deshabilitado temporalmente
+// Cache system removed to resolve deployment issues
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -248,9 +248,7 @@ list: protectedProcedure
         address = parts.join(", ");
       }
       
-      // Invalidar caché de regiones y grupos de ruta
-      // await cache.deleteCachedValue(`regions:${ctx.user.openId}`); // Cache deshabilitado temporalmente
-      // await cache.deleteCachedValue(`routeGroups:${ctx.user.openId}`); // Cache deshabilitado temporalmente
+      // Cache invalidation disabled
       
       return db.createClient({
         ...input,
@@ -288,9 +286,7 @@ list: protectedProcedure
         updateData.address = parts.join(", ");
       }
       
-      // Invalidar caché de regiones y grupos de ruta
-      // await cache.deleteCachedValue(`regions:${ctx.user.openId}`); // Cache deshabilitado temporalmente
-      // await cache.deleteCachedValue(`routeGroups:${ctx.user.openId}`); // Cache deshabilitado temporalmente
+      // Cache invalidation disabled
       
       return db.updateClient(ctx.user.openId, id, updateData);
     }),
@@ -301,9 +297,7 @@ list: protectedProcedure
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      // Invalidar caché de regiones y grupos de ruta
-      // await cache.deleteCachedValue(`regions:${ctx.user.openId}`); // Cache deshabilitado temporalmente
-      // await cache.deleteCachedValue(`routeGroups:${ctx.user.openId}`); // Cache deshabilitado temporalmente
+      // Cache invalidation disabled
       
       return db.deleteClient(ctx.user.openId, input.id);
     }),
@@ -314,9 +308,7 @@ list: protectedProcedure
   getRegions: protectedProcedure.query(async ({ ctx }) => {
     const cacheKey = `regions:${ctx.user.openId}`;
     
-    // Intentar obtener del caché
-    // const cached = await cache.getCachedValue<string[]>(cacheKey); // Cache deshabilitado temporalmente
-    // if (cached) return cached;
+    // Cache disabled
 
     const database = await db.getDb();
     if (!database) return [];
@@ -329,8 +321,7 @@ list: protectedProcedure
     
     const result = regionsQuery.map(r => r.region!).sort();
 
-    // Cachear por 1 hora
-    // await cache.setCachedValue(cacheKey, result, 3600); // Cache deshabilitado temporalmente
+    // Cache disabled
     
     return result;
   }),
@@ -341,9 +332,7 @@ list: protectedProcedure
   getRouteGroups: protectedProcedure.query(async ({ ctx }) => {
     const cacheKey = `routeGroups:${ctx.user.openId}`;
     
-    // Intentar obtener del caché
-    // const cached = await cache.getCachedValue<string[]>(cacheKey); // Cache deshabilitado temporalmente
-    // if (cached) return cached;
+    // Cache disabled
 
     const database = await db.getDb();
     if (!database) return [];
@@ -356,8 +345,7 @@ list: protectedProcedure
     
     const result = groupsQuery.map(g => g.routeGroup!).sort();
 
-    // Cachear por 1 hora
-    // await cache.setCachedValue(cacheKey, result, 3600); // Cache deshabilitado temporalmente
+    // Cache disabled
     
     return result;
   }),
