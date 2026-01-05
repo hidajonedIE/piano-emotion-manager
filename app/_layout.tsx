@@ -130,33 +130,34 @@ export default function RootLayout() {
                     <Stack>
                       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                       <Stack.Screen name="(app)" options={{ headerShown: false }} />
-                      <Stack.Screen name="settings" options={{ headerShown: false }} />
+                      <Stack.Screen name="settings" options={{ title: 'Configuración', headerShown: false }} />
                       <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
                       <Stack.Screen name="login" options={{ headerShown: false }} />
                       <Stack.Screen name="sign-up" options={{ headerShown: false }} />
                       <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
-                      <Stack.Screen name="portal" options={{ headerShown: false }} />
-                      <Stack.Screen name="quote" options={{ headerShown: false }} />
-                      <Stack.Screen name="client" options={{ headerShown: false }} />
-                      <Stack.Screen name="piano" options={{ headerShown: false }} />
-                      <Stack.Screen name="service" options={{ headerShown: false }} />
-                      <Stack.Screen name="invoice" options={{ headerShown: false }} />
+                      <Stack.Screen name="portal" options={{ title: 'Portal del Cliente', headerShown: false }} />
+                      <Stack.Screen name="quote" options={{ title: 'Presupuesto', headerShown: false }} />
+                      <Stack.Screen name="client" options={{ title: 'Cliente', headerShown: false }} />
+                      <Stack.Screen name="piano" options={{ title: 'Piano', headerShown: false }} />
+                      <Stack.Screen name="service" options={{ title: 'Servicio', headerShown: false }} />
+                      <Stack.Screen name="invoice" options={{ title: 'Factura', headerShown: false }} />
                       <Stack.Screen name="appointment" options={{ title: 'Cita', headerShown: false }} />
-                      <Stack.Screen name="supplier" options={{ headerShown: false }} />
-                      <Stack.Screen name="rate" options={{ headerShown: false }} />
-                      <Stack.Screen name="inventory" options={{ headerShown: false }} />
-                      <Stack.Screen name="analytics" options={{ headerShown: false }} />
-                      <Stack.Screen name="accounting" options={{ headerShown: false }} />
-                      <Stack.Screen name="work-order" options={{ headerShown: false }} />
-                      <Stack.Screen name="teams" options={{ headerShown: false }} />
-                      <Stack.Screen name="quotes" options={{ headerShown: false }} />
+                      <Stack.Screen name="supplier" options={{ title: 'Proveedor', headerShown: false }} />
+                      <Stack.Screen name="suppliers" options={{ title: 'Proveedores', headerShown: false }} />
+                      <Stack.Screen name="rate" options={{ title: 'Tarifa', headerShown: false }} />
+                      <Stack.Screen name="inventory" options={{ title: 'Inventario', headerShown: false }} />
+                      <Stack.Screen name="analytics" options={{ title: 'Análisis', headerShown: false }} />
+                      <Stack.Screen name="accounting" options={{ title: 'Contabilidad', headerShown: false }} />
+                      <Stack.Screen name="work-order" options={{ title: 'Orden de Trabajo', headerShown: false }} />
+                      <Stack.Screen name="teams" options={{ title: 'Equipos', headerShown: false }} />
+                      <Stack.Screen name="quotes" options={{ title: 'Presupuestos', headerShown: false }} />
                       <Stack.Screen name="reminders" options={{ title: 'Recordatorios', headerShown: false }} />
-                      <Stack.Screen name="workflows" options={{ headerShown: false }} />
-                      <Stack.Screen name="contracts" options={{ headerShown: false }} />
-                      <Stack.Screen name="whatsapp-settings" options={{ headerShown: false }} />
-                      <Stack.Screen name="payment-settings" options={{ headerShown: false }} />
-                      <Stack.Screen name="dashboard-editor" options={{ headerShown: false }} />
-                      <Stack.Screen name="predictions" options={{ headerShown: false }} />
+                      <Stack.Screen name="workflows" options={{ title: 'Flujos de Trabajo', headerShown: false }} />
+                      <Stack.Screen name="contracts" options={{ title: 'Contratos', headerShown: false }} />
+                      <Stack.Screen name="whatsapp-settings" options={{ title: 'Configuración de WhatsApp', headerShown: false }} />
+                      <Stack.Screen name="payment-settings" options={{ title: 'Configuración de Pagos', headerShown: false }} />
+                      <Stack.Screen name="dashboard-editor" options={{ title: 'Editor de Panel', headerShown: false }} />
+                      <Stack.Screen name="predictions" options={{ title: 'Predicciones', headerShown: false }} />
                       <Stack.Screen name="service-catalog" options={{ title: 'Catálogo de Servicios', headerShown: false }} />
                       <Stack.Screen name="service-categories" options={{ title: 'Categorías de Servicios', headerShown: false }} />
                     </Stack>
