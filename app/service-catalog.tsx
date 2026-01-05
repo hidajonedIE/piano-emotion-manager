@@ -493,6 +493,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterContent: {
+    flexWrap: 'wrap',
     paddingHorizontal: 48,
     paddingVertical: 0,
     gap: 40,

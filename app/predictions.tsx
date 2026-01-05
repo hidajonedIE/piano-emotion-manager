@@ -517,8 +517,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 0,
     paddingVertical: 80,
     borderBottomWidth: 1,
   },
@@ -538,8 +538,8 @@ const styles = StyleSheet.create({
   tabsContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 0,
     gap: 32,
   },
   tabButton: {

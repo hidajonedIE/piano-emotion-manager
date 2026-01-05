@@ -212,11 +212,7 @@ export default function RemindersScreen() {
 
         {/* Filtros Compactos y Centrados */}
         <View style={[styles.filterWrapper, { borderBottomColor: border }]}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterContent}
-          >
+          <View style={styles.filterContent}>
             <TouchableOpacity
               style={[
                 styles.filterChip,
@@ -252,7 +248,7 @@ export default function RemindersScreen() {
                 </ThemedText>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
 
         {/* Lista de plantillas */}
@@ -363,6 +359,7 @@ const styles = StyleSheet.create({
   },
   filterContent: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
