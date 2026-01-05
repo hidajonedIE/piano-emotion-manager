@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Invoice, BusinessInfo, DEFAULT_BUSINESS_INFO, generateId, generateInvoiceNumber } from '@/types/invoice';
 
@@ -10,11 +11,19 @@ export function useInvoices() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadInvoices();
+    if (Platform.OS !== 'web' || typeof window !== 'undefined') {
+      loadInvoices();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const loadInvoices = async () => {
     try {
+      if (Platform.OS === 'web' && typeof window === 'undefined') {
+        // Skip loading on server side
+        return;
+      }
       const data = await AsyncStorage.getItem(INVOICES_KEY);
       if (data) {
         setInvoices(JSON.parse(data));
@@ -27,6 +36,10 @@ export function useInvoices() {
 
   const saveInvoices = async (newInvoices: Invoice[]) => {
     try {
+      if (Platform.OS === 'web' && typeof window === 'undefined') {
+        // Skip saving on server side
+        return;
+      }
       await AsyncStorage.setItem(INVOICES_KEY, JSON.stringify(newInvoices));
       setInvoices(newInvoices);
     } catch (error) {
@@ -97,11 +110,19 @@ export function useBusinessInfo() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadBusinessInfo();
+    if (Platform.OS !== 'web' || typeof window !== 'undefined') {
+      loadBusinessInfo();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const loadBusinessInfo = async () => {
     try {
+      if (Platform.OS === 'web' && typeof window === 'undefined') {
+        // Skip loading on server side
+        return;
+      }
       const data = await AsyncStorage.getItem(BUSINESS_INFO_KEY);
       if (data) {
         setBusinessInfo(JSON.parse(data));
@@ -114,6 +135,10 @@ export function useBusinessInfo() {
 
   const saveBusinessInfo = useCallback(async (info: BusinessInfo) => {
     try {
+      if (Platform.OS === 'web' && typeof window === 'undefined') {
+        // Skip saving on server side
+        return;
+      }
       await AsyncStorage.setItem(BUSINESS_INFO_KEY, JSON.stringify(info));
       setBusinessInfo(info);
     } catch (error) {
