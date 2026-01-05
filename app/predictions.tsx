@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, TouchableOpacity, ScrollView, StyleSheet, useColorScheme, Platform } from 'react-native';
 import { ThemedText } from '../components/themed-text';
 import { ThemedView } from '../components/themed-view';
-import { Colors } from '../constants/Colors';
+import { Colors } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -18,7 +18,15 @@ const tabs = [
 
 export default function PredictionsScreen() {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const themeColors = Colors[colorScheme ?? 'light'];
+  
+  // Mapeo de colores para compatibilidad con el código existente
+  const colors = {
+    ...themeColors,
+    primary: themeColors.tint,
+    card: themeColors.cardBackground,
+  };
+
   const [activeTab, setActiveTab] = useState<TabType>('revenue');
   const contentScrollRef = useRef<ScrollView>(null);
 
