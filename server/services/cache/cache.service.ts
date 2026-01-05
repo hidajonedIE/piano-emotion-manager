@@ -64,7 +64,6 @@ export const CACHE_TTLS = {
 // ============================================================================
 
 class CacheService {
-  private cache: Map<string, CacheEntry<unknown>> = new Map();
   private options: Required<CacheOptions>;
   private stats = {
     hits: 0,
@@ -95,7 +94,6 @@ class CacheService {
    * Obtiene un valor del caché
    */
   get<T>(key: string): T | null {
-    const entry = this.cache.get(key) as CacheEntry<T> | undefined;
 
     if (!entry) {
       this.stats.misses++;
@@ -104,7 +102,6 @@ class CacheService {
 
     // Verificar si ha expirado
     if (Date.now() - entry.timestamp > entry.ttl) {
-      this.cache.delete(key);
       this.stats.misses++;
       return null;
     }
@@ -119,11 +116,9 @@ class CacheService {
    */
   set<T>(key: string, data: T, ttl?: number): void {
     // Verificar límite de entradas
-    if (this.cache.size >= this.options.maxEntries) {
       this.evictOldest();
     }
 
-    this.cache.set(key, {
       data,
       timestamp: Date.now(),
       ttl: ttl || this.options.ttl,
@@ -132,16 +127,12 @@ class CacheService {
   }
 
   /**
-   * Obtiene o calcula un valor (cache-aside pattern)
    */
   async getOrSet<T>(
     key: string,
     factory: () => Promise<T>,
     ttl?: number
   ): Promise<T> {
-    const cached = this.get<T>(key);
-    if (cached !== null) {
-      return cached;
     }
 
     const data = await factory();
@@ -153,7 +144,6 @@ class CacheService {
    * Invalida una entrada específica
    */
   invalidate(key: string): boolean {
-    return this.cache.delete(key);
   }
 
   /**
@@ -161,9 +151,7 @@ class CacheService {
    */
   invalidateNamespace(namespace: string): number {
     let count = 0;
-    for (const key of this.cache.keys()) {
       if (key.startsWith(`${namespace}:`)) {
-        this.cache.delete(key);
         count++;
       }
     }
@@ -175,9 +163,7 @@ class CacheService {
    */
   invalidateUser(userId: string): number {
     let count = 0;
-    for (const key of this.cache.keys()) {
       if (key.includes(`:${userId}:`) || key.endsWith(`:${userId}`)) {
-        this.cache.delete(key);
         count++;
       }
     }
@@ -188,7 +174,6 @@ class CacheService {
    * Limpia todo el caché
    */
   clear(): void {
-    this.cache.clear();
     this.stats.hits = 0;
     this.stats.misses = 0;
   }
@@ -200,7 +185,6 @@ class CacheService {
     const totalRequests = this.stats.hits + this.stats.misses;
     
     return {
-      totalEntries: this.cache.size,
       totalHits: this.stats.hits,
       totalMisses: this.stats.misses,
       hitRate: totalRequests > 0 ? (this.stats.hits / totalRequests) * 100 : 0,
@@ -212,11 +196,9 @@ class CacheService {
    * Verifica si una clave existe y no ha expirado
    */
   has(key: string): boolean {
-    const entry = this.cache.get(key);
     if (!entry) return false;
     
     if (Date.now() - entry.timestamp > entry.ttl) {
-      this.cache.delete(key);
       return false;
     }
     
@@ -227,7 +209,6 @@ class CacheService {
    * Obtiene el tiempo restante de vida de una entrada
    */
   getTTL(key: string): number | null {
-    const entry = this.cache.get(key);
     if (!entry) return null;
     
     const remaining = entry.ttl - (Date.now() - entry.timestamp);
@@ -238,7 +219,6 @@ class CacheService {
    * Extiende el TTL de una entrada
    */
   touch(key: string, additionalTtl?: number): boolean {
-    const entry = this.cache.get(key);
     if (!entry) return false;
     
     entry.timestamp = Date.now();
@@ -273,9 +253,7 @@ class CacheService {
     const now = Date.now();
     let cleaned = 0;
 
-    for (const [key, entry] of this.cache.entries()) {
       if (now - entry.timestamp > entry.ttl) {
-        this.cache.delete(key);
         cleaned++;
       }
     }
@@ -294,7 +272,6 @@ class CacheService {
     let oldestKey: string | null = null;
     let oldestScore = Infinity;
 
-    for (const [key, entry] of this.cache.entries()) {
       // Score basado en antigüedad y popularidad
       const age = Date.now() - entry.timestamp;
       const score = entry.hits / (age / 1000); // hits por segundo
@@ -306,7 +283,6 @@ class CacheService {
     }
 
     if (oldestKey) {
-      this.cache.delete(oldestKey);
     }
   }
 
@@ -316,7 +292,6 @@ class CacheService {
   private estimateMemoryUsage(): number {
     let size = 0;
     
-    for (const [key, entry] of this.cache.entries()) {
       // Estimación aproximada
       size += key.length * 2; // Caracteres UTF-16
       size += JSON.stringify(entry.data).length * 2;
@@ -342,16 +317,12 @@ class CacheService {
 // INSTANCIA SINGLETON
 // ============================================================================
 
-let cacheInstance: CacheService | null = null;
 
 /**
  * Obtiene la instancia del servicio de caché
  */
 export function getCache(): CacheService {
-  if (!cacheInstance) {
-    cacheInstance = new CacheService();
   }
-  return cacheInstance;
 }
 
 /**
@@ -368,7 +339,6 @@ export function createCache(options?: CacheOptions): CacheService {
 /**
  * Helper para crear claves de caché consistentes
  */
-export function cacheKey(namespace: string, userId: string, ...params: (string | number)[]): string {
   return getCache().generateKey(namespace, userId, ...params);
 }
 
@@ -387,18 +357,13 @@ export function withCache<T>(
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: unknown[]) {
-      const cache = getCache();
       const key = typeof keyOrFactory === "function" 
         ? keyOrFactory() 
         : `${keyOrFactory}:${JSON.stringify(args)}`;
 
-      const cached = cache.get<T>(key);
-      if (cached !== null) {
-        return cached;
       }
 
       const result = await originalMethod.apply(this, args);
-      cache.set(key, result, ttl);
       return result;
     };
 
