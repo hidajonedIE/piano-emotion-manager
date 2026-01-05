@@ -418,10 +418,20 @@ export default function LoginScreen() {
       setLoading(true);
       setError(null);
 
+      // For web, authenticateWithRedirect handles the OAuth flow and redirects
+      // For native, startSSOFlow returns session data
       const result = await startSSOFlow({
         strategy: "oauth_google",
       });
 
+      // If result is null or undefined, it means the OAuth flow was initiated
+      // and the user will be redirected to Google's login page
+      if (!result) {
+        // OAuth redirect initiated - loading state will be cleared when page redirects
+        return;
+      }
+
+      // Handle native app response
       if (result && result.createdSessionId && result.setActive) {
         await result.setActive({ session: result.createdSessionId });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

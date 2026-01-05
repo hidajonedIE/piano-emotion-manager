@@ -29,7 +29,32 @@ export const useAuth = clerkModule.useAuth;
 export const useUser = clerkModule.useUser;
 export const useSession = clerkModule.useSession;
 
-// For SSO, provide a fallback on web
+// For SSO on web, wrap the signIn hook to provide startSSOFlow
 export const useSSO = Platform.OS === 'web' 
-  ? () => ({ startSSOFlow: async () => {} })
+  ? () => {
+      const { signIn, isLoaded } = clerkModule.useSignIn?.() || { signIn: null, isLoaded: false };
+      
+      return {
+        startSSOFlow: async (options: { strategy: string }) => {
+          if (!signIn || !isLoaded) {
+            console.error('[useSSO] SignIn not loaded');
+            return null;
+          }
+          
+          try {
+            // For web, use authenticateWithRedirect which handles OAuth flow
+            const result = await signIn.authenticateWithRedirect({
+              strategy: options.strategy as 'oauth_google' | 'oauth_github' | 'oauth_microsoft',
+              redirectUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/oauth/callback`,
+              redirectUrlComplete: `${typeof window !== 'undefined' ? window.location.origin : ''}/`,
+            });
+            
+            return result;
+          } catch (error) {
+            console.error('[useSSO] Error in authenticateWithRedirect:', error);
+            return null;
+          }
+        }
+      };
+    }
   : clerkModule.useSSO;
