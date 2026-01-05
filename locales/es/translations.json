@@ -213,6 +213,16 @@
     "noAppointments": "No hay citas programadas",
     "addFirstAppointment": "Programa tu primera cita"
   },
+  "calendar": {
+    "title": "Calendario",
+    "settings": "Configuración del Calendario",
+    "today": "Hoy",
+    "view": {
+      "day": "Día",
+      "week": "Semana",
+      "month": "Mes"
+    }
+  },
   "inventory": {
     "title": "Inventario",
     "newItem": "Nuevo Artículo",
@@ -632,6 +642,10 @@
     "addFirstQuote": "Crea tu primer presupuesto"
   },
   "reminders": {
+    "types": {
+      "maintenance": "Mantenimiento",
+      "follow_up": "Seguimiento"
+    },
     "title": "Recordatorios",
     "newReminder": "Nuevo Recordatorio",
     "automatic": "Automáticos",
