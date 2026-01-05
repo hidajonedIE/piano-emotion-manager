@@ -5,7 +5,7 @@ import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { TRPCError } from '@trpc/server';
-import { getCached, setCached, deleteCached } from '../cache.js';
+// import { getCached, setCached, deleteCached } from '../cache.js';
 
 export const invitationsRouter = router({
   // Crear una nueva invitación (solo admins)
@@ -122,12 +122,12 @@ export const invitationsRouter = router({
         return { valid: true, isAdmin: true };
       }
 
-      // Intentar obtener del caché primero
-      const cacheKey = `invitation:validate:${input.email}`;
-      const cached = await getCached<{ valid: boolean; reason?: string; invitation?: any }>(cacheKey);
-      if (cached) {
-        return cached;
-      }
+      // Cache deshabilitado temporalmente para estabilizar el build
+      // const cacheKey = `invitation:validate:${input.email}`;
+      // const cached = await getCached<{ valid: boolean; reason?: string; invitation?: any }>(cacheKey);
+      // if (cached) {
+      //   return cached;
+      // }
 
       const database = await db.getDb();
       if (!database) {
@@ -150,21 +150,21 @@ export const invitationsRouter = router({
 
       if (!invitation) {
         const result = { valid: false, reason: 'Invitación no encontrada' };
-        // Cachear resultado negativo por 5 minutos
-        await setCached(cacheKey, result, 300);
+        // Cache deshabilitado temporalmente
+        // await setCached(cacheKey, result, 300);
         return result;
       }
 
       if (new Date() > invitation.expiresAt) {
         const result = { valid: false, reason: 'Invitación expirada' };
-        // Cachear resultado negativo por 5 minutos
-        await setCached(cacheKey, result, 300);
+        // Cache deshabilitado temporalmente
+        // await setCached(cacheKey, result, 300);
         return result;
       }
 
       const result = { valid: true, invitation };
-      // Cachear resultado positivo por 10 minutos
-      await setCached(cacheKey, result, 600);
+      // Cache deshabilitado temporalmente
+      // await setCached(cacheKey, result, 600);
       return result;
     }),
 
@@ -199,10 +199,10 @@ export const invitationsRouter = router({
         })
         .where(eq(invitations.token, input.token));
 
-      // Invalidar caché de validación para este email
-      if (invitation) {
-        await deleteCached(`invitation:validate:${invitation.email}`);
-      }
+      // Cache deshabilitado temporalmente
+      // if (invitation) {
+      //   await deleteCached(`invitation:validate:${invitation.email}`);
+      // }
 
       return { success: true };
     }),
@@ -246,10 +246,10 @@ export const invitationsRouter = router({
         })
         .where(eq(invitations.id, input.id));
 
-      // Invalidar caché de validación para este email
-      if (invitation) {
-        await deleteCached(`invitation:validate:${invitation.email}`);
-      }
+      // Cache deshabilitado temporalmente
+      // if (invitation) {
+      //   await deleteCached(`invitation:validate:${invitation.email}`);
+      // }
 
       return { success: true };
     }),
