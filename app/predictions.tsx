@@ -58,9 +58,11 @@ if (typeof document !== 'undefined' && !document.getElementById('tabs-container-
   style.textContent = `
     /* Target the tabs container by looking for borderBottomWidth */
     div[style*="borderBottomWidth"] {
-      height: 52px !important;
-      max-height: 52px !important;
+      height: 68px !important;
+      max-height: 68px !important;
       overflow: hidden !important;
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
     }
     
     /* Add padding to the content inside */
@@ -639,7 +641,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 16,
     borderBottomWidth: 1,
   },
   backButton: {
