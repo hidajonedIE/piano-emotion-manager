@@ -418,26 +418,26 @@ export default function LoginScreen() {
       setLoading(true);
       setError(null);
 
-      const { createdSessionId, setActive, signIn: ssoSignIn, signUp: ssoSignUp } = await startSSOFlow({
+      const result = await startSSOFlow({
         strategy: "oauth_google",
       });
 
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
+      if (result && result.createdSessionId && result.setActive) {
+        await result.setActive({ session: result.createdSessionId });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.replace("/");
         return;
       }
 
-      if (ssoSignUp?.createdSessionId && setActive) {
-        await setActive({ session: ssoSignUp.createdSessionId });
+      if (result && result.signUp?.createdSessionId && result.setActive) {
+        await result.setActive({ session: result.signUp.createdSessionId });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.replace("/");
         return;
       }
 
-      if (ssoSignIn?.createdSessionId && setActive) {
-        await setActive({ session: ssoSignIn.createdSessionId });
+      if (result && result.signIn?.createdSessionId && result.setActive) {
+        await result.setActive({ session: result.signIn.createdSessionId });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.replace("/");
         return;
