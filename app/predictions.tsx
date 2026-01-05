@@ -51,7 +51,6 @@ export default function PredictionsScreen() {
           Basado en tu historial de los últimos 12 meses
         </ThemedText>
       </View>
-      {/* Aquí iría el contenido de la pestaña de ingresos */}
     </View>
   );
 
@@ -98,19 +97,21 @@ export default function PredictionsScreen() {
             ]}
             onPress={() => setActiveTab(tab.id as TabType)}
           >
-            <Ionicons 
-              name={tab.icon as any} 
-              size={20} 
-              color={activeTab === tab.id ? colors.primary : textSecondary} 
-            />
-            <ThemedText 
-              style={[
-                styles.tabLabel, 
-                { color: activeTab === tab.id ? colors.primary : textSecondary }
-              ]}
-            >
-              {tab.label}
-            </ThemedText>
+            <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <Ionicons 
+                name={tab.icon as any} 
+                size={24} 
+                color={activeTab === tab.id ? colors.primary : textSecondary} 
+              />
+              <ThemedText 
+                style={[
+                  styles.tabLabel, 
+                  { color: activeTab === tab.id ? colors.primary : textSecondary }
+                ]}
+              >
+                {tab.label}
+              </ThemedText>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -153,9 +154,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    gap: 40,
     width: '100%',
-    flexWrap: 'wrap',
+    display: 'flex',
   },
   tabButton: {
     flexDirection: 'column',
@@ -164,15 +164,15 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 10,
     minWidth: 120,
-    borderRadius: 12,
     textAlign: 'center',
+    marginHorizontal: 10,
   },
   tabLabel: {
     marginTop: 8,
     fontSize: 16,
     fontWeight: '500',
     textAlign: 'center',
-    marginLeft: 0,
+    width: '100%',
   },
   content: {
     flex: 1,
