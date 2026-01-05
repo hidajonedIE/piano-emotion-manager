@@ -61,17 +61,27 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
 
   // Try Clerk authentication first (new system)
   try {
+    console.log('[Context] Attempting Clerk authentication...');
     const clerkUser = await verifyClerkSession(opts.req);
+    
     if (clerkUser) {
+      console.log('[Context] Clerk user verified:', { id: clerkUser.id, email: clerkUser.email });
+      
       // Get or create user in database
       const db = await getDb();
       if (db) {
         const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
         user = dbUser as User;
+        console.log('[Context] User authenticated successfully via Clerk:', { id: user.id, email: user.email });
         return { req: opts.req, res: opts.res, user };
+      } else {
+        console.error('[Context] Database connection failed');
       }
+    } else {
+      console.log('[Context] Clerk session verification returned null (user not signed in)');
     }
-  } catch {
+  } catch (error) {
+    console.error('[Context] Clerk authentication error:', error);
     // Clerk authentication failed, continue to legacy auth
   }
 
