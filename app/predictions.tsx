@@ -51,28 +51,7 @@ const MOCK_DATA = {
   ],
 };
 
-// Inyectar CSS global para forzar la altura del contenedor de tabs
-if (typeof document !== 'undefined' && !document.getElementById('tabs-container-css')) {
-  const style = document.createElement('style');
-  style.id = 'tabs-container-css';
-  style.textContent = `
-    /* Target the tabs container by looking for borderBottomWidth */
-    div[style*="borderBottomWidth"] {
-      height: 80px !important;
-      max-height: 80px !important;
-      overflow: hidden !important;
-      padding-top: 8px !important;
-      padding-bottom: 8px !important;
-    }
-    
-    /* Add padding to the content inside */
-    div[style*="borderBottomWidth"] > div {
-      padding-left: 16px !important;
-      padding-right: 16px !important;
-    }
-  `;
-  document.head.appendChild(style);
-}
+// CSS inyectado eliminado para usar estilos nativos flexibles
 
 export default function PredictionsScreen() {
   const router = useRouter();
@@ -641,24 +620,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 32, // Triplicado
     borderBottomWidth: 1,
+    minHeight: 100,
   },
   backButton: {
     padding: 8,
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    maxHeight: 52,
+    minHeight: 100, // Triplicado
     overflow: 'hidden',
     flex: 0,
     flexShrink: 0,
     paddingHorizontal: 16,
+    justifyContent: 'center',
   },
   tabsContent: {
     paddingHorizontal: 8,
-    paddingVertical: 0,
-    gap: 2,
+    paddingVertical: 16, // Aumentado
+    gap: 12, // Más espacio
     alignItems: 'center',
     justifyContent: 'space-between',
     flex: 1,
@@ -666,14 +647,13 @@ const styles = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    height: 36,
-    maxHeight: 36,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    minHeight: 48, // Altura estándar cómoda
     borderRadius: 4,
     borderWidth: 1,
     borderColor: 'transparent',
-    marginRight: 4,
+    marginRight: 8,
   },
   tabLabel: {
     fontSize: 14,
