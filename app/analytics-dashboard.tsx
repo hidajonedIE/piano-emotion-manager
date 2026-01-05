@@ -6,10 +6,11 @@ import {
   Pressable,
   Dimensions,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { DashboardAccessShortcuts } from '@/components/dashboard/dashboard-access-shortcuts';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useInvoices } from '@/hooks/use-invoices';
 import { useServices } from '@/hooks/use-services';
@@ -21,6 +22,7 @@ const { width: screenWidth } = Dimensions.get('window');
 type TimeRange = 'month' | 'quarter' | 'year';
 
 export default function AnalyticsDashboardScreen() {
+  const router = useRouter();
   const { invoices } = useInvoices();
   const { services } = useServices();
   const { clients } = useClients();
@@ -350,14 +352,20 @@ export default function AnalyticsDashboardScreen() {
         </View>
 
         {/* Acciones */}
-        <View style={[styles.actionsSection, { backgroundColor: cardBg }]}>
-          <Pressable style={[styles.actionButton, { borderColor: primary }]}>
-            <IconSymbol name="arrow.down.doc" size={18} color={primary} />
-            <ThemedText style={[styles.actionButtonText, { color: primary }]}>
-              Exportar Informe PDF
-            </ThemedText>
-          </Pressable>
-        </View>
+	        {/* Acciones */}
+	        <View style={[styles.actionsSection, { backgroundColor: cardBg }]}>
+	          <Pressable style={[styles.actionButton, { borderColor: primary }]}>
+	            <IconSymbol name="arrow.down.doc" size={18} color={primary} />
+	            <ThemedText style={[styles.actionButtonText, { color: primary }]}>
+	              Exportar Informe PDF
+	            </ThemedText>
+	          </Pressable>
+	        </View>
+	
+	        {/* Accesos Rápidos */}
+	        <View style={[styles.section, { backgroundColor: cardBg, padding: Spacing.md }]}>
+	          <DashboardAccessShortcuts />
+	        </View>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
