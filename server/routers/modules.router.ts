@@ -20,7 +20,7 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
   }
 
   try {
-    const db = getDb();
+    const db = await getDb();
     const userIdNum = parseInt(userId);
     
     console.log('[getUserPlan] Looking for user with ID:', userIdNum);
