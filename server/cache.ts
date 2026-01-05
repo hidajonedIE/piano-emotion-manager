@@ -67,7 +67,7 @@ export async function getRedisClient(): Promise<RedisClientType | null> {
 /**
  * Obtiene un valor del caché
  */
-export async function getCachedValue<T>(key: string): Promise<T | null> {
+export async function getCached<T>(key: string): Promise<T | null> {
   try {
     const client = await getRedisClient();
     if (!client) return null;
@@ -85,7 +85,7 @@ export async function getCachedValue<T>(key: string): Promise<T | null> {
 /**
  * Guarda un valor en el caché con TTL (Time To Live)
  */
-export async function setCachedValue(
+export async function setCached(
   key: string,
   value: unknown,
   ttlSeconds: number = 600 // 10 minutos por defecto
@@ -105,7 +105,7 @@ export async function setCachedValue(
 /**
  * Elimina un valor del caché
  */
-export async function deleteCachedValue(key: string): Promise<void> {
+export async function deleteCached(key: string): Promise<void> {
   try {
     const client = await getRedisClient();
     if (!client) return;
