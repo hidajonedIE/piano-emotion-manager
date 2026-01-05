@@ -487,12 +487,12 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   filterContainer: {
-    // Eliminamos maxHeight para permitir que el contenido respire
+    height: 80, // Altura fija suficiente para los botones de 48px + padding
   },
   filterContent: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
+    paddingVertical: 16, // Aumentamos el padding vertical interno
+    gap: Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },

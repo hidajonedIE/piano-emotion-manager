@@ -510,7 +510,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#f3f4f6',
     borderRadius: 8,
-    padding: 2,
+    padding: 4,
+    minHeight: 56, // Asegurar altura suficiente para los botones internos
+    alignItems: 'center',
   },
   viewButton: {
     paddingHorizontal: 20,
