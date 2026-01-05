@@ -539,8 +539,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 32, // Triplicado
     borderBottomWidth: 1,
+    minHeight: 100,
   },
   backButton: {
     padding: 8,
@@ -579,18 +580,21 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   filterContainer: {
-    maxHeight: 50,
+    minHeight: 100, // Triplicado
   },
   filterContent: {
     paddingHorizontal: 16,
-    gap: 8,
+    paddingVertical: 24, // Aumentado
+    gap: 12,
+    alignItems: 'center',
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    minHeight: 48, // Altura estándar cómoda
+    borderRadius: 4, // Más cuadrado
     borderWidth: 1,
     marginRight: 8,
   },

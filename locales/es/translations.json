@@ -644,7 +644,11 @@
   "reminders": {
     "types": {
       "maintenance": "Mantenimiento",
-      "follow_up": "Seguimiento"
+      "follow_up": "Seguimiento",
+      "warranty_expiry": "Vencimiento de Garantía",
+      "appointment": "Cita",
+      "payment_due": "Pago Pendiente",
+      "contract_renewal": "Renovación de Contrato"
     },
     "title": "Recordatorios",
     "newReminder": "Nuevo Recordatorio",
