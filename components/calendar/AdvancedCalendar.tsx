@@ -477,9 +477,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 32, // Triplicado
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+    minHeight: 120,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -510,8 +511,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#f3f4f6',
     borderRadius: 8,
-    padding: 4,
-    minHeight: 56, // Asegurar altura suficiente para los botones internos
+    padding: 8,
+    minHeight: 80, // Aumentado drásticamente
     alignItems: 'center',
   },
   viewButton: {

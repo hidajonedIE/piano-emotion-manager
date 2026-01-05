@@ -473,8 +473,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: 32, // Triplicado el padding vertical
     borderBottomWidth: 1,
+    minHeight: 100, // Altura mínima generosa
   },
   backButton: {
     padding: Spacing.xs,
@@ -487,12 +488,12 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   filterContainer: {
-    height: 80, // Altura fija suficiente para los botones de 48px + padding
+    height: 120, // Aumentado drásticamente
   },
   filterContent: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: 16, // Aumentamos el padding vertical interno
-    gap: Spacing.md,
+    paddingVertical: 32, // Triplicado el padding vertical interno
+    gap: 24, // Más espacio entre botones
     flexDirection: 'row',
     alignItems: 'center',
   },
