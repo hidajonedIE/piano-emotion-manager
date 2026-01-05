@@ -16,13 +16,10 @@ i18n.defaultLocale = defaultLanguage;
  * Get the best matching supported language from device locale
  */
 function getDeviceLanguage(): SupportedLanguage {
-  // En web, Localization.getLocales() puede no funcionar correctamente
-  // Intentar obtener el idioma del navegador
-  if (typeof navigator !== 'undefined' && navigator.language) {
-    const browserLang = navigator.language.split('-')[0].toLowerCase() as SupportedLanguage;
-    if (supportedLanguages.some(lang => lang.code === browserLang)) {
-      return browserLang;
-    }
+  // En web, por defecto usar español
+  if (typeof navigator !== 'undefined') {
+    // Si no hay idioma guardado, usar español por defecto en web
+    return 'es';
   }
   
   // Fallback a Localization.getLocales() para mobile
