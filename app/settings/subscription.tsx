@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
 
-type PlanId = 'FREE' | 'PRO' | 'PREMIUM';
+type PlanId = 'FREE' | 'PROFESSIONAL' | 'PREMIUM_IA';
 
 export default function SubscriptionScreen() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function SubscriptionScreen() {
       ],
     },
     {
-      id: 'PRO',
+      id: 'PROFESSIONAL',
       name: 'Plan Pro',
       price: 30,
       currency: 'EUR',
@@ -99,7 +99,7 @@ export default function SubscriptionScreen() {
       ],
     },
     {
-      id: 'PREMIUM',
+      id: 'PREMIUM_IA',
       name: 'Plan Premium IA',
       price: 50,
       currency: 'EUR',
@@ -189,7 +189,7 @@ export default function SubscriptionScreen() {
       : 'https://piano-emotion-manager.vercel.app';
 
     createCheckout.mutate({
-      plan: planId as 'PRO' | 'PREMIUM',
+      plan: planId as 'PROFESSIONAL' | 'PREMIUM_IA',
       successUrl: `${baseUrl}/settings/subscription?success=true`,
       cancelUrl: `${baseUrl}/settings/subscription?canceled=true`,
     });
