@@ -487,21 +487,22 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   filterContainer: {
-    maxHeight: 50,
+    maxHeight: 80,
   },
   filterContent: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    gap: Spacing.md,
     flexDirection: 'row',
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
+    minHeight: 44,
   },
   filterDot: {
     width: 10,

@@ -157,6 +157,8 @@ export default function RootLayout() {
                       <Stack.Screen name="payment-settings" options={{ headerShown: false }} />
                       <Stack.Screen name="dashboard-editor" options={{ headerShown: false }} />
                       <Stack.Screen name="predictions" options={{ headerShown: false }} />
+                      <Stack.Screen name="service-catalog" options={{ headerShown: false }} />
+                      <Stack.Screen name="service-categories" options={{ headerShown: false }} />
                     </Stack>
                     </AuthGuard>
                     <StatusBar style="auto" />
