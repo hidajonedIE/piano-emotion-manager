@@ -58,8 +58,8 @@ if (typeof document !== 'undefined' && !document.getElementById('tabs-container-
   style.textContent = `
     /* Target the tabs container by looking for borderBottomWidth */
     div[style*="borderBottomWidth"] {
-      height: 68px !important;
-      max-height: 68px !important;
+      height: 80px !important;
+      max-height: 80px !important;
       overflow: hidden !important;
       padding-top: 8px !important;
       padding-bottom: 8px !important;
@@ -666,17 +666,17 @@ const styles = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    height: 24,
-    maxHeight: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    height: 36,
+    maxHeight: 36,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: 'transparent',
     marginRight: 4,
   },
   tabLabel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
     marginLeft: 4,
   },
