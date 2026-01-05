@@ -476,11 +476,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 32, // Triplicado
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-    minHeight: 120,
+    minHeight: 64,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -511,9 +511,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#f3f4f6',
     borderRadius: 8,
-    padding: 8,
-    minHeight: 80, // Aumentado drásticamente
+    padding: 4,
+    minHeight: 56,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   viewButton: {
     paddingHorizontal: 20,

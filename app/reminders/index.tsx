@@ -538,10 +538,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 32, // Triplicado
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    minHeight: 100,
+    minHeight: 64,
   },
   backButton: {
     padding: 8,
@@ -580,13 +580,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   filterContainer: {
-    minHeight: 100, // Triplicado
+    minHeight: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 24, // Aumentado
+    paddingHorizontal: 24,
+    paddingVertical: 8,
     gap: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   filterChip: {
     flexDirection: 'row',

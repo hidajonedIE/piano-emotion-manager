@@ -619,30 +619,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 32, // Triplicado
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    minHeight: 100,
+    minHeight: 64,
   },
   backButton: {
     padding: 8,
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    minHeight: 100, // Triplicado
+    minHeight: 64,
     overflow: 'hidden',
     flex: 0,
     flexShrink: 0,
     paddingHorizontal: 16,
     justifyContent: 'center',
+    alignItems: 'center', // Centrar horizontalmente
   },
   tabsContent: {
-    paddingHorizontal: 8,
-    paddingVertical: 16, // Aumentado
-    gap: 12, // Más espacio
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    gap: 16,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
+    justifyContent: 'center', // Centrar botones
+    flex: 0, // No expandir para que se agrupen al centro
   },
   tab: {
     flexDirection: 'row',

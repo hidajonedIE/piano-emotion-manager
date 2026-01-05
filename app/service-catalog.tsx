@@ -472,10 +472,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 32, // Triplicado el padding vertical
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    minHeight: 100, // Altura mínima generosa
+    minHeight: 64,
   },
   backButton: {
     padding: Spacing.xs,
@@ -488,14 +488,16 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   filterContainer: {
-    height: 120, // Aumentado drásticamente
+    minHeight: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterContent: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 32, // Triplicado el padding vertical interno
-    gap: 24, // Más espacio entre botones
-    flexDirection: 'row',
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    gap: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   filterChip: {
     flexDirection: 'row',
