@@ -28,6 +28,7 @@ import {
   advancedRouter,
   seedRouter,
   usageRouter,
+  adminRouter,
 } from "./routers/index.js";
 import { licenseRouter } from "./routers/license/index.js";
 import { aiGenerationRouter } from "./routers/ai-generation.router.js";
@@ -89,6 +90,9 @@ export const appRouter = router({
   
   // Exportación de datos
   export: exportRouter,
+
+  // Administración de emergencia
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;
