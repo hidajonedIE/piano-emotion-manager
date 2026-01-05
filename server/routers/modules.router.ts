@@ -15,16 +15,22 @@ import type { SubscriptionPlan } from "../../drizzle/modules-schema.js";
  */
 async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan> {
   if (!userId) {
+    console.log('[getUserPlan] No userId provided');
     return 'free'; // Usuario no autenticado = plan gratuito
   }
 
   try {
     const db = getDb();
+    const userIdNum = parseInt(userId);
+    
+    console.log('[getUserPlan] Looking for user with ID:', userIdNum);
     
     // Buscar usuario y su suscripción
     const user = await db.query.users.findFirst({
-      where: eq(users.id, parseInt(userId)),
+      where: eq(users.id, userIdNum),
     });
+
+    console.log('[getUserPlan] User found:', user ? { id: user.id, email: user.email, plan: user.subscriptionPlan, status: user.subscriptionStatus } : 'null');
 
     if (user && user.subscriptionStatus === 'active') {
       // Mapear el plan de la tabla users al tipo SubscriptionPlan
@@ -37,13 +43,16 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
         'premium': 'premium',
       };
       
-      return planMap[user.subscriptionPlan] || 'free';
+      const mappedPlan = planMap[user.subscriptionPlan] || 'free';
+      console.log('[getUserPlan] Returning plan:', mappedPlan);
+      return mappedPlan;
     }
 
+    console.log('[getUserPlan] User not found or subscription not active, returning free');
     // Si no tiene suscripción activa, devolver plan gratuito
     return 'free';
   } catch (error) {
-    console.error('Error getting user plan:', error);
+    console.error('[getUserPlan] Error getting user plan:', error);
     return 'free';
   }
 }
@@ -146,7 +155,7 @@ export const modulesRouter = router({
   }),
 
   // Obtener plan actual
-  getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+  getCurrentPlan: publicProcedure.query(async ({ ctx }) => {
     const userId = ctx.user?.id;
     return await getUserPlan(userId);
   }),
