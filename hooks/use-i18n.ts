@@ -16,8 +16,17 @@ i18n.defaultLocale = defaultLanguage;
  * Get the best matching supported language from device locale
  */
 function getDeviceLanguage(): SupportedLanguage {
-  const deviceLocales = Localization.getLocales();
+  // En web, Localization.getLocales() puede no funcionar correctamente
+  // Intentar obtener el idioma del navegador
+  if (typeof navigator !== 'undefined' && navigator.language) {
+    const browserLang = navigator.language.split('-')[0].toLowerCase() as SupportedLanguage;
+    if (supportedLanguages.some(lang => lang.code === browserLang)) {
+      return browserLang;
+    }
+  }
   
+  // Fallback a Localization.getLocales() para mobile
+  const deviceLocales = Localization.getLocales();
   if (deviceLocales && deviceLocales.length > 0) {
     for (const locale of deviceLocales) {
       const languageCode = locale.languageCode?.toLowerCase() as SupportedLanguage;
