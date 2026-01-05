@@ -10,7 +10,7 @@ import { trpc } from '@/utils/trpc';
 // Types
 // ============================================================================
 
-export type SubscriptionPlan = 'free' | 'professional' | 'premium';
+export type SubscriptionPlan = 'free' | 'pro' | 'premium';
 
 export interface ModuleInfo {
   code: string;
@@ -18,7 +18,7 @@ export interface ModuleInfo {
   description: string | null;
   icon: string | null;
   color: string | null;
-  type: 'core' | 'free' | 'professional' | 'premium' | 'addon';
+  type: 'core' | 'free' | 'pro' | 'premium' | 'addon';
   isEnabled: boolean;
   isAvailable: boolean;
   requiresUpgrade: boolean;
@@ -89,8 +89,8 @@ export function useModules() {
     [modules]
   );
 
-  const professionalModules = useMemo(
-    () => modules?.filter((m) => m.type === 'professional') || [],
+  const proModules = useMemo(
+    () => modules?.filter((m) => m.type === 'pro') || [],
     [modules]
   );
 
@@ -113,7 +113,7 @@ export function useModules() {
     modules: modules || [],
     coreModules,
     freeModules,
-    professionalModules,
+    proModules,
     premiumModules,
     addonModules,
     enabledModules,

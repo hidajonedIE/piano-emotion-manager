@@ -15,7 +15,7 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
   // Stripe subscription fields
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
-  subscriptionPlan: mysqlEnum("subscriptionPlan", ["free", "starter", "professional", "enterprise", "premium_ia"]).default("professional").notNull(),
+  subscriptionPlan: mysqlEnum("subscriptionPlan", ["free", "pro", "premium"]).default("free").notNull(),
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "canceled", "past_due", "trialing", "none"]).default("none").notNull(),
   subscriptionId: varchar("subscriptionId", { length: 255 }),
   subscriptionEndDate: timestamp("subscriptionEndDate"),

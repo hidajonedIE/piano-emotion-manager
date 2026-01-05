@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-export type SubscriptionPlan = 'FREE' | 'PROFESSIONAL' | 'PREMIUM_IA';
+export type SubscriptionPlan = 'FREE' | 'PRO' | 'PREMIUM';
 export type AIFeature = 'chat' | 'email' | 'report' | 'prediction';
 
 /**
@@ -16,13 +16,13 @@ export const AI_LIMITS = {
     reportGenerationsPerMonth: 0,
     predictionsPerMonth: 0,
   },
-  PROFESSIONAL: {
+  PRO: {
     chatMessagesPerMonth: 0,
     emailGenerationsPerMonth: 0,
     reportGenerationsPerMonth: 0,
     predictionsPerMonth: 0,
   },
-  PREMIUM_IA: {
+  PREMIUM: {
     chatMessagesPerMonth: 500,        // ~16 mensajes por día
     emailGenerationsPerMonth: 200,    // ~7 emails por día
     reportGenerationsPerMonth: 100,   // ~3 informes por día
@@ -42,7 +42,7 @@ export const DATA_LIMITS = {
     storageGB: 0.5,
     maxTeamMembers: 1,
   },
-  PROFESSIONAL: {
+  PRO: {
     maxClients: -1,        // Ilimitado
     maxPianos: -1,
     maxServicesPerMonth: -1,
@@ -50,7 +50,7 @@ export const DATA_LIMITS = {
     storageGB: 2,
     maxTeamMembers: 5,
   },
-  PREMIUM_IA: {
+  PREMIUM: {
     maxClients: -1,
     maxPianos: -1,
     maxServicesPerMonth: -1,
@@ -88,7 +88,7 @@ export const FEATURE_ACCESS = {
     whiteLabel: false,
     apiAccess: false,
   },
-  PROFESSIONAL: {
+  PRO: {
     // Core features
     basicCRM: true,
     calendar: true,
@@ -112,7 +112,7 @@ export const FEATURE_ACCESS = {
     whiteLabel: false,
     apiAccess: false,
   },
-  PREMIUM_IA: {
+  PREMIUM: {
     // Core features
     basicCRM: true,
     calendar: true,
@@ -176,12 +176,12 @@ export function normalizePlanName(plan: string | null | undefined): Subscription
   
   const normalized = plan.toUpperCase();
   
-  if (normalized.includes('PREMIUM') || normalized.includes('IA')) {
-    return 'PREMIUM_IA';
+  if (normalized.includes('PREMIUM')) {
+    return 'PREMIUM';
   }
   
-  if (normalized.includes('PRO') || normalized.includes('PROFESSIONAL')) {
-    return 'PROFESSIONAL';
+  if (normalized.includes('PRO')) {
+    return 'PRO';
   }
   
   return 'FREE';
