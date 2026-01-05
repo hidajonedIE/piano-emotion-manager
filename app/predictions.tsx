@@ -157,7 +157,7 @@ export default function PredictionsScreen() {
     { id: 'churn', label: 'Clientes', icon: 'people-outline' },
     { id: 'maintenance', label: 'Mantenimiento', icon: 'construct-outline' },
     { id: 'workload', label: 'Carga', icon: 'calendar-outline' },
-    { id: 'inventory', label: 'Cube-outline' },
+    { id: 'inventory', label: 'Inventario', icon: 'cube-outline' },
   ];
 
   const getTrendIcon = (trend: string) => {
