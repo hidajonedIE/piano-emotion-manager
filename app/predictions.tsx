@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingVertical: 80,
     borderBottomWidth: 1,
   },
   backButton: {
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   tabsContainer: {
-    height: 80,
+    height: 160,
     borderBottomWidth: 1,
   },
   tabsContent: {

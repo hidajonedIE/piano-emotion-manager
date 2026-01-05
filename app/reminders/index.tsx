@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingVertical: 80,
     borderBottomWidth: 1,
   },
   backButton: {
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   filterWrapper: {
-    height: 80,
+    height: 160,
     borderBottomWidth: 1,
     justifyContent: 'space-around',
   },
