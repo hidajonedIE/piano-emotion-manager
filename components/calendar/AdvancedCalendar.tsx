@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 24, // Header más alto para "respirar"
+    paddingVertical: 40, // Header más alto para "respirar"
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
     minHeight: 64,
@@ -512,14 +512,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     borderRadius: 8,
     padding: 4,
-    height: 56, // Altura compacta del contenedor de botones
+    height: 80, // Altura compacta del contenedor de botones
     alignItems: 'center',
     justifyContent: 'center',
     gap: 40, // Separación mayor
   },
   viewButton: {
     paddingHorizontal: 20,
-    paddingVertical: 0,
+    paddingVertical: 16,
     borderRadius: 4,
     minWidth: 90,
     height: 48, // Altura de botón cómoda
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
   weekDayHeader: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 16,
   },
   weekDayHeaderToday: {
     backgroundColor: '#dbeafe',

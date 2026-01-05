@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingVertical: 40,
     borderBottomWidth: 1,
   },
   backButton: {
@@ -532,14 +532,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   tabsContainer: {
-    height: 56,
+    height: 80,
     borderBottomWidth: 1,
   },
   tabsContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
+    justifyContent: 'space-around',
+    paddingHorizontal: 24,
     gap: 32,
   },
   tabButton: {

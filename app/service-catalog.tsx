@@ -194,7 +194,7 @@ export default function ServiceCatalogScreen() {
   };
 
   return (
-    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top + 16 }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   filterContainer: {
-    height: 48,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -573,8 +573,7 @@ const styles = StyleSheet.create({
   },
   serviceFooter: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    justifyContent: 'flex-end', alignItems: 'center',
     marginTop: Spacing.sm,
     gap: Spacing.sm,
   },
@@ -654,7 +653,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
     borderTopWidth: 1,
   },
   toggle: {

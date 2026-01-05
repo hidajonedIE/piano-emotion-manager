@@ -307,9 +307,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingVertical: 40,
     borderBottomWidth: 1,
   },
   backButton: {
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
   },
   title: {
     fontSize: 22,
@@ -357,15 +357,15 @@ const styles = StyleSheet.create({
     height: 30,
   },
   filterWrapper: {
-    height: 48,
+    height: 80,
     borderBottomWidth: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-around',
   },
   filterContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 48,
+    justifyContent: 'space-around',
+    paddingHorizontal: 24,
     gap: 40,
   },
   filterChip: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     marginRight: 12,
   },
   templateInfo: {
