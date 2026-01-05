@@ -10,7 +10,7 @@ import { Stack, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { DashboardAccessShortcuts } from '@/components/dashboard/dashboard-access-shortcuts';
+
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useInvoices } from '@/hooks/use-invoices';
 import { useServices } from '@/hooks/use-services';
@@ -352,7 +352,6 @@ export default function AnalyticsDashboardScreen() {
         </View>
 
         {/* Acciones */}
-	        {/* Acciones */}
 	        <View style={[styles.actionsSection, { backgroundColor: cardBg }]}>
 	          <Pressable style={[styles.actionButton, { borderColor: primary }]}>
 	            <IconSymbol name="arrow.down.doc" size={18} color={primary} />
@@ -360,11 +359,6 @@ export default function AnalyticsDashboardScreen() {
 	              Exportar Informe PDF
 	            </ThemedText>
 	          </Pressable>
-	        </View>
-	
-	        {/* Accesos Rápidos */}
-	        <View style={[styles.section, { backgroundColor: cardBg, padding: Spacing.md }]}>
-	          <DashboardAccessShortcuts />
 	        </View>
 
         <View style={styles.bottomPadding} />
