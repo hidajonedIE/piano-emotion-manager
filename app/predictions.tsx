@@ -154,17 +154,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 0,
     gap: 32,
+    width: '100%',
   },
   tabButton: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
+    minWidth: 100,
   },
   tabLabel: {
-    marginLeft: 8,
+    marginTop: 8,
     fontSize: 16,
     fontWeight: '500',
+    textAlign: 'center',
   },
   content: {
     flex: 1,
