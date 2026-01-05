@@ -487,22 +487,25 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   filterContainer: {
-    maxHeight: 80,
+    // Eliminamos maxHeight para permitir que el contenido respire
   },
   filterContent: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
-    gap: Spacing.md,
+    gap: Spacing.sm,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.lg,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 4, // Más cuadrado como pidió el usuario
     borderWidth: 1,
-    minHeight: 44,
+    minHeight: 48, // Altura táctil estándar y cómoda
+    minWidth: 100, // Asegurar un ancho mínimo mayor
+    justifyContent: 'center',
   },
   filterDot: {
     width: 10,

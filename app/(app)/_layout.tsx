@@ -62,8 +62,8 @@ export default function AppLayout() {
 
       {/* Calendario Avanzado */}
       <Stack.Screen
-        name="calendar/index"
-        options={{ title: 'Calendario Avanzado' }}
+        name="calendar"
+        options={{ title: 'Calendario' }}
       />
 
       {/* Contabilidad */}

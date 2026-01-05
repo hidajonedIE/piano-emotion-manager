@@ -141,7 +141,7 @@ export default function RootLayout() {
                       <Stack.Screen name="piano" options={{ headerShown: false }} />
                       <Stack.Screen name="service" options={{ headerShown: false }} />
                       <Stack.Screen name="invoice" options={{ headerShown: false }} />
-                      <Stack.Screen name="appointment" options={{ headerShown: false }} />
+                      <Stack.Screen name="appointment" options={{ title: 'Cita', headerShown: false }} />
                       <Stack.Screen name="supplier" options={{ headerShown: false }} />
                       <Stack.Screen name="rate" options={{ headerShown: false }} />
                       <Stack.Screen name="inventory" options={{ headerShown: false }} />
@@ -150,15 +150,15 @@ export default function RootLayout() {
                       <Stack.Screen name="work-order" options={{ headerShown: false }} />
                       <Stack.Screen name="teams" options={{ headerShown: false }} />
                       <Stack.Screen name="quotes" options={{ headerShown: false }} />
-                      <Stack.Screen name="reminders" options={{ headerShown: false }} />
+                      <Stack.Screen name="reminders" options={{ title: 'Recordatorios', headerShown: false }} />
                       <Stack.Screen name="workflows" options={{ headerShown: false }} />
                       <Stack.Screen name="contracts" options={{ headerShown: false }} />
                       <Stack.Screen name="whatsapp-settings" options={{ headerShown: false }} />
                       <Stack.Screen name="payment-settings" options={{ headerShown: false }} />
                       <Stack.Screen name="dashboard-editor" options={{ headerShown: false }} />
                       <Stack.Screen name="predictions" options={{ headerShown: false }} />
-                      <Stack.Screen name="service-catalog" options={{ headerShown: false }} />
-                      <Stack.Screen name="service-categories" options={{ headerShown: false }} />
+                      <Stack.Screen name="service-catalog" options={{ title: 'Catálogo de Servicios', headerShown: false }} />
+                      <Stack.Screen name="service-categories" options={{ title: 'Categorías de Servicios', headerShown: false }} />
                     </Stack>
                     </AuthGuard>
                     <StatusBar style="auto" />

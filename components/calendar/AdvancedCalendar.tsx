@@ -513,9 +513,13 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   viewButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 4,
+    minWidth: 90,
+    minHeight: 48, // Altura táctil estándar y cómoda
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   viewButtonActive: {
     backgroundColor: '#fff',
@@ -526,7 +530,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   viewButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#6b7280',
   },
   viewButtonTextActive: {
