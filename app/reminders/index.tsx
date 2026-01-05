@@ -581,15 +581,17 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     minHeight: 64,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 48, // Aumentado para alejar de los bordes
     paddingVertical: 8,
-    gap: 12,
+    gap: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    flexGrow: 1, // Asegurar que use el espacio para centrar
   },
   filterChip: {
     flexDirection: 'row',
