@@ -7,7 +7,7 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { appointments, clients, pianos } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count, sql } from "drizzle-orm";
-import * as cache from "../cache.js";
+// import * as cache from "../cache.js"; // Cache deshabilitado temporalmente
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -567,10 +567,10 @@ export const appointmentsRouter = router({
     }).optional())
     .query(async ({ ctx, input }) => {
       const daysAhead = input?.daysAhead || 7;
-      const cacheKey = `upcoming_appointments:${ctx.user.openId}:${daysAhead}`;
-      
-      // Intentar obtener del caché
-      const cached = await cache.getCachedValue<any[]>(cacheKey);
+// Cache deshabilitado temporalmente
+      // const cacheKey = `upcoming_appointments:${ctx.user.openId}:${daysAhead}`;
+      // const cached = await cache.getCachedValue<any[]>(cacheKey);
+      // if (cached) return cached;y);
       if (cached) return cached;
 
       const database = await db.getDb();
@@ -602,7 +602,7 @@ export const appointmentsRouter = router({
         .limit(20);
 
       // Cachear por 10 minutos
-      await cache.setCachedValue(cacheKey, items, 600);
+// await cache.setCachedValue(cacheKey, items, 600); // Cache deshabilitado temporalmente
       
       return items;
     }),

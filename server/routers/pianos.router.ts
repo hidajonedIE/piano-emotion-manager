@@ -7,7 +7,7 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { pianos } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql, lte, gte } from "drizzle-orm";
-import * as cache from "../cache.js";
+// import * as cache from "../cache.js"; // Cache deshabilitado temporalmente
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -275,7 +275,7 @@ export const pianosRouter = router({
     .input(pianoBaseSchema)
     .mutation(async ({ ctx, input }) => {
       // Invalidar caché de marcas
-      await cache.deleteCachedValue(`brands:${ctx.user.openId}`);
+      // await cache.deleteCachedValue(`brands:${ctx.user.openId}`); // Cache deshabilitado temporalmente
       
       return db.createPiano({
         ...input,
@@ -294,8 +294,9 @@ export const pianosRouter = router({
       const { id, ...data } = input;
       
       // Invalidar caché de marcas si se actualiza la marca
-      if (data.brand) {
-        await cache.deleteCachedValue(`brands:${ctx.user.openId}`);
+      // if (data.brand) {
+      //   await cache.deleteCachedValue(`brands:${ctx.user.openId}`); // Cache deshabilitado temporalmente
+      // }ache deshabilitado temporalmente
       }
       
       return db.updatePiano(ctx.user.openId, id, data);
@@ -308,7 +309,7 @@ export const pianosRouter = router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       // Invalidar caché de marcas
-      await cache.deleteCachedValue(`brands:${ctx.user.openId}`);
+      // await cache.deleteCachedValue(`brands:${ctx.user.openId}`); // Cache deshabilitado temporalmente
       
       return db.deletePiano(ctx.user.openId, input.id);
     }),
@@ -320,8 +321,8 @@ export const pianosRouter = router({
     const cacheKey = `brands:${ctx.user.openId}`;
     
     // Intentar obtener del caché
-    const cached = await cache.getCachedValue<string[]>(cacheKey);
-    if (cached) return cached;
+    // const cached = await cache.getCachedValue<string[]>(cacheKey); // Cache deshabilitado temporalmente
+    // if (cached) return cached;
 
     const database = await db.getDb();
     if (!database) return KNOWN_BRANDS.sort();
@@ -338,7 +339,7 @@ export const pianosRouter = router({
     const allBrands = [...new Set([...userBrands, ...KNOWN_BRANDS])].sort();
 
     // Cachear por 1 hora
-    await cache.setCachedValue(cacheKey, allBrands, 3600);
+    awa// await cache.setCachedValue(cacheKey, result, 3600); // Cache deshabilitado temporalmente
     
     return allBrands;
   }),

@@ -7,7 +7,7 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { services, clients, pianos } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count, sql, ilike } from "drizzle-orm";
-import * as cache from "../cache.js";
+// import * as cache from "../cache.js"; // Cache deshabilitado temporalmente
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -413,8 +413,8 @@ export const servicesRouter = router({
       const cacheKey = `service_stats:${ctx.user.openId}:${input?.dateFrom || 'all'}:${input?.dateTo || 'all'}`;
       
       // Intentar obtener del caché
-      const cached = await cache.getCachedValue<any>(cacheKey);
-      if (cached) return cached;
+      // const cached = await cache.getCachedValue<any>(cacheKey); // Cache deshabilitado temporalmente
+      // if (cached) return cached;
 
       const database = await db.getDb();
       if (!database) {
@@ -473,7 +473,7 @@ export const servicesRouter = router({
       };
 
       // Cachear por 15 minutos
-      await cache.setCachedValue(cacheKey, stats, 900);
+      // await cache.setCachedValue(cacheKey, stats, 900); // Cache deshabilitado temporalmente
       
       return stats;
     }),
