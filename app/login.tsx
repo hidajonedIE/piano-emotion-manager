@@ -418,17 +418,9 @@ export default function LoginScreen() {
       setLoading(true);
       setError(null);
 
-      const flowResult = await startSSOFlow({
+      const { createdSessionId, setActive, signIn: ssoSignIn, signUp: ssoSignUp } = await startSSOFlow({
         strategy: "oauth_google",
       });
-
-      if (!flowResult) {
-        // El flujo fue cancelado o no completado (ej. el usuario cerró la ventana)
-        setLoading(false);
-        return;
-      }
-
-      const { createdSessionId, setActive, signIn: ssoSignIn, signUp: ssoSignUp } = flowResult;
 
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
