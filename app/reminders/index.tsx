@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     paddingHorizontal: 24,
     paddingVertical: 80,
     borderBottomWidth: 1,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 22,
@@ -359,12 +359,12 @@ const styles = StyleSheet.create({
   filterWrapper: {
     height: 160,
     borderBottomWidth: 1,
-    justifyContent: 'space-around',
+    justifyContent: 'center',
   },
   filterContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     paddingHorizontal: 24,
     gap: 40,
   },
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     marginRight: 12,
   },
   templateInfo: {
