@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { View, TouchableOpacity, ScrollView, StyleSheet, useColorScheme, Platform } from 'react-native';
-import { ThemedText } from '../../components/ThemedText';
-import { ThemedView } from '../../components/ThemedView';
-import { Colors } from '../../constants/Colors';
+import { ThemedText } from '../components/themed-text';
+import { ThemedView } from '../components/themed-view';
+import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
