@@ -622,28 +622,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    minHeight: 64,
+    minHeight: 64, // Restaurado para que respire
   },
   backButton: {
     padding: 8,
   },
   tabsContainer: {
     borderBottomWidth: 1,
-    minHeight: 64,
+    height: 48, // Reducido a la mitad (antes era ~100)
     overflow: 'hidden',
     flex: 0,
     flexShrink: 0,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center', // Centrar horizontalmente
+    paddingHorizontal: 48,
   },
   tabsContent: {
     paddingHorizontal: 24,
-    paddingVertical: 8,
-    gap: 16,
+    paddingVertical: 0,
+    gap: 40, // Separación generosa
     alignItems: 'center',
-    justifyContent: 'center', // Centrar botones
-    flex: 0, // No expandir para que se agrupen al centro
+    justifyContent: 'center',
+    flexGrow: 1,
   },
   tab: {
     flexDirection: 'row',

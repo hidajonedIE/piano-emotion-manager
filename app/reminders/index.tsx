@@ -580,18 +580,18 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   filterContainer: {
-    minHeight: 64,
+    height: 48,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterContent: {
-    paddingHorizontal: 48, // Aumentado para alejar de los bordes
-    paddingVertical: 8,
-    gap: 16,
+    paddingHorizontal: 48,
+    paddingVertical: 0,
+    gap: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    flexGrow: 1, // Asegurar que use el espacio para centrar
+    flexGrow: 1,
   },
   filterChip: {
     flexDirection: 'row',

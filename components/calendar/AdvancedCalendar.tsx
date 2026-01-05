@@ -512,16 +512,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     borderRadius: 8,
     padding: 4,
-    minHeight: 56,
+    height: 48, // Reducido a la mitad
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 32, // Separación mayor
   },
   viewButton: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 0,
     borderRadius: 4,
     minWidth: 90,
-    minHeight: 48, // Altura táctil estándar y cómoda
+    height: 40, // Altura compacta
     alignItems: 'center',
     justifyContent: 'center',
   },

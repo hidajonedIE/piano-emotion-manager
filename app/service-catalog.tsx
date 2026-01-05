@@ -488,14 +488,14 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   filterContainer: {
-    minHeight: 64,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterContent: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    gap: 12,
+    paddingHorizontal: 48,
+    paddingVertical: 0,
+    gap: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
