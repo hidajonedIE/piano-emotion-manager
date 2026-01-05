@@ -26,6 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             email: dbUser.email,
             loginMethod: "clerk",
             lastSignedIn: ((dbUser as any).lastSignedIn ?? new Date()).toISOString(),
+            subscriptionPlan: dbUser.subscriptionPlan,
+            subscriptionStatus: dbUser.subscriptionStatus,
           }
         });
       }
@@ -61,6 +63,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         email: user?.email ?? null,
         loginMethod: user?.loginMethod ?? null,
         lastSignedIn: (user?.lastSignedIn ?? new Date()).toISOString(),
+        subscriptionPlan: user?.subscriptionPlan ?? 'free',
+        subscriptionStatus: user?.subscriptionStatus ?? 'none',
       }
     });
   } catch (error) {
