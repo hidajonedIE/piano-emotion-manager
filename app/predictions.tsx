@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet as RNStyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -21,7 +20,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type TabType = 'revenue' | 'churn' | 'maintenance' | 'workload' | 'inventory';
 
-// Datos de ejemplo (fallback cuando no hay datos del backend)
 const MOCK_DATA = {
   revenue: [
     { period: 'Enero 2026', value: 4250, confidence: 78, trend: 'up' as const, factors: ['Tendencia de crecimiento', 'Temporada alta'] },
@@ -51,8 +49,6 @@ const MOCK_DATA = {
   ],
 };
 
-// CSS inyectado eliminado para usar estilos nativos flexibles
-
 export default function PredictionsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
@@ -62,7 +58,6 @@ export default function PredictionsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const contentScrollRef = useRef<ScrollView>(null);
 
-  // Queries tRPC para obtener datos del backend
   const revenueQuery = trpc.advanced.predictions.getRevenue.useQuery(
     { months: 3 },
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
@@ -88,7 +83,6 @@ export default function PredictionsScreen() {
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
   );
 
-  // Combinar datos del backend con fallback a mock data
   const data = {
     revenue: revenueQuery.data && revenueQuery.data.length > 0 
       ? revenueQuery.data.map(r => ({
@@ -100,7 +94,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.revenue,
     churn: churnQuery.data && churnQuery.data.length > 0
-      ? churnQuery.data.map((c: { clientId: string; clientName: string; riskScore: number; daysSinceLastService: number; suggestedAction: string }) => ({
+      ? churnQuery.data.map((c: any) => ({
           clientName: c.clientName,
           riskScore: c.riskScore,
           daysSince: c.daysSinceLastService,
@@ -108,7 +102,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.churn,
     maintenance: maintenanceQuery.data && maintenanceQuery.data.length > 0
-      ? maintenanceQuery.data.map((m: { pianoId: string; pianoInfo: string; clientName: string; predictedDate: string; serviceType: string; confidence: number }) => ({
+      ? maintenanceQuery.data.map((m: any) => ({
           pianoInfo: m.pianoInfo,
           clientName: m.clientName,
           predictedDate: new Date(m.predictedDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -117,7 +111,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.maintenance,
     workload: workloadQuery.data && workloadQuery.data.length > 0
-      ? workloadQuery.data.map((w: { week: string; scheduledAppointments: number; estimatedServices: number; workloadLevel: string }) => ({
+      ? workloadQuery.data.map((w: any) => ({
           week: w.week,
           scheduled: w.scheduledAppointments,
           estimated: w.estimatedTotal,
@@ -125,7 +119,7 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.workload,
     inventory: inventoryQuery.data && inventoryQuery.data.length > 0
-      ? inventoryQuery.data.map((i: { id: string }) => ({
+      ? inventoryQuery.data.map((i: any) => ({
           itemName: i.itemName,
           currentStock: i.currentStock,
           monthlyUsage: i.monthlyUsage,
@@ -134,10 +128,6 @@ export default function PredictionsScreen() {
         }))
       : MOCK_DATA.inventory,
   };
-
-  const isLoading = revenueQuery.isLoading || churnQuery.isLoading || 
-                    maintenanceQuery.isLoading || workloadQuery.isLoading || 
-                    inventoryQuery.isLoading;
 
   const textPrimary = colors.text;
   const textSecondary = colors.textSecondary;
@@ -210,12 +200,6 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Basado en tu historial de los últimos 12 meses
         </ThemedText>
-        {revenueQuery.isLoading && (
-          <View style={styles.loadingIndicator}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Calculando predicciones...</ThemedText>
-          </View>
-        )}
       </View>
 
       {data.revenue.map((prediction, index) => {
@@ -267,12 +251,6 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Clientes que podrían necesitar atención
         </ThemedText>
-        {churnQuery.isLoading && (
-          <View style={styles.loadingIndicator}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Analizando clientes...</ThemedText>
-          </View>
-        )}
       </View>
 
       {data.churn.length === 0 ? (
@@ -330,67 +308,49 @@ export default function PredictionsScreen() {
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
           Basado en el historial de cada piano
         </ThemedText>
-        {maintenanceQuery.isLoading && (
-          <View style={styles.loadingIndicator}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Calculando mantenimientos...</ThemedText>
-          </View>
-        )}
       </View>
 
-      {data.maintenance.length === 0 ? (
-        <View style={[styles.emptyState, { backgroundColor: cardBg, borderColor: border }]}>
-          <Ionicons name="calendar-outline" size={48} color={textSecondary} />
-          <ThemedText style={[styles.emptyStateTitle, { color: textPrimary }]}>
-            Sin predicciones
-          </ThemedText>
-          <ThemedText style={[styles.emptyStateText, { color: textSecondary }]}>
-            Registra más servicios para obtener predicciones de mantenimiento
-          </ThemedText>
-        </View>
-      ) : (
-        data.maintenance.map((item, index) => (
-          <View key={index} style={[styles.maintenanceCard, { backgroundColor: cardBg, borderColor: border }]}>
-            <View style={styles.maintenanceHeader}>
-              <View style={[styles.maintenanceIcon, { backgroundColor: '#8B5CF620' }]}>
-                <Ionicons name="musical-notes" size={20} color="#8B5CF6" />
-              </View>
-              <View style={styles.maintenanceInfo}>
-                <ThemedText style={[styles.pianoInfo, { color: textPrimary }]}>
-                  {item.pianoInfo}
-                </ThemedText>
-                <ThemedText style={[styles.clientNameSmall, { color: textSecondary }]}>
-                  {item.clientName}
-                </ThemedText>
-              </View>
+      {data.maintenance.map((item, index) => (
+        <View key={index} style={[styles.maintenanceCard, { backgroundColor: cardBg, borderColor: border }]}>
+          <View style={styles.maintenanceHeader}>
+            <View style={[styles.maintenanceIcon, { backgroundColor: '#8B5CF620' }]}>
+              <Ionicons name="musical-notes" size={20} color="#8B5CF6" />
             </View>
-
-            <View style={styles.maintenanceDetails}>
-              <View style={styles.maintenanceDetail}>
-                <Ionicons name="calendar" size={16} color={textSecondary} />
-                <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
-                  {item.predictedDate}
-                </ThemedText>
-              </View>
-              <View style={styles.maintenanceDetail}>
-                <Ionicons name="build" size={16} color={textSecondary} />
-                <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
-                  {item.serviceType}
-                </ThemedText>
-              </View>
-              <View style={[styles.confidenceSmall, { backgroundColor: `${colors.primary}20` }]}>
-                <ThemedText style={{ color: colors.primary, fontSize: 11 }}>
-                  {item.confidence}%
-                </ThemedText>
-              </View>
+            <View style={styles.maintenanceInfo}>
+              <ThemedText style={[styles.pianoInfo, { color: textPrimary }]}>
+                {item.pianoInfo}
+              </ThemedText>
+              <ThemedText style={[styles.clientNameSmall, { color: textSecondary }]}>
+                {item.clientName}
+              </ThemedText>
             </View>
-
-            <TouchableOpacity style={[styles.scheduleButton, { borderColor: colors.primary }]}>
-              <ThemedText style={{ color: colors.primary }}>Programar cita</ThemedText>
-            </TouchableOpacity>
           </View>
-        ))
-      )}
+
+          <View style={styles.maintenanceDetails}>
+            <View style={styles.maintenanceDetail}>
+              <Ionicons name="calendar" size={16} color={textSecondary} />
+              <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
+                {item.predictedDate}
+              </ThemedText>
+            </View>
+            <View style={styles.maintenanceDetail}>
+              <Ionicons name="build" size={16} color={textSecondary} />
+              <ThemedText style={{ color: textSecondary, marginLeft: 6 }}>
+                {item.serviceType}
+              </ThemedText>
+            </View>
+            <View style={[styles.confidenceSmall, { backgroundColor: '#8B5CF610' }]}>
+              <ThemedText style={{ color: '#8B5CF6', fontSize: 11 }}>
+                {item.confidence}% confianza
+              </ThemedText>
+            </View>
+          </View>
+
+          <TouchableOpacity style={[styles.scheduleButton, { borderColor: colors.primary }]}>
+            <ThemedText style={{ color: colors.primary, fontWeight: '600' }}>Programar Cita</ThemedText>
+          </TouchableOpacity>
+        </View>
+      ))}
     </View>
   );
 
@@ -398,64 +358,47 @@ export default function PredictionsScreen() {
     <View style={styles.tabContent}>
       <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
         <View style={styles.summaryHeader}>
-          <Ionicons name="calendar" size={24} color="#0EA5E9" />
+          <Ionicons name="calendar" size={24} color="#3B82F6" />
           <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
             Carga de Trabajo
           </ThemedText>
         </View>
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
-          Previsión para las próximas 4 semanas
+          Predicción de ocupación para las próximas semanas
         </ThemedText>
-        {workloadQuery.isLoading && (
-          <View style={styles.loadingIndicator}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Calculando carga...</ThemedText>
-          </View>
-        )}
       </View>
 
-      {data.workload.map((week, index) => (
-        <View key={index} style={[styles.workloadCard, { backgroundColor: cardBg, borderColor: border }]}>
-          <ThemedText style={[styles.weekTitle, { color: textPrimary }]}>
-            {week.week}
-          </ThemedText>
-
-          <View style={styles.workloadStats}>
-            <View style={styles.workloadStat}>
-              <ThemedText style={[styles.statValue, { color: colors.primary }]}>
-                {week.scheduled}
-              </ThemedText>
-              <ThemedText style={[styles.statLabel, { color: textSecondary }]}>
-                Programadas
-              </ThemedText>
+      {data.workload.map((week, index) => {
+        const percentage = Math.min(100, (week.scheduled / week.estimated) * 100);
+        const color = percentage > 90 ? '#EF4444' : percentage > 70 ? '#F59E0B' : '#3B82F6';
+        
+        return (
+          <View key={index} style={[styles.workloadCard, { backgroundColor: cardBg, borderColor: border }]}>
+            <ThemedText style={[styles.weekTitle, { color: textPrimary }]}>
+              {week.week}
+            </ThemedText>
+            
+            <View style={styles.workloadStats}>
+              <View style={styles.workloadStat}>
+                <ThemedText style={[styles.statValue, { color: textPrimary }]}>{week.scheduled}</ThemedText>
+                <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Agendadas</ThemedText>
+              </View>
+              <View style={styles.workloadStat}>
+                <ThemedText style={[styles.statValue, { color: textPrimary }]}>{week.estimated}</ThemedText>
+                <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Previstas</ThemedText>
+              </View>
             </View>
-            <View style={styles.workloadStat}>
-              <ThemedText style={[styles.statValue, { color: textPrimary }]}>
-                {week.estimated}
-              </ThemedText>
-              <ThemedText style={[styles.statLabel, { color: textSecondary }]}>
-                Estimadas
-              </ThemedText>
+
+            <View style={[styles.workloadBar, { backgroundColor: `${color}20` }]}>
+              <View style={[styles.workloadBarFill, { width: `${percentage}%`, backgroundColor: color }]} />
             </View>
-          </View>
 
-          <View style={[styles.workloadBar, { backgroundColor: border }]}>
-            <View 
-              style={[
-                styles.workloadBarFill, 
-                { 
-                  width: `${Math.min(100, (week.estimated / 15) * 100)}%`,
-                  backgroundColor: week.estimated > 10 ? '#EF4444' : week.estimated > 7 ? '#F59E0B' : '#22C55E',
-                }
-              ]} 
-            />
+            <ThemedText style={[styles.recommendation, { color: textSecondary }]}>
+              {week.recommendation}
+            </ThemedText>
           </View>
-
-          <ThemedText style={[styles.recommendation, { color: textSecondary }]}>
-            {week.recommendation}
-          </ThemedText>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 
@@ -463,149 +406,105 @@ export default function PredictionsScreen() {
     <View style={styles.tabContent}>
       <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
         <View style={styles.summaryHeader}>
-          <Ionicons name="cube" size={24} color="#14B8A6" />
+          <Ionicons name="cube" size={24} color="#10B981" />
           <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
-            Predicción de Inventario
+            Demanda de Inventario
           </ThemedText>
         </View>
         <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
-          Basado en el consumo de los últimos 3 meses
+          Predicción de agotamiento de stock
         </ThemedText>
-        {inventoryQuery.isLoading && (
-          <View style={styles.loadingIndicator}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <ThemedText style={{ color: textSecondary, marginLeft: 8 }}>Analizando inventario...</ThemedText>
-          </View>
-        )}
       </View>
 
-      {data.inventory.length === 0 ? (
-        <View style={[styles.emptyState, { backgroundColor: cardBg, borderColor: border }]}>
-          <Ionicons name="cube-outline" size={48} color={textSecondary} />
-          <ThemedText style={[styles.emptyStateTitle, { color: textPrimary }]}>
-            Sin predicciones
-          </ThemedText>
-          <ThemedText style={[styles.emptyStateText, { color: textSecondary }]}>
-            Registra movimientos de inventario para obtener predicciones
-          </ThemedText>
-        </View>
-      ) : (
-        data.inventory.map((item, index) => (
-          <View key={index} style={[styles.inventoryCard, { backgroundColor: cardBg, borderColor: border }]}>
-            <View style={styles.inventoryHeader}>
-              <ThemedText style={[styles.itemName, { color: textPrimary }]}>
-                {item.itemName}
+      {data.inventory.map((item, index) => (
+        <View key={index} style={[styles.inventoryCard, { backgroundColor: cardBg, borderColor: border }]}>
+          <View style={styles.inventoryHeader}>
+            <ThemedText style={[styles.itemName, { color: textPrimary }]}>
+              {item.itemName}
+            </ThemedText>
+            <View style={[styles.urgencyBadge, { backgroundColor: `${getUrgencyColor(item.urgency)}20` }]}>
+              <Ionicons name="alert-circle" size={14} color={getUrgencyColor(item.urgency)} />
+              <ThemedText style={{ color: getUrgencyColor(item.urgency), fontSize: 12, marginLeft: 4, fontWeight: '600' }}>
+                {item.urgency === 'high' ? 'Crítico' : item.urgency === 'medium' ? 'Próximo' : 'Estable'}
               </ThemedText>
-              <View style={[styles.urgencyBadge, { backgroundColor: `${getUrgencyColor(item.urgency)}20` }]}>
-                <Ionicons 
-                  name={item.urgency === 'high' ? 'alert-circle' : item.urgency === 'medium' ? 'warning' : 'checkmark-circle'} 
-                  size={14} 
-                  color={getUrgencyColor(item.urgency)} 
-                />
-                <ThemedText style={{ color: getUrgencyColor(item.urgency), fontSize: 12, marginLeft: 4 }}>
-                  {item.urgency === 'high' ? 'Urgente' : item.urgency === 'medium' ? 'Pronto' : 'OK'}
-                </ThemedText>
-              </View>
             </View>
-
-            <View style={styles.inventoryStats}>
-              <View style={styles.inventoryStat}>
-                <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>
-                  {item.currentStock}
-                </ThemedText>
-                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
-                  Stock actual
-                </ThemedText>
-              </View>
-              <View style={styles.inventoryStat}>
-                <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>
-                  {item.monthlyUsage}
-                </ThemedText>
-                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
-                  Uso/mes
-                </ThemedText>
-              </View>
-              <View style={styles.inventoryStat}>
-                <ThemedText style={[styles.inventoryValue, { color: getUrgencyColor(item.urgency) }]}>
-                  {item.monthsUntilMin.toFixed(1)}
-                </ThemedText>
-                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>
-                  Meses hasta mín.
-                </ThemedText>
-              </View>
-            </View>
-
-            {item.urgency === 'high' && (
-              <TouchableOpacity style={[styles.orderButton, { backgroundColor: '#EF4444' }]}>
-                <Ionicons name="cart" size={16} color="#fff" />
-                <ThemedText style={styles.orderButtonText}>Pedir ahora</ThemedText>
-              </TouchableOpacity>
-            )}
           </View>
-        ))
-      )}
+
+          <View style={styles.inventoryStats}>
+            <View style={styles.inventoryStat}>
+              <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>{item.currentStock}</ThemedText>
+              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Stock Actual</ThemedText>
+            </View>
+            <View style={styles.inventoryStat}>
+              <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>{item.monthlyUsage}</ThemedText>
+              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Uso Mensual</ThemedText>
+            </View>
+            <View style={styles.inventoryStat}>
+              <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>{item.monthsUntilMin.toFixed(1)}</ThemedText>
+              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Meses Stock</ThemedText>
+            </View>
+          </View>
+
+          <TouchableOpacity style={[styles.orderButton, { backgroundColor: getUrgencyColor(item.urgency) }]}>
+            <Ionicons name="cart" size={16} color="#fff" />
+            <ThemedText style={styles.orderButtonText}>Pedir Repuestos</ThemedText>
+          </TouchableOpacity>
+        </View>
+      ))}
     </View>
   );
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: background }]}>
-      {/* Header */}
       <View style={[styles.header, { borderBottomColor: border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={textPrimary} />
         </TouchableOpacity>
-        <ThemedText type="title" style={{ color: textPrimary }}>
-          Predicciones IA
-        </ThemedText>
-        <View style={{ width: 40 }} />
+        <ThemedText style={[styles.title, { color: textPrimary }]}>Predicciones IA</ThemedText>
       </View>
 
-      {/* Tabs */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={[styles.tabsContainer, { borderBottomColor: border }]}
-        contentContainerStyle={styles.tabsContent}
-      >
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
-            style={[
-              styles.tab,
-              activeTab === tab.id && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary },
-            ]}
-            onPress={() => {
-              setActiveTab(tab.id as TabType);
-              // Resetear scroll al cambiar de tab
-              contentScrollRef.current?.scrollTo({ y: 0, animated: false });
-            }}
-          >
-            <Ionicons 
-              name={tab.icon as any} 
-              size={18} 
-              color={activeTab === tab.id ? colors.primary : textSecondary} 
-            />
-            <ThemedText 
+      <View style={[styles.tabsContainer, { borderBottomColor: border }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
               style={[
-                styles.tabLabel, 
-                { color: activeTab === tab.id ? colors.primary : textSecondary }
+                styles.tabButton,
+                activeTab === tab.id && { borderBottomColor: colors.primary, borderBottomWidth: 2 }
               ]}
+              onPress={() => setActiveTab(tab.id as TabType)}
             >
-              {tab.label}
-            </ThemedText>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Ionicons 
+                name={tab.icon as any} 
+                size={20} 
+                color={activeTab === tab.id ? colors.primary : textSecondary} 
+              />
+              <ThemedText 
+                style={[
+                  styles.tabLabel, 
+                  { color: activeTab === tab.id ? colors.primary : textSecondary }
+                ]}
+              >
+                {tab.label}
+              </ThemedText>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
-      {/* Content */}
       <ScrollView
         ref={contentScrollRef}
         style={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} color={colors.primary} />
         }
       >
         {renderTabContent()}
+        <View style={{ height: 40 }} />
       </ScrollView>
     </ThemedView>
   );
@@ -618,52 +517,47 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 24,
     borderBottomWidth: 1,
-    minHeight: 64, // Restaurado para que respire
   },
   backButton: {
-    padding: 8,
+    position: 'absolute',
+    left: 24,
+    zIndex: 10,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
   },
   tabsContainer: {
+    height: 56,
     borderBottomWidth: 1,
-    height: 48, // Reducido a la mitad (antes era ~100)
-    overflow: 'hidden',
-    flex: 0,
-    flexShrink: 0,
-    paddingHorizontal: 48,
   },
   tabsContent: {
-    paddingHorizontal: 24,
-    paddingVertical: 0,
-    gap: 40, // Separación generosa
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexGrow: 1,
-  },
-  tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    minHeight: 48, // Altura estándar cómoda
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    marginRight: 8,
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    gap: 32,
+  },
+  tabButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    height: '100%',
+    gap: 8,
   },
   tabLabel: {
     fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 4,
+    fontWeight: '600',
   },
   content: {
     flex: 1,
   },
   tabContent: {
-    padding: 12,
+    padding: 16,
   },
   summaryCard: {
     padding: 12,
@@ -683,11 +577,6 @@ const styles = StyleSheet.create({
   },
   summaryDescription: {
     fontSize: 13,
-  },
-  loadingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
   },
   predictionCard: {
     padding: 12,

@@ -38,7 +38,7 @@ import { useRecommendations } from '@/hooks/use-recommendations';
 import { useWhatsNew } from '@/hooks/use-whats-new';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useDashboardPreferences, DashboardSectionId } from '@/hooks/use-dashboard-preferences';
-import { useUser } from '@clerk/clerk-expo';
+import { useUser } from '../../lib/clerk-wrapper';
 import { useEffect } from 'react';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Spacing, BorderRadius } from '@/constants/theme';

@@ -5,7 +5,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth } from '../lib/clerk-wrapper';
 
 export default function SignUpScreen() {
   const router = useRouter();
