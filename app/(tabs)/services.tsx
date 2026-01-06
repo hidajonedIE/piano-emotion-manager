@@ -159,6 +159,7 @@ export default function ServicesScreen() {
           data={filters}
           keyExtractor={(item) => item.key}
           showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
           contentContainerStyle={styles.filtersContainer}
           renderItem={({ item: f }) => (
             <Pressable
@@ -230,6 +231,7 @@ const styles = StyleSheet.create({
   },
   filtersWrapper: {
     marginBottom: Spacing.sm,
+    alignItems: 'center',
   },
   filtersContainer: {
     paddingHorizontal: Spacing.md,
@@ -237,8 +239,10 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
+    paddingVertical: 6,
+    height: 34,
+    justifyContent: 'center',
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginRight: Spacing.sm,
   },
