@@ -193,33 +193,35 @@ export default function QuotesScreen() {
       </View>
 
       {/* Filtros de estado */}
-      <FlatList
-        horizontal
-        data={statuses}
-        keyExtractor={(item) => item}
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }}
-        contentContainerStyle={styles.filtersContainer}
-        renderItem={({ item }) => (
-          <Pressable
-            style={[
-              styles.filterChip,
-              { borderColor },
-              statusFilter === item && { backgroundColor: accent, borderColor: accent },
-            ]}
-            onPress={() => setStatusFilter(item)}
-          >
-            <ThemedText
+      <View style={styles.filtersWrapper}>
+        <FlatList
+          horizontal
+          data={statuses}
+          keyExtractor={(item) => item}
+          showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
+          contentContainerStyle={styles.filtersContainer}
+          renderItem={({ item }) => (
+            <Pressable
               style={[
-                styles.filterText,
-                { color: statusFilter === item ? '#FFFFFF' : textSecondary },
+                styles.filterChip,
+                { borderColor },
+                statusFilter === item && { backgroundColor: accent, borderColor: accent },
               ]}
+              onPress={() => setStatusFilter(item)}
             >
-              {item === 'all' ? 'Todos' : QUOTE_STATUS_LABELS[item]}
-            </ThemedText>
-          </Pressable>
-        )}
-      />
+              <ThemedText
+                style={[
+                  styles.filterText,
+                  { color: statusFilter === item ? '#FFFFFF' : textSecondary },
+                ]}
+              >
+                {item === 'all' ? 'Todos' : QUOTE_STATUS_LABELS[item]}
+              </ThemedText>
+            </Pressable>
+          )}
+        />
+      </View>
 
       {/* Lista de presupuestos */}
       <FlatList
@@ -300,6 +302,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 4,
+  },
+  filtersWrapper: {
+    alignItems: 'center',
   },
   filtersContainer: {
     paddingHorizontal: Spacing.md,
