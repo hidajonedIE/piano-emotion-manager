@@ -25,6 +25,9 @@ import {
   CalendarWidget,
   TasksWidget,
   MapWidget,
+  ChartLineWidget,
+  ChartBarWidget,
+  ChartPieWidget,
 } from './dashboard-widgets';
 
 interface WidgetRendererProps {
@@ -100,15 +103,21 @@ export function WidgetRenderer({ type, config, isEditing, size }: WidgetRenderer
     case 'shortcuts':
       return <AccessShortcutsWidget config={config} isEditing={isEditing} size={size} />;
 
-    // Widgets de gráficos (placeholder por ahora)
+    // Widgets de gráficos
     case 'chart_line':
+      return <ChartLineWidget config={config} isEditing={isEditing} size={size} />;
+    
     case 'chart_bar':
+      return <ChartBarWidget config={config} isEditing={isEditing} size={size} />;
+    
     case 'chart_pie':
+      return <ChartPieWidget config={config} isEditing={isEditing} size={size} />;
+    
     case 'chart_area':
       return (
         <View style={[styles.placeholderContainer, { backgroundColor: colors.card }]}>
           <ThemedText style={{ color: colors.textSecondary, textAlign: 'center' }}>
-            Gráfico {type.replace('chart_', '')}
+            Gráfico de Área
           </ThemedText>
           <ThemedText style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4, textAlign: 'center' }}>
             Próximamente

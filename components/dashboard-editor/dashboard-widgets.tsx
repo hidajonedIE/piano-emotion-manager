@@ -6,15 +6,18 @@
  * interactivo.
  */
 
-import React, { useMemo } from 'react';
-import { View, StyleSheet, Pressable, ScrollView, FlatList } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, StyleSheet, Pressable, ScrollView, FlatList, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { useClientsData, usePianosData, useServicesData, useAppointmentsData } from '@/hooks/data';
 import { useInvoices } from '@/hooks/use-invoices';
 import { getClientFullName } from '@/types';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 // ============================================================================
 // TIPOS
@@ -1819,3 +1822,366 @@ const newWidgetStyles = StyleSheet.create({
 
 // Combinar todos los estilos
 Object.assign(styles, newWidgetStyles);
+
+
+// ============================================================================
+// WIDGET: GRÁFICO DE LÍNEAS
+// ============================================================================
+
+export function ChartLineWidget({ config, isEditing }: WidgetProps) {
+  const { colors } = useTheme();
+  const { services } = useServicesData();
+  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
+
+  // Calcular datos para el gráfico según el período
+  const chartData = useMemo(() => {
+    const now = new Date();
+    let labels: string[] = [];
+    let data: number[] = [];
+
+    if (period === 'week') {
+      // Últimos 7 días
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dayServices = services.filter(s => {
+          const serviceDate = new Date(s.date);
+          return serviceDate.toDateString() === date.toDateString();
+        });
+        labels.push(['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()]);
+        data.push(dayServices.reduce((sum, s) => sum + (s.cost || 0), 0));
+      }
+    } else if (period === 'month') {
+      // Últimas 4 semanas
+      for (let i = 3; i >= 0; i--) {
+        const weekStart = new Date(now);
+        weekStart.setDate(weekStart.getDate() - (i * 7 + 7));
+        const weekEnd = new Date(now);
+        weekEnd.setDate(weekEnd.getDate() - (i * 7));
+        
+        const weekServices = services.filter(s => {
+          const serviceDate = new Date(s.date);
+          return serviceDate >= weekStart && serviceDate <= weekEnd;
+        });
+        
+        labels.push(`S${4-i}`);
+        data.push(weekServices.reduce((sum, s) => sum + (s.cost || 0), 0));
+      }
+    } else {
+      // Últimos 6 meses
+      for (let i = 5; i >= 0; i--) {
+        const monthDate = new Date(now);
+        monthDate.setMonth(monthDate.getMonth() - i);
+        const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+        
+        const monthServices = services.filter(s => {
+          const serviceDate = new Date(s.date);
+          return serviceDate >= monthStart && serviceDate <= monthEnd;
+        });
+        
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        labels.push(monthNames[monthDate.getMonth()]);
+        data.push(monthServices.reduce((sum, s) => sum + (s.cost || 0), 0));
+      }
+    }
+
+    return { labels, data };
+  }, [services, period]);
+
+  const chartConfig = {
+    backgroundColor: colors.card,
+    backgroundGradientFrom: colors.card,
+    backgroundGradientTo: colors.card,
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
+    labelColor: (opacity = 1) => colors.textSecondary,
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: '4',
+      strokeWidth: '2',
+      stroke: '#10B981',
+    },
+  };
+
+  if (isEditing) {
+    return (
+      <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+        <ThemedText style={{ color: colors.textSecondary, textAlign: 'center' }}>
+          Vista previa de Gráfico de Líneas
+        </ThemedText>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+      {/* Header con selector de período */}
+      <View style={styles.chartHeader}>
+        <ThemedText style={[styles.chartTitle, { color: colors.text }]}>
+          Ingresos
+        </ThemedText>
+        <View style={styles.periodSelector}>
+          <Pressable
+            style={[styles.periodButton, period === 'week' && { backgroundColor: colors.primary }]}
+            onPress={() => setPeriod('week')}
+          >
+            <ThemedText style={[styles.periodButtonText, { color: period === 'week' ? '#fff' : colors.textSecondary }]}>
+              Semana
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            style={[styles.periodButton, period === 'month' && { backgroundColor: colors.primary }]}
+            onPress={() => setPeriod('month')}
+          >
+            <ThemedText style={[styles.periodButtonText, { color: period === 'month' ? '#fff' : colors.textSecondary }]}>
+              Mes
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            style={[styles.periodButton, period === 'year' && { backgroundColor: colors.primary }]}
+            onPress={() => setPeriod('year')}
+          >
+            <ThemedText style={[styles.periodButtonText, { color: period === 'year' ? '#fff' : colors.textSecondary }]}>
+              Año
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Gráfico */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <LineChart
+          data={{
+            labels: chartData.labels,
+            datasets: [{ data: chartData.data }],
+          }}
+          width={Math.max(SCREEN_WIDTH - 80, chartData.labels.length * 60)}
+          height={200}
+          chartConfig={chartConfig}
+          bezier
+          style={styles.chart}
+        />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ============================================================================
+// WIDGET: GRÁFICO DE BARRAS
+// ============================================================================
+
+export function ChartBarWidget({ config, isEditing }: WidgetProps) {
+  const { colors } = useTheme();
+  const { services } = useServicesData();
+  const { clients } = useClientsData();
+
+  // Top 5 clientes por ingresos
+  const chartData = useMemo(() => {
+    const clientRevenue = new Map<string, { name: string; revenue: number }>();
+
+    services.forEach(service => {
+      const client = clients.find(c => c.id === service.clientId);
+      if (client) {
+        const clientName = getClientFullName(client);
+        const current = clientRevenue.get(service.clientId) || { name: clientName, revenue: 0 };
+        current.revenue += service.cost || 0;
+        clientRevenue.set(service.clientId, current);
+      }
+    });
+
+    const topClients = Array.from(clientRevenue.values())
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+
+    return {
+      labels: topClients.map(c => c.name.split(' ')[0]), // Solo primer nombre
+      data: topClients.map(c => c.revenue),
+    };
+  }, [services, clients]);
+
+  const chartConfig = {
+    backgroundColor: colors.card,
+    backgroundGradientFrom: colors.card,
+    backgroundGradientTo: colors.card,
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+    labelColor: (opacity = 1) => colors.textSecondary,
+    style: {
+      borderRadius: 16,
+    },
+  };
+
+  if (isEditing) {
+    return (
+      <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+        <ThemedText style={{ color: colors.textSecondary, textAlign: 'center' }}>
+          Vista previa de Gráfico de Barras
+        </ThemedText>
+      </View>
+    );
+  }
+
+  if (chartData.data.length === 0) {
+    return (
+      <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+        <View style={styles.emptyState}>
+          <Ionicons name="bar-chart-outline" size={32} color={colors.textSecondary} />
+          <ThemedText style={{ color: colors.textSecondary, marginTop: 8 }}>
+            No hay datos suficientes
+          </ThemedText>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+      {/* Header */}
+      <View style={styles.chartHeader}>
+        <ThemedText style={[styles.chartTitle, { color: colors.text }]}>
+          Top Clientes
+        </ThemedText>
+      </View>
+
+      {/* Gráfico */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <BarChart
+          data={{
+            labels: chartData.labels,
+            datasets: [{ data: chartData.data }],
+          }}
+          width={Math.max(SCREEN_WIDTH - 80, chartData.labels.length * 80)}
+          height={200}
+          chartConfig={chartConfig}
+          style={styles.chart}
+          showValuesOnTopOfBars
+          fromZero
+        />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ============================================================================
+// WIDGET: GRÁFICO CIRCULAR
+// ============================================================================
+
+export function ChartPieWidget({ config, isEditing }: WidgetProps) {
+  const { colors } = useTheme();
+  const { services } = useServicesData();
+
+  // Distribución de servicios por tipo
+  const chartData = useMemo(() => {
+    const serviceTypes = new Map<string, number>();
+
+    services.forEach(service => {
+      const type = service.type || 'Otros';
+      serviceTypes.set(type, (serviceTypes.get(type) || 0) + 1);
+    });
+
+    const pieColors = ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EF4444', '#6366F1'];
+    
+    return Array.from(serviceTypes.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, count], index) => ({
+        name,
+        count,
+        color: pieColors[index],
+        legendFontColor: colors.textSecondary,
+        legendFontSize: 12,
+      }));
+  }, [services, colors]);
+
+  const chartConfig = {
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+  };
+
+  if (isEditing) {
+    return (
+      <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+        <ThemedText style={{ color: colors.textSecondary, textAlign: 'center' }}>
+          Vista previa de Gráfico Circular
+        </ThemedText>
+      </View>
+    );
+  }
+
+  if (chartData.length === 0) {
+    return (
+      <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+        <View style={styles.emptyState}>
+          <Ionicons name="pie-chart-outline" size={32} color={colors.textSecondary} />
+          <ThemedText style={{ color: colors.textSecondary, marginTop: 8 }}>
+            No hay datos suficientes
+          </ThemedText>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+      {/* Header */}
+      <View style={styles.chartHeader}>
+        <ThemedText style={[styles.chartTitle, { color: colors.text }]}>
+          Tipos de Servicio
+        </ThemedText>
+      </View>
+
+      {/* Gráfico */}
+      <PieChart
+        data={chartData}
+        width={SCREEN_WIDTH - 80}
+        height={200}
+        chartConfig={chartConfig}
+        accessor="count"
+        backgroundColor="transparent"
+        paddingLeft="0"
+        center={[10, 0]}
+        absolute
+      />
+    </View>
+  );
+}
+
+// ============================================================================
+// ESTILOS PARA GRÁFICOS
+// ============================================================================
+
+const chartStyles = StyleSheet.create({
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  periodButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: '#F3F4F6',
+  },
+  periodButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  chart: {
+    marginVertical: 8,
+    borderRadius: 16,
+  },
+});
+
+// Combinar estilos de gráficos
+Object.assign(styles, chartStyles);
