@@ -1,5 +1,5 @@
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json } from "drizzle-orm/mysql-core";
-import { partners } from "./partners-schema";
+import { partners } from "./partners-schema.js";
 
 /**
  * Core user table backing auth flow.
@@ -414,5 +414,5 @@ export type InsertQuoteTemplate = typeof quoteTemplates.$inferInsert;
 // ============================================================================
 // Re-export Partner tables from partners-schema.ts
 // ============================================================================
-export { partners, partnerSettings, partnerPricing, partnerUsers } from "./partners-schema";
-export type { Partner, InsertPartner, PartnerSettings, InsertPartnerSettings, PartnerPricing, InsertPartnerPricing, PartnerUser, InsertPartnerUser } from "./partners-schema";
+export { partners, partnerSettings, partnerPricing, partnerUsers } from "./partners-schema.js";
+export type { Partner, InsertPartner, PartnerSettings, InsertPartnerSettings, PartnerPricing, InsertPartnerPricing, PartnerUser, InsertPartnerUser } from "./partners-schema.js";
