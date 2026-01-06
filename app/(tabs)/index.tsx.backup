@@ -2,15 +2,8 @@
  * Dashboard Screen
  * Pantalla principal de Piano Emotion Manager
  * 
- * Sistema de dashboard personalizable con widgets configurables.
- * Los usuarios pueden añadir, eliminar y reordenar widgets desde el Dashboard Editor.
- * La sección Tienda es fija y siempre visible al final.
- * 
- * Características:
- * - Widgets dinámicos basados en configuración del usuario
- * - Migración automática desde sistema anterior
- * - Persistencia en AsyncStorage
- * - Tienda fija no configurable
+ * Refactorizado para usar componentes modulares en components/dashboard/
+ * Con soporte para drag & drop directo (long press para arrastrar)
  */
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
@@ -30,13 +23,21 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import {
   DashboardHeader,
+  DashboardStats,
+  DashboardAlerts,
+  DashboardQuickActionsOnly,
+  DashboardAccessShortcuts,
+  DashboardAdvancedTools,
+  DashboardPredictions,
+  DashboardRecentServices,
+  DashboardHelp,
+  DashboardDraggableWeb,
 } from '@/components/dashboard';
-import { WidgetRenderer } from '@/components/dashboard-editor/widget-renderer';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
 import { useWhatsNew } from '@/hooks/use-whats-new';
 import { useResponsive } from '@/hooks/use-responsive';
-import { useDashboardEditorConfig } from '@/hooks/use-dashboard-editor-config';
+import { useDashboardPreferences, DashboardSectionId } from '@/hooks/use-dashboard-preferences';
 import { useUser } from '../../lib/clerk-wrapper';
 import { useEffect } from 'react';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -48,11 +49,14 @@ export default function DashboardScreen() {
   const { isMobile, isDesktop, horizontalPadding } = useResponsive();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   
-  // Configuración del dashboard con widgets
-  const {
-    currentLayout,
-    isLoading: configLoading,
-  } = useDashboardEditorConfig();
+  // Preferencias del dashboard
+  const dashboardPreferences = useDashboardPreferences();
+  const { 
+    allSections, 
+    reorderSections, 
+    toggleSectionVisibility,
+    isLoading: prefsLoading 
+  } = dashboardPreferences;
   
   const accent = useThemeColor({}, 'accent');
   const textSecondary = useThemeColor({}, 'textSecondary');
@@ -132,10 +136,53 @@ export default function DashboardScreen() {
     setSelectedMonth(new Date());
   }, []);
 
-  // Widgets visibles del layout actual
-  const visibleWidgets = useMemo(() => {
-    return currentLayout.widgets || [];
-  }, [currentLayout]);
+  // Renderizar sección según ID
+  const renderSection = useCallback((sectionId: DashboardSectionId) => {
+    switch (sectionId) {
+      case 'alerts':
+        return (
+          <DashboardAlerts 
+            key={sectionId}
+            urgentCount={stats.urgentCount} 
+            pendingCount={stats.pendingCount} 
+          />
+        );
+      case 'quick_actions':
+        return <DashboardQuickActionsOnly key={sectionId} />;
+      case 'predictions':
+        return <DashboardPredictions key={sectionId} />;
+      case 'stats':
+        return (
+          <DashboardStats
+            key={sectionId}
+            stats={stats}
+            selectedMonth={selectedMonth}
+            onPreviousMonth={navigatePreviousMonth}
+            onNextMonth={navigateNextMonth}
+            onGoToCurrentMonth={goToCurrentMonth}
+          />
+        );
+      case 'recent_services':
+        return (
+          <DashboardRecentServices 
+            key={sectionId}
+            services={recentServices}
+            clients={clients}
+            pianos={pianos}
+          />
+        );
+      case 'access_shortcuts':
+        return <DashboardAccessShortcuts key={sectionId} urgentCount={stats.urgentCount} />;
+      case 'advanced_tools':
+        return <DashboardAdvancedTools key={sectionId} />;
+      case 'help':
+        return <DashboardHelp key={sectionId} />;
+      case 'store':
+        return <PianoEmotionStore key={sectionId} collapsed={true} />;
+      default:
+        return null;
+    }
+  }, [stats, selectedMonth, navigatePreviousMonth, navigateNextMonth, goToCurrentMonth, recentServices, clients, pianos]);
 
   // Estilos condicionales para web
   const containerStyle = Platform.OS === 'web' 
@@ -194,20 +241,14 @@ export default function DashboardScreen() {
 
 
 
-            {/* Widgets personalizables del dashboard */}
-            {visibleWidgets.map((widget) => (
-              <View key={widget.id} style={styles.widgetContainer}>
-                <WidgetRenderer
-                  widget={widget}
-                  isEditing={false}
-                />
-              </View>
-            ))}
-
-            {/* Tienda siempre visible al final (no configurable) */}
-            <View style={styles.storeContainer}>
-              <PianoEmotionStore collapsed={true} />
-            </View>
+            {/* Secciones con drag & drop directo (long press para arrastrar) */}
+            <DashboardDraggableWeb
+              sections={allSections}
+              isEditMode={false}
+              onReorder={reorderSections}
+              onToggleVisibility={toggleSectionVisibility}
+              renderSection={renderSection}
+            />
           </View>
         </ScrollView>
       </GradientWrapper>
@@ -242,11 +283,5 @@ const styles = StyleSheet.create({
   },
   searchBarContainer: {
     flex: 1,
-  },
-  widgetContainer: {
-    marginBottom: 4,
-  },
-  storeContainer: {
-    marginTop: 8,
   },
 });

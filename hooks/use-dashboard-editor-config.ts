@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { migrateDashboardData } from '@/utils/dashboard-migration';
 
 // Clave de almacenamiento
 const STORAGE_KEY = '@piano_emotion_dashboard_editor_config';
@@ -81,9 +82,16 @@ export function useDashboardEditorConfig() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Cargar configuración al iniciar
+  // Cargar configuración al iniciar (con migración automática)
   useEffect(() => {
-    loadConfig();
+    const initializeConfig = async () => {
+      // Primero intentar migrar datos antiguos si existen
+      await migrateDashboardData();
+      // Luego cargar la configuración
+      await loadConfig();
+    };
+    
+    initializeConfig();
   }, []);
 
   // Cargar configuración desde AsyncStorage
