@@ -4,7 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ClientMap } from '@/components/client-map';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useClients } from '@/hooks/use-clients';
+import { useClientsData } from '@/hooks/data';
 import { Client } from '@/types';
 
 export default function ClientsMapScreen() {
