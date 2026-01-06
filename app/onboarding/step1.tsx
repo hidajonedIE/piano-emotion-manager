@@ -17,8 +17,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSnackbar } from '@/hooks/use-snackbar';
 import { trpc } from '@/lib/trpc';

@@ -6,8 +6,8 @@ import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import * as Haptics from 'expo-haptics';
 
