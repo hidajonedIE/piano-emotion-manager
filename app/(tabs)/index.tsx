@@ -198,7 +198,9 @@ export default function DashboardScreen() {
             {visibleWidgets.map((widget) => (
               <View key={widget.id} style={styles.widgetContainer}>
                 <WidgetRenderer
-                  widget={widget}
+                  type={widget.type}
+                  config={widget.config}
+                  size={widget.size}
                   isEditing={false}
                 />
               </View>
