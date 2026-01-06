@@ -326,6 +326,7 @@ const styles = StyleSheet.create({
   dateFiltersRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.sm,
   },
