@@ -192,13 +192,26 @@ export default function InventoryScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
-        <ThemedText type="title">{t('navigation.inventory')}</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          {items.length} {items.length === 1 ? 'material' : 'materiales'}
-          {lowStockItems.length > 0 && (
-            <ThemedText style={{ color: warning }}> · {lowStockItems.length} con stock bajo</ThemedText>
-          )}
-        </ThemedText>
+        <View style={styles.headerTop}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.back();
+            }}
+          >
+            <IconSymbol name="chevron.left" size={24} color={accent} />
+          </Pressable>
+          <View style={styles.headerContent}>
+            <ThemedText type="title">{t('navigation.inventory')}</ThemedText>
+            <ThemedText style={styles.subtitle}>
+              {items.length} {items.length === 1 ? 'material' : 'materiales'}
+              {lowStockItems.length > 0 && (
+                <ThemedText style={{ color: warning }}> · {lowStockItems.length} con stock bajo</ThemedText>
+              )}
+            </ThemedText>
+          </View>
+        </View>
       </View>
 
       {/* Alerta de stock bajo con enlace a Piano Emotion Store o proveedor */}
@@ -317,6 +330,18 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+  },
+  backButton: {
+    padding: Spacing.xs,
+    marginTop: -4,
+  },
+  headerContent: {
+    flex: 1,
   },
   subtitle: {
     color: '#6B7280',
