@@ -176,6 +176,13 @@ export const users = mysqlTable("users", {
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "canceled", "past_due", "trialing", "none"]).default("none").notNull(),
   subscriptionId: varchar("subscriptionId", { length: 255 }),
   subscriptionEndDate: timestamp("subscriptionEndDate"),
+  // SMTP configuration for corporate email
+  smtpHost: varchar("smtpHost", { length: 255 }),
+  smtpPort: int("smtpPort").default(587),
+  smtpUser: varchar("smtpUser", { length: 320 }),
+  smtpPassword: text("smtpPassword"), // Should be encrypted in production
+  smtpSecure: boolean("smtpSecure").default(false),
+  smtpFromName: varchar("smtpFromName", { length: 255 }),
 });
 
 export type User = typeof users.$inferSelect;
@@ -238,6 +245,13 @@ export const pianos = mysqlTable("pianos", {
   location: text("location"),
   notes: text("notes"),
   photos: json("photos").$type<string[]>(),
+  
+  // Configuración de alertas
+  tuningIntervalDays: int("tuningIntervalDays").default(180), // Días entre afinaciones (default: 6 meses)
+  regulationIntervalDays: int("regulationIntervalDays").default(730), // Días entre regulaciones (default: 2 años)
+  alertsEnabled: boolean("alertsEnabled").default(true).notNull(), // Activar/desactivar alertas para este piano
+  customThresholdsEnabled: boolean("customThresholdsEnabled").default(false).notNull(), // Usar umbrales personalizados o globales
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -2014,3 +2028,115 @@ export const DEFAULT_SHARING_SETTINGS: Array<{ resource: string; sharingModel: s
   { resource: "quotes", sharingModel: "private" },
   { resource: "reminders", sharingModel: "private" },
 ];
+
+/**
+ * ============================================================================
+ * ALERT SYSTEM SCHEMA
+ * ============================================================================
+ * Sistema de alertas y notificaciones para mantenimiento de pianos
+ */
+
+/**
+ * Alert Settings - Configuración de umbrales de alertas
+ * Permite configuración global, por organización o por usuario
+ */
+export const alertSettings = mysqlTable("alert_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"), // NULL = configuración global del partner
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id, { onDelete: "cascade" }),
+  organizationId: int("organizationId"), // Configuración por organización
+  
+  // Umbrales de afinación (en días)
+  tuningPendingDays: int("tuningPendingDays").default(180).notNull(), // 6 meses
+  tuningUrgentDays: int("tuningUrgentDays").default(270).notNull(), // 9 meses
+  
+  // Umbrales de regulación (en días)
+  regulationPendingDays: int("regulationPendingDays").default(730).notNull(), // 2 años
+  regulationUrgentDays: int("regulationUrgentDays").default(1095).notNull(), // 3 años
+  
+  // Configuración de notificaciones
+  emailNotificationsEnabled: boolean("emailNotificationsEnabled").default(true).notNull(),
+  pushNotificationsEnabled: boolean("pushNotificationsEnabled").default(false).notNull(),
+  weeklyDigestEnabled: boolean("weeklyDigestEnabled").default(true).notNull(),
+  weeklyDigestDay: int("weeklyDigestDay").default(1).notNull(), // 1=Lunes, 7=Domingo
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AlertSetting = typeof alertSettings.$inferSelect;
+export type InsertAlertSetting = typeof alertSettings.$inferInsert;
+
+/**
+ * Alert History - Historial de alertas generadas
+ * Tracking de todas las alertas y su estado
+ */
+export const alertHistory = mysqlTable("alert_history", {
+  id: int("id").autoincrement().primaryKey(),
+  pianoId: int("pianoId").notNull().references(() => pianos.id, { onDelete: "cascade" }),
+  clientId: int("clientId").notNull().references(() => clients.id, { onDelete: "cascade" }),
+  userId: int("userId").notNull(), // Usuario que recibió la alerta
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id, { onDelete: "cascade" }),
+  organizationId: int("organizationId"),
+  
+  // Tipo de alerta
+  alertType: mysqlEnum("alertType", ["tuning", "regulation", "repair"]).notNull(),
+  priority: mysqlEnum("priority", ["urgent", "pending", "ok"]).notNull(),
+  
+  // Detalles
+  message: text("message").notNull(),
+  daysSinceLastService: int("daysSinceLastService").notNull(),
+  
+  // Estado
+  status: mysqlEnum("status", ["active", "acknowledged", "resolved", "dismissed"]).default("active").notNull(),
+  acknowledgedAt: timestamp("acknowledgedAt"),
+  resolvedAt: timestamp("resolvedAt"),
+  resolvedByServiceId: int("resolvedByServiceId"), // ID del servicio que resolvió la alerta
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  pianoStatusIdx: index("idx_piano_status").on(table.pianoId, table.status),
+  userStatusIdx: index("idx_user_status").on(table.userId, table.status),
+  createdIdx: index("idx_created").on(table.createdAt),
+  priorityIdx: index("idx_priority").on(table.priority),
+}));
+
+export type AlertHistory = typeof alertHistory.$inferSelect;
+export type InsertAlertHistory = typeof alertHistory.$inferInsert;
+
+/**
+ * Alert Notifications - Tracking de notificaciones enviadas
+ * Registro de emails y push notifications enviadas por alertas
+ */
+export const alertNotifications = mysqlTable("alert_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  alertHistoryId: int("alertHistoryId").notNull().references(() => alertHistory.id, { onDelete: "cascade" }),
+  userId: int("userId").notNull(),
+  
+  // Tipo de notificación
+  notificationType: mysqlEnum("notificationType", ["email", "push", "weekly_digest"]).notNull(),
+  
+  // Estado
+  status: mysqlEnum("status", ["pending", "sent", "failed", "opened"]).default("pending").notNull(),
+  sentAt: timestamp("sentAt"),
+  openedAt: timestamp("openedAt"),
+  
+  // Detalles del envío
+  recipientEmail: varchar("recipientEmail", { length: 320 }),
+  subject: varchar("subject", { length: 255 }),
+  errorMessage: text("errorMessage"),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  alertTypeIdx: index("idx_alert_type").on(table.alertHistoryId, table.notificationType),
+  userStatusIdx: index("idx_user_status").on(table.userId, table.status),
+  sentIdx: index("idx_sent").on(table.sentAt),
+}));
+
+export type AlertNotification = typeof alertNotifications.$inferSelect;
+export type InsertAlertNotification = typeof alertNotifications.$inferInsert;

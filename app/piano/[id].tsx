@@ -60,6 +60,11 @@ export default function PianoDetailScreen() {
     condition: 'unknown',
     photo: '',
     notes: '',
+    // Configuración de alertas
+    alertsEnabled: true,
+    customThresholdsEnabled: false,
+    tuningIntervalDays: 180,
+    regulationIntervalDays: 730,
   });
 
   const cardBg = useThemeColor({}, 'cardBackground');
@@ -127,6 +132,11 @@ export default function PianoDetailScreen() {
           condition: form.condition || 'unknown',
           photo: form.photo,
           notes: form.notes?.trim(),
+          // Configuración de alertas
+          alertsEnabled: form.alertsEnabled ?? true,
+          customThresholdsEnabled: form.customThresholdsEnabled ?? false,
+          tuningIntervalDays: form.tuningIntervalDays ?? 180,
+          regulationIntervalDays: form.regulationIntervalDays ?? 730,
         });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert('Éxito', 'Piano creado correctamente');
@@ -450,6 +460,283 @@ export default function PianoDetailScreen() {
     </View>
   );
 
+  const renderAlertConfiguration = () => (
+    <View style={styles.alertConfigSection}>
+      <View style={styles.alertConfigHeader}>
+        <IconSymbol name="bell.fill" size={20} color={accent} />
+        <ThemedText style={[styles.alertConfigTitle, { color: textColor }]}>
+          Configuración de Alertas
+        </ThemedText>
+      </View>
+      
+      {isEditing ? (
+        <View style={styles.alertConfigContent}>
+          {/* Switch para activar/desactivar alertas */}
+          <View style={styles.alertConfigRow}>
+            <View style={styles.alertConfigLabelContainer}>
+              <ThemedText style={[styles.alertConfigLabel, { color: textColor }]}>
+                Alertas activadas
+              </ThemedText>
+              <ThemedText style={[styles.alertConfigDescription, { color: textSecondary }]}>
+                Recibir notificaciones de mantenimiento
+              </ThemedText>
+            </View>
+            <Pressable
+              style={[
+                styles.switchContainer,
+                { backgroundColor: form.alertsEnabled ? accent : borderColor },
+              ]}
+              onPress={() => setForm({ ...form, alertsEnabled: !form.alertsEnabled })}
+            >
+              <View
+                style={[
+                  styles.switchThumb,
+                  { backgroundColor: '#FFFFFF' },
+                  form.alertsEnabled && styles.switchThumbActive,
+                ]}
+              />
+            </Pressable>
+          </View>
+
+          {/* Switch para umbrales personalizados */}
+          {form.alertsEnabled && (
+            <View style={styles.alertConfigRow}>
+              <View style={styles.alertConfigLabelContainer}>
+                <ThemedText style={[styles.alertConfigLabel, { color: textColor }]}>
+                  Umbrales personalizados
+                </ThemedText>
+                <ThemedText style={[styles.alertConfigDescription, { color: textSecondary }]}>
+                  Usar intervalos específicos para este piano
+                </ThemedText>
+              </View>
+              <Pressable
+                style={[
+                  styles.switchContainer,
+                  { backgroundColor: form.customThresholdsEnabled ? accent : borderColor },
+                ]}
+                onPress={() => setForm({ ...form, customThresholdsEnabled: !form.customThresholdsEnabled })}
+              >
+                <View
+                  style={[
+                    styles.switchThumb,
+                    { backgroundColor: '#FFFFFF' },
+                    form.customThresholdsEnabled && styles.switchThumbActive,
+                  ]}
+                />
+              </Pressable>
+            </View>
+          )}
+
+          {/* Configuración de intervalos personalizados */}
+          {form.alertsEnabled && form.customThresholdsEnabled && (
+            <View style={styles.customThresholdsContainer}>
+              {/* Intervalo de afinación */}
+              <View style={styles.thresholdInputGroup}>
+                <View style={styles.thresholdLabelRow}>
+                  <IconSymbol name="tuningfork" size={18} color={accent} />
+                  <ThemedText style={[styles.thresholdLabel, { color: textColor }]}>
+                    Intervalo de afinación
+                  </ThemedText>
+                </View>
+                <ThemedText style={[styles.thresholdDescription, { color: textSecondary }]}>
+                  Días entre afinaciones (recomendado: 180 días / 6 meses)
+                </ThemedText>
+                <View style={styles.thresholdInputContainer}>
+                  <TextInput
+                    style={[
+                      styles.thresholdInput,
+                      { backgroundColor: cardBg, borderColor, color: textColor },
+                    ]}
+                    value={form.tuningIntervalDays?.toString() || '180'}
+                    onChangeText={(text) => {
+                      const value = parseInt(text, 10);
+                      setForm({ ...form, tuningIntervalDays: isNaN(value) ? 180 : value });
+                    }}
+                    placeholder="180"
+                    placeholderTextColor={textSecondary}
+                    keyboardType="numeric"
+                  />
+                  <ThemedText style={[styles.thresholdUnit, { color: textSecondary }]}>
+                    días
+                  </ThemedText>
+                </View>
+                <View style={styles.thresholdExamples}>
+                  <Pressable
+                    style={[styles.thresholdExample, { borderColor }]}
+                    onPress={() => setForm({ ...form, tuningIntervalDays: 90 })}
+                  >
+                    <ThemedText style={[styles.thresholdExampleText, { color: textSecondary }]}>
+                      3 meses (90)
+                    </ThemedText>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.thresholdExample, { borderColor }]}
+                    onPress={() => setForm({ ...form, tuningIntervalDays: 180 })}
+                  >
+                    <ThemedText style={[styles.thresholdExampleText, { color: textSecondary }]}>
+                      6 meses (180)
+                    </ThemedText>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.thresholdExample, { borderColor }]}
+                    onPress={() => setForm({ ...form, tuningIntervalDays: 365 })}
+                  >
+                    <ThemedText style={[styles.thresholdExampleText, { color: textSecondary }]}>
+                      1 año (365)
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Intervalo de regulación */}
+              <View style={styles.thresholdInputGroup}>
+                <View style={styles.thresholdLabelRow}>
+                  <IconSymbol name="wrench.fill" size={18} color={accent} />
+                  <ThemedText style={[styles.thresholdLabel, { color: textColor }]}>
+                    Intervalo de regulación
+                  </ThemedText>
+                </View>
+                <ThemedText style={[styles.thresholdDescription, { color: textSecondary }]}>
+                  Días entre regulaciones (recomendado: 730 días / 2 años)
+                </ThemedText>
+                <View style={styles.thresholdInputContainer}>
+                  <TextInput
+                    style={[
+                      styles.thresholdInput,
+                      { backgroundColor: cardBg, borderColor, color: textColor },
+                    ]}
+                    value={form.regulationIntervalDays?.toString() || '730'}
+                    onChangeText={(text) => {
+                      const value = parseInt(text, 10);
+                      setForm({ ...form, regulationIntervalDays: isNaN(value) ? 730 : value });
+                    }}
+                    placeholder="730"
+                    placeholderTextColor={textSecondary}
+                    keyboardType="numeric"
+                  />
+                  <ThemedText style={[styles.thresholdUnit, { color: textSecondary }]}>
+                    días
+                  </ThemedText>
+                </View>
+                <View style={styles.thresholdExamples}>
+                  <Pressable
+                    style={[styles.thresholdExample, { borderColor }]}
+                    onPress={() => setForm({ ...form, regulationIntervalDays: 365 })}
+                  >
+                    <ThemedText style={[styles.thresholdExampleText, { color: textSecondary }]}>
+                      1 año (365)
+                    </ThemedText>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.thresholdExample, { borderColor }]}
+                    onPress={() => setForm({ ...form, regulationIntervalDays: 730 })}
+                  >
+                    <ThemedText style={[styles.thresholdExampleText, { color: textSecondary }]}>
+                      2 años (730)
+                    </ThemedText>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.thresholdExample, { borderColor }]}
+                    onPress={() => setForm({ ...form, regulationIntervalDays: 1095 })}
+                  >
+                    <ThemedText style={[styles.thresholdExampleText, { color: textSecondary }]}>
+                      3 años (1095)
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Información sobre cómo funcionan las alertas */}
+              <View style={[styles.alertInfoBox, { backgroundColor: `${accent}10`, borderColor: accent }]}>
+                <IconSymbol name="info.circle.fill" size={16} color={accent} />
+                <ThemedText style={[styles.alertInfoText, { color: textColor }]}>
+                  Las alertas se generarán cuando se alcance el intervalo configurado. 
+                  Una alerta urgente aparecerá al 150% del intervalo (ej: 270 días para afinación de 180 días).
+                </ThemedText>
+              </View>
+            </View>
+          )}
+
+          {/* Mensaje cuando las alertas están desactivadas */}
+          {!form.alertsEnabled && (
+            <View style={[styles.alertDisabledBox, { backgroundColor: `${textSecondary}10`, borderColor: textSecondary }]}>
+              <IconSymbol name="bell.slash.fill" size={16} color={textSecondary} />
+              <ThemedText style={[styles.alertDisabledText, { color: textSecondary }]}>
+                Las alertas están desactivadas para este piano. No recibirás notificaciones de mantenimiento.
+              </ThemedText>
+            </View>
+          )}
+
+          {/* Mensaje cuando se usan umbrales globales */}
+          {form.alertsEnabled && !form.customThresholdsEnabled && (
+            <View style={[styles.alertGlobalBox, { backgroundColor: `${accent}10`, borderColor: accent }]}>
+              <IconSymbol name="globe" size={16} color={accent} />
+              <ThemedText style={[styles.alertGlobalText, { color: textColor }]}>
+                Este piano usa los umbrales globales configurados en Configuración de Alertas.
+              </ThemedText>
+            </View>
+          )}
+        </View>
+      ) : (
+        <View style={styles.alertConfigContent}>
+          {/* Vista de solo lectura */}
+          <View style={styles.alertConfigReadOnly}>
+            <View style={styles.alertConfigReadOnlyRow}>
+              <ThemedText style={[styles.alertConfigReadOnlyLabel, { color: textSecondary }]}>
+                Estado:
+              </ThemedText>
+              <View style={styles.alertConfigReadOnlyValue}>
+                <View
+                  style={[
+                    styles.alertStatusDot,
+                    { backgroundColor: form.alertsEnabled ? '#10B981' : '#EF4444' },
+                  ]}
+                />
+                <ThemedText style={[styles.alertConfigReadOnlyText, { color: textColor }]}>
+                  {form.alertsEnabled ? 'Activadas' : 'Desactivadas'}
+                </ThemedText>
+              </View>
+            </View>
+
+            {form.alertsEnabled && (
+              <>
+                <View style={styles.alertConfigReadOnlyRow}>
+                  <ThemedText style={[styles.alertConfigReadOnlyLabel, { color: textSecondary }]}>
+                    Umbrales:
+                  </ThemedText>
+                  <ThemedText style={[styles.alertConfigReadOnlyText, { color: textColor }]}>
+                    {form.customThresholdsEnabled ? 'Personalizados' : 'Globales'}
+                  </ThemedText>
+                </View>
+
+                {form.customThresholdsEnabled && (
+                  <>
+                    <View style={styles.alertConfigReadOnlyRow}>
+                      <ThemedText style={[styles.alertConfigReadOnlyLabel, { color: textSecondary }]}>
+                        Afinación:
+                      </ThemedText>
+                      <ThemedText style={[styles.alertConfigReadOnlyText, { color: textColor }]}>
+                        Cada {form.tuningIntervalDays || 180} días
+                      </ThemedText>
+                    </View>
+                    <View style={styles.alertConfigReadOnlyRow}>
+                      <ThemedText style={[styles.alertConfigReadOnlyLabel, { color: textSecondary }]}>
+                        Regulación:
+                      </ThemedText>
+                      <ThemedText style={[styles.alertConfigReadOnlyText, { color: textColor }]}>
+                        Cada {form.regulationIntervalDays || 730} días
+                      </ThemedText>
+                    </View>
+                  </>
+                )}
+              </>
+            )}
+          </View>
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <ThemedView style={styles.container}>
       <Stack.Screen
@@ -530,6 +817,9 @@ export default function PianoDetailScreen() {
           </View>
 
           {renderInput('Notas', 'notes', 'Notas adicionales...', { multiline: true })}
+          
+          {/* Configuración de Alertas */}
+          {renderAlertConfiguration()}
         </View>
 
         {/* Recomendaciones */}
@@ -852,5 +1142,174 @@ const styles = StyleSheet.create({
   addPhotoText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  // Estilos de configuración de alertas
+  alertConfigSection: {
+    marginTop: Spacing.lg,
+    paddingTop: Spacing.lg,
+    borderTopWidth: 1,
+  },
+  alertConfigHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginBottom: Spacing.md,
+  },
+  alertConfigTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  alertConfigContent: {
+    gap: Spacing.md,
+  },
+  alertConfigRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  alertConfigLabelContainer: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
+  alertConfigLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  alertConfigDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  switchContainer: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  switchThumb: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  switchThumbActive: {
+    marginLeft: 22,
+  },
+  customThresholdsContainer: {
+    gap: Spacing.lg,
+    paddingTop: Spacing.sm,
+  },
+  thresholdInputGroup: {
+    gap: Spacing.sm,
+  },
+  thresholdLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  thresholdLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  thresholdDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  thresholdInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  thresholdInput: {
+    flex: 1,
+    height: 44,
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md,
+    fontSize: 16,
+  },
+  thresholdUnit: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  thresholdExamples: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+    flexWrap: 'wrap',
+  },
+  thresholdExample: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  thresholdExampleText: {
+    fontSize: 13,
+  },
+  alertInfoBox: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginTop: Spacing.sm,
+  },
+  alertInfoText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  alertDisabledBox: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginTop: Spacing.sm,
+  },
+  alertDisabledText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  alertGlobalBox: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginTop: Spacing.sm,
+  },
+  alertGlobalText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  alertConfigReadOnly: {
+    gap: Spacing.sm,
+  },
+  alertConfigReadOnlyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.xs,
+  },
+  alertConfigReadOnlyLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  alertConfigReadOnlyValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  alertConfigReadOnlyText: {
+    fontSize: 14,
+  },
+  alertStatusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

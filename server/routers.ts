@@ -31,6 +31,7 @@ import {
   advancedRouter,
   seedRouter,
   usageRouter,
+  alertsRouter,
 } from "./routers/index.js";
 import { licenseRouter } from "./routers/license/index.js";
 import { aiGenerationRouter } from "./routers/ai-generation.router.js";
@@ -95,6 +96,9 @@ export const appRouter = router({
   
   // Exportación de datos
   export: exportRouter,
+  
+  // Sistema de alertas
+  alerts: alertsRouter,
 
 });
 
