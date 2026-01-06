@@ -165,8 +165,8 @@ export default function ServicesScreen() {
             <Pressable
               style={[
                 styles.filterChip,
-                { backgroundColor: cardBg, borderColor, borderRadius: BorderRadius.sm },
-                filter === f.key && { backgroundColor: accent, borderColor: accent, borderRadius: BorderRadius.sm },
+                { backgroundColor: cardBg, borderColor },
+                filter === f.key && { backgroundColor: accent, borderColor: accent },
               ]}
               onPress={() => setFilter(f.key)}
             >
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     height: 34,
     justifyContent: 'center',
-    borderRadius: BorderRadius.sm,
+    borderRadius: 8,
     borderWidth: 1,
     marginRight: Spacing.sm,
   },
