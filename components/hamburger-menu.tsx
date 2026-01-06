@@ -47,6 +47,12 @@ const MENU_ITEMS: MenuItem[] = [
   
   { key: 'divider3', label: '', icon: '', route: '', color: '' },
   
+  // Administración
+  { key: 'section_admin', label: 'Administración', icon: '', route: '', color: '', section: 'header' },
+  { key: 'admin_help', label: 'Gestión de Ayuda', icon: 'questionmark.circle.fill', route: '/admin/help', color: '#EF4444' },
+  
+  { key: 'divider4', label: '', icon: '', route: '', color: '' },
+  
   // Estadísticas y configuración
   { key: 'section_config', label: 'Configuración', icon: '', route: '', color: '', section: 'header' },
   { key: 'analytics', label: 'Analíticas', icon: 'chart.bar.fill', route: '/analytics', color: '#4A90A4' },
@@ -55,7 +61,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: 'business', label: 'Datos Fiscales', icon: 'person.text.rectangle.fill', route: '/business-info', color: '#6B7280' },
   { key: 'modules', label: 'Módulos y Plan', icon: 'square.grid.2x2.fill', route: '/settings/modules', color: '#8B5CF6' },
   { key: 'settings', label: 'Configuración', icon: 'gearshape.fill', route: '/settings', color: '#64748B' },
-  { key: 'help', label: 'Ayuda', icon: 'questionmark.circle.fill', route: '/help', color: '#0EA5E9' },
+  { key: 'help', label: 'Centro de Ayuda', icon: 'questionmark.circle.fill', route: '/help', color: '#0EA5E9' },
 ];
 
 export function HamburgerMenu() {
