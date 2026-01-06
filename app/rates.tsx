@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   categoryFilter: {
     paddingHorizontal: Spacing.md,
