@@ -146,6 +146,17 @@ export default function QuotesScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen options={{ title: 'Presupuestos' }} />
 
+      {/* Header con botón de volver */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <IconSymbol name="chevron.left" size={24} color={accent} />
+        </Pressable>
+        <ThemedText type="title">Presupuestos</ThemedText>
+      </View>
+
       {/* Resumen */}
       <View style={[styles.statsContainer, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.statItem}>
@@ -241,6 +252,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  backButton: {
+    padding: Spacing.xs,
+  },
   statsContainer: {
     flexDirection: 'row',
     margin: Spacing.md,
@@ -285,7 +306,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   filterChip: {
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.md,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
