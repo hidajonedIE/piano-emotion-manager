@@ -85,7 +85,7 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
             language = userLanguage;
           } else if (partnerId) {
             // Try to get partner's default language
-            const { partners } = await import('../../drizzle/partners-schema.js');
+            const { partners } = await import('../../drizzle/schema.js');
             const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
             if (partner?.defaultLanguage) {
               language = partner.defaultLanguage;
@@ -130,7 +130,7 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       } else if (partnerId) {
         const db = await getDb();
         if (db) {
-          const { partners } = await import('../../drizzle/partners-schema.js');
+          const { partners } = await import('../../drizzle/schema.js');
           const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
           if (partner?.defaultLanguage) {
             language = partner.defaultLanguage;

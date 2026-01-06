@@ -4,7 +4,6 @@ import 'dotenv/config';
 export default defineConfig({
   schema: [
     './drizzle/schema.ts',
-    './drizzle/partners-schema.ts',
     './drizzle/sharing-settings-schema.ts',
     './drizzle/modules-schema.ts',
     './drizzle/team-schema.ts',

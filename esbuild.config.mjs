@@ -75,7 +75,6 @@ try {
     format: 'esm',
     outdir: 'dist',
     packages: 'external',
-    external: ['./drizzle/*'],
     plugins: [aliasPlugin],
     // Resolver extensiones .ts automáticamente
     resolveExtensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json'],
