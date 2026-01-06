@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { BorderRadius, Spacing } from '@/constants/theme';
 
 interface ReminderTemplate {
   id: string;
@@ -370,7 +371,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   filterText: {

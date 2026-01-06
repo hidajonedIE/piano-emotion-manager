@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { BorderRadius, Spacing } from '@/constants/theme';
 
 
 // Tipos de datos
@@ -272,7 +273,8 @@ export default function ContractsScreen() {
             styles.filterChip,
             { 
               backgroundColor: filter === f.id ? colors.primary : cardBg,
-              borderColor: filter === f.id ? colors.primary : border
+              borderColor: filter === f.id ? colors.primary : border,
+              borderRadius: 8
             }
           ]}
           onPress={() => setFilter(f.id)}
@@ -632,9 +634,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginRight: 8,
   },
