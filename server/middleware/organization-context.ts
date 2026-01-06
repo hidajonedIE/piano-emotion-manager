@@ -16,7 +16,7 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db.js";
 import { users } from "../../drizzle/schema.js";
 import { organizations, organizationMembers } from "../../drizzle/schema.js";
-import { organizationSharingSettings } from "../../drizzle/sharing-settings-schema.js";
+import { organizationSharingSettings } from "../../drizzle/schema.js";
 import { eq, and } from "drizzle-orm";
 
 /**
