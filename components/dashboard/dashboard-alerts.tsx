@@ -29,48 +29,55 @@ export function DashboardAlerts({ urgentCount, pendingCount }: DashboardAlertsPr
   // Usar colores del tema para el fondo
   const cardBackground = useThemeColor({}, 'cardBackground');
   const border = useThemeColor({}, 'border');
+  const textColor = useThemeColor({}, 'text');
+
+  const handlePress = () => {
+    router.push('/(tabs)/pianos');
+  };
 
   return (
-    <Pressable
-      style={[styles.alertBanner, { backgroundColor: cardBackground, borderColor: border }]}
-      onPress={() => router.push('/(tabs)/pianos')}
-    >
-      <IconSymbol 
-        name={hasAlerts ? (hasUrgent ? "exclamationmark.triangle.fill" : "clock.fill") : "checkmark.circle.fill"} 
-        size={22} 
-        color={primaryColor} 
-      />
-      <View style={styles.alertContent}>
-        {/* Mostrar mensaje cuando no hay alertas */}
-        {!hasAlerts && (
-          <View style={styles.alertRow}>
-            <View style={[styles.alertDot, { backgroundColor: primaryColor }]} />
-            <ThemedText style={[styles.alertText, { color: primaryColor }]}>
-              No hay alertas
-            </ThemedText>
-          </View>
-        )}
-        {/* Mostrar alertas urgentes */}
-        {urgentCount > 0 && (
-          <View style={styles.alertRow}>
-            <View style={[styles.alertDot, { backgroundColor: error }]} />
-            <ThemedText style={[styles.alertText, { color: error }]}>
-              {urgentCount} {urgentCount === 1 ? 'piano requiere' : 'pianos requieren'} atención urgente
-            </ThemedText>
-          </View>
-        )}
-        {/* Mostrar pendientes */}
-        {pendingCount > 0 && (
-          <View style={styles.alertRow}>
-            <View style={[styles.alertDot, { backgroundColor: warning }]} />
-            <ThemedText style={[styles.alertText, { color: warning }]}>
-              {pendingCount} {pendingCount === 1 ? 'piano necesita' : 'pianos necesitan'} servicio pronto
-            </ThemedText>
-          </View>
-        )}
-      </View>
-      <IconSymbol name="chevron.right" size={18} color={primaryColor} />
-    </Pressable>
+    <View style={[styles.alertBanner, { backgroundColor: cardBackground, borderColor: border }]}>
+      <Pressable 
+        style={styles.alertContent}
+        onPress={handlePress}
+      >
+        <IconSymbol 
+          name={hasAlerts ? (hasUrgent ? "exclamationmark.triangle.fill" : "clock.fill") : "checkmark.circle.fill"} 
+          size={22} 
+          color={primaryColor} 
+        />
+        <View style={styles.alertTexts}>
+          {/* Mostrar mensaje cuando no hay alertas */}
+          {!hasAlerts && (
+            <View style={styles.alertRow}>
+              <View style={[styles.alertDot, { backgroundColor: primaryColor }]} />
+              <ThemedText style={[styles.alertText, { color: primaryColor }]}>
+                No hay alertas
+              </ThemedText>
+            </View>
+          )}
+          {/* Mostrar alertas urgentes */}
+          {urgentCount > 0 && (
+            <View style={styles.alertRow}>
+              <View style={[styles.alertDot, { backgroundColor: error }]} />
+              <ThemedText style={[styles.alertText, { color: error }]}>
+                {urgentCount} {urgentCount === 1 ? 'piano requiere' : 'pianos requieren'} atención urgente
+              </ThemedText>
+            </View>
+          )}
+          {/* Mostrar pendientes */}
+          {pendingCount > 0 && (
+            <View style={styles.alertRow}>
+              <View style={[styles.alertDot, { backgroundColor: warning }]} />
+              <ThemedText style={[styles.alertText, { color: warning }]}>
+                {pendingCount} {pendingCount === 1 ? 'piano necesita' : 'pianos necesitan'} servicio pronto
+              </ThemedText>
+            </View>
+          )}
+        </View>
+      </Pressable>
+      <IconSymbol name="chevron.right" size={18} color={textColor} style={styles.chevron} />
+    </View>
   );
 }
 
@@ -85,6 +92,12 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   alertContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  alertTexts: {
     flex: 1,
     gap: 2,
   },
@@ -101,5 +114,8 @@ const styles = StyleSheet.create({
   alertText: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  chevron: {
+    opacity: 0.5,
   },
 });
