@@ -21,7 +21,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/Colors';
+import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 interface HelpSection {
