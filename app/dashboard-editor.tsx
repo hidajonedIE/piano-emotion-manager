@@ -15,14 +15,23 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { useUserTier } from '@/hooks/use-user-tier';
+import { WidgetRenderer } from '@/components/dashboard-editor/widget-renderer';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type WidgetType = 
-  | 'stats_card' | 'chart_line' | 'chart_bar' | 'chart_pie' | 'chart_area'
-  | 'calendar' | 'tasks' | 'recent_clients' | 'recent_services' | 'recent_invoices'
-  | 'upcoming_appointments' | 'revenue_summary' | 'map' | 'weather' | 'notes'
-  | 'shortcuts' | 'team_activity' | 'inventory_alerts' | 'payment_status';
+  // Secciones principales
+  | 'alerts' | 'quick_actions' | 'predictions' | 'stats' | 'recent_services' 
+  | 'access_shortcuts' | 'advanced_tools' | 'help'
+  // Widgets de estadísticas
+  | 'stats_card' | 'revenue_summary' | 'payment_status'
+  // Widgets de gráficos
+  | 'chart_line' | 'chart_bar' | 'chart_pie' | 'chart_area'
+  // Widgets de listas
+  | 'recent_clients' | 'recent_invoices' | 'upcoming_appointments' | 'inventory_alerts'
+  // Widgets de utilidades
+  | 'calendar' | 'tasks' | 'map' | 'shortcuts';
 
 type WidgetSize = 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 
@@ -43,23 +52,39 @@ interface Layout {
   columns: number;
 }
 
-// Catálogo de widgets
+// Catálogo de widgets organizado por categorías
 const WIDGET_CATALOG = [
-  { type: 'stats_card', name: 'Estadísticas', icon: 'stats-chart', color: '#3B82F6' },
-  { type: 'chart_line', name: 'Gráfico líneas', icon: 'trending-up', color: '#10B981' },
-  { type: 'chart_bar', name: 'Gráfico barras', icon: 'bar-chart', color: '#8B5CF6' },
-  { type: 'chart_pie', name: 'Gráfico circular', icon: 'pie-chart', color: '#F59E0B' },
-  { type: 'calendar', name: 'Calendario', icon: 'calendar', color: '#EF4444' },
-  { type: 'tasks', name: 'Tareas', icon: 'checkbox', color: '#06B6D4' },
-  { type: 'recent_clients', name: 'Clientes recientes', icon: 'people', color: '#EC4899' },
-  { type: 'recent_services', name: 'Servicios recientes', icon: 'construct', color: '#14B8A6' },
-  { type: 'recent_invoices', name: 'Facturas recientes', icon: 'document-text', color: '#6366F1' },
-  { type: 'upcoming_appointments', name: 'Próximas citas', icon: 'time', color: '#F97316' },
-  { type: 'revenue_summary', name: 'Resumen ingresos', icon: 'cash', color: '#22C55E' },
-  { type: 'map', name: 'Mapa clientes', icon: 'map', color: '#0EA5E9' },
-  { type: 'shortcuts', name: 'Accesos rápidos', icon: 'apps', color: '#A855F7' },
-  { type: 'inventory_alerts', name: 'Alertas inventario', icon: 'alert-circle', color: '#EF4444' },
-  { type: 'payment_status', name: 'Estado pagos', icon: 'wallet', color: '#10B981' },
+  // Secciones principales del dashboard
+  { type: 'alerts', name: 'Alertas', icon: 'notifications', color: '#EF4444', category: 'main' },
+  { type: 'quick_actions', name: 'Acciones Rápidas', icon: 'flash', color: '#F59E0B', category: 'main' },
+  { type: 'predictions', name: 'Predicciones IA', icon: 'bulb', color: '#8B5CF6', category: 'main' },
+  { type: 'stats', name: 'Este Mes', icon: 'calendar', color: '#10B981', category: 'main' },
+  { type: 'recent_services', name: 'Servicios Recientes', icon: 'construct', color: '#14B8A6', category: 'main' },
+  { type: 'access_shortcuts', name: 'Accesos Rápidos', icon: 'apps', color: '#3B82F6', category: 'main' },
+  { type: 'advanced_tools', name: 'Herramientas Avanzadas', icon: 'build', color: '#EC4899', category: 'main' },
+  { type: 'help', name: 'Ayuda', icon: 'help-circle', color: '#06B6D4', category: 'main' },
+  
+  // Widgets de estadísticas
+  { type: 'stats_card', name: 'Tarjeta estadística', icon: 'stats-chart', color: '#3B82F6', category: 'stats' },
+  { type: 'revenue_summary', name: 'Resumen ingresos', icon: 'cash', color: '#22C55E', category: 'stats' },
+  { type: 'payment_status', name: 'Estado pagos', icon: 'wallet', color: '#10B981', category: 'stats' },
+  
+  // Widgets de gráficos
+  { type: 'chart_line', name: 'Gráfico líneas', icon: 'trending-up', color: '#10B981', category: 'charts' },
+  { type: 'chart_bar', name: 'Gráfico barras', icon: 'bar-chart', color: '#8B5CF6', category: 'charts' },
+  { type: 'chart_pie', name: 'Gráfico circular', icon: 'pie-chart', color: '#F59E0B', category: 'charts' },
+  
+  // Widgets de listas y datos
+  { type: 'recent_clients', name: 'Clientes recientes', icon: 'people', color: '#EC4899', category: 'lists' },
+  { type: 'recent_invoices', name: 'Facturas recientes', icon: 'document-text', color: '#6366F1', category: 'lists' },
+  { type: 'upcoming_appointments', name: 'Próximas citas', icon: 'time', color: '#F97316', category: 'lists' },
+  { type: 'inventory_alerts', name: 'Alertas inventario', icon: 'alert-circle', color: '#EF4444', category: 'lists' },
+  
+  // Widgets de utilidades
+  { type: 'calendar', name: 'Calendario', icon: 'calendar', color: '#EF4444', category: 'utils' },
+  { type: 'tasks', name: 'Tareas', icon: 'checkbox', color: '#06B6D4', category: 'utils' },
+  { type: 'map', name: 'Mapa clientes', icon: 'map', color: '#0EA5E9', category: 'utils' },
+  { type: 'shortcuts', name: 'Atajos personalizados', icon: 'link', color: '#A855F7', category: 'utils' },
 ];
 
 // Plantillas predefinidas
@@ -74,6 +99,7 @@ export default function DashboardEditorScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const { tier, isLoading: isTierLoading } = useUserTier();
 
   const [isEditing, setIsEditing] = useState(false);
   const [showWidgetPicker, setShowWidgetPicker] = useState(false);
@@ -86,11 +112,12 @@ export default function DashboardEditorScreen() {
     name: 'Mi Dashboard',
     columns: 3,
     widgets: [
-      { id: '1', type: 'stats_card', title: 'Ingresos del mes', size: 'small', positionX: 0, positionY: 0, config: { metric: 'monthly_revenue' } },
-      { id: '2', type: 'stats_card', title: 'Servicios', size: 'small', positionX: 1, positionY: 0, config: { metric: 'services_count' } },
-      { id: '3', type: 'stats_card', title: 'Clientes', size: 'small', positionX: 2, positionY: 0, config: { metric: 'active_clients' } },
-      { id: '4', type: 'upcoming_appointments', title: 'Próximas citas', size: 'medium', positionX: 0, positionY: 1, config: { limit: 5 } },
-      { id: '5', type: 'shortcuts', title: 'Accesos rápidos', size: 'small', positionX: 2, positionY: 1, config: {} },
+      { id: '1', type: 'alerts', title: 'Alertas', size: 'wide', positionX: 0, positionY: 0, config: {} },
+      { id: '2', type: 'quick_actions', title: 'Acciones Rápidas', size: 'medium', positionX: 0, positionY: 1, config: {} },
+      { id: '3', type: 'predictions', title: 'Predicciones IA', size: 'medium', positionX: 1, positionY: 1, config: {} },
+      { id: '4', type: 'stats', title: 'Este Mes', size: 'wide', positionX: 0, positionY: 2, config: {} },
+      { id: '5', type: 'recent_services', title: 'Servicios Recientes', size: 'medium', positionX: 0, positionY: 3, config: { limit: 5 } },
+      { id: '6', type: 'access_shortcuts', title: 'Accesos Rápidos', size: 'medium', positionX: 1, positionY: 3, config: {} },
     ],
   });
 
@@ -188,20 +215,18 @@ export default function DashboardEditorScreen() {
     const height = getWidgetHeight(widget.size);
 
     return (
-      <TouchableOpacity
+      <View
         key={widget.id}
         style={[
           styles.widget,
           {
             width,
             height,
-            backgroundColor: cardBg,
             borderColor: isEditing ? colors.primary : border,
             borderWidth: isEditing ? 2 : 1,
+            overflow: 'hidden',
           },
         ]}
-        onPress={() => isEditing && setSelectedWidget(widget)}
-        onLongPress={() => setIsEditing(true)}
       >
         {isEditing && (
           <TouchableOpacity
@@ -212,22 +237,20 @@ export default function DashboardEditorScreen() {
           </TouchableOpacity>
         )}
 
-        <View style={[styles.widgetIcon, { backgroundColor: `${catalogItem?.color}20` }]}>
-          <Ionicons name={catalogItem?.icon as any} size={24} color={catalogItem?.color} />
-        </View>
-        <ThemedText style={[styles.widgetTitle, { color: textPrimary }]} numberOfLines={1}>
-          {widget.title}
-        </ThemedText>
-        <ThemedText style={[styles.widgetType, { color: textSecondary }]}>
-          {catalogItem?.name}
-        </ThemedText>
+        {/* Renderizar el widget funcional */}
+        <WidgetRenderer 
+          type={widget.type}
+          config={widget.config}
+          isEditing={isEditing}
+          size={widget.size}
+        />
 
         {isEditing && (
           <View style={styles.resizeHandle}>
             <Ionicons name="resize" size={16} color={textSecondary} />
           </View>
         )}
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -313,6 +336,106 @@ export default function DashboardEditorScreen() {
       </View>
     </Modal>
   );
+
+  // Verificar si el usuario tiene acceso (Pro o Premium)
+  const hasAccess = tier === 'pro' || tier === 'premium';
+
+  // Pantalla de upgrade para usuarios gratuitos
+  if (!isTierLoading && !hasAccess) {
+    return (
+      <ThemedView style={[styles.container, { backgroundColor: background }]}>
+        {/* Header */}
+        <View style={[styles.header, { borderBottomColor: border }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={textPrimary} />
+          </TouchableOpacity>
+          <ThemedText type="title" style={{ color: textPrimary }}>
+            Dashboard+
+          </ThemedText>
+          <View style={{ width: 40 }} />
+        </View>
+
+        {/* Contenido de upgrade */}
+        <ScrollView 
+          style={styles.content} 
+          contentContainerStyle={styles.upgradeContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.upgradeCard, { backgroundColor: cardBg }]}>
+            {/* Icono premium */}
+            <View style={[styles.premiumIconContainer, { backgroundColor: `${colors.primary}15` }]}>
+              <Ionicons name="diamond" size={48} color={colors.primary} />
+            </View>
+
+            {/* Título */}
+            <ThemedText style={[styles.upgradeTitle, { color: textPrimary }]}>
+              Dashboard+ es una funcionalidad Pro
+            </ThemedText>
+
+            {/* Descripción */}
+            <ThemedText style={[styles.upgradeDescription, { color: textSecondary }]}>
+              Personaliza completamente tu dashboard con widgets arrastrables, accesos rápidos configurables y mucho más.
+            </ThemedText>
+
+            {/* Características */}
+            <View style={styles.featuresList}>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
+                  Widgets personalizables
+                </ThemedText>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
+                  Accesos rápidos configurables
+                </ThemedText>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
+                  Múltiples layouts guardados
+                </ThemedText>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
+                  Gráficos y estadísticas avanzadas
+                </ThemedText>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
+                  Predicciones con IA
+                </ThemedText>
+              </View>
+            </View>
+
+            {/* Botón de upgrade */}
+            <TouchableOpacity
+              style={[styles.upgradeButton, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/subscription' as any)}
+            >
+              <Ionicons name="diamond" size={20} color="#FFFFFF" />
+              <ThemedText style={styles.upgradeButtonText}>
+                Actualizar a Pro
+              </ThemedText>
+            </TouchableOpacity>
+
+            {/* Enlace a más información */}
+            <TouchableOpacity
+              style={styles.learnMoreButton}
+              onPress={() => router.push('/subscription' as any)}
+            >
+              <ThemedText style={[styles.learnMoreText, { color: colors.primary }]}>
+                Ver planes y precios
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: background }]}>
@@ -570,5 +693,72 @@ const styles = StyleSheet.create({
   templateDescription: {
     fontSize: 13,
     marginTop: 4,
+  },
+  // Estilos de upgrade
+  upgradeContainer: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  upgradeCard: {
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+  },
+  premiumIconContainer: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  upgradeTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  upgradeDescription: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
+  },
+  featuresList: {
+    width: '100%',
+    marginBottom: 32,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  featureText: {
+    fontSize: 16,
+    marginLeft: 12,
+  },
+  upgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    width: '100%',
+    marginBottom: 16,
+  },
+  upgradeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  learnMoreButton: {
+    paddingVertical: 12,
+  },
+  learnMoreText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
