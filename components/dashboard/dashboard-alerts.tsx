@@ -32,7 +32,7 @@ export function DashboardAlerts({ urgentCount, pendingCount }: DashboardAlertsPr
 
   const handlePress = () => {
     if (hasAlerts) {
-      router.push('/(tabs)/pianos');
+      router.push('/(tabs)/services');
     }
   };
 
