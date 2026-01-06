@@ -256,6 +256,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
     marginBottom: Spacing.lg,
+    alignItems: 'center',
   },
   categoryFilter: {
     paddingHorizontal: Spacing.md,
