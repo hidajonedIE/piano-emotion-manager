@@ -15,6 +15,10 @@ import {
   clients,
   services,
 } from '../../drizzle/schema.js';
+import { AlertSchedulingService } from '../services/alert-scheduling.service.js';
+import { AutoSchedulingService } from '../services/auto-scheduling.service.js';
+import { CalendarSyncService } from '../services/calendar-sync.service.js';
+import { AlertAnalyticsService } from '../services/alert-analytics.service.js';
 
 export const alertsRouter = router({
   /**
@@ -382,6 +386,350 @@ export const alertsRouter = router({
         resolvedLast30Days: resolvedCount.count,
         avgResolutionDays: Math.round(avgResolutionTime.avg ?? 0),
       };
+    }),
+
+  /**
+   * Obtener sugerencias de fechas para todas las alertas activas
+   */
+  getSuggestedDates: protectedProcedure
+    .input(z.object({
+      includeWeekends: z.boolean().optional(),
+      workingHoursStart: z.number().min(0).max(23).optional(),
+      workingHoursEnd: z.number().min(0).max(23).optional(),
+      minDaysAhead: z.number().min(0).max(365).optional(),
+      maxDaysAhead: z.number().min(1).max(365).optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const suggestions = await AlertSchedulingService.getSuggestedDates(
+        ctx.userId,
+        input || {}
+      );
+      return suggestions;
+    }),
+
+  /**
+   * Obtener sugerencia de fecha para una alerta específica
+   */
+  getSuggestionForAlert: protectedProcedure
+    .input(z.object({
+      alertId: z.number(),
+      includeWeekends: z.boolean().optional(),
+      workingHoursStart: z.number().min(0).max(23).optional(),
+      workingHoursEnd: z.number().min(0).max(23).optional(),
+      minDaysAhead: z.number().min(0).max(365).optional(),
+      maxDaysAhead: z.number().min(1).max(365).optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { alertId, ...options } = input;
+      const suggestion = await AlertSchedulingService.getSuggestionForAlert(
+        ctx.userId,
+        alertId,
+        options
+      );
+      return suggestion;
+    }),
+
+  /**
+   * Obtener múltiples opciones de fecha para una alerta
+   */
+  getMultipleDateOptions: protectedProcedure
+    .input(z.object({
+      alertId: z.number(),
+      numberOfOptions: z.number().min(1).max(10).default(3),
+      includeWeekends: z.boolean().optional(),
+      workingHoursStart: z.number().min(0).max(23).optional(),
+      workingHoursEnd: z.number().min(0).max(23).optional(),
+      minDaysAhead: z.number().min(0).max(365).optional(),
+      maxDaysAhead: z.number().min(1).max(365).optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { alertId, numberOfOptions, ...options } = input;
+      const suggestions = await AlertSchedulingService.getMultipleDateOptions(
+        ctx.userId,
+        alertId,
+        numberOfOptions,
+        options
+      );
+      return suggestions;
+    }),
+
+  /**
+   * Auto-programar servicio desde una alerta
+   */
+  autoScheduleFromAlert: protectedProcedure
+    .input(z.object({
+      alertId: z.number(),
+      createAppointment: z.boolean().optional(),
+      createService: z.boolean().optional(),
+      includeWeekends: z.boolean().optional(),
+      workingHoursStart: z.number().min(0).max(23).optional(),
+      workingHoursEnd: z.number().min(0).max(23).optional(),
+      minDaysAhead: z.number().min(0).max(365).optional(),
+      maxDaysAhead: z.number().min(1).max(365).optional(),
+      preferredDate: z.date().optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { alertId, ...options } = input;
+      const result = await AutoSchedulingService.scheduleFromAlert(
+        ctx.userId,
+        alertId,
+        options
+      );
+      return result;
+    }),
+
+  /**
+   * Auto-programar múltiples alertas
+   */
+  autoScheduleMultiple: protectedProcedure
+    .input(z.object({
+      alertIds: z.array(z.number()),
+      createAppointment: z.boolean().optional(),
+      createService: z.boolean().optional(),
+      includeWeekends: z.boolean().optional(),
+      workingHoursStart: z.number().min(0).max(23).optional(),
+      workingHoursEnd: z.number().min(0).max(23).optional(),
+      minDaysAhead: z.number().min(0).max(365).optional(),
+      maxDaysAhead: z.number().min(1).max(365).optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { alertIds, ...options } = input;
+      const results = await AutoSchedulingService.scheduleMultipleAlerts(
+        ctx.userId,
+        alertIds,
+        options
+      );
+      return results;
+    }),
+
+  /**
+   * Auto-programar todas las alertas urgentes
+   */
+  autoScheduleAllUrgent: protectedProcedure
+    .input(z.object({
+      createAppointment: z.boolean().optional(),
+      createService: z.boolean().optional(),
+      includeWeekends: z.boolean().optional(),
+      workingHoursStart: z.number().min(0).max(23).optional(),
+      workingHoursEnd: z.number().min(0).max(23).optional(),
+      minDaysAhead: z.number().min(0).max(365).optional(),
+      maxDaysAhead: z.number().min(1).max(365).optional(),
+      notes: z.string().optional(),
+    }).optional())
+    .mutation(async ({ ctx, input }) => {
+      const results = await AutoSchedulingService.scheduleAllUrgentAlerts(
+        ctx.userId,
+        input || {}
+      );
+      return results;
+    }),
+
+  /**
+   * Obtener estadísticas de auto-programación
+   */
+  getAutoScheduleStatistics: protectedProcedure
+    .query(async ({ ctx }) => {
+      const stats = await AutoSchedulingService.getAutoScheduleStatistics(ctx.userId);
+      return stats;
+    }),
+
+  /**
+   * Sincronizar cita con calendario externo
+   */
+  syncAppointmentToCalendar: protectedProcedure
+    .input(z.object({
+      appointmentId: z.number(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await CalendarSyncService.syncAppointment(
+        ctx.userId,
+        input.appointmentId
+      );
+      return result;
+    }),
+
+  /**
+   * Sincronizar múltiples citas con calendario
+   */
+  syncMultipleAppointments: protectedProcedure
+    .input(z.object({
+      appointmentIds: z.array(z.number()),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const results = await CalendarSyncService.syncMultipleAppointments(
+        ctx.userId,
+        input.appointmentIds
+      );
+      return results;
+    }),
+
+  /**
+   * Actualizar evento en calendario externo
+   */
+  updateCalendarEvent: protectedProcedure
+    .input(z.object({
+      appointmentId: z.number(),
+      externalEventId: z.string(),
+      provider: z.enum(['google', 'outlook']),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await CalendarSyncService.updateCalendarEvent(
+        ctx.userId,
+        input.appointmentId,
+        input.externalEventId,
+        input.provider
+      );
+      return result;
+    }),
+
+  /**
+   * Eliminar evento de calendario externo
+   */
+  deleteCalendarEvent: protectedProcedure
+    .input(z.object({
+      externalEventId: z.string(),
+      provider: z.enum(['google', 'outlook']),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await CalendarSyncService.deleteCalendarEvent(
+        input.externalEventId,
+        input.provider
+      );
+      return result;
+    }),
+
+  /**
+   * Verificar si el usuario tiene calendario conectado
+   */
+  hasCalendarConnected: protectedProcedure
+    .query(async ({ ctx }) => {
+      const result = await CalendarSyncService.hasCalendarConnected(ctx.userId);
+      return result;
+    }),
+
+  /**
+   * Obtener métricas de rendimiento
+   */
+  getPerformanceMetrics: protectedProcedure
+    .input(z.object({
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const metrics = await AlertAnalyticsService.getPerformanceMetrics(
+        ctx.userId,
+        input?.startDate,
+        input?.endDate
+      );
+      return metrics;
+    }),
+
+  /**
+   * Obtener datos de serie temporal
+   */
+  getTimeSeriesData: protectedProcedure
+    .input(z.object({
+      startDate: z.date(),
+      endDate: z.date(),
+      interval: z.enum(['day', 'week', 'month']).default('day'),
+    }))
+    .query(async ({ ctx, input }) => {
+      const data = await AlertAnalyticsService.getTimeSeriesData(
+        ctx.userId,
+        input.startDate,
+        input.endDate,
+        input.interval
+      );
+      return data;
+    }),
+
+  /**
+   * Obtener distribución de alertas por tipo
+   */
+  getAlertDistribution: protectedProcedure
+    .input(z.object({
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const distribution = await AlertAnalyticsService.getAlertDistribution(
+        ctx.userId,
+        input?.startDate,
+        input?.endDate
+      );
+      return distribution;
+    }),
+
+  /**
+   * Obtener análisis de tendencias
+   */
+  getTrendAnalysis: protectedProcedure
+    .input(z.object({
+      periods: z.number().min(1).max(24).default(12),
+      interval: z.enum(['month', 'quarter', 'year']).default('month'),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const trends = await AlertAnalyticsService.getTrendAnalysis(
+        ctx.userId,
+        input?.periods,
+        input?.interval
+      );
+      return trends;
+    }),
+
+  /**
+   * Obtener análisis por tipo de servicio
+   */
+  getServiceTypeAnalysis: protectedProcedure
+    .input(z.object({
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const analysis = await AlertAnalyticsService.getServiceTypeAnalysis(
+        ctx.userId,
+        input?.startDate,
+        input?.endDate
+      );
+      return analysis;
+    }),
+
+  /**
+   * Obtener top pianos con más alertas
+   */
+  getTopAlertPianos: protectedProcedure
+    .input(z.object({
+      limit: z.number().min(1).max(50).default(10),
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const topPianos = await AlertAnalyticsService.getTopAlertPianos(
+        ctx.userId,
+        input?.limit,
+        input?.startDate,
+        input?.endDate
+      );
+      return topPianos;
+    }),
+
+  /**
+   * Obtener comparativa mensual
+   */
+  getMonthlyComparison: protectedProcedure
+    .input(z.object({
+      currentMonth: z.date(),
+      previousMonth: z.date(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const comparison = await AlertAnalyticsService.getMonthlyComparison(
+        ctx.userId,
+        input.currentMonth,
+        input.previousMonth
+      );
+      return comparison;
     }),
 
   /**
