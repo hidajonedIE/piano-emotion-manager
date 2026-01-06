@@ -207,6 +207,7 @@ export default function RatesScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderRate}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 100 }]}
+        style={{ marginTop: Spacing.md }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
