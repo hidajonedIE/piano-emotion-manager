@@ -255,7 +255,7 @@ export const advancedRouter = router({
             userName: ctx.user.name || undefined,
             clientCount: clients.length,
             pendingServices,
-          });
+          }, ctx.language);
           
           // ✅ REGISTRAR USO
           await recordAIUsage(ctx.user.openId, 'chat', response.tokensUsed || 0);

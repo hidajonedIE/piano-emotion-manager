@@ -1,12 +1,20 @@
 /**
  * Pianos Router
  * Gestión de pianos con validación mejorada, paginación optimizada
+ * y soporte para organizaciones con sharing configurable
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { pianos } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql, lte, gte } from "drizzle-orm";
+import { 
+  filterByPartner, 
+  filterByPartnerAndOrganization,
+  addOrganizationToInsert,
+  validateWritePermission
+} from "../utils/multi-tenant.js";
+import { withOrganizationContext } from "../middleware/organization-context.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -82,18 +90,32 @@ const KNOWN_BRANDS = [
 ];
 
 // ============================================================================
+// PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
+// ============================================================================
+
+const orgProcedure = protectedProcedure.use(withOrganizationContext);
+
+// ============================================================================
 // ROUTER
 // ============================================================================
 
 export const pianosRouter = router({
-  list: protectedProcedure
+  list: orgProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "brand", sortOrder = "asc", search, category, brand, condition, clientId, yearFrom, yearTo } = input || {};
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      const whereClauses = [eq(pianos.odId, ctx.user.openId)];
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          pianos,
+          ctx.partnerId,
+          ctx.orgContext,
+          "pianos"
+        )
+      ];
+      
       if (search) {
         whereClauses.push(
           or(
@@ -135,64 +157,187 @@ export const pianosRouter = router({
       return { items, nextCursor, total };
     }),
   
-  listAll: protectedProcedure.query(({ ctx }) => db.getPianos(ctx.user.openId)),
+  listAll: orgProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return [];
+    
+    return database
+      .select()
+      .from(pianos)
+      .where(
+        filterByPartnerAndOrganization(
+          pianos,
+          ctx.partnerId,
+          ctx.orgContext,
+          "pianos"
+        )
+      );
+  }),
   
-  get: protectedProcedure
+  get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getPiano(ctx.user.openId, input.id)),
-  
-  byClient: protectedProcedure
-    .input(z.object({ clientId: z.number() }))
-    .query(({ ctx, input }) => db.getPianosByClient(ctx.user.openId, input.clientId)),
-  
-  create: protectedProcedure
-    .input(pianoBaseSchema)
-    .mutation(async ({ ctx, input }) => {
-      return db.createPiano({
-        ...input,
-        odId: ctx.user.openId,
-      });
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      const [piano] = await database
+        .select()
+        .from(pianos)
+        .where(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos",
+            eq(pianos.id, input.id)
+          )
+        );
+
+      if (!piano) throw new Error("Piano no encontrado");
+      return piano;
     }),
   
-  update: protectedProcedure
+  byClient: orgProcedure
+    .input(z.object({ clientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      return database
+        .select()
+        .from(pianos)
+        .where(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos",
+            eq(pianos.clientId, input.clientId)
+          )
+        );
+    }),
+  
+  create: orgProcedure
+    .input(pianoBaseSchema)
+    .mutation(async ({ ctx, input }) => {
+      const pianoData = addOrganizationToInsert(
+        input,
+        ctx.orgContext,
+        "pianos"
+      );
+      
+      return db.createPiano(pianoData);
+    }),
+  
+  update: orgProcedure
     .input(z.object({
       id: z.number(),
     }).merge(pianoBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el piano para verificar permisos
+      const [existingPiano] = await database
+        .select()
+        .from(pianos)
+        .where(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos",
+            eq(pianos.id, input.id)
+          )
+        );
+
+      if (!existingPiano) {
+        throw new Error("Piano no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
+
       const { id, ...data } = input;
-      return db.updatePiano(ctx.user.openId, id, data);
+      return db.updatePiano(existingPiano.odId, id, data);
     }),
   
-  delete: protectedProcedure
+  delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      return db.deletePiano(ctx.user.openId, input.id);
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el piano para verificar permisos
+      const [existingPiano] = await database
+        .select()
+        .from(pianos)
+        .where(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos",
+            eq(pianos.id, input.id)
+          )
+        );
+
+      if (!existingPiano) {
+        throw new Error("Piano no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
+
+      return db.deletePiano(existingPiano.odId, input.id);
     }),
   
-  getBrands: protectedProcedure.query(async ({ ctx }) => {
+  getBrands: orgProcedure.query(async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return KNOWN_BRANDS.sort();
 
     const brandsQuery = await database
       .selectDistinct({ brand: pianos.brand })
       .from(pianos)
-      .where(eq(pianos.odId, ctx.user.openId));
+      .where(
+        filterByPartnerAndOrganization(
+          pianos,
+          ctx.partnerId,
+          ctx.orgContext,
+          "pianos"
+        )
+      );
     
     const userBrands = brandsQuery.map(b => b.brand);
     return [...new Set([...userBrands, ...KNOWN_BRANDS])].sort();
   }),
   
-  getNeedingService: protectedProcedure
+  getNeedingService: orgProcedure
     .input(z.object({
       daysAhead: z.number().int().min(0).max(365).default(30),
     }).optional())
     .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
       const daysAhead = input?.daysAhead || 30;
-      const pianos = await db.getPianos(ctx.user.openId);
+      
+      const allPianos = await database
+        .select()
+        .from(pianos)
+        .where(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos"
+          )
+        );
+      
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() + daysAhead);
       
-      return pianos
+      return allPianos
         .filter(p => {
           if (!p.nextServiceDate) return false;
           return new Date(p.nextServiceDate) <= cutoffDate;
@@ -204,23 +349,49 @@ export const pianosRouter = router({
         });
     }),
   
-  getServiceHistory: protectedProcedure
+  getServiceHistory: orgProcedure
     .input(z.object({ pianoId: z.number() }))
     .query(async ({ ctx, input }) => {
+      // Esta función necesita actualización en db.ts también
+      // Por ahora, mantener la funcionalidad básica
       const services = await db.getServicesByPiano(ctx.user.openId, input.pianoId);
       return services.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }),
   
-  updateEnvironment: protectedProcedure
+  updateEnvironment: orgProcedure
     .input(z.object({
       id: z.number(),
       environment: environmentSchema,
     }))
-    .mutation(({ ctx, input }) => {
-      return db.updatePiano(ctx.user.openId, input.id, { environment: input.environment });
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el piano para verificar permisos
+      const [existingPiano] = await database
+        .select()
+        .from(pianos)
+        .where(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos",
+            eq(pianos.id, input.id)
+          )
+        );
+
+      if (!existingPiano) {
+        throw new Error("Piano no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
+
+      return db.updatePiano(existingPiano.odId, input.id, { environment: input.environment });
     }),
   
-  logEnvironmentReading: protectedProcedure
+  logEnvironmentReading: orgProcedure
     .input(z.object({
       pianoId: z.number(),
       humidity: z.number().min(0).max(100),
@@ -228,8 +399,27 @@ export const pianosRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const piano = await db.getPiano(ctx.user.openId, input.pianoId);
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el piano para verificar permisos
+      const [piano] = await database
+        .select()
+        .from(pianos)
+        .where(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos",
+            eq(pianos.id, input.pianoId)
+          )
+        );
+
       if (!piano) throw new Error("Piano no encontrado");
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "pianos", piano.odId);
       
       const environment = {
         ...(piano.environment || {}),
@@ -238,6 +428,6 @@ export const pianosRouter = router({
         lastReading: new Date().toISOString(),
       };
       
-      return db.updatePiano(ctx.user.openId, input.pianoId, { environment });
+      return db.updatePiano(piano.odId, input.pianoId, { environment });
     }),
 });

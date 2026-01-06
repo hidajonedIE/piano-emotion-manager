@@ -283,33 +283,36 @@ export async function listGeminiModels(): Promise<string[]> {
 /**
  * Genera un informe de servicio profesional
  */
-export async function generateServiceReport(serviceData: {
-  pianoModel: string;
-  pianoBrand: string;
-  serviceType: string;
-  technicianNotes: string;
-  tasksCompleted: string[];
-  clientName: string;
-}): Promise<string> {
-  const prompt = `Genera un informe profesional de servicio de piano:
-
-Piano: ${serviceData.pianoBrand} ${serviceData.pianoModel}
-Cliente: ${serviceData.clientName}
-Tipo de servicio: ${serviceData.serviceType}
-Notas del técnico: ${serviceData.technicianNotes}
-Tareas completadas: ${serviceData.tasksCompleted.join(', ')}
-
-El informe debe incluir:
-1. Resumen ejecutivo (2-3 líneas)
-2. Estado del piano antes del servicio
-3. Trabajos realizados detallados
-4. Recomendaciones para el cliente
-5. Próximo mantenimiento sugerido
-
-Formato: Profesional pero accesible para el cliente. En español.`;
+export async function generateServiceReport(
+  serviceData: {
+    pianoModel: string;
+    pianoBrand: string;
+    serviceType: string;
+    technicianNotes: string;
+    tasksCompleted: string[];
+    clientName: string;
+  },
+  language: string = 'es'
+): Promise<string> {
+  // Import AI prompts system
+  const { getAIPrompt, interpolatePrompt } = await import('../utils/ai-prompts.js');
+  
+  // Get prompt templates for the specified language
+  const userTemplate = getAIPrompt('serviceReport', language, 'user');
+  const systemPrompt = getAIPrompt('serviceReport', language, 'system');
+  
+  // Interpolate variables into the prompt
+  const prompt = interpolatePrompt(userTemplate, {
+    pianoBrand: serviceData.pianoBrand,
+    pianoModel: serviceData.pianoModel,
+    clientName: serviceData.clientName,
+    serviceType: serviceData.serviceType,
+    technicianNotes: serviceData.technicianNotes,
+    tasksCompleted: serviceData.tasksCompleted.join(', ')
+  });
 
   return invokeGemini(prompt, {
-    systemPrompt: "Eres un experto técnico de pianos que redacta informes profesionales.",
+    systemPrompt,
     temperature: 0.5,
   });
 }
@@ -317,71 +320,69 @@ Formato: Profesional pero accesible para el cliente. En español.`;
 /**
  * Genera un email personalizado
  */
-export async function generateClientEmail(params: {
-  type: 'reminder' | 'followup' | 'promotion' | 'thank_you';
-  clientName: string;
-  lastService?: string;
-  nextServiceDate?: string;
-  customContext?: string;
-}): Promise<{ subject: string; body: string }> {
-  const templates = {
-    reminder: "recordatorio de mantenimiento de piano",
-    followup: "seguimiento después del servicio",
-    promotion: "oferta especial de servicios",
-    thank_you: "agradecimiento por confiar en nosotros",
-  };
+export async function generateClientEmail(
+  params: {
+    type: 'reminder' | 'followup' | 'promotion' | 'thank_you';
+    clientName: string;
+    lastService?: string;
+    nextServiceDate?: string;
+    customContext?: string;
+  },
+  language: string = 'es'
+): Promise<{ subject: string; body: string }> {
+  // Import AI prompts system
+  const { prepareEmailPrompt } = await import('../utils/ai-prompts.js');
+  
+  // Prepare prompts with all parameters
+  const { userPrompt, systemPrompt } = prepareEmailPrompt(
+    language,
+    params.type,
+    params.clientName,
+    params.lastService,
+    params.nextServiceDate,
+    params.customContext
+  );
 
-  const prompt = `Genera un email de ${templates[params.type]} para:
-
-Cliente: ${params.clientName}
-${params.lastService ? `Último servicio: ${params.lastService}` : ''}
-${params.nextServiceDate ? `Próximo servicio sugerido: ${params.nextServiceDate}` : ''}
-${params.customContext ? `Contexto: ${params.customContext}` : ''}
-
-Requisitos:
-- Profesional pero cercano
-- En español
-- Máximo 150 palabras en el cuerpo
-- Asunto atractivo y conciso
-
-Responde en JSON: {"subject": "...", "body": "..."}`;
-
-  return generateJsonWithGemini<{ subject: string; body: string }>(prompt, {
-    systemPrompt: "Eres un experto en comunicación con clientes. Responde solo con JSON válido.",
+  return generateJsonWithGemini<{ subject: string; body: string }>(userPrompt, {
+    systemPrompt,
   });
 }
 
 /**
  * Analiza el riesgo de pérdida de un cliente
  */
-export async function analyzeClientChurnRisk(clientData: {
-  name: string;
-  daysSinceLastService: number;
-  totalServices: number;
-  averageInterval: number;
-  totalSpent: number;
-}): Promise<{
+export async function analyzeClientChurnRisk(
+  clientData: {
+    name: string;
+    daysSinceLastService: number;
+    totalServices: number;
+    averageInterval: number;
+    totalSpent: number;
+  },
+  language: string = 'es'
+): Promise<{
   riskLevel: 'low' | 'medium' | 'high';
   analysis: string;
   recommendations: string[];
 }> {
-  const prompt = `Analiza el riesgo de pérdida de este cliente de servicios de piano:
-
-Cliente: ${clientData.name}
-Días desde último servicio: ${clientData.daysSinceLastService}
-Total de servicios: ${clientData.totalServices}
-Intervalo promedio entre servicios: ${clientData.averageInterval} días
-Total gastado: ${clientData.totalSpent}€
-
-Proporciona:
-1. Nivel de riesgo: "low", "medium" o "high"
-2. Análisis breve (2-3 líneas)
-3. 3 recomendaciones específicas para retenerlo
-
-Responde en JSON: {"riskLevel": "...", "analysis": "...", "recommendations": ["...", "...", "..."]}`;
+  // Import AI prompts system
+  const { getAIPrompt, interpolatePrompt } = await import('../utils/ai-prompts.js');
+  
+  // Get prompt templates for the specified language
+  const userTemplate = getAIPrompt('churnRisk', language, 'user');
+  const systemPrompt = getAIPrompt('churnRisk', language, 'system');
+  
+  // Interpolate variables into the prompt
+  const prompt = interpolatePrompt(userTemplate, {
+    clientName: clientData.name,
+    daysSinceLastService: clientData.daysSinceLastService.toString(),
+    totalServices: clientData.totalServices.toString(),
+    averageInterval: clientData.averageInterval.toString(),
+    totalSpent: clientData.totalSpent.toString()
+  });
 
   return generateJsonWithGemini(prompt, {
-    systemPrompt: "Eres un analista de CRM especializado en retención de clientes. Responde solo con JSON válido.",
+    systemPrompt,
   });
 }
 
@@ -394,25 +395,20 @@ export async function pianoAssistantChat(
     clientCount?: number;
     pendingServices?: number;
     userName?: string;
-  }
+  },
+  language: string = 'es'
 ): Promise<string> {
-  const systemPrompt = `Eres PianoBot, un asistente experto en gestión de servicios de afinación y mantenimiento de pianos.
+  // Import AI prompts system
+  const { prepareChatAssistantPrompt } = await import('../utils/ai-prompts.js');
+  
+  // Prepare prompts with context
+  const { userPrompt, systemPrompt } = prepareChatAssistantPrompt(
+    language,
+    message,
+    context
+  );
 
-Ayudas a técnicos de piano con:
-- Programación de citas y recordatorios
-- Consejos técnicos sobre afinación, regulación y reparación
-- Gestión de clientes y comunicación
-- Facturación y presupuestos
-- Mejores prácticas del sector
-
-${context?.userName ? `El usuario se llama ${context.userName}.` : ''}
-${context?.clientCount ? `Tiene ${context.clientCount} clientes registrados.` : ''}
-${context?.pendingServices ? `Tiene ${context.pendingServices} servicios pendientes.` : ''}
-
-Responde de forma concisa, profesional y útil. En español.
-Si no sabes algo específico del negocio del usuario, sugiere dónde encontrar esa información en la app.`;
-
-  return invokeGemini(message, {
+  return invokeGemini(userPrompt, {
     systemPrompt,
     temperature: 0.7,
     maxTokens: 500,

@@ -5,6 +5,8 @@ import fr from './fr/translations.json';
 import de from './de/translations.json';
 import da from './da/translations.json';
 import en from './en/translations.json';
+import no from './no/translations.json';
+import sv from './sv/translations.json';
 
 export const translations = {
   es,
@@ -14,9 +16,11 @@ export const translations = {
   de,
   da,
   en,
+  no,
+  sv,
 };
 
-export type SupportedLanguage = 'es' | 'pt' | 'it' | 'fr' | 'de' | 'da' | 'en';
+export type SupportedLanguage = 'es' | 'pt' | 'it' | 'fr' | 'de' | 'da' | 'en' | 'no' | 'sv';
 
 export const supportedLanguages: { code: SupportedLanguage; name: string; nativeName: string; flag: string }[] = [
   { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
@@ -26,6 +30,8 @@ export const supportedLanguages: { code: SupportedLanguage; name: string; native
   { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
   { code: 'da', name: 'Danish', nativeName: 'Dansk', flag: '🇩🇰' },
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'no', name: 'Norwegian', nativeName: 'Norsk', flag: '🇳🇴' },
+  { code: 'sv', name: 'Swedish', nativeName: 'Svenska', flag: '🇸🇪' },
 ];
 
 export const defaultLanguage: SupportedLanguage = 'es';

@@ -38,6 +38,8 @@ export type TrpcContext = {
   req: HttpRequest;
   res: HttpResponse;
   user: User | null;
+  partnerId: number | null; // Partner ID for multi-tenant filtering
+  language: string; // User's preferred language for AI and content generation
 };
 
 /**
@@ -72,8 +74,30 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       if (db) {
         const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
         user = dbUser as User;
-        console.log('[Context] User authenticated successfully via Clerk:', { id: user.id, email: user.email });
-        return { req: opts.req, res: opts.res, user };
+        const partnerId = user.partnerId || null;
+        
+        // Detect language: user preference > partner default > browser > default
+        let language = 'es'; // Default fallback
+        try {
+          // Try to get user's preferred language
+          const userLanguage = (user as any).preferredLanguage;
+          if (userLanguage) {
+            language = userLanguage;
+          } else if (partnerId) {
+            // Try to get partner's default language
+            const { partners } = await import('../../drizzle/partners-schema.js');
+            const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
+            if (partner?.defaultLanguage) {
+              language = partner.defaultLanguage;
+            }
+          }
+        } catch (error) {
+          // Fields might not exist yet if migration hasn't run
+          console.log('[Context] Language detection failed (fields may not exist yet), using default:', error);
+        }
+        
+        console.log('[Context] User authenticated successfully via Clerk:', { id: user.id, email: user.email, partnerId, language });
+        return { req: opts.req, res: opts.res, user, partnerId, language };
       } else {
         console.error('[Context] Database connection failed');
       }
@@ -93,9 +117,36 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
     user = null;
   }
 
+  // Get partnerId from user if available
+  const partnerId = user?.partnerId || null;
+  
+  // Detect language for legacy auth
+  let language = 'es'; // Default fallback
+  if (user) {
+    try {
+      const userLanguage = (user as any).preferredLanguage;
+      if (userLanguage) {
+        language = userLanguage;
+      } else if (partnerId) {
+        const db = await getDb();
+        if (db) {
+          const { partners } = await import('../../drizzle/partners-schema.js');
+          const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
+          if (partner?.defaultLanguage) {
+            language = partner.defaultLanguage;
+          }
+        }
+      }
+    } catch (error) {
+      console.log('[Context] Language detection failed for legacy auth, using default:', error);
+    }
+  }
+
   return {
     req: opts.req,
     res: opts.res,
     user,
+    partnerId,
+    language,
   };
 }

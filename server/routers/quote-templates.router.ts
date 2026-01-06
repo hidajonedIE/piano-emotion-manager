@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
+import { addPartnerToInsert } from "../utils/multi-tenant.js";
 
 export const quoteTemplatesRouter = router({
   list: protectedProcedure.query(({ ctx }) => db.getQuoteTemplates(ctx.user.openId)),
@@ -29,7 +30,7 @@ export const quoteTemplatesRouter = router({
       })).optional(),
       isDefault: z.boolean().optional(),
     }))
-    .mutation(({ ctx, input }) => db.createQuoteTemplate({ ...input, odId: ctx.user.openId })),
+    .mutation(({ ctx, input }) => db.createQuoteTemplate({ ...input, odId: ctx.user.openId, partnerId: ctx.partnerId })),
   
   update: protectedProcedure
     .input(z.object({

@@ -25,6 +25,9 @@ import {
   serviceRatesRouter,
   modulesRouter,
   invitationsRouter,
+  partnersRouter,
+  onboardingRouter,
+  languageRouter,
   advancedRouter,
   seedRouter,
   usageRouter,
@@ -61,6 +64,9 @@ export const appRouter = router({
   serviceRates: serviceRatesRouter,
   modules: modulesRouter,
   invitations: invitationsRouter,
+  partners: partnersRouter,
+  onboarding: onboardingRouter,
+  language: languageRouter,
   
   // Funcionalidades avanzadas
   advanced: advancedRouter,

@@ -1,10 +1,19 @@
 /**
  * Invoices Router
- * Gestión de facturas con validación mejorada y paginación
+ * Gestión de facturas con validación mejorada, paginación
+ * y soporte completo para organizaciones con sharing configurable
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
+import { invoices } from "../../drizzle/schema.js";
+import { eq, and, or, gte, lte, ilike, asc, desc, count, sql } from "drizzle-orm";
+import { 
+  filterByPartnerAndOrganization,
+  addOrganizationToInsert,
+  validateWritePermission
+} from "../utils/multi-tenant.js";
+import { withOrganizationContext } from "../middleware/organization-context.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -46,8 +55,8 @@ const businessInfoSchema = z.object({
  * Esquema de paginación para facturas
  */
 const paginationSchema = z.object({
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20),
+  limit: z.number().int().min(1).max(100).default(30),
+  cursor: z.number().optional(),
   sortBy: z.enum(["invoiceNumber", "date", "dueDate", "total", "status", "clientName"]).default("date"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   search: z.string().optional(),
@@ -71,9 +80,9 @@ const invoiceBaseSchema = z.object({
   dueDate: z.string().or(z.date()).optional().nullable(),
   status: invoiceStatusSchema.default("draft"),
   items: z.array(invoiceItemSchema).min(1, "Debe haber al menos una línea"),
-  subtotal: z.number().min(0), // Cambiado de string a number
-  taxAmount: z.number().min(0), // Cambiado de string a number
-  total: z.number().min(0), // Cambiado de string a number
+  subtotal: z.number().min(0),
+  taxAmount: z.number().min(0),
+  total: z.number().min(0),
   discount: z.number().min(0).default(0), // Descuento global
   discountType: z.enum(["percentage", "fixed"]).default("percentage"),
   notes: z.string().max(2000).optional().nullable(),
@@ -91,6 +100,75 @@ const invoiceBaseSchema = z.object({
 });
 
 // ============================================================================
+// UTILIDADES
+// ============================================================================
+
+/**
+ * Marca facturas como vencidas si la fecha de vencimiento ha pasado
+ */
+function markOverdueInvoices(invoicesList: any[]): any[] {
+  const now = new Date();
+  return invoicesList.map(inv => {
+    if (inv.status === 'sent' && inv.dueDate && new Date(inv.dueDate) < now) {
+      return { ...inv, status: 'overdue' as const };
+    }
+    return inv;
+  });
+}
+
+/**
+ * Calcula estadísticas de facturas
+ */
+function calculateInvoiceStats(invoicesList: any[]) {
+  const total = invoicesList.length;
+  const totalAmount = invoicesList.reduce((sum, inv) => {
+    const amount = typeof inv.total === 'string' ? parseFloat(inv.total) : inv.total;
+    return sum + (amount || 0);
+  }, 0);
+  
+  const paid = invoicesList.filter(inv => inv.status === 'paid').length;
+  const paidAmount = invoicesList
+    .filter(inv => inv.status === 'paid')
+    .reduce((sum, inv) => {
+      const amount = typeof inv.total === 'string' ? parseFloat(inv.total) : inv.total;
+      return sum + (amount || 0);
+    }, 0);
+  
+  const pending = invoicesList.filter(inv => inv.status === 'sent' || inv.status === 'overdue').length;
+  const pendingAmount = invoicesList
+    .filter(inv => inv.status === 'sent' || inv.status === 'overdue')
+    .reduce((sum, inv) => {
+      const amount = typeof inv.total === 'string' ? parseFloat(inv.total) : inv.total;
+      return sum + (amount || 0);
+    }, 0);
+  
+  const overdue = invoicesList.filter(inv => inv.status === 'overdue').length;
+  const overdueAmount = invoicesList
+    .filter(inv => inv.status === 'overdue')
+    .reduce((sum, inv) => {
+      const amount = typeof inv.total === 'string' ? parseFloat(inv.total) : inv.total;
+      return sum + (amount || 0);
+    }, 0);
+
+  return {
+    total,
+    totalAmount,
+    paid,
+    paidAmount,
+    pending,
+    pendingAmount,
+    overdue,
+    overdueAmount,
+  };
+}
+
+// ============================================================================
+// PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
+// ============================================================================
+
+const orgProcedure = protectedProcedure.use(withOrganizationContext);
+
+// ============================================================================
 // ROUTER
 // ============================================================================
 
@@ -98,326 +176,455 @@ export const invoicesRouter = router({
   /**
    * Lista de facturas con paginación y filtros
    */
-  list: protectedProcedure
+  list: orgProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
-      const pagination = input || { page: 1, limit: 20, sortBy: "date", sortOrder: "desc" };
+      const { 
+        limit = 30, 
+        cursor, 
+        sortBy = "date", 
+        sortOrder = "desc", 
+        search, 
+        status, 
+        clientId, 
+        dateFrom, 
+        dateTo 
+      } = input || {};
       
-      const allInvoices = await db.getInvoices(ctx.user.openId);
+      const database = await db.getDb();
+      if (!database) return { items: [], total: 0, stats: null };
+
+      // Construir condiciones WHERE con filtrado por organización
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          invoices,
+          ctx.partnerId,
+          ctx.orgContext,
+          "invoices"
+        )
+      ];
       
-      // Filtrar
-      let filtered = allInvoices;
-      
-      if (pagination.search) {
-        const searchLower = pagination.search.toLowerCase();
-        filtered = filtered.filter(inv => 
-          inv.invoiceNumber.toLowerCase().includes(searchLower) ||
-          inv.clientName.toLowerCase().includes(searchLower)
+      if (search) {
+        whereClauses.push(
+          or(
+            ilike(invoices.invoiceNumber, `%${search}%`),
+            ilike(invoices.clientName, `%${search}%`)
+          )!
         );
       }
       
-      if (pagination.status) {
-        filtered = filtered.filter(inv => inv.status === pagination.status);
+      if (status) {
+        whereClauses.push(eq(invoices.status, status));
       }
       
-      if (pagination.clientId) {
-        filtered = filtered.filter(inv => inv.clientId === pagination.clientId);
+      if (clientId) {
+        whereClauses.push(eq(invoices.clientId, clientId));
       }
       
-      if (pagination.dateFrom) {
-        const fromDate = new Date(pagination.dateFrom);
-        filtered = filtered.filter(inv => new Date(inv.date) >= fromDate);
+      if (dateFrom) {
+        whereClauses.push(gte(invoices.date, new Date(dateFrom)));
       }
       
-      if (pagination.dateTo) {
-        const toDate = new Date(pagination.dateTo);
-        filtered = filtered.filter(inv => new Date(inv.date) <= toDate);
+      if (dateTo) {
+        whereClauses.push(lte(invoices.date, new Date(dateTo)));
       }
-      
+
+      // Construir ORDER BY
+      const sortColumn = invoices[sortBy as keyof typeof invoices] || invoices.date;
+      const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+
+      // Consulta principal con paginación
+      const offset = cursor || 0;
+      let items = await database
+        .select()
+        .from(invoices)
+        .where(and(...whereClauses))
+        .orderBy(orderByClause)
+        .limit(limit)
+        .offset(offset);
+
       // Marcar facturas vencidas
-      const today = new Date();
-      filtered = filtered.map(inv => {
-        if (inv.status === "sent" && inv.dueDate && new Date(inv.dueDate) < today) {
-          return { ...inv, status: "overdue" as const };
-        }
-        return inv;
-      });
-      
-      // Ordenar
-      filtered.sort((a, b) => {
-        let aVal: string | number | Date = a[pagination.sortBy as keyof typeof a] ?? "";
-        let bVal: string | number | Date = b[pagination.sortBy as keyof typeof b] ?? "";
-        
-        // Convertir fechas para comparación
-        if (pagination.sortBy === "date" || pagination.sortBy === "dueDate") {
-          aVal = new Date(aVal as string).getTime();
-          bVal = new Date(bVal as string).getTime();
-        }
-        
-        if (typeof aVal === "number" && typeof bVal === "number") {
-          return pagination.sortOrder === "asc" ? aVal - bVal : bVal - aVal;
-        }
-        
-        const comparison = String(aVal).localeCompare(String(bVal));
-        return pagination.sortOrder === "asc" ? comparison : -comparison;
-      });
-      
-      // Paginar
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pagination.limit);
-      const offset = (pagination.page - 1) * pagination.limit;
-      const items = filtered.slice(offset, offset + pagination.limit);
-      
+      items = markOverdueInvoices(items);
+
+      // Contar total
+      const [{ total }] = await database
+        .select({ total: count() })
+        .from(invoices)
+        .where(and(...whereClauses));
+
       // Calcular estadísticas
-      const stats = {
-        totalInvoiced: allInvoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0),
-        totalPaid: allInvoices.filter(inv => inv.status === "paid").reduce((sum, inv) => sum + Number(inv.total || 0), 0),
-        totalPending: allInvoices.filter(inv => inv.status === "sent").reduce((sum, inv) => sum + Number(inv.total || 0), 0),
-        totalOverdue: allInvoices.filter(inv => inv.status === "sent" && inv.dueDate && new Date(inv.dueDate) < today).reduce((sum, inv) => sum + Number(inv.total || 0), 0),
-        count: {
-          total: allInvoices.length,
-          draft: allInvoices.filter(inv => inv.status === "draft").length,
-          sent: allInvoices.filter(inv => inv.status === "sent").length,
-          paid: allInvoices.filter(inv => inv.status === "paid").length,
-          cancelled: allInvoices.filter(inv => inv.status === "cancelled").length,
-        },
-      };
-      
-      return {
-        items,
-        pagination: {
-          page: pagination.page,
-          limit: pagination.limit,
-          total,
-          totalPages,
-          hasMore: pagination.page < totalPages,
-        },
-        stats,
-      };
+      const allInvoices = await database
+        .select()
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices"
+          )
+        );
+
+      const markedInvoices = markOverdueInvoices(allInvoices);
+      const stats = calculateInvoiceStats(markedInvoices);
+
+      let nextCursor: number | undefined = undefined;
+      if (items.length === limit) {
+        nextCursor = offset + limit;
+      }
+
+      return { items, nextCursor, total, stats };
     }),
+  
+  /**
+   * Lista completa sin paginación (para selects)
+   */
+  listAll: orgProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return [];
+    
+    const items = await database
+      .select()
+      .from(invoices)
+      .where(
+        filterByPartnerAndOrganization(
+          invoices,
+          ctx.partnerId,
+          ctx.orgContext,
+          "invoices"
+        )
+      )
+      .orderBy(desc(invoices.date));
+
+    return markOverdueInvoices(items);
+  }),
   
   /**
    * Obtener factura por ID
    */
-  get: protectedProcedure
+  get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getInvoice(ctx.user.openId, input.id)),
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      const [invoice] = await database
+        .select()
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices",
+            eq(invoices.id, input.id)
+          )
+        );
+
+      if (!invoice) throw new Error("Factura no encontrada");
+      
+      // Marcar como vencida si corresponde
+      const [markedInvoice] = markOverdueInvoices([invoice]);
+      return markedInvoice;
+    }),
+  
+  /**
+   * Obtener factura por número
+   */
+  getByNumber: orgProcedure
+    .input(z.object({ invoiceNumber: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      const [invoice] = await database
+        .select()
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices",
+            eq(invoices.invoiceNumber, input.invoiceNumber)
+          )
+        );
+
+      if (!invoice) return null;
+      
+      const [markedInvoice] = markOverdueInvoices([invoice]);
+      return markedInvoice;
+    }),
+  
+  /**
+   * Obtener facturas por cliente
+   */
+  getByClient: orgProcedure
+    .input(z.object({ clientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      const items = await database
+        .select()
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices",
+            eq(invoices.clientId, input.clientId)
+          )
+        )
+        .orderBy(desc(invoices.date));
+
+      return markOverdueInvoices(items);
+    }),
   
   /**
    * Crear nueva factura
    */
-  create: protectedProcedure
+  create: orgProcedure
     .input(invoiceBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      // Validar que los totales sean correctos
-      const calculatedSubtotal = input.items.reduce((sum, item) => {
-        const itemTotal = item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100);
-        return sum + itemTotal;
-      }, 0);
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Preparar datos con partnerId, odId y organizationId
+      const invoiceData = addOrganizationToInsert(
+        {
+          invoiceNumber: input.invoiceNumber,
+          clientId: input.clientId,
+          clientName: input.clientName,
+          clientEmail: input.clientEmail,
+          clientAddress: input.clientAddress,
+          date: new Date(input.date),
+          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+          status: input.status,
+          items: input.items,
+          subtotal: input.subtotal.toString(),
+          taxAmount: input.taxAmount.toString(),
+          total: input.total.toString(),
+          notes: input.notes,
+          businessInfo: input.businessInfo,
+        },
+        ctx.orgContext,
+        "invoices"
+      );
       
-      const calculatedTax = input.items.reduce((sum, item) => {
-        const itemTotal = item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100);
-        return sum + (itemTotal * item.taxRate / 100);
-      }, 0);
-      
-      // Aplicar descuento global
-      let finalSubtotal = calculatedSubtotal;
-      if (input.discount > 0) {
-        if (input.discountType === "percentage") {
-          finalSubtotal = calculatedSubtotal * (1 - input.discount / 100);
-        } else {
-          finalSubtotal = calculatedSubtotal - input.discount;
-        }
-      }
-      
-      // Calcular retención
-      const retentionAmount = finalSubtotal * (input.retentionRate || 0) / 100;
-      
-      const finalTotal = finalSubtotal + calculatedTax - retentionAmount;
-      
-      return db.createInvoice({
-        ...input,
-        subtotal: String(finalSubtotal.toFixed(2)),
-        taxAmount: String(calculatedTax.toFixed(2)),
-        total: String(finalTotal.toFixed(2)),
-        retentionAmount: retentionAmount,
-        date: new Date(input.date),
-        dueDate: input.dueDate ? new Date(input.dueDate) : null,
-        odId: ctx.user.openId,
-      });
+      const result = await database.insert(invoices).values(invoiceData);
+      return result[0].insertId;
     }),
   
   /**
-   * Actualizar factura existente
+   * Actualizar factura
    */
-  update: protectedProcedure
+  update: orgProcedure
     .input(z.object({
       id: z.number(),
     }).merge(invoiceBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const { id, date, dueDate, ...data } = input;
-      
-      // Recalcular totales si se actualizan los items
-      let updateData: Record<string, unknown> = { ...data };
-      
-      if (data.items) {
-        const calculatedSubtotal = data.items.reduce((sum, item) => {
-          const itemTotal = item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100);
-          return sum + itemTotal;
-        }, 0);
-        
-        const calculatedTax = data.items.reduce((sum, item) => {
-          const itemTotal = item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100);
-          return sum + (itemTotal * item.taxRate / 100);
-        }, 0);
-        
-        let finalSubtotal = calculatedSubtotal;
-        if (data.discount && data.discount > 0) {
-          if (data.discountType === "percentage") {
-            finalSubtotal = calculatedSubtotal * (1 - data.discount / 100);
-          } else {
-            finalSubtotal = calculatedSubtotal - data.discount;
-          }
-        }
-        
-        const retentionAmount = finalSubtotal * (data.retentionRate || 0) / 100;
-        const finalTotal = finalSubtotal + calculatedTax - retentionAmount;
-        
-        updateData.subtotal = String(finalSubtotal.toFixed(2));
-        updateData.taxAmount = String(calculatedTax.toFixed(2));
-        updateData.total = String(finalTotal.toFixed(2));
-        updateData.retentionAmount = retentionAmount;
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener la factura para verificar permisos
+      const [existingInvoice] = await database
+        .select()
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices",
+            eq(invoices.id, input.id)
+          )
+        );
+
+      if (!existingInvoice) {
+        throw new Error("Factura no encontrada");
       }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
+
+      const { id, ...data } = input;
       
-      if (date) {
-        updateData.date = new Date(date);
-      }
+      // Preparar datos para actualización
+      const updateData: any = {};
+      if (data.invoiceNumber !== undefined) updateData.invoiceNumber = data.invoiceNumber;
+      if (data.clientId !== undefined) updateData.clientId = data.clientId;
+      if (data.clientName !== undefined) updateData.clientName = data.clientName;
+      if (data.clientEmail !== undefined) updateData.clientEmail = data.clientEmail;
+      if (data.clientAddress !== undefined) updateData.clientAddress = data.clientAddress;
+      if (data.date !== undefined) updateData.date = new Date(data.date);
+      if (data.dueDate !== undefined) updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.items !== undefined) updateData.items = data.items;
+      if (data.subtotal !== undefined) updateData.subtotal = data.subtotal.toString();
+      if (data.taxAmount !== undefined) updateData.taxAmount = data.taxAmount.toString();
+      if (data.total !== undefined) updateData.total = data.total.toString();
+      if (data.notes !== undefined) updateData.notes = data.notes;
+      if (data.businessInfo !== undefined) updateData.businessInfo = data.businessInfo;
+
+      await database
+        .update(invoices)
+        .set(updateData)
+        .where(eq(invoices.id, id));
       
-      if (dueDate) {
-        updateData.dueDate = new Date(dueDate);
-      }
-      
-      return db.updateInvoice(ctx.user.openId, id, updateData);
+      return { success: true };
     }),
   
   /**
    * Eliminar factura
    */
-  delete: protectedProcedure
+  delete: orgProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => db.deleteInvoice(ctx.user.openId, input.id)),
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener la factura para verificar permisos
+      const [existingInvoice] = await database
+        .select()
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices",
+            eq(invoices.id, input.id)
+          )
+        );
+
+      if (!existingInvoice) {
+        throw new Error("Factura no encontrada");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
+
+      await database.delete(invoices).where(eq(invoices.id, input.id));
+      
+      return { success: true };
+    }),
   
   /**
    * Cambiar estado de factura
    */
-  updateStatus: protectedProcedure
+  updateStatus: orgProcedure
     .input(z.object({
       id: z.number(),
       status: invoiceStatusSchema,
     }))
-    .mutation(({ ctx, input }) => db.updateInvoice(ctx.user.openId, input.id, { status: input.status })),
-  
-  /**
-   * Duplicar factura
-   */
-  duplicate: protectedProcedure
-    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const original = await db.getInvoice(ctx.user.openId, input.id);
-      if (!original) {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener la factura para verificar permisos
+      const [existingInvoice] = await database
+        .select()
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices",
+            eq(invoices.id, input.id)
+          )
+        );
+
+      if (!existingInvoice) {
         throw new Error("Factura no encontrada");
       }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
+
+      await database
+        .update(invoices)
+        .set({ status: input.status })
+        .where(eq(invoices.id, input.id));
       
-      // Generar nuevo número de factura
-      const allInvoices = await db.getInvoices(ctx.user.openId);
-      const lastNumber = allInvoices
-        .map(inv => {
-          const match = inv.invoiceNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1]) : 0;
-        })
-        .reduce((max, num) => Math.max(max, num), 0);
-      
-      const newNumber = `${new Date().getFullYear()}-${String(lastNumber + 1).padStart(4, "0")}`;
-      
-      return db.createInvoice({
-        ...original,
-        id: undefined,
-        invoiceNumber: newNumber,
-        date: new Date(),
-        dueDate: null,
-        status: "draft",
-        odId: ctx.user.openId,
-      });
+      return { success: true };
     }),
   
   /**
-   * Obtener siguiente número de factura
+   * Obtener estadísticas de facturas
    */
-  getNextNumber: protectedProcedure.query(async ({ ctx }) => {
-    const allInvoices = await db.getInvoices(ctx.user.openId);
-    const year = new Date().getFullYear();
-    
-    const lastNumber = allInvoices
-      .filter(inv => inv.invoiceNumber.startsWith(String(year)))
+  getStats: orgProcedure
+    .input(z.object({
+      dateFrom: z.string().optional(),
+      dateTo: z.string().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return null;
+
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          invoices,
+          ctx.partnerId,
+          ctx.orgContext,
+          "invoices"
+        )
+      ];
+
+      if (input?.dateFrom) {
+        whereClauses.push(gte(invoices.date, new Date(input.dateFrom)));
+      }
+
+      if (input?.dateTo) {
+        whereClauses.push(lte(invoices.date, new Date(input.dateTo)));
+      }
+
+      const items = await database
+        .select()
+        .from(invoices)
+        .where(and(...whereClauses));
+
+      const markedInvoices = markOverdueInvoices(items);
+      return calculateInvoiceStats(markedInvoices);
+    }),
+  
+  /**
+   * Generar siguiente número de factura
+   */
+  getNextInvoiceNumber: orgProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return "INV-0001";
+
+    const allInvoices = await database
+      .select({ invoiceNumber: invoices.invoiceNumber })
+      .from(invoices)
+      .where(
+        filterByPartnerAndOrganization(
+          invoices,
+          ctx.partnerId,
+          ctx.orgContext,
+          "invoices"
+        )
+      )
+      .orderBy(desc(invoices.createdAt));
+
+    if (allInvoices.length === 0) {
+      return "INV-0001";
+    }
+
+    // Extraer el número más alto
+    const numbers = allInvoices
       .map(inv => {
         const match = inv.invoiceNumber.match(/(\d+)$/);
-        return match ? parseInt(match[1]) : 0;
+        return match ? parseInt(match[1], 10) : 0;
       })
-      .reduce((max, num) => Math.max(max, num), 0);
-    
-    return `${year}-${String(lastNumber + 1).padStart(4, "0")}`;
+      .filter(n => !isNaN(n));
+
+    const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
+    const nextNumber = maxNumber + 1;
+
+    return `INV-${String(nextNumber).padStart(4, '0')}`;
   }),
-  
-  /**
-   * Obtener estadísticas de facturación por período
-   */
-  getStats: protectedProcedure
-    .input(z.object({
-      period: z.enum(["month", "quarter", "year"]).default("month"),
-      year: z.number().optional(),
-      month: z.number().min(1).max(12).optional(),
-    }))
-    .query(async ({ ctx, input }) => {
-      const allInvoices = await db.getInvoices(ctx.user.openId);
-      const now = new Date();
-      const year = input.year || now.getFullYear();
-      const month = input.month || now.getMonth() + 1;
-      
-      let startDate: Date;
-      let endDate: Date;
-      
-      switch (input.period) {
-        case "month":
-          startDate = new Date(year, month - 1, 1);
-          endDate = new Date(year, month, 0);
-          break;
-        case "quarter":
-          const quarter = Math.ceil(month / 3);
-          startDate = new Date(year, (quarter - 1) * 3, 1);
-          endDate = new Date(year, quarter * 3, 0);
-          break;
-        case "year":
-          startDate = new Date(year, 0, 1);
-          endDate = new Date(year, 11, 31);
-          break;
-      }
-      
-      const periodInvoices = allInvoices.filter(inv => {
-        const invDate = new Date(inv.date);
-        return invDate >= startDate && invDate <= endDate;
-      });
-      
-      return {
-        period: input.period,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        totalInvoiced: periodInvoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0),
-        totalPaid: periodInvoices.filter(inv => inv.status === "paid").reduce((sum, inv) => sum + Number(inv.total || 0), 0),
-        totalPending: periodInvoices.filter(inv => inv.status === "sent").reduce((sum, inv) => sum + Number(inv.total || 0), 0),
-        invoiceCount: periodInvoices.length,
-        averageInvoice: periodInvoices.length > 0 
-          ? periodInvoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0) / periodInvoices.length 
-          : 0,
-      };
-    }),
 });

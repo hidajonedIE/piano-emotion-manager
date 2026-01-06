@@ -1,4 +1,5 @@
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json } from "drizzle-orm/mysql-core";
+import { partners } from "./partners-schema";
 
 /**
  * Core user table backing auth flow.
@@ -10,6 +11,10 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Idioma preferido del usuario (null = usar idioma del partner)
+  preferredLanguage: varchar("preferredLanguage", { length: 5 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -30,6 +35,10 @@ export type InsertUser = typeof users.$inferInsert;
 export const clients = mysqlTable("clients", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 50 }),
@@ -62,6 +71,10 @@ export type InsertClient = typeof clients.$inferInsert;
 export const pianos = mysqlTable("pianos", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   clientId: int("clientId").notNull(),
   brand: varchar("brand", { length: 100 }).notNull(),
   model: varchar("model", { length: 100 }),
@@ -86,6 +99,10 @@ export type InsertPiano = typeof pianos.$inferInsert;
 export const services = mysqlTable("services", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   pianoId: int("pianoId").notNull(),
   clientId: int("clientId").notNull(),
   serviceType: mysqlEnum("serviceType", [
@@ -124,6 +141,10 @@ export type InsertService = typeof services.$inferInsert;
 export const inventory = mysqlTable("inventory", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   category: mysqlEnum("category", [
     "strings",
@@ -157,6 +178,10 @@ export type InsertInventoryItem = typeof inventory.$inferInsert;
 export const appointments = mysqlTable("appointments", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   clientId: int("clientId").notNull(),
   pianoId: int("pianoId"),
   title: varchar("title", { length: 255 }).notNull(),
@@ -179,6 +204,10 @@ export type InsertAppointment = typeof appointments.$inferInsert;
 export const invoices = mysqlTable("invoices", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   invoiceNumber: varchar("invoiceNumber", { length: 50 }).notNull(),
   clientId: int("clientId").notNull(),
   clientName: varchar("clientName", { length: 255 }).notNull(),
@@ -215,6 +244,10 @@ export type InsertInvoice = typeof invoices.$inferInsert;
 export const serviceRates = mysqlTable("serviceRates", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   category: mysqlEnum("category", [
@@ -243,6 +276,8 @@ export type InsertServiceRate = typeof serviceRates.$inferInsert;
 export const businessInfo = mysqlTable("businessInfo", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull().unique(), // Owner user ID (one per user)
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   name: varchar("name", { length: 255 }).notNull(),
   taxId: varchar("taxId", { length: 50 }),
   address: text("address"),
@@ -264,6 +299,10 @@ export type InsertBusinessInfo = typeof businessInfo.$inferInsert;
 export const reminders = mysqlTable("reminders", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   clientId: int("clientId").notNull(),
   pianoId: int("pianoId"),
   reminderType: mysqlEnum("reminderType", ["call", "visit", "email", "whatsapp", "follow_up"]).notNull(),
@@ -286,6 +325,10 @@ export type InsertReminder = typeof reminders.$inferInsert;
 export const quotes = mysqlTable("quotes", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   quoteNumber: varchar("quoteNumber", { length: 50 }).notNull(),
   clientId: int("clientId").notNull(),
   clientName: varchar("clientName", { length: 255 }).notNull(),
@@ -344,6 +387,10 @@ export type InsertQuote = typeof quotes.$inferInsert;
 export const quoteTemplates = mysqlTable("quoteTemplates", {
   id: int("id").autoincrement().primaryKey(),
   odId: varchar("odId", { length: 64 }).notNull(), // Owner user ID
+  // Multi-tenant field
+  partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
+  // Organization field (nullable for individual technicians)
+  organizationId: int("organizationId"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   category: mysqlEnum("category", ["tuning", "repair", "restoration", "maintenance", "moving", "evaluation", "custom"]).default("custom").notNull(),
@@ -363,3 +410,9 @@ export const quoteTemplates = mysqlTable("quoteTemplates", {
 
 export type QuoteTemplate = typeof quoteTemplates.$inferSelect;
 export type InsertQuoteTemplate = typeof quoteTemplates.$inferInsert;
+
+// ============================================================================
+// Re-export Partner tables from partners-schema.ts
+// ============================================================================
+export { partners, partnerSettings, partnerPricing, partnerUsers } from "./partners-schema";
+export type { Partner, InsertPartner, PartnerSettings, InsertPartnerSettings, PartnerPricing, InsertPartnerPricing, PartnerUser, InsertPartnerUser } from "./partners-schema";

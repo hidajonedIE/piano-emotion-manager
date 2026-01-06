@@ -21,6 +21,9 @@ export { businessInfoRouter } from './business-info.router.js';
 export { serviceRatesRouter } from './service-rates.router.js';
 export { modulesRouter } from './modules.router.js';
 export { invitationsRouter } from './invitations.router.js';
+export { partnersRouter } from './partners.router.js';
+export { onboardingRouter } from './onboarding.router.js';
+export { languageRouter } from './language.router.js';
 
 // Routers avanzados
 export { advancedRouter } from './advanced.router.js';

@@ -29,7 +29,7 @@ export const aiGenerationRouter = router({
       const { usage, limit } = await requireAIFeature(ctx.user.openId, 'report');
 
       try {
-        // Generar informe con Gemini
+        // Generar informe con Gemini en el idioma del usuario
         const report = await generateServiceReport({
           pianoModel: input.pianoModel,
           pianoBrand: input.pianoBrand,
@@ -37,7 +37,7 @@ export const aiGenerationRouter = router({
           technicianNotes: input.technicianNotes,
           tasksCompleted: input.tasksCompleted,
           clientName: input.clientName,
-        });
+        }, ctx.language);
 
         // ✅ REGISTRAR USO (estimamos ~1500 tokens)
         await recordAIUsage(ctx.user.openId, 'report', 1500);
@@ -75,14 +75,14 @@ export const aiGenerationRouter = router({
       const { usage, limit } = await requireAIFeature(ctx.user.openId, 'email');
 
       try {
-        // Generar email con Gemini
+        // Generar email con Gemini en el idioma del usuario
         const email = await generateClientEmail({
           type: input.type,
           clientName: input.clientName,
           lastService: input.lastService,
           nextServiceDate: input.nextServiceDate,
           customContext: input.customContext,
-        });
+        }, ctx.language);
 
         // ✅ REGISTRAR USO (estimamos ~800 tokens)
         await recordAIUsage(ctx.user.openId, 'email', 800);

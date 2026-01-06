@@ -1,10 +1,19 @@
 /**
  * Quotes Router
- * Gestión de presupuestos con paginación, plantillas y conversión a factura mejorada
+ * Gestión de presupuestos con paginación, plantillas y conversión a factura
+ * Soporte completo para organizaciones con sharing configurable
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
+import { quotes, invoices } from "../../drizzle/schema.js";
+import { eq, and, or, gte, lte, ilike, asc, desc, count, sql } from "drizzle-orm";
+import { 
+  filterByPartnerAndOrganization,
+  addOrganizationToInsert,
+  validateWritePermission
+} from "../utils/multi-tenant.js";
+import { withOrganizationContext } from "../middleware/organization-context.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -72,8 +81,8 @@ const businessInfoSchema = z.object({
  * Esquema de paginación
  */
 const paginationSchema = z.object({
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20),
+  limit: z.number().int().min(1).max(100).default(30),
+  cursor: z.number().optional(),
   sortBy: z.enum(["quoteNumber", "date", "validUntil", "total", "status", "clientName"]).default("date"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   search: z.string().optional(),
@@ -259,6 +268,77 @@ const DEFAULT_TEMPLATES: z.infer<typeof quoteTemplateSchema>[] = [
 ];
 
 // ============================================================================
+// UTILIDADES
+// ============================================================================
+
+/**
+ * Marca presupuestos como expirados si la fecha de validez ha pasado
+ */
+function markExpiredQuotes(quotesList: any[]): any[] {
+  const now = new Date();
+  return quotesList.map(quote => {
+    if (quote.status === 'sent' && quote.validUntil && new Date(quote.validUntil) < now) {
+      return { ...quote, status: 'expired' as const };
+    }
+    return quote;
+  });
+}
+
+/**
+ * Calcula estadísticas de presupuestos
+ */
+function calculateQuoteStats(quotesList: any[]) {
+  const today = new Date();
+  const markedQuotes = markExpiredQuotes(quotesList);
+  
+  const total = markedQuotes.length;
+  const totalValue = markedQuotes.reduce((sum, q) => {
+    const amount = typeof q.total === 'string' ? parseFloat(q.total) : q.total;
+    return sum + (amount || 0);
+  }, 0);
+  
+  const acceptedOrConverted = markedQuotes.filter(q => q.status === 'accepted' || q.status === 'converted');
+  const acceptedValue = acceptedOrConverted.reduce((sum, q) => {
+    const amount = typeof q.total === 'string' ? parseFloat(q.total) : q.total;
+    return sum + (amount || 0);
+  }, 0);
+  
+  const conversionRate = total > 0 ? (acceptedOrConverted.length / total) * 100 : 0;
+  
+  const byStatus = {
+    draft: markedQuotes.filter(q => q.status === 'draft').length,
+    sent: markedQuotes.filter(q => q.status === 'sent').length,
+    accepted: markedQuotes.filter(q => q.status === 'accepted').length,
+    rejected: markedQuotes.filter(q => q.status === 'rejected').length,
+    expired: markedQuotes.filter(q => q.status === 'expired').length,
+    converted: markedQuotes.filter(q => q.status === 'converted').length,
+    negotiating: markedQuotes.filter(q => q.status === 'negotiating').length,
+  };
+  
+  const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const expiringSoon = quotesList.filter(q => {
+    if (q.status !== 'sent' || !q.validUntil) return false;
+    const validUntil = new Date(q.validUntil);
+    return validUntil > today && validUntil <= sevenDaysFromNow;
+  }).length;
+
+  return {
+    total,
+    totalValue,
+    acceptedValue,
+    conversionRate,
+    byStatus,
+    expiringSoon,
+  };
+}
+
+// ============================================================================
+// PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
+// ============================================================================
+
+const orgProcedure = protectedProcedure.use(withOrganizationContext);
+
+// ============================================================================
 // ROUTER
 // ============================================================================
 
@@ -266,220 +346,414 @@ export const quotesRouter = router({
   /**
    * Lista de presupuestos con paginación y filtros
    */
-  list: protectedProcedure
+  list: orgProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
-      const pagination = input || { page: 1, limit: 20, sortBy: "date", sortOrder: "desc" };
+      const { 
+        limit = 30, 
+        cursor, 
+        sortBy = "date", 
+        sortOrder = "desc", 
+        search, 
+        status, 
+        clientId, 
+        dateFrom, 
+        dateTo,
+        isExpired
+      } = input || {};
       
-      const allQuotes = await db.getQuotes(ctx.user.openId);
-      const today = new Date();
+      const database = await db.getDb();
+      if (!database) return { items: [], total: 0, stats: null };
+
+      // Construir condiciones WHERE con filtrado por organización
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          quotes,
+          ctx.partnerId,
+          ctx.orgContext,
+          "quotes"
+        )
+      ];
       
-      // Marcar presupuestos expirados
-      let filtered = allQuotes.map(quote => {
-        if (quote.status === "sent" && quote.validUntil && new Date(quote.validUntil) < today) {
-          return { ...quote, status: "expired" as const };
-        }
-        return quote;
-      });
-      
-      // Filtrar
-      if (pagination.search) {
-        const searchLower = pagination.search.toLowerCase();
-        filtered = filtered.filter(q => 
-          q.quoteNumber.toLowerCase().includes(searchLower) ||
-          q.clientName.toLowerCase().includes(searchLower) ||
-          q.title?.toLowerCase().includes(searchLower)
+      if (search) {
+        whereClauses.push(
+          or(
+            ilike(quotes.quoteNumber, `%${search}%`),
+            ilike(quotes.clientName, `%${search}%`),
+            ilike(quotes.title, `%${search}%`)
+          )!
         );
       }
       
-      if (pagination.status) {
-        filtered = filtered.filter(q => q.status === pagination.status);
+      if (status) {
+        whereClauses.push(eq(quotes.status, status));
       }
       
-      if (pagination.clientId) {
-        filtered = filtered.filter(q => q.clientId === pagination.clientId);
+      if (clientId) {
+        whereClauses.push(eq(quotes.clientId, clientId));
       }
       
-      if (pagination.dateFrom) {
-        const fromDate = new Date(pagination.dateFrom);
-        filtered = filtered.filter(q => new Date(q.date) >= fromDate);
+      if (dateFrom) {
+        whereClauses.push(gte(quotes.date, new Date(dateFrom)));
       }
       
-      if (pagination.dateTo) {
-        const toDate = new Date(pagination.dateTo);
-        filtered = filtered.filter(q => new Date(q.date) <= toDate);
+      if (dateTo) {
+        whereClauses.push(lte(quotes.date, new Date(dateTo)));
       }
-      
-      if (pagination.isExpired !== undefined) {
-        filtered = filtered.filter(q => {
-          const isExpired = q.validUntil && new Date(q.validUntil) < today;
-          return pagination.isExpired ? isExpired : !isExpired;
+
+      // Construir ORDER BY
+      const sortColumn = quotes[sortBy as keyof typeof quotes] || quotes.date;
+      const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+
+      // Consulta principal con paginación
+      const offset = cursor || 0;
+      let items = await database
+        .select()
+        .from(quotes)
+        .where(and(...whereClauses))
+        .orderBy(orderByClause)
+        .limit(limit)
+        .offset(offset);
+
+      // Marcar presupuestos expirados
+      items = markExpiredQuotes(items);
+
+      // Aplicar filtro de expirados si se especificó
+      if (isExpired !== undefined) {
+        const today = new Date();
+        items = items.filter(q => {
+          const expired = q.validUntil && new Date(q.validUntil) < today;
+          return isExpired ? expired : !expired;
         });
       }
-      
-      // Ordenar
-      filtered.sort((a, b) => {
-        let aVal: string | number | Date = a[pagination.sortBy as keyof typeof a] ?? "";
-        let bVal: string | number | Date = b[pagination.sortBy as keyof typeof b] ?? "";
-        
-        if (pagination.sortBy === "date" || pagination.sortBy === "validUntil") {
-          aVal = new Date(aVal as string).getTime();
-          bVal = new Date(bVal as string).getTime();
-        }
-        
-        if (typeof aVal === "number" && typeof bVal === "number") {
-          return pagination.sortOrder === "asc" ? aVal - bVal : bVal - aVal;
-        }
-        
-        const comparison = String(aVal).localeCompare(String(bVal));
-        return pagination.sortOrder === "asc" ? comparison : -comparison;
-      });
-      
-      // Paginar
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pagination.limit);
-      const offset = (pagination.page - 1) * pagination.limit;
-      const items = filtered.slice(offset, offset + pagination.limit);
-      
-      // Estadísticas
-      const stats = {
-        total: allQuotes.length,
-        totalValue: allQuotes.reduce((sum, q) => sum + Number(q.total || 0), 0),
-        acceptedValue: allQuotes.filter(q => q.status === "accepted" || q.status === "converted")
-          .reduce((sum, q) => sum + Number(q.total || 0), 0),
-        conversionRate: allQuotes.length > 0
-          ? (allQuotes.filter(q => q.status === "accepted" || q.status === "converted").length / allQuotes.length) * 100
-          : 0,
-        byStatus: {
-          draft: allQuotes.filter(q => q.status === "draft").length,
-          sent: allQuotes.filter(q => q.status === "sent").length,
-          accepted: allQuotes.filter(q => q.status === "accepted").length,
-          rejected: allQuotes.filter(q => q.status === "rejected").length,
-          expired: allQuotes.filter(q => q.status === "expired" || 
-            (q.status === "sent" && q.validUntil && new Date(q.validUntil) < today)).length,
-          converted: allQuotes.filter(q => q.status === "converted").length,
-        },
-        expiringSoon: allQuotes.filter(q => {
-          if (q.status !== "sent" || !q.validUntil) return false;
-          const validUntil = new Date(q.validUntil);
-          const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-          return validUntil > today && validUntil <= sevenDaysFromNow;
-        }).length,
-      };
-      
-      return {
-        items,
-        pagination: {
-          page: pagination.page,
-          limit: pagination.limit,
-          total,
-          totalPages,
-          hasMore: pagination.page < totalPages,
-        },
-        stats,
-      };
+
+      // Contar total
+      const [{ total }] = await database
+        .select({ total: count() })
+        .from(quotes)
+        .where(and(...whereClauses));
+
+      // Calcular estadísticas
+      const allQuotes = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes"
+          )
+        );
+
+      const stats = calculateQuoteStats(allQuotes);
+
+      let nextCursor: number | undefined = undefined;
+      if (items.length === limit) {
+        nextCursor = offset + limit;
+      }
+
+      return { items, nextCursor, total, stats };
     }),
+  
+  /**
+   * Lista completa sin paginación (para selects)
+   */
+  listAll: orgProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return [];
+    
+    const items = await database
+      .select()
+      .from(quotes)
+      .where(
+        filterByPartnerAndOrganization(
+          quotes,
+          ctx.partnerId,
+          ctx.orgContext,
+          "quotes"
+        )
+      )
+      .orderBy(desc(quotes.date));
+
+    return markExpiredQuotes(items);
+  }),
   
   /**
    * Obtener presupuesto por ID
    */
-  get: protectedProcedure
+  get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getQuote(ctx.user.openId, input.id)),
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      const [quote] = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            eq(quotes.id, input.id)
+          )
+        );
+
+      if (!quote) throw new Error("Presupuesto no encontrado");
+      
+      // Marcar como expirado si corresponde
+      const [markedQuote] = markExpiredQuotes([quote]);
+      return markedQuote;
+    }),
   
   /**
    * Obtener presupuestos de un cliente
    */
-  byClient: protectedProcedure
+  byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
-    .query(({ ctx, input }) => db.getQuotesByClient(ctx.user.openId, input.clientId)),
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      const items = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            eq(quotes.clientId, input.clientId)
+          )
+        )
+        .orderBy(desc(quotes.date));
+
+      return markExpiredQuotes(items);
+    }),
   
   /**
    * Obtener siguiente número de presupuesto
    */
-  getNextNumber: protectedProcedure.query(async ({ ctx }) => {
-    const quotes = await db.getQuotes(ctx.user.openId);
+  getNextNumber: orgProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return "PRES-2025-0001";
+
     const year = new Date().getFullYear();
     
-    const lastNumber = quotes
+    const allQuotes = await database
+      .select({ quoteNumber: quotes.quoteNumber })
+      .from(quotes)
+      .where(
+        filterByPartnerAndOrganization(
+          quotes,
+          ctx.partnerId,
+          ctx.orgContext,
+          "quotes"
+        )
+      )
+      .orderBy(desc(quotes.createdAt));
+
+    const lastNumber = allQuotes
       .filter(q => q.quoteNumber.startsWith(`PRES-${year}`))
       .map(q => {
         const match = q.quoteNumber.match(/(\d+)$/);
-        return match ? parseInt(match[1]) : 0;
+        return match ? parseInt(match[1], 10) : 0;
       })
       .reduce((max, num) => Math.max(max, num), 0);
-    
+
     return `PRES-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
   }),
   
   /**
    * Crear nuevo presupuesto
    */
-  create: protectedProcedure
+  create: orgProcedure
     .input(quoteBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      // Recalcular totales
-      const itemsTotal = input.items
-        .filter(item => !item.optional)
-        .reduce((sum, item) => sum + item.total, 0);
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Preparar datos con partnerId, odId y organizationId
+      const quoteData = addOrganizationToInsert(
+        {
+          quoteNumber: input.quoteNumber,
+          clientId: input.clientId,
+          clientName: input.clientName,
+          clientEmail: input.clientEmail,
+          clientAddress: input.clientAddress,
+          pianoId: input.pianoId,
+          pianoDescription: input.pianoDescription,
+          title: input.title,
+          description: input.description,
+          date: new Date(input.date),
+          validUntil: new Date(input.validUntil),
+          status: input.status,
+          items: input.items,
+          subtotal: input.subtotal.toString(),
+          totalDiscount: input.totalDiscount.toString(),
+          taxAmount: input.taxAmount.toString(),
+          total: input.total.toString(),
+          currency: input.currency,
+          notes: input.notes,
+          termsAndConditions: input.termsAndConditions,
+          businessInfo: input.businessInfo,
+        },
+        ctx.orgContext,
+        "quotes"
+      );
       
-      const optionalTotal = input.items
-        .filter(item => item.optional)
-        .reduce((sum, item) => sum + item.total, 0);
-      
-      return db.createQuote({
-        ...input,
-        subtotal: Number(input.subtotal),
-        taxAmount: Number(input.taxAmount),
-        total: Number(input.total),
-        date: new Date(input.date),
-        validUntil: new Date(input.validUntil),
-        odId: ctx.user.openId,
-      });
+      const result = await database.insert(quotes).values(quoteData);
+      return result[0].insertId;
     }),
   
   /**
    * Actualizar presupuesto existente
    */
-  update: protectedProcedure
+  update: orgProcedure
     .input(z.object({
       id: z.number(),
     }).merge(quoteBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const { id, date, validUntil, sentAt, viewedAt, acceptedAt, rejectedAt, ...data } = input;
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el presupuesto para verificar permisos
+      const [existingQuote] = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            eq(quotes.id, input.id)
+          )
+        );
+
+      if (!existingQuote) {
+        throw new Error("Presupuesto no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
+
+      const { id, ...data } = input;
       
-      const updateData: Record<string, unknown> = { ...data };
+      // Preparar datos para actualización
+      const updateData: any = {};
+      if (data.quoteNumber !== undefined) updateData.quoteNumber = data.quoteNumber;
+      if (data.clientId !== undefined) updateData.clientId = data.clientId;
+      if (data.clientName !== undefined) updateData.clientName = data.clientName;
+      if (data.clientEmail !== undefined) updateData.clientEmail = data.clientEmail;
+      if (data.clientAddress !== undefined) updateData.clientAddress = data.clientAddress;
+      if (data.pianoId !== undefined) updateData.pianoId = data.pianoId;
+      if (data.pianoDescription !== undefined) updateData.pianoDescription = data.pianoDescription;
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.date !== undefined) updateData.date = new Date(data.date);
+      if (data.validUntil !== undefined) updateData.validUntil = new Date(data.validUntil);
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.items !== undefined) updateData.items = data.items;
+      if (data.subtotal !== undefined) updateData.subtotal = data.subtotal.toString();
+      if (data.totalDiscount !== undefined) updateData.totalDiscount = data.totalDiscount.toString();
+      if (data.taxAmount !== undefined) updateData.taxAmount = data.taxAmount.toString();
+      if (data.total !== undefined) updateData.total = data.total.toString();
+      if (data.currency !== undefined) updateData.currency = data.currency;
+      if (data.notes !== undefined) updateData.notes = data.notes;
+      if (data.termsAndConditions !== undefined) updateData.termsAndConditions = data.termsAndConditions;
+      if (data.businessInfo !== undefined) updateData.businessInfo = data.businessInfo;
+      if (data.sentAt !== undefined) updateData.sentAt = data.sentAt ? new Date(data.sentAt) : null;
+      if (data.viewedAt !== undefined) updateData.viewedAt = data.viewedAt ? new Date(data.viewedAt) : null;
+      if (data.acceptedAt !== undefined) updateData.acceptedAt = data.acceptedAt ? new Date(data.acceptedAt) : null;
+      if (data.rejectedAt !== undefined) updateData.rejectedAt = data.rejectedAt ? new Date(data.rejectedAt) : null;
+      if (data.rejectionReason !== undefined) updateData.rejectionReason = data.rejectionReason;
+      if (data.convertedToInvoiceId !== undefined) updateData.convertedToInvoiceId = data.convertedToInvoiceId;
+
+      await database
+        .update(quotes)
+        .set(updateData)
+        .where(eq(quotes.id, id));
       
-      if (date) updateData.date = new Date(date);
-      if (validUntil) updateData.validUntil = new Date(validUntil);
-      if (sentAt) updateData.sentAt = new Date(sentAt);
-      if (viewedAt) updateData.viewedAt = new Date(viewedAt);
-      if (acceptedAt) updateData.acceptedAt = new Date(acceptedAt);
-      if (rejectedAt) updateData.rejectedAt = new Date(rejectedAt);
-      
-      return db.updateQuote(ctx.user.openId, id, updateData);
+      return { success: true };
     }),
   
   /**
    * Eliminar presupuesto
    */
-  delete: protectedProcedure
+  delete: orgProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => db.deleteQuote(ctx.user.openId, input.id)),
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el presupuesto para verificar permisos
+      const [existingQuote] = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            eq(quotes.id, input.id)
+          )
+        );
+
+      if (!existingQuote) {
+        throw new Error("Presupuesto no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
+
+      await database.delete(quotes).where(eq(quotes.id, input.id));
+      
+      return { success: true };
+    }),
   
   /**
    * Cambiar estado de presupuesto
    */
-  updateStatus: protectedProcedure
+  updateStatus: orgProcedure
     .input(z.object({
       id: z.number(),
       status: quoteStatusSchema,
       rejectionReason: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const updateData: Record<string, unknown> = { status: input.status };
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el presupuesto para verificar permisos
+      const [existingQuote] = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            eq(quotes.id, input.id)
+          )
+        );
+
+      if (!existingQuote) {
+        throw new Error("Presupuesto no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
+
+      const updateData: any = { status: input.status };
       const now = new Date();
       
+      // Actualizar timestamps según el estado
       switch (input.status) {
         case "sent":
           updateData.sentAt = now;
@@ -497,84 +771,130 @@ export const quotesRouter = router({
           }
           break;
       }
+
+      await database
+        .update(quotes)
+        .set(updateData)
+        .where(eq(quotes.id, input.id));
       
-      return db.updateQuote(ctx.user.openId, input.id, updateData);
+      return { success: true };
     }),
   
   /**
    * Convertir presupuesto a factura
    */
-  convertToInvoice: protectedProcedure
+  convertToInvoice: orgProcedure
     .input(z.object({
       id: z.number(),
       includeOptionalItems: z.boolean().default(false),
     }))
     .mutation(async ({ ctx, input }) => {
-      const quote = await db.getQuote(ctx.user.openId, input.id);
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el presupuesto
+      const [quote] = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            eq(quotes.id, input.id)
+          )
+        );
+
       if (!quote) {
         throw new Error("Presupuesto no encontrado");
       }
-      
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "quotes", quote.odId);
+
       if (quote.status === "converted") {
         throw new Error("Este presupuesto ya ha sido convertido a factura");
       }
-      
+
       // Filtrar items según opción
-      const items = (quote.items as z.infer<typeof quoteItemSchema>[])?.filter(item => 
+      const quoteItems = (quote.items as z.infer<typeof quoteItemSchema>[]) || [];
+      const items = quoteItems.filter(item => 
         !item.optional || input.includeOptionalItems
-      ) || [];
-      
+      );
+
       // Recalcular totales
       const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
       const taxAmount = items.reduce((sum, item) => sum + (item.subtotal * item.taxRate / 100), 0);
       const total = subtotal + taxAmount;
-      
+
       // Generar número de factura
-      const invoices = await db.getInvoices(ctx.user.openId);
+      const allInvoices = await database
+        .select({ invoiceNumber: invoices.invoiceNumber })
+        .from(invoices)
+        .where(
+          filterByPartnerAndOrganization(
+            invoices,
+            ctx.partnerId,
+            ctx.orgContext,
+            "invoices"
+          )
+        )
+        .orderBy(desc(invoices.createdAt));
+
       const year = new Date().getFullYear();
-      const lastNumber = invoices
-        .filter(inv => inv.invoiceNumber.startsWith(String(year)))
+      const lastNumber = allInvoices
+        .filter(inv => inv.invoiceNumber.startsWith(`INV-${year}`))
         .map(inv => {
           const match = inv.invoiceNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1]) : 0;
+          return match ? parseInt(match[1], 10) : 0;
         })
         .reduce((max, num) => Math.max(max, num), 0);
-      
-      const invoiceNumber = `${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-      
+
+      const invoiceNumber = `INV-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
+
+      // Preparar datos de factura
+      const invoiceData = addOrganizationToInsert(
+        {
+          invoiceNumber,
+          clientId: quote.clientId,
+          clientName: quote.clientName,
+          clientEmail: quote.clientEmail,
+          clientAddress: quote.clientAddress,
+          date: new Date(),
+          status: "draft",
+          items: items.map(item => ({
+            description: item.name + (item.description ? ` - ${item.description}` : ""),
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            taxRate: item.taxRate,
+            total: item.total,
+          })),
+          subtotal: subtotal.toString(),
+          taxAmount: taxAmount.toString(),
+          total: total.toString(),
+          notes: quote.notes,
+          businessInfo: quote.businessInfo,
+        },
+        ctx.orgContext,
+        "invoices"
+      );
+
       // Crear factura
-      const invoice = await db.createInvoice({
-        odId: ctx.user.openId,
-        invoiceNumber,
-        clientId: quote.clientId,
-        clientName: quote.clientName,
-        clientEmail: quote.clientEmail,
-        clientAddress: quote.clientAddress,
-        date: new Date(),
-        status: "draft",
-        items: items.map(item => ({
-          description: item.name + (item.description ? ` - ${item.description}` : ""),
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          taxRate: item.taxRate,
-          total: item.total,
-        })),
-        subtotal: String(subtotal.toFixed(2)),
-        taxAmount: String(taxAmount.toFixed(2)),
-        total: String(total.toFixed(2)),
-        notes: quote.notes,
-        businessInfo: quote.businessInfo,
-        quoteId: quote.id,
-      });
-      
+      const invoiceResult = await database.insert(invoices).values(invoiceData);
+      const invoiceId = invoiceResult[0].insertId;
+
       // Actualizar presupuesto
-      await db.updateQuote(ctx.user.openId, input.id, {
-        status: "converted",
-        convertedToInvoiceId: invoice.id || invoice,
-      });
-      
+      await database
+        .update(quotes)
+        .set({
+          status: "converted",
+          convertedToInvoiceId: invoiceId,
+        })
+        .where(eq(quotes.id, input.id));
+
       return {
-        invoiceId: invoice.id || invoice,
+        invoiceId,
         invoiceNumber,
       };
     }),
@@ -582,60 +902,105 @@ export const quotesRouter = router({
   /**
    * Duplicar presupuesto
    */
-  duplicate: protectedProcedure
+  duplicate: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const original = await db.getQuote(ctx.user.openId, input.id);
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el presupuesto original
+      const [original] = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            eq(quotes.id, input.id)
+          )
+        );
+
       if (!original) {
         throw new Error("Presupuesto no encontrado");
       }
-      
+
       // Generar nuevo número
-      const quotes = await db.getQuotes(ctx.user.openId);
       const year = new Date().getFullYear();
-      const lastNumber = quotes
+      const allQuotes = await database
+        .select({ quoteNumber: quotes.quoteNumber })
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes"
+          )
+        )
+        .orderBy(desc(quotes.createdAt));
+
+      const lastNumber = allQuotes
         .filter(q => q.quoteNumber.startsWith(`PRES-${year}`))
         .map(q => {
           const match = q.quoteNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1]) : 0;
+          return match ? parseInt(match[1], 10) : 0;
         })
         .reduce((max, num) => Math.max(max, num), 0);
-      
+
       const newNumber = `PRES-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-      
-      // Calcular nueva fecha de validez
+
+      // Calcular nueva fecha de validez (30 días desde hoy)
       const validUntil = new Date();
       validUntil.setDate(validUntil.getDate() + 30);
-      
-      return db.createQuote({
-        ...original,
-        id: undefined,
-        quoteNumber: newNumber,
-        date: new Date(),
-        validUntil,
-        status: "draft",
-        sentAt: null,
-        viewedAt: null,
-        acceptedAt: null,
-        rejectedAt: null,
-        convertedToInvoiceId: null,
-        odId: ctx.user.openId,
-      });
+
+      // Preparar datos del nuevo presupuesto
+      const newQuoteData = addOrganizationToInsert(
+        {
+          quoteNumber: newNumber,
+          clientId: original.clientId,
+          clientName: original.clientName,
+          clientEmail: original.clientEmail,
+          clientAddress: original.clientAddress,
+          pianoId: original.pianoId,
+          pianoDescription: original.pianoDescription,
+          title: original.title,
+          description: original.description,
+          date: new Date(),
+          validUntil,
+          status: "draft",
+          items: original.items,
+          subtotal: original.subtotal,
+          totalDiscount: original.totalDiscount,
+          taxAmount: original.taxAmount,
+          total: original.total,
+          currency: original.currency,
+          notes: original.notes,
+          termsAndConditions: original.termsAndConditions,
+          businessInfo: original.businessInfo,
+        },
+        ctx.orgContext,
+        "quotes"
+      );
+
+      const result = await database.insert(quotes).values(newQuoteData);
+      return result[0].insertId;
     }),
   
   /**
    * Obtener plantillas de presupuesto
    */
-  getTemplates: protectedProcedure.query(async ({ ctx }) => {
+  getTemplates: orgProcedure.query(async ({ ctx }) => {
     // Por ahora devolver plantillas predefinidas
-    // TODO: Permitir plantillas personalizadas por usuario
+    // TODO: Permitir plantillas personalizadas por usuario/organización
     return DEFAULT_TEMPLATES;
   }),
   
   /**
    * Crear presupuesto desde plantilla
    */
-  createFromTemplate: protectedProcedure
+  createFromTemplate: orgProcedure
     .input(z.object({
       templateId: z.string(),
       clientId: z.number(),
@@ -646,73 +1011,149 @@ export const quotesRouter = router({
       pianoDescription: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
       const template = DEFAULT_TEMPLATES.find(t => t.id === input.templateId);
       if (!template) {
         throw new Error("Plantilla no encontrada");
       }
-      
+
       // Generar número
-      const quotes = await db.getQuotes(ctx.user.openId);
       const year = new Date().getFullYear();
-      const lastNumber = quotes
+      const allQuotes = await database
+        .select({ quoteNumber: quotes.quoteNumber })
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes"
+          )
+        )
+        .orderBy(desc(quotes.createdAt));
+
+      const lastNumber = allQuotes
         .filter(q => q.quoteNumber.startsWith(`PRES-${year}`))
         .map(q => {
           const match = q.quoteNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1]) : 0;
+          return match ? parseInt(match[1], 10) : 0;
         })
         .reduce((max, num) => Math.max(max, num), 0);
-      
+
       const quoteNumber = `PRES-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-      
+
       // Calcular totales
       const subtotal = template.items.reduce((sum, item) => sum + item.subtotal, 0);
       const taxAmount = template.items.reduce((sum, item) => sum + (item.subtotal * item.taxRate / 100), 0);
       const total = subtotal + taxAmount;
-      
+
       // Calcular fecha de validez
       const validUntil = new Date();
       validUntil.setDate(validUntil.getDate() + template.validityDays);
-      
-      return db.createQuote({
-        odId: ctx.user.openId,
-        quoteNumber,
-        clientId: input.clientId,
-        clientName: input.clientName,
-        clientEmail: input.clientEmail,
-        clientAddress: input.clientAddress,
-        pianoId: input.pianoId,
-        pianoDescription: input.pianoDescription,
-        title: template.title,
-        date: new Date(),
-        validUntil,
-        status: "draft",
-        items: template.items,
-        subtotal: String(subtotal.toFixed(2)),
-        taxAmount: String(taxAmount.toFixed(2)),
-        total: String(total.toFixed(2)),
-        notes: template.notes,
-        termsAndConditions: template.termsAndConditions,
-        templateId: template.id,
-      });
+
+      // Preparar datos del presupuesto
+      const quoteData = addOrganizationToInsert(
+        {
+          quoteNumber,
+          clientId: input.clientId,
+          clientName: input.clientName,
+          clientEmail: input.clientEmail,
+          clientAddress: input.clientAddress,
+          pianoId: input.pianoId,
+          pianoDescription: input.pianoDescription,
+          title: template.title,
+          date: new Date(),
+          validUntil,
+          status: "draft",
+          items: template.items,
+          subtotal: subtotal.toString(),
+          totalDiscount: "0",
+          taxAmount: taxAmount.toString(),
+          total: total.toString(),
+          currency: "EUR",
+          notes: template.notes,
+          termsAndConditions: template.termsAndConditions,
+        },
+        ctx.orgContext,
+        "quotes"
+      );
+
+      const result = await database.insert(quotes).values(quoteData);
+      return result[0].insertId;
     }),
   
   /**
    * Obtener presupuestos que expiran pronto
    */
-  getExpiringSoon: protectedProcedure
+  getExpiringSoon: orgProcedure
     .input(z.object({
       daysAhead: z.number().int().min(1).max(30).default(7),
     }).optional())
     .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
       const daysAhead = input?.daysAhead || 7;
-      const quotes = await db.getQuotes(ctx.user.openId);
       const today = new Date();
       const cutoff = new Date(today.getTime() + daysAhead * 24 * 60 * 60 * 1000);
-      
-      return quotes.filter(q => {
-        if (q.status !== "sent" || !q.validUntil) return false;
-        const validUntil = new Date(q.validUntil);
-        return validUntil > today && validUntil <= cutoff;
-      }).sort((a, b) => new Date(a.validUntil!).getTime() - new Date(b.validUntil!).getTime());
+
+      const items = await database
+        .select()
+        .from(quotes)
+        .where(
+          filterByPartnerAndOrganization(
+            quotes,
+            ctx.partnerId,
+            ctx.orgContext,
+            "quotes",
+            and(
+              eq(quotes.status, "sent"),
+              gte(quotes.validUntil, today),
+              lte(quotes.validUntil, cutoff)
+            )
+          )
+        )
+        .orderBy(asc(quotes.validUntil));
+
+      return items;
+    }),
+  
+  /**
+   * Obtener estadísticas de presupuestos
+   */
+  getStats: orgProcedure
+    .input(z.object({
+      dateFrom: z.string().optional(),
+      dateTo: z.string().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return null;
+
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          quotes,
+          ctx.partnerId,
+          ctx.orgContext,
+          "quotes"
+        )
+      ];
+
+      if (input?.dateFrom) {
+        whereClauses.push(gte(quotes.date, new Date(input.dateFrom)));
+      }
+
+      if (input?.dateTo) {
+        whereClauses.push(lte(quotes.date, new Date(input.dateTo)));
+      }
+
+      const items = await database
+        .select()
+        .from(quotes)
+        .where(and(...whereClauses));
+
+      return calculateQuoteStats(items);
     }),
 });

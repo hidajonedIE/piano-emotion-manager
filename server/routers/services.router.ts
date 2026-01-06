@@ -1,12 +1,21 @@
 /**
  * Services Router (OPTIMIZED)
  * Gestión de servicios con paginación en DB, eager loading
+ * y soporte para organizaciones con sharing configurable
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { services, clients, pianos } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count, sql, ilike } from "drizzle-orm";
+import { 
+  filterByPartner, 
+  filterByPartnerAnd,
+  filterByPartnerAndOrganization,
+  addOrganizationToInsert,
+  validateWritePermission
+} from "../utils/multi-tenant.js";
+import { withOrganizationContext } from "../middleware/organization-context.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -97,18 +106,32 @@ const paginationSchema = z.object({
 });
 
 // ============================================================================
+// PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
+// ============================================================================
+
+const orgProcedure = protectedProcedure.use(withOrganizationContext);
+
+// ============================================================================
 // ROUTER
 // ============================================================================
 
 export const servicesRouter = router({
-  list: protectedProcedure
+  list: orgProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "date", sortOrder = "desc", search, serviceType, status, clientId, pianoId, dateFrom, dateTo } = input || {};
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      const whereClauses = [eq(services.odId, ctx.user.openId)];
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          services,
+          ctx.partnerId,
+          ctx.orgContext,
+          "services"
+        )
+      ];
+      
       if (search) {
         whereClauses.push(or(ilike(services.notes, `%${search}%`), ilike(services.technicianNotes, `%${search}%`))!);
       }
@@ -142,6 +165,7 @@ export const servicesRouter = router({
           clientSignature: services.clientSignature,
           humidity: services.humidity,
           temperature: services.temperature,
+          status: services.status,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt,
           clientName: clients.name,
@@ -168,7 +192,14 @@ export const servicesRouter = router({
       const [{ totalRevenue }] = await database
         .select({ totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
         .from(services)
-        .where(eq(services.odId, ctx.user.openId));
+        .where(
+          filterByPartnerAndOrganization(
+            services,
+            ctx.partnerId,
+            ctx.orgContext,
+            "services"
+          )
+        );
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {
@@ -178,7 +209,7 @@ export const servicesRouter = router({
       return { items, nextCursor, total, stats: { total, totalRevenue: Number(totalRevenue) || 0 } };
     }),
   
-  get: protectedProcedure
+  get: orgProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       const database = await db.getDb();
@@ -201,8 +232,12 @@ export const servicesRouter = router({
           photosBefore: services.photosBefore,
           photosAfter: services.photosAfter,
           clientSignature: services.clientSignature,
+          technicianSignature: services.technicianSignature,
           humidity: services.humidity,
           temperature: services.temperature,
+          status: services.status,
+          invoiceId: services.invoiceId,
+          appointmentId: services.appointmentId,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt,
           clientName: clients.name,
@@ -217,8 +252,192 @@ export const servicesRouter = router({
         .from(services)
         .leftJoin(clients, eq(services.clientId, clients.id))
         .leftJoin(pianos, eq(services.pianoId, pianos.id))
-        .where(and(eq(services.odId, ctx.user.openId), eq(services.id, input.id)));
+        .where(
+          filterByPartnerAndOrganization(
+            services,
+            ctx.partnerId,
+            ctx.orgContext,
+            "services",
+            eq(services.id, input.id)
+          )
+        );
 
       return result;
+    }),
+
+  byPiano: orgProcedure
+    .input(z.object({ pianoId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      return database
+        .select()
+        .from(services)
+        .where(
+          filterByPartnerAndOrganization(
+            services,
+            ctx.partnerId,
+            ctx.orgContext,
+            "services",
+            eq(services.pianoId, input.pianoId)
+          )
+        )
+        .orderBy(desc(services.date));
+    }),
+
+  byClient: orgProcedure
+    .input(z.object({ clientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      return database
+        .select()
+        .from(services)
+        .where(
+          filterByPartnerAndOrganization(
+            services,
+            ctx.partnerId,
+            ctx.orgContext,
+            "services",
+            eq(services.clientId, input.clientId)
+          )
+        )
+        .orderBy(desc(services.date));
+    }),
+
+  create: orgProcedure
+    .input(serviceBaseSchema)
+    .mutation(async ({ ctx, input }) => {
+      const serviceData = addOrganizationToInsert(
+        input,
+        ctx.orgContext,
+        "services"
+      );
+      
+      return db.createService(serviceData);
+    }),
+
+  update: orgProcedure
+    .input(z.object({
+      id: z.number(),
+    }).merge(serviceBaseSchema.partial()))
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el servicio para verificar permisos
+      const [existingService] = await database
+        .select()
+        .from(services)
+        .where(
+          filterByPartnerAndOrganization(
+            services,
+            ctx.partnerId,
+            ctx.orgContext,
+            "services",
+            eq(services.id, input.id)
+          )
+        );
+
+      if (!existingService) {
+        throw new Error("Servicio no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "services", existingService.odId);
+
+      const { id, ...data } = input;
+      return db.updateService(existingService.odId, id, data);
+    }),
+
+  delete: orgProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Obtener el servicio para verificar permisos
+      const [existingService] = await database
+        .select()
+        .from(services)
+        .where(
+          filterByPartnerAndOrganization(
+            services,
+            ctx.partnerId,
+            ctx.orgContext,
+            "services",
+            eq(services.id, input.id)
+          )
+        );
+
+      if (!existingService) {
+        throw new Error("Servicio no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "services", existingService.odId);
+
+      return db.deleteService(existingService.odId, input.id);
+    }),
+
+  getStats: orgProcedure
+    .input(z.object({
+      dateFrom: z.string().optional(),
+      dateTo: z.string().optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return { total: 0, totalRevenue: 0, byType: [], byStatus: [] };
+
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          services,
+          ctx.partnerId,
+          ctx.orgContext,
+          "services"
+        )
+      ];
+
+      if (input?.dateFrom) whereClauses.push(gte(services.date, new Date(input.dateFrom)));
+      if (input?.dateTo) whereClauses.push(lte(services.date, new Date(input.dateTo)));
+
+      const [{ total, totalRevenue }] = await database
+        .select({
+          total: count(),
+          totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)`,
+        })
+        .from(services)
+        .where(and(...whereClauses));
+
+      const byType = await database
+        .select({
+          serviceType: services.serviceType,
+          count: count(),
+          totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)`,
+        })
+        .from(services)
+        .where(and(...whereClauses))
+        .groupBy(services.serviceType);
+
+      const byStatus = await database
+        .select({
+          status: services.status,
+          count: count(),
+        })
+        .from(services)
+        .where(and(...whereClauses))
+        .groupBy(services.status);
+
+      return {
+        total,
+        totalRevenue: Number(totalRevenue) || 0,
+        byType: byType.map(t => ({
+          ...t,
+          totalRevenue: Number(t.totalRevenue) || 0,
+        })),
+        byStatus,
+      };
     }),
 });

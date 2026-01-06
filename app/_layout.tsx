@@ -25,6 +25,7 @@ import { DistributorProvider } from "@/contexts/distributor-context";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 import { AuthGuard } from "@/components/auth-guard";
+import { OnboardingGuard } from "@/components/onboarding-guard";
 import { ClerkProvider } from "@/components/clerk-provider";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -127,6 +128,7 @@ export default function RootLayout() {
                   <LanguageProvider>
                     <SnackbarProvider>
                     <AuthGuard>
+                    <OnboardingGuard>
                     <Stack>
                       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                       <Stack.Screen name="(app)" options={{ headerShown: false }} />
@@ -134,6 +136,7 @@ export default function RootLayout() {
                       <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
                       <Stack.Screen name="login" options={{ headerShown: false }} />
                       <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+                      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
                       <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
                       <Stack.Screen name="portal" options={{ title: 'Portal del Cliente', headerShown: false }} />
                       <Stack.Screen name="quote" options={{ title: 'Presupuesto', headerShown: false }} />
@@ -160,7 +163,9 @@ export default function RootLayout() {
                       <Stack.Screen name="predictions" options={{ title: 'Predicciones', headerShown: false }} />
                       <Stack.Screen name="service-catalog" options={{ title: 'Catálogo de Servicios', headerShown: false }} />
                       <Stack.Screen name="service-categories" options={{ title: 'Categorías de Servicios', headerShown: false }} />
+                      <Stack.Screen name="admin" options={{ title: 'Administración', headerShown: false }} />
                     </Stack>
+                    </OnboardingGuard>
                     </AuthGuard>
                     <StatusBar style="auto" />
                     <AIAssistant />

@@ -55,16 +55,36 @@ export function useI18n() {
 
   const loadSavedLanguage = async () => {
     try {
-      const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+      // Try to load from backend first (if user is authenticated)
+      let languageFromBackend: SupportedLanguage | null = null;
+      try {
+        const { trpc } = await import('@/utils/trpc');
+        const result = await trpc.language.getUserLanguage.query();
+        languageFromBackend = result.language as SupportedLanguage;
+      } catch (backendError) {
+        // User not authenticated or backend error - continue with local storage
+        console.log('[i18n] Could not load language from backend:', backendError);
+      }
       
-      if (savedLanguage && supportedLanguages.some(lang => lang.code === savedLanguage)) {
-        setCurrentLanguage(savedLanguage as SupportedLanguage);
+      // Priority: Backend > Local Storage > Device > Default
+      if (languageFromBackend && supportedLanguages.some(lang => lang.code === languageFromBackend)) {
+        setCurrentLanguage(languageFromBackend);
+        // Sync to local storage
+        await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, languageFromBackend);
       } else {
-        // Use device language if no saved preference
-        const deviceLang = getDeviceLanguage();
-        setCurrentLanguage(deviceLang);
+        // Fallback to local storage
+        const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+        
+        if (savedLanguage && supportedLanguages.some(lang => lang.code === savedLanguage)) {
+          setCurrentLanguage(savedLanguage as SupportedLanguage);
+        } else {
+          // Use device language if no saved preference
+          const deviceLang = getDeviceLanguage();
+          setCurrentLanguage(deviceLang);
+        }
       }
     } catch (error) {
+      console.error('[i18n] Error loading language:', error);
       setCurrentLanguage(getDeviceLanguage());
     } finally {
       setIsLoading(false);
@@ -73,10 +93,22 @@ export function useI18n() {
 
   const changeLanguage = useCallback(async (language: SupportedLanguage) => {
     try {
+      // Save locally first for immediate UI update
       await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
       setCurrentLanguage(language);
       i18n.locale = language;
+      
+      // Try to save to backend if user is authenticated
+      try {
+        const { trpc } = await import('@/utils/trpc');
+        await trpc.language.updateUserLanguage.mutate({ language });
+      } catch (backendError) {
+        // Backend save failed, but local save succeeded
+        // This is acceptable - language will sync next time user logs in
+        console.log('[i18n] Could not sync language to backend:', backendError);
+      }
     } catch (error) {
+      console.error('[i18n] Error changing language:', error);
     }
   }, []);
 

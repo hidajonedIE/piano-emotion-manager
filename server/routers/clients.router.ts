@@ -1,12 +1,21 @@
 /**
  * Clients Router
- * Gestión de clientes con validación mejorada y paginación optimizada
+ * Gestión de clientes con validación mejorada, paginación optimizada
+ * y soporte para organizaciones con sharing configurable
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { clients } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
+import { 
+  filterByPartner, 
+  filterByPartnerAnd, 
+  filterByPartnerAndOrganization,
+  addOrganizationToInsert,
+  validateWritePermission
+} from "../utils/multi-tenant.js";
+import { withOrganizationContext } from "../middleware/organization-context.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -69,11 +78,17 @@ const clientBaseSchema = z.object({
 });
 
 // ============================================================================
+// PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
+// ============================================================================
+
+const orgProcedure = protectedProcedure.use(withOrganizationContext);
+
+// ============================================================================
 // ROUTER
 // ============================================================================
 
 export const clientsRouter = router({
-  list: protectedProcedure
+  list: orgProcedure
      .input(
         z.object({
           limit: z.number().min(1).max(100).default(30),
@@ -90,7 +105,15 @@ export const clientsRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      const whereClauses = [eq(clients.odId, ctx.user.openId)];
+      // Filtrar por partner y organización (respetando sharing settings)
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          clients,
+          ctx.partnerId,
+          ctx.orgContext,
+          "clients"
+        )
+      ];
       
       if (search) {
         whereClauses.push(
@@ -131,9 +154,24 @@ export const clientsRouter = router({
       return { items, nextCursor, total };
     }),
   
-  listAll: protectedProcedure.query(({ ctx }) => db.getClients(ctx.user.openId)),
+  listAll: orgProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return [];
+    
+    return database
+      .select()
+      .from(clients)
+      .where(
+        filterByPartnerAndOrganization(
+          clients,
+          ctx.partnerId,
+          ctx.orgContext,
+          "clients"
+        )
+      );
+  }),
   
-  getById: protectedProcedure
+  getById: orgProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       const database = await db.getDb();
@@ -142,13 +180,21 @@ export const clientsRouter = router({
       const [client] = await database
         .select()
         .from(clients)
-        .where(and(eq(clients.id, input.id), eq(clients.odId, ctx.user.openId)));
+        .where(
+          filterByPartnerAndOrganization(
+            clients,
+            ctx.partnerId,
+            ctx.orgContext,
+            "clients",
+            eq(clients.id, input.id)
+          )
+        );
 
       if (!client) throw new Error("Cliente no encontrado");
       return client;
     }),
   
-  create: protectedProcedure
+  create: orgProcedure
     .input(clientBaseSchema)
     .mutation(async ({ ctx, input }) => {
       let address = input.address;
@@ -169,20 +215,51 @@ export const clientsRouter = router({
         address = parts.join(", ");
       }
       
-      return db.createClient({
-        ...input,
-        address,
-        odId: ctx.user.openId,
-      });
+      // Añadir partnerId, odId y organizationId según sharing settings
+      const clientData = addOrganizationToInsert(
+        {
+          ...input,
+          address,
+        },
+        ctx.orgContext,
+        "clients"
+      );
+      
+      return db.createClient(clientData);
     }),
   
-  update: protectedProcedure
+  update: orgProcedure
     .input(z.object({
       id: z.number(),
     }).merge(clientBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Primero obtener el cliente para verificar permisos
+      const [existingClient] = await database
+        .select()
+        .from(clients)
+        .where(
+          filterByPartnerAndOrganization(
+            clients,
+            ctx.partnerId,
+            ctx.orgContext,
+            "clients",
+            eq(clients.id, input.id)
+          )
+        );
+
+      if (!existingClient) {
+        throw new Error("Cliente no encontrado");
+      }
+
+      // Validar permisos de escritura
+      validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
+
       const { id, addressStructured, ...data } = input;
       let updateData = { ...data };
+      
       if (addressStructured && !data.address) {
         const addr = addressStructured;
         const parts = [];
@@ -200,40 +277,86 @@ export const clientsRouter = router({
         updateData.address = parts.join(", ");
       }
       
-      return db.updateClient(ctx.user.openId, id, updateData);
+      // Actualizar usando el odId del cliente original (no del usuario actual)
+      return db.updateClient(existingClient.odId, id, updateData);
     }),
   
-  delete: protectedProcedure
+  delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      return db.deleteClient(ctx.user.openId, input.id);
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Primero obtener el cliente para verificar permisos
+      const [existingClient] = await database
+        .select()
+        .from(clients)
+        .where(
+          filterByPartnerAndOrganization(
+            clients,
+            ctx.partnerId,
+            ctx.orgContext,
+            "clients",
+            eq(clients.id, input.id)
+          )
+        );
+
+      if (!existingClient) {
+        throw new Error("Cliente no encontrado");
+      }
+
+      // Validar permisos de escritura (delete requiere los mismos permisos que write)
+      validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
+
+      // Eliminar usando el odId del cliente original
+      return db.deleteClient(existingClient.odId, input.id);
     }),
   
-  getRegions: protectedProcedure.query(async ({ ctx }) => {
+  getRegions: orgProcedure.query(async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return [];
 
     const regionsQuery = await database
       .selectDistinct({ region: clients.region })
       .from(clients)
-      .where(and(eq(clients.odId, ctx.user.openId), isNotNull(clients.region)));
+      .where(
+        and(
+          filterByPartnerAndOrganization(
+            clients,
+            ctx.partnerId,
+            ctx.orgContext,
+            "clients"
+          ),
+          isNotNull(clients.region)
+        )
+      );
     
     return regionsQuery.map(r => r.region!).sort();
   }),
   
-  getRouteGroups: protectedProcedure.query(async ({ ctx }) => {
+  getRouteGroups: orgProcedure.query(async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return [];
 
     const groupsQuery = await database
       .selectDistinct({ routeGroup: clients.routeGroup })
       .from(clients)
-      .where(and(eq(clients.odId, ctx.user.openId), isNotNull(clients.routeGroup)));
+      .where(
+        and(
+          filterByPartnerAndOrganization(
+            clients,
+            ctx.partnerId,
+            ctx.orgContext,
+            "clients"
+          ),
+          isNotNull(clients.routeGroup)
+        )
+      );
     
     return groupsQuery.map(g => g.routeGroup!).sort();
   }),
   
-  findDuplicates: protectedProcedure
+  findDuplicates: orgProcedure
     .input(z.object({
       name: z.string().optional(),
       email: z.string().email().optional(),
@@ -243,7 +366,15 @@ export const clientsRouter = router({
       const database = await db.getDb();
       if (!database) return [];
 
-      const whereClauses = [eq(clients.odId, ctx.user.openId)];
+      const whereClauses = [
+        filterByPartnerAndOrganization(
+          clients,
+          ctx.partnerId,
+          ctx.orgContext,
+          "clients"
+        )
+      ];
+      
       if (input.excludeId) whereClauses.push(sql`${clients.id} != ${input.excludeId}`);
       if (input.email) whereClauses.push(ilike(clients.email, input.email));
       if (input.name) whereClauses.push(ilike(clients.name, `%${input.name}%`));
