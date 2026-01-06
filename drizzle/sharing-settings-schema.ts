@@ -13,7 +13,7 @@ import {
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/mysql-core";
-import { organizations } from "./team-schema";
+import { organizations } from "./schema";
 
 // ==========================================
 // ENUMS
