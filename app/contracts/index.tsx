@@ -8,7 +8,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -255,39 +255,41 @@ export default function ContractsScreen() {
   };
 
   const renderFilters = () => (
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false}
-      style={styles.filtersContainer}
-      contentContainerStyle={styles.filtersContent}
-    >
-      {[
-        { id: 'all', name: 'Todos' },
-        { id: 'active', name: 'Activos' },
-        { id: 'pending', name: 'Pendientes' },
-        { id: 'expired', name: 'Expirados' },
-      ].map(f => (
-        <TouchableOpacity
-          key={f.id}
-          style={[
-            styles.filterChip,
-            { 
-              backgroundColor: filter === f.id ? colors.primary : cardBg,
-              borderColor: filter === f.id ? colors.primary : border,
-              borderRadius: 8
-            }
-          ]}
-          onPress={() => setFilter(f.id)}
-        >
-          <ThemedText style={[
-            styles.filterChipText,
-            { color: filter === f.id ? '#fff' : textSecondary }
-          ]}>
-            {f.name}
-          </ThemedText>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+    <View style={{ alignItems: 'center' }}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.filtersContainer}
+        contentContainerStyle={styles.filtersContent}
+      >
+        {[
+          { id: 'all', name: 'Todos' },
+          { id: 'active', name: 'Activos' },
+          { id: 'pending', name: 'Pendientes' },
+          { id: 'expired', name: 'Expirados' },
+        ].map(f => (
+          <TouchableOpacity
+            key={f.id}
+            style={[
+              styles.filterChip,
+              { 
+                backgroundColor: filter === f.id ? colors.primary : cardBg,
+                borderColor: filter === f.id ? colors.primary : border,
+                borderRadius: 8
+              }
+            ]}
+            onPress={() => setFilter(f.id)}
+          >
+            <ThemedText style={[
+              styles.filterChipText,
+              { color: filter === f.id ? '#fff' : textSecondary }
+            ]}>
+              {f.name}
+            </ThemedText>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
   );
 
   const renderContractCard = (contract: Contract) => {
@@ -446,7 +448,9 @@ export default function ContractsScreen() {
   };
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: background }]}>
+    <>
+      <Stack.Screen options={{ title: 'Contratos' }} />
+      <ThemedView style={[styles.container, { backgroundColor: background }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -560,6 +564,7 @@ export default function ContractsScreen() {
         </ThemedView>
       </Modal>
     </ThemedView>
+    </>
   );
 }
 
