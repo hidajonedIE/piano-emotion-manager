@@ -19,15 +19,13 @@ export function DashboardAlerts({ urgentCount, pendingCount }: DashboardAlertsPr
   const error = useThemeColor({}, 'error');
   const warning = useThemeColor({}, 'warning');
 
-  // No mostrar nada si no hay alertas
-  if (urgentCount === 0 && pendingCount === 0) {
-    return null;
-  }
-
+  // Determinar si hay alertas
+  const hasAlerts = urgentCount > 0 || pendingCount > 0;
+  
   // Determinar el color principal basado en si hay urgentes
   const hasUrgent = urgentCount > 0;
-  const primaryColor = hasUrgent ? error : warning;
-  const bgColor = hasUrgent ? '#FEE2E2' : '#FEF3C7';
+  const primaryColor = hasAlerts ? (hasUrgent ? error : warning) : '#10B981';
+  const bgColor = hasAlerts ? (hasUrgent ? '#FEE2E2' : '#FEF3C7') : '#D1FAE5';
 
   return (
     <Pressable
@@ -35,11 +33,20 @@ export function DashboardAlerts({ urgentCount, pendingCount }: DashboardAlertsPr
       onPress={() => router.push('/(tabs)/pianos')}
     >
       <IconSymbol 
-        name={hasUrgent ? "exclamationmark.triangle.fill" : "clock.fill"} 
+        name={hasAlerts ? (hasUrgent ? "exclamationmark.triangle.fill" : "clock.fill") : "checkmark.circle.fill"} 
         size={22} 
         color={primaryColor} 
       />
       <View style={styles.alertContent}>
+        {/* Mostrar mensaje cuando no hay alertas */}
+        {!hasAlerts && (
+          <View style={styles.alertRow}>
+            <View style={[styles.alertDot, { backgroundColor: primaryColor }]} />
+            <ThemedText style={[styles.alertText, { color: primaryColor }]}>
+              No hay alertas
+            </ThemedText>
+          </View>
+        )}
         {/* Mostrar alertas urgentes */}
         {urgentCount > 0 && (
           <View style={styles.alertRow}>

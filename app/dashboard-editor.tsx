@@ -1,577 +1,431 @@
+/**
+ * Dashboard Editor (Dashboard+)
+ * Piano Emotion Manager
+ * 
+ * Configurador visual para personalizar el dashboard:
+ * - Mostrar/ocultar secciones del dashboard
+ * - Configurar qué módulos aparecen en Accesos Rápidos
+ * 
+ * Funcionalidad premium disponible solo para usuarios Pro y Premium.
+ */
+
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-  Dimensions,
-} from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useTheme } from '@/hooks/use-theme';
-import { useTranslation } from '@/hooks/use-translation';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { useUserTier } from '@/hooks/use-user-tier';
-import { useDashboardEditorConfig } from '@/hooks/use-dashboard-editor-config';
-import { WidgetRenderer } from '@/components/dashboard-editor/widget-renderer';
-import { DashboardEditorTutorial } from '@/components/dashboard-editor/dashboard-editor-tutorial';
+import { 
+  useDashboardPreferences, 
+  type DashboardSectionId,
+  type AccessShortcutModule 
+} from '@/hooks/use-dashboard-preferences';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// Iconos para cada sección del dashboard
+const SECTION_ICONS: Record<DashboardSectionId, keyof typeof Ionicons.glyphMap> = {
+  alerts: 'notifications',
+  quick_actions: 'flash',
+  predictions: 'trending-up',
+  stats: 'stats-chart',
+  recent_services: 'construct',
+  access_shortcuts: 'apps',
+  advanced_tools: 'settings',
+  help: 'help-circle',
+  store: 'storefront',
+};
 
-type WidgetType = 
-  // Secciones principales
-  | 'alerts' | 'quick_actions' | 'predictions' | 'stats' | 'recent_services' 
-  | 'access_shortcuts' | 'advanced_tools' | 'help'
-  // Widgets de estadísticas
-  | 'stats_card' | 'revenue_summary' | 'payment_status'
-  // Widgets de gráficos
-  | 'chart_line' | 'chart_bar' | 'chart_pie' | 'chart_area'
-  // Widgets de listas
-  | 'recent_clients' | 'recent_invoices' | 'upcoming_appointments' | 'inventory_alerts'
-  // Widgets de utilidades
-  | 'calendar' | 'tasks' | 'map' | 'shortcuts';
+// Colores para cada sección
+const SECTION_COLORS: Record<DashboardSectionId, string> = {
+  alerts: '#EF4444',
+  quick_actions: '#10B981',
+  predictions: '#8B5CF6',
+  stats: '#3B82F6',
+  recent_services: '#F59E0B',
+  access_shortcuts: '#06B6D4',
+  advanced_tools: '#6366F1',
+  help: '#EC4899',
+  store: '#14B8A6',
+};
 
-type WidgetSize = 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
+// Información de módulos de accesos rápidos
+const SHORTCUT_INFO: Record<AccessShortcutModule, { label: string; icon: keyof typeof Ionicons.glyphMap; color: string }> = {
+  clients: { label: 'Clientes', icon: 'people', color: '#3B82F6' },
+  pianos: { label: 'Pianos', icon: 'musical-notes', color: '#8B5CF6' },
+  suppliers: { label: 'Proveedores', icon: 'business', color: '#F97316' },
+  dashboard: { label: 'Panel Control', icon: 'pie-chart', color: '#2D5A27' },
+  inventory: { label: 'Inventario', icon: 'cube', color: '#F59E0B' },
+  stats: { label: 'Estadísticas', icon: 'bar-chart', color: '#10B981' },
+  analytics: { label: 'Analíticas', icon: 'analytics', color: '#0EA5E9' },
+  quotes: { label: 'Presupuestos', icon: 'document-text', color: '#9333EA' },
+  invoices: { label: 'Facturas', icon: 'receipt', color: '#3B82F6' },
+  billing_summary: { label: 'Resumen Fact.', icon: 'cash', color: '#059669' },
+  rates: { label: 'Tarifas', icon: 'pricetag', color: '#EC4899' },
+  service_catalog: { label: 'Catálogo Serv.', icon: 'list', color: '#7C3AED' },
+  clients_map: { label: 'Mapa Clientes', icon: 'map', color: '#DC2626' },
+  business: { label: 'Datos Fiscales', icon: 'briefcase', color: '#6B7280' },
+  reminders: { label: 'Recordatorios', icon: 'alarm', color: '#F59E0B' },
+  contracts: { label: 'Contratos', icon: 'document', color: '#059669' },
+  predictions: { label: 'Predicciones IA', icon: 'bulb', color: '#8B5CF6' },
+  import: { label: 'Importar', icon: 'download', color: '#22C55E' },
+  routes: { label: 'Rutas', icon: 'navigate', color: '#F97316' },
+  modules: { label: 'Módulos y Plan', icon: 'grid', color: '#8B5CF6' },
+  settings: { label: 'Configuración', icon: 'settings', color: '#64748B' },
+};
 
-interface Widget {
-  id: string;
-  type: WidgetType;
-  title: string;
-  size: WidgetSize;
-  positionX: number;
-  positionY: number;
-  config: Record<string, any>;
-}
-
-interface Layout {
-  id: string;
-  name: string;
-  widgets: Widget[];
-  columns: number;
-}
-
-// Catálogo de widgets organizado por categorías
-const WIDGET_CATALOG = [
-  // Secciones principales del dashboard
-  { type: 'alerts', name: 'Alertas', icon: 'notifications', color: '#EF4444', category: 'main' },
-  { type: 'quick_actions', name: 'Acciones Rápidas', icon: 'flash', color: '#F59E0B', category: 'main' },
-  { type: 'predictions', name: 'Predicciones IA', icon: 'bulb', color: '#8B5CF6', category: 'main' },
-  { type: 'stats', name: 'Este Mes', icon: 'calendar', color: '#10B981', category: 'main' },
-  { type: 'recent_services', name: 'Servicios Recientes', icon: 'construct', color: '#14B8A6', category: 'main' },
-  { type: 'access_shortcuts', name: 'Accesos Rápidos', icon: 'apps', color: '#3B82F6', category: 'main' },
-  { type: 'advanced_tools', name: 'Herramientas Avanzadas', icon: 'build', color: '#EC4899', category: 'main' },
-  { type: 'help', name: 'Ayuda', icon: 'help-circle', color: '#06B6D4', category: 'main' },
-  
-  // Widgets de estadísticas
-  { type: 'stats_card', name: 'Tarjeta estadística', icon: 'stats-chart', color: '#3B82F6', category: 'stats' },
-  { type: 'revenue_summary', name: 'Resumen ingresos', icon: 'cash', color: '#22C55E', category: 'stats' },
-  { type: 'payment_status', name: 'Estado pagos', icon: 'wallet', color: '#10B981', category: 'stats' },
-  
-  // Widgets de gráficos
-  { type: 'chart_line', name: 'Gráfico líneas', icon: 'trending-up', color: '#10B981', category: 'charts' },
-  { type: 'chart_bar', name: 'Gráfico barras', icon: 'bar-chart', color: '#8B5CF6', category: 'charts' },
-  { type: 'chart_pie', name: 'Gráfico circular', icon: 'pie-chart', color: '#F59E0B', category: 'charts' },
-  
-  // Widgets de listas y datos
-  { type: 'recent_clients', name: 'Clientes recientes', icon: 'people', color: '#EC4899', category: 'lists' },
-  { type: 'recent_invoices', name: 'Facturas recientes', icon: 'document-text', color: '#6366F1', category: 'lists' },
-  { type: 'upcoming_appointments', name: 'Próximas citas', icon: 'time', color: '#F97316', category: 'lists' },
-  { type: 'inventory_alerts', name: 'Alertas inventario', icon: 'alert-circle', color: '#EF4444', category: 'lists' },
-  
-  // Widgets de utilidades
-  { type: 'calendar', name: 'Calendario', icon: 'calendar', color: '#EF4444', category: 'utils' },
-  { type: 'tasks', name: 'Tareas', icon: 'checkbox', color: '#06B6D4', category: 'utils' },
-  { type: 'map', name: 'Mapa clientes', icon: 'map', color: '#0EA5E9', category: 'utils' },
-  { type: 'shortcuts', name: 'Atajos personalizados', icon: 'link', color: '#A855F7', category: 'utils' },
-];
-
-// Plantillas predefinidas
-const TEMPLATES = [
-  { id: 'basic', name: 'Básico', description: 'Dashboard simple con métricas esenciales', icon: 'grid-outline' },
-  { id: 'financial', name: 'Financiero', description: 'Enfocado en ingresos y facturación', icon: 'cash-outline' },
-  { id: 'operations', name: 'Operaciones', description: 'Gestión diaria de servicios', icon: 'construct-outline' },
-  { id: 'team', name: 'Equipo', description: 'Para gestores con equipo', icon: 'people-outline', premium: true },
-];
+const TUTORIAL_SEEN_KEY = '@dashboard_editor_tutorial_seen';
 
 export default function DashboardEditorScreen() {
-  const router = useRouter();
-  const { colors } = useTheme();
-  const { t } = useTranslation();
-  const { tier, isLoading: isTierLoading } = useUserTier();
-  
-  // Hook de configuración persistente
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const { tier, isLoading: tierLoading } = useUserTier();
   const {
-    currentLayout,
-    isLoading: isConfigLoading,
-    isSaving,
-    addWidget: addWidgetToConfig,
-    removeWidget: removeWidgetFromConfig,
-    updateWidget: updateWidgetInConfig,
-    updateCurrentLayout,
-  } = useDashboardEditorConfig();
+    allSections,
+    allShortcuts,
+    toggleSectionVisibility,
+    toggleShortcutVisibility,
+    resetToDefaults,
+    isLoading: prefsLoading,
+  } = useDashboardPreferences();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [showWidgetPicker, setShowWidgetPicker] = useState(false);
-  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [showLayoutSettings, setShowLayoutSettings] = useState(false);
-  const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
+  const [activeTab, setActiveTab] = useState<'sections' | 'shortcuts'>('sections');
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Verificar si es la primera vez que el usuario accede al Dashboard Editor
+  // Verificar si el usuario es Pro o Premium
+  const isProOrPremium = tier === 'pro' || tier === 'premium';
+
+  // Cargar estado del tutorial
   useEffect(() => {
-    const checkFirstTime = async () => {
+    const checkTutorial = async () => {
       try {
-        const hasSeenTutorial = await AsyncStorage.getItem('@dashboard_editor_tutorial_seen');
-        if (!hasSeenTutorial && !isTierLoading && (tier === 'pro' || tier === 'premium')) {
+        const seen = await AsyncStorage.getItem(TUTORIAL_SEEN_KEY);
+        if (!seen && isProOrPremium) {
           setShowTutorial(true);
         }
       } catch (error) {
         console.error('Error checking tutorial status:', error);
       }
     };
-    checkFirstTime();
-  }, [isTierLoading, tier]);
+    checkTutorial();
+  }, [isProOrPremium]);
 
-  const handleCloseTutorial = async () => {
+  // Cerrar tutorial
+  const closeTutorial = async () => {
     try {
-      await AsyncStorage.setItem('@dashboard_editor_tutorial_seen', 'true');
+      await AsyncStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
       setShowTutorial(false);
     } catch (error) {
       console.error('Error saving tutorial status:', error);
-      setShowTutorial(false);
     }
   };
 
-  const handleOpenTutorial = () => {
-    setShowTutorial(true);
-  };
-
-  // Usar el layout desde la configuración persistente
-  const layout = currentLayout;
-
-  const textPrimary = colors.text;
-  const textSecondary = colors.textSecondary;
-  const background = colors.background;
-  const cardBg = colors.card;
-  const border = colors.border;
-
-  const getWidgetWidth = (size: WidgetSize): number => {
-    const colWidth = (SCREEN_WIDTH - 48) / layout.columns;
-    switch (size) {
-      case 'small': return colWidth - 8;
-      case 'medium': return colWidth * 2 - 8;
-      case 'large': return colWidth * 2 - 8;
-      case 'wide': return colWidth * 3 - 8;
-      case 'tall': return colWidth - 8;
-      case 'full': return colWidth * 3 - 8;
-      default: return colWidth - 8;
+  // Manejar cambio de visibilidad de sección
+  const handleToggleSectionVisibility = (sectionId: DashboardSectionId) => {
+    // No permitir ocultar la tienda
+    if (sectionId === 'store') {
+      Alert.alert(
+        'Sección fija',
+        'La sección de Tienda siempre permanece visible y no puede ser ocultada.',
+        [{ text: 'Entendido' }]
+      );
+      return;
     }
+
+    toggleSectionVisibility(sectionId);
   };
 
-  const getWidgetHeight = (size: WidgetSize): number => {
-    switch (size) {
-      case 'small': return 100;
-      case 'medium': return 100;
-      case 'large': return 200;
-      case 'wide': return 100;
-      case 'tall': return 200;
-      case 'full': return 200;
-      default: return 100;
-    }
-  };
-
-  const addWidget = async (type: WidgetType) => {
-    const catalogItem = WIDGET_CATALOG.find(w => w.type === type);
-    const newWidget: Widget = {
-      id: Date.now().toString(),
-      type,
-      title: catalogItem?.name || 'Nuevo widget',
-      size: 'small',
-      positionX: 0,
-      positionY: layout.widgets.length,
-      config: {},
-    };
-    
-    const success = await addWidgetToConfig(newWidget);
-    if (success) {
-      setShowWidgetPicker(false);
-    } else {
-      Alert.alert('Error', 'No se pudo añadir el widget');
-    }
-  };
-
-  const removeWidget = (widgetId: string) => {
+  // Restaurar configuración por defecto
+  const handleReset = () => {
     Alert.alert(
-      'Eliminar widget',
-      '¿Estás seguro de que quieres eliminar este widget?',
+      'Restaurar configuración',
+      '¿Estás seguro de que quieres restaurar la configuración por defecto? Se mostrarán todas las secciones y módulos.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
+        { 
+          text: 'Restaurar', 
           style: 'destructive',
-          onPress: async () => {
-            const success = await removeWidgetFromConfig(widgetId);
-            if (!success) {
-              Alert.alert('Error', 'No se pudo eliminar el widget');
-            }
-          },
+          onPress: resetToDefaults 
         },
       ]
     );
   };
 
-  const applyTemplate = (templateId: string) => {
-    // Aplicar plantilla predefinida
-    Alert.alert(
-      'Aplicar plantilla',
-      'Esto reemplazará tu configuración actual. ¿Continuar?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Aplicar',
-          onPress: () => {
-            // Aquí se aplicaría la plantilla desde el backend
-            setShowTemplatePicker(false);
-            Alert.alert('Éxito', 'Plantilla aplicada correctamente');
-          },
-        },
-      ]
-    );
-  };
-
-  const renderWidget = (widget: Widget) => {
-    const catalogItem = WIDGET_CATALOG.find(w => w.type === widget.type);
-    const width = getWidgetWidth(widget.size);
-    const height = getWidgetHeight(widget.size);
-
+  // Pantalla de carga
+  if (tierLoading || prefsLoading) {
     return (
-      <View
-        key={widget.id}
-        style={[
-          styles.widget,
-          {
-            width,
-            height,
-            borderColor: isEditing ? colors.primary : border,
-            borderWidth: isEditing ? 2 : 1,
-            overflow: 'hidden',
-          },
-        ]}
-      >
-        {isEditing && (
-          <TouchableOpacity
-            style={[styles.removeButton, { backgroundColor: '#EF4444' }]}
-            onPress={() => removeWidget(widget.id)}
-          >
-            <Ionicons name="close" size={16} color="#fff" />
-          </TouchableOpacity>
-        )}
-
-        {/* Renderizar el widget funcional */}
-        <WidgetRenderer 
-          type={widget.type}
-          config={widget.config}
-          isEditing={isEditing}
-          size={widget.size}
-        />
-
-        {isEditing && (
-          <View style={styles.resizeHandle}>
-            <Ionicons name="resize" size={16} color={textSecondary} />
-          </View>
-        )}
-      </View>
+      <ThemedView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.text }]}>Cargando...</Text>
+        </View>
+      </ThemedView>
     );
-  };
-
-  const renderWidgetPicker = () => (
-    <Modal visible={showWidgetPicker} animationType="slide" transparent>
-      <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { backgroundColor: background }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: border }]}>
-            <ThemedText style={[styles.modalTitle, { color: textPrimary }]}>
-              Añadir Widget
-            </ThemedText>
-            <TouchableOpacity onPress={() => setShowWidgetPicker(false)}>
-              <Ionicons name="close" size={24} color={textPrimary} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.widgetList}>
-            <View style={styles.widgetGrid}>
-              {WIDGET_CATALOG.map((item) => (
-                <TouchableOpacity
-                  key={item.type}
-                  style={[styles.widgetOption, { backgroundColor: cardBg, borderColor: border }]}
-                  onPress={() => addWidget(item.type as WidgetType)}
-                >
-                  <View style={[styles.widgetOptionIcon, { backgroundColor: `${item.color}20` }]}>
-                    <Ionicons name={item.icon as any} size={28} color={item.color} />
-                  </View>
-                  <ThemedText style={[styles.widgetOptionName, { color: textPrimary }]}>
-                    {item.name}
-                  </ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
-  );
-
-  const renderTemplatePicker = () => (
-    <Modal visible={showTemplatePicker} animationType="slide" transparent>
-      <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { backgroundColor: background }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: border }]}>
-            <ThemedText style={[styles.modalTitle, { color: textPrimary }]}>
-              Elegir Plantilla
-            </ThemedText>
-            <TouchableOpacity onPress={() => setShowTemplatePicker(false)}>
-              <Ionicons name="close" size={24} color={textPrimary} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.templateList}>
-            {TEMPLATES.map((template) => (
-              <TouchableOpacity
-                key={template.id}
-                style={[styles.templateOption, { backgroundColor: cardBg, borderColor: border }]}
-                onPress={() => applyTemplate(template.id)}
-              >
-                <View style={[styles.templateIcon, { backgroundColor: `${colors.primary}20` }]}>
-                  <Ionicons name={template.icon as any} size={32} color={colors.primary} />
-                </View>
-                <View style={styles.templateInfo}>
-                  <View style={styles.templateNameRow}>
-                    <ThemedText style={[styles.templateName, { color: textPrimary }]}>
-                      {template.name}
-                    </ThemedText>
-                    {template.premium && (
-                      <View style={[styles.premiumBadge, { backgroundColor: '#F59E0B' }]}>
-                        <ThemedText style={styles.premiumText}>PRO</ThemedText>
-                      </View>
-                    )}
-                  </View>
-                  <ThemedText style={[styles.templateDescription, { color: textSecondary }]}>
-                    {template.description}
-                  </ThemedText>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={textSecondary} />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
-  );
-
-  // Verificar si el usuario tiene acceso (Pro o Premium)
-  const hasAccess = tier === 'pro' || tier === 'premium';
+  }
 
   // Pantalla de upgrade para usuarios gratuitos
-  if (!isTierLoading && !hasAccess) {
+  if (!isProOrPremium) {
     return (
-      <ThemedView style={[styles.container, { backgroundColor: background }]}>
-        {/* Header */}
-        <View style={[styles.header, { borderBottomColor: border }]}>
+      <ThemedView style={styles.container}>
+        <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={textPrimary} />
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <ThemedText type="title" style={{ color: textPrimary }}>
-            Dashboard+
-          </ThemedText>
-          <View style={{ width: 40 }} />
+          <ThemedText style={styles.headerTitle}>Dashboard Editor</ThemedText>
         </View>
 
-        {/* Contenido de upgrade */}
-        <ScrollView 
-          style={styles.content} 
-          contentContainerStyle={styles.upgradeContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={[styles.upgradeCard, { backgroundColor: cardBg }]}>
-            {/* Icono premium */}
-            <View style={[styles.premiumIconContainer, { backgroundColor: `${colors.primary}15` }]}>
-              <Ionicons name="diamond" size={48} color={colors.primary} />
-            </View>
-
-            {/* Título */}
-            <ThemedText style={[styles.upgradeTitle, { color: textPrimary }]}>
-              Dashboard+ es una funcionalidad Pro
-            </ThemedText>
-
-            {/* Descripción */}
-            <ThemedText style={[styles.upgradeDescription, { color: textSecondary }]}>
-              Personaliza completamente tu dashboard con widgets arrastrables, accesos rápidos configurables y mucho más.
-            </ThemedText>
-
-            {/* Características */}
-            <View style={styles.featuresList}>
-              <View style={styles.featureItem}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
-                  Widgets personalizables
-                </ThemedText>
-              </View>
-              <View style={styles.featureItem}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
-                  Accesos rápidos configurables
-                </ThemedText>
-              </View>
-              <View style={styles.featureItem}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
-                  Múltiples layouts guardados
-                </ThemedText>
-              </View>
-              <View style={styles.featureItem}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
-                  Gráficos y estadísticas avanzadas
-                </ThemedText>
-              </View>
-              <View style={styles.featureItem}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <ThemedText style={[styles.featureText, { color: textPrimary }]}>
-                  Predicciones con IA
-                </ThemedText>
-              </View>
-            </View>
-
-            {/* Botón de upgrade */}
-            <TouchableOpacity
-              style={[styles.upgradeButton, { backgroundColor: colors.primary }]}
-              onPress={() => router.push('/subscription' as any)}
-            >
-              <Ionicons name="diamond" size={20} color="#FFFFFF" />
-              <ThemedText style={styles.upgradeButtonText}>
-                Actualizar a Pro
-              </ThemedText>
-            </TouchableOpacity>
-
-            {/* Enlace a más información */}
-            <TouchableOpacity
-              style={styles.learnMoreButton}
-              onPress={() => router.push('/subscription' as any)}
-            >
-              <ThemedText style={[styles.learnMoreText, { color: colors.primary }]}>
-                Ver planes y precios
-              </ThemedText>
-            </TouchableOpacity>
+        <ScrollView style={styles.content} contentContainerStyle={styles.upgradeContainer}>
+          <View style={styles.upgradeIconContainer}>
+            <Ionicons name="diamond" size={64} color="#3B82F6" />
           </View>
+          <ThemedText style={styles.upgradeTitle}>Funcionalidad Premium</ThemedText>
+          <ThemedText style={styles.upgradeDescription}>
+            El Dashboard Editor es una funcionalidad exclusiva para usuarios Pro y Premium.
+          </ThemedText>
+
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+              <ThemedText style={styles.featureText}>
+                Personaliza qué secciones mostrar
+              </ThemedText>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+              <ThemedText style={styles.featureText}>
+                Configura tus accesos rápidos
+              </ThemedText>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+              <ThemedText style={styles.featureText}>
+                Crea tu dashboard ideal
+              </ThemedText>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+              <ThemedText style={styles.featureText}>
+                Sincronización en la nube
+              </ThemedText>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.upgradeButton}
+            onPress={() => router.push('/subscription')}
+          >
+            <ThemedText style={styles.upgradeButtonText}>Actualizar a Pro</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.back()}>
+            <ThemedText style={styles.upgradeLinkText}>Ver planes y precios</ThemedText>
+          </TouchableOpacity>
         </ScrollView>
       </ThemedView>
     );
   }
 
+  // Pantalla principal del editor
   return (
-    <ThemedView style={[styles.container, { backgroundColor: background }]}>
+    <ThemedView style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: border }]}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <ThemedText type="title" style={{ color: textPrimary }}>
-            {isEditing ? 'Editar Dashboard' : 'Dashboard'}
-          </ThemedText>
-          {isSaving && (
-            <View style={styles.savingIndicator}>
-              <ThemedText style={{ color: colors.textSecondary, fontSize: 11 }}>
-                Guardando...
-              </ThemedText>
-            </View>
-          )}
+          <ThemedText style={styles.headerTitle}>Configurar Dashboard</ThemedText>
+          <ThemedText style={styles.headerSubtitle}>Personaliza tu experiencia</ThemedText>
         </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            onPress={handleOpenTutorial}
-            style={styles.helpButton}
-          >
-            <Ionicons
-              name="help-circle-outline"
-              size={24}
-              color={textPrimary}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setIsEditing(!isEditing)}
-            style={[styles.editButton, isEditing && { backgroundColor: colors.primary }]}
-          >
-            <Ionicons
-              name={isEditing ? 'checkmark' : 'create-outline'}
-              size={20}
-              color={isEditing ? '#fff' : textPrimary}
-            />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={() => setShowTutorial(true)} style={styles.helpButton}>
+          <Ionicons name="help-circle-outline" size={24} color={colors.text} />
+        </TouchableOpacity>
       </View>
 
-      {/* Toolbar de edición */}
-      {isEditing && (
-        <View style={[styles.toolbar, { backgroundColor: cardBg, borderBottomColor: border }]}>
-          <TouchableOpacity
-            style={[styles.toolbarButton, { backgroundColor: `${colors.primary}20` }]}
-            onPress={() => setShowWidgetPicker(true)}
-          >
-            <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
-            <ThemedText style={{ color: colors.primary, marginLeft: 6 }}>Añadir</ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.toolbarButton, { backgroundColor: `${colors.primary}20` }]}
-            onPress={() => setShowTemplatePicker(true)}
-          >
-            <Ionicons name="layers-outline" size={20} color={colors.primary} />
-            <ThemedText style={{ color: colors.primary, marginLeft: 6 }}>Plantillas</ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.toolbarButton, { backgroundColor: `${colors.primary}20` }]}
-            onPress={() => setShowLayoutSettings(true)}
-          >
-            <Ionicons name="settings-outline" size={20} color={colors.primary} />
-            <ThemedText style={{ color: colors.primary, marginLeft: 6 }}>Ajustes</ThemedText>
-          </TouchableOpacity>
+      {/* Tutorial Modal */}
+      {showTutorial && (
+        <View style={styles.tutorialOverlay}>
+          <View style={[styles.tutorialModal, { backgroundColor: colors.background }]}>
+            <View style={styles.tutorialHeader}>
+              <Ionicons name="information-circle" size={32} color="#3B82F6" />
+              <ThemedText style={styles.tutorialTitle}>Cómo usar el Dashboard Editor</ThemedText>
+            </View>
+            <ScrollView style={styles.tutorialContent}>
+              <ThemedText style={styles.tutorialText}>
+                <Text style={styles.tutorialBold}>Secciones del Dashboard:</Text>{'\n'}
+                Activa o desactiva las secciones que quieres ver en tu dashboard principal.
+              </ThemedText>
+              <ThemedText style={styles.tutorialText}>
+                <Text style={styles.tutorialBold}>Accesos Rápidos:</Text>{'\n'}
+                Elige qué módulos aparecen en la sección de Accesos Rápidos.
+              </ThemedText>
+              <ThemedText style={styles.tutorialText}>
+                • Los cambios se <Text style={styles.tutorialBold}>guardan automáticamente</Text>.
+              </ThemedText>
+              <ThemedText style={styles.tutorialText}>
+                • La <Text style={styles.tutorialBold}>Tienda siempre está visible</Text>.
+              </ThemedText>
+              <ThemedText style={styles.tutorialText}>
+                • Puedes <Text style={styles.tutorialBold}>restaurar los valores por defecto</Text> en cualquier momento.
+              </ThemedText>
+            </ScrollView>
+            <TouchableOpacity style={styles.tutorialButton} onPress={closeTutorial}>
+              <ThemedText style={styles.tutorialButtonText}>Entendido</ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
-      {/* Grid de widgets */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.widgetsContainer}>
-          {layout.widgets.map(renderWidget)}
-        </View>
+      {/* Tabs */}
+      <View style={[styles.tabsContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === 'sections' && { borderBottomColor: '#3B82F6', borderBottomWidth: 2 }
+          ]}
+          onPress={() => setActiveTab('sections')}
+        >
+          <Ionicons 
+            name="grid-outline" 
+            size={20} 
+            color={activeTab === 'sections' ? '#3B82F6' : colors.text} 
+          />
+          <ThemedText style={[
+            styles.tabText,
+            activeTab === 'sections' && { color: '#3B82F6', fontWeight: '600' }
+          ]}>
+            Secciones
+          </ThemedText>
+        </TouchableOpacity>
 
-        {isEditing && (
-          <TouchableOpacity
-            style={[styles.addWidgetButton, { borderColor: colors.primary }]}
-            onPress={() => setShowWidgetPicker(true)}
-          >
-            <Ionicons name="add" size={32} color={colors.primary} />
-            <ThemedText style={{ color: colors.primary, marginTop: 8 }}>
-              Añadir widget
-            </ThemedText>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === 'shortcuts' && { borderBottomColor: '#3B82F6', borderBottomWidth: 2 }
+          ]}
+          onPress={() => setActiveTab('shortcuts')}
+        >
+          <Ionicons 
+            name="apps-outline" 
+            size={20} 
+            color={activeTab === 'shortcuts' ? '#3B82F6' : colors.text} 
+          />
+          <ThemedText style={[
+            styles.tabText,
+            activeTab === 'shortcuts' && { color: '#3B82F6', fontWeight: '600' }
+          ]}>
+            Accesos Rápidos
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      <ScrollView style={styles.content}>
+        {activeTab === 'sections' ? (
+          // Tab de Secciones
+          <>
+            <View style={styles.infoCard}>
+              <Ionicons name="information-circle" size={24} color="#3B82F6" />
+              <ThemedText style={styles.infoText}>
+                Activa o desactiva las secciones que quieres ver en tu dashboard. Los cambios se aplican inmediatamente.
+              </ThemedText>
+            </View>
+
+            <View style={styles.itemsList}>
+              {allSections.map((section) => {
+                const isStore = section.id === 'store';
+                return (
+                  <View
+                    key={section.id}
+                    style={[
+                      styles.itemCard,
+                      { 
+                        backgroundColor: colors.card,
+                        borderColor: section.visible ? SECTION_COLORS[section.id] : colors.border,
+                        opacity: isStore ? 0.7 : 1,
+                      }
+                    ]}
+                  >
+                    <View style={styles.itemLeft}>
+                      <View style={[styles.itemIcon, { backgroundColor: SECTION_COLORS[section.id] + '20' }]}>
+                        <Ionicons name={SECTION_ICONS[section.id]} size={24} color={SECTION_COLORS[section.id]} />
+                      </View>
+                      <View style={styles.itemInfo}>
+                        <ThemedText style={styles.itemTitle}>{section.title}</ThemedText>
+                        <ThemedText style={styles.itemStatus}>
+                          {isStore ? 'Siempre visible' : section.visible ? 'Visible' : 'Oculta'}
+                        </ThemedText>
+                      </View>
+                    </View>
+                    <Switch
+                      value={section.visible}
+                      onValueChange={() => handleToggleSectionVisibility(section.id)}
+                      disabled={isStore}
+                      trackColor={{ false: colors.border, true: SECTION_COLORS[section.id] }}
+                      thumbColor={section.visible ? '#fff' : '#f4f3f4'}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        ) : (
+          // Tab de Accesos Rápidos
+          <>
+            <View style={styles.infoCard}>
+              <Ionicons name="information-circle" size={24} color="#3B82F6" />
+              <ThemedText style={styles.infoText}>
+                Elige qué módulos aparecen en la sección de Accesos Rápidos de tu dashboard.
+              </ThemedText>
+            </View>
+
+            <View style={styles.itemsList}>
+              {allShortcuts.map((shortcut) => {
+                const info = SHORTCUT_INFO[shortcut.id];
+                return (
+                  <View
+                    key={shortcut.id}
+                    style={[
+                      styles.itemCard,
+                      { 
+                        backgroundColor: colors.card,
+                        borderColor: shortcut.visible ? info.color : colors.border,
+                      }
+                    ]}
+                  >
+                    <View style={styles.itemLeft}>
+                      <View style={[styles.itemIcon, { backgroundColor: info.color + '20' }]}>
+                        <Ionicons name={info.icon} size={24} color={info.color} />
+                      </View>
+                      <View style={styles.itemInfo}>
+                        <ThemedText style={styles.itemTitle}>{info.label}</ThemedText>
+                        <ThemedText style={styles.itemStatus}>
+                          {shortcut.visible ? 'Visible' : 'Oculto'}
+                        </ThemedText>
+                      </View>
+                    </View>
+                    <Switch
+                      value={shortcut.visible}
+                      onValueChange={() => toggleShortcutVisibility(shortcut.id)}
+                      trackColor={{ false: colors.border, true: info.color }}
+                      thumbColor={shortcut.visible ? '#fff' : '#f4f3f4'}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+          </>
         )}
-      </ScrollView>
 
-      {/* Modales */}
-      {renderWidgetPicker()}
-      {renderTemplatePicker()}
-      
-      {/* Tutorial */}
-      <DashboardEditorTutorial
-        visible={showTutorial}
-        onClose={handleCloseTutorial}
-      />
+        {/* Botón de restaurar */}
+        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+          <Ionicons name="refresh" size={20} color="#EF4444" />
+          <Text style={styles.resetButtonText}>Restaurar configuración por defecto</Text>
+        </TouchableOpacity>
+
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -580,12 +434,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    paddingTop: 60,
     borderBottomWidth: 1,
   },
   backButton: {
@@ -593,249 +455,213 @@ const styles = StyleSheet.create({
   },
   headerCenter: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginLeft: 8,
   },
-  savingIndicator: {
-    marginTop: 2,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  headerSubtitle: {
+    fontSize: 14,
+    opacity: 0.7,
   },
   helpButton: {
-    padding: 4,
-  },
-  editButton: {
     padding: 8,
-    borderRadius: 8,
   },
-  toolbar: {
+  tabsContainer: {
     flexDirection: 'row',
-    padding: 12,
-    gap: 12,
     borderBottomWidth: 1,
   },
-  toolbarButton: {
+  tab: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  tabText: {
+    fontSize: 16,
   },
   content: {
     flex: 1,
-    padding: 16,
   },
-  widgetsContainer: {
+  infoCard: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  widget: {
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
-    position: 'relative',
-  },
-  removeButton: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1,
-  },
-  widgetIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  widgetTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  widgetType: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  resizeHandle: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-  },
-  addWidgetButton: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
+    margin: 16,
+    padding: 16,
+    backgroundColor: '#3B82F620',
     borderRadius: 12,
-    padding: 32,
-    alignItems: 'center',
-    marginTop: 16,
+    gap: 12,
   },
-  modalOverlay: {
+  infoText: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    fontSize: 14,
+    lineHeight: 20,
   },
-  modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '80%',
+  itemsList: {
+    paddingHorizontal: 16,
+    gap: 12,
   },
-  modalHeader: {
+  itemCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderBottomWidth: 1,
+    borderRadius: 12,
+    borderWidth: 2,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  widgetList: {
-    padding: 16,
-  },
-  widgetGrid: {
+  itemLeft: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    flex: 1,
     gap: 12,
   },
-  widgetOption: {
-    width: (SCREEN_WIDTH - 56) / 3,
-    padding: 12,
+  itemIcon: {
+    width: 48,
+    height: 48,
     borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  widgetOptionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
-  },
-  widgetOptionName: {
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  templateList: {
-    padding: 16,
-  },
-  templateOption: {
-    flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
   },
-  templateIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  templateInfo: {
+  itemInfo: {
     flex: 1,
-    marginLeft: 12,
   },
-  templateNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  templateName: {
+  itemTitle: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 4,
   },
-  premiumBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+  itemStatus: {
+    fontSize: 14,
+    opacity: 0.7,
   },
-  premiumText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#EF4444',
+    gap: 8,
   },
-  templateDescription: {
-    fontSize: 13,
-    marginTop: 4,
+  resetButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#EF4444',
   },
-  // Estilos de upgrade
+  bottomSpacer: {
+    height: 32,
+  },
+  // Upgrade screen styles
   upgradeContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 24,
-    justifyContent: 'center',
   },
-  upgradeCard: {
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-  },
-  premiumIconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
+  upgradeIconContainer: {
     marginBottom: 24,
   },
   upgradeTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 16,
     textAlign: 'center',
-    marginBottom: 12,
   },
   upgradeDescription: {
     fontSize: 16,
     textAlign: 'center',
-    lineHeight: 24,
+    opacity: 0.8,
     marginBottom: 32,
+    lineHeight: 24,
   },
   featuresList: {
     width: '100%',
     marginBottom: 32,
+    gap: 16,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    gap: 12,
   },
   featureText: {
     fontSize: 16,
-    marginLeft: 12,
+    flex: 1,
   },
   upgradeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#3B82F6',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
-    width: '100%',
     marginBottom: 16,
+    width: '100%',
+    alignItems: 'center',
   },
   upgradeButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 18,
-    fontWeight: '700',
-    marginLeft: 8,
+    fontWeight: '600',
   },
-  learnMoreButton: {
-    paddingVertical: 12,
+  upgradeLinkText: {
+    fontSize: 16,
+    color: '#3B82F6',
+    textDecorationLine: 'underline',
   },
-  learnMoreText: {
+  // Tutorial modal styles
+  tutorialOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    padding: 24,
+  },
+  tutorialModal: {
+    width: '100%',
+    maxWidth: 500,
+    borderRadius: 16,
+    padding: 24,
+    maxHeight: '80%',
+  },
+  tutorialHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  tutorialTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    flex: 1,
+  },
+  tutorialContent: {
+    marginBottom: 20,
+  },
+  tutorialText: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  tutorialBold: {
+    fontWeight: '600',
+  },
+  tutorialButton: {
+    backgroundColor: '#3B82F6',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  tutorialButtonText: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

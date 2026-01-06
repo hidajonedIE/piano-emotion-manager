@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { Accordion } from '@/components/accordion';
 import { AnimatedCard } from '@/components/animated-card';
 import { Spacing } from '@/constants/theme';
+import { useDashboardPreferences, type AccessShortcutModule } from '@/hooks/use-dashboard-preferences';
 
 // Definición de módulos principales
 const MODULE_ACTIONS = [
@@ -65,6 +66,7 @@ interface DashboardAccessShortcutsProps {
 
 export function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessShortcutsProps) {
   const router = useRouter();
+  const { visibleShortcuts } = useDashboardPreferences();
 
   const handleAction = (action: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -73,6 +75,18 @@ export function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessSho
       router.push(route as any);
     }
   };
+
+  // Filtrar y ordenar módulos según configuración
+  const visibleModules = MODULE_ACTIONS
+    .filter(action => {
+      const shortcut = visibleShortcuts.find(s => s.id === action.key as AccessShortcutModule);
+      return shortcut?.visible !== false; // Mostrar por defecto si no está en la configuración
+    })
+    .sort((a, b) => {
+      const orderA = visibleShortcuts.find(s => s.id === a.key as AccessShortcutModule)?.order ?? 999;
+      const orderB = visibleShortcuts.find(s => s.id === b.key as AccessShortcutModule)?.order ?? 999;
+      return orderA - orderB;
+    });
 
   return (
     <Accordion 
@@ -84,7 +98,7 @@ export function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessSho
       
     >
       <View style={styles.centeredGrid}>
-        {MODULE_ACTIONS.map((action) => (
+        {visibleModules.map((action) => (
           <AnimatedCard
             key={action.key}
             icon={action.icon}
