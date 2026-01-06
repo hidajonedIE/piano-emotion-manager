@@ -173,8 +173,17 @@ export function useDashboardPreferences() {
 
   // Reordenar secciones (recibe array completo reordenado)
   const reorderSections = useCallback((newSections: DashboardSectionConfig[]) => {
+    // Separar alertas del resto
+    const alertsSection = newSections.find(s => s.id === 'alerts');
+    const otherSections = newSections.filter(s => s.id !== 'alerts');
+    
+    // Asegurar que alertas siempre esté primera
+    const orderedSections = alertsSection 
+      ? [alertsSection, ...otherSections]
+      : newSections;
+    
     // Actualizar orden
-    const updatedSections = newSections.map((section, index) => ({
+    const updatedSections = orderedSections.map((section, index) => ({
       ...section,
       order: index,
     }));
@@ -186,6 +195,17 @@ export function useDashboardPreferences() {
   // Mover sección de una posición a otra
   const moveSectionByIndex = useCallback((fromIndex: number, toIndex: number) => {
     const newSections = [...preferences.sections];
+    
+    // No permitir mover la sección de alertas
+    if (newSections[fromIndex].id === 'alerts') {
+      return;
+    }
+    
+    // No permitir mover otras secciones a la posición 0 (reservada para alertas)
+    if (toIndex === 0) {
+      return;
+    }
+    
     const [movedSection] = newSections.splice(fromIndex, 1);
     newSections.splice(toIndex, 0, movedSection);
     

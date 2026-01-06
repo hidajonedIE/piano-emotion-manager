@@ -77,9 +77,6 @@ export function DashboardAlerts({ urgentCount, pendingCount }: DashboardAlertsPr
           </View>
         )}
       </View>
-      {hasAlerts && (
-        <IconSymbol name="chevron.right" size={18} color={primaryColor} />
-      )}
     </Container>
   );
 }
