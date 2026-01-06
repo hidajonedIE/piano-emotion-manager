@@ -14,7 +14,7 @@ import {
   messageHistory,
   MessageTemplateType,
   CampaignStatus 
-} from '../../../drizzle/marketing-schema.js';
+} from '../../../drizzle/schema.js';
 import { clients, pianos, services } from '../../../drizzle/schema.js';
 
 /**

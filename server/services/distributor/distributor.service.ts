@@ -15,7 +15,7 @@ import {
   distributorPremiumConfig,
   technicianAccountStatus,
   purchaseVerificationLogs,
-} from '@/drizzle/distributor-schema';
+} from '@/drizzle/schema';
 
 // ============================================================================
 // Types
@@ -765,7 +765,7 @@ const DEFAULT_MODULE_CONFIG: ModuleConfig = {
 DistributorService.prototype.getModuleConfig = async function(): Promise<ModuleConfig> {
   try {
     // Import dynamically to avoid circular dependencies
-    const { distributorModuleConfig } = await import('@/drizzle/distributor-schema');
+    const { distributorModuleConfig } = await import('@/drizzle/schema');
     
     const [config] = await db
       .select()
@@ -801,7 +801,7 @@ DistributorService.prototype.getModuleConfig = async function(): Promise<ModuleC
 
 DistributorService.prototype.saveModuleConfig = async function(config: Partial<ModuleConfig>): Promise<ModuleConfig> {
   try {
-    const { distributorModuleConfig } = await import('@/drizzle/distributor-schema');
+    const { distributorModuleConfig } = await import('@/drizzle/schema');
     
     const currentConfig = await this.getModuleConfig();
     const newConfig = { ...currentConfig, ...config };

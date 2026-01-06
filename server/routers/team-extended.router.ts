@@ -26,7 +26,7 @@ import {
   technicianZones,
   technicianMetrics,
   workAssignments,
-} from "../../drizzle/team-schema.js";
+} from "../../drizzle/schema.js";
 import { services, appointments } from "../../drizzle/schema.js";
 
 // ==========================================

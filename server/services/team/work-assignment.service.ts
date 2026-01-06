@@ -16,7 +16,7 @@ import {
   WorkAssignment,
   InsertWorkAssignment,
   OrganizationMember,
-} from '../../../drizzle/team-schema.js';
+} from '../../../drizzle/schema.js';
 import { appointments, services, clients } from '../../../drizzle/schema.js';
 import { organizationService } from './organization.service.js';
 
@@ -615,7 +615,7 @@ export class WorkAssignmentService {
     // Si se proporciona ubicación del cliente, priorizar técnicos de esa zona
     if (input.clientLocation) {
       try {
-        const { serviceZones, technicianZoneAssignments } = await import('@/drizzle/team-schema');
+        const { serviceZones, technicianZoneAssignments } = await import('@/drizzle/schema');
         
         // Obtener técnicos con zonas asignadas
         const technicianZones = await db
@@ -654,7 +654,7 @@ export class WorkAssignmentService {
     // Si se proporciona tipo de servicio, priorizar por especialidad
     if (input.serviceType) {
       try {
-        const { organizationMembers } = await import('@/drizzle/team-schema');
+        const { organizationMembers } = await import('@/drizzle/schema');
         
         // Obtener especialidades de técnicos
         const members = await db

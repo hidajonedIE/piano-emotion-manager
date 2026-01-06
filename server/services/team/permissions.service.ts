@@ -12,7 +12,7 @@ interface PermissionContext {
 
 import { eq, and } from 'drizzle-orm';
 import { getDb } from '../../db.js';
-import { organizationMembers, OrganizationMember } from '../../../drizzle/team-schema.js';
+import { organizationMembers, OrganizationMember } from '../../../drizzle/schema.js';
 
 // ==========================================
 // TIPOS DE PERMISOS
@@ -450,7 +450,7 @@ export class PermissionsService {
    */
   private async getUserZones(userId: number, organizationId: number): Promise<{ id: number; name: string }[]> {
     try {
-      const { serviceZones, technicianZones } = await import('@/drizzle/team-schema');
+      const { serviceZones, technicianZones } = await import('@/drizzle/schema');
       
       const zones = await db
         .select({
@@ -476,7 +476,7 @@ export class PermissionsService {
    */
   private async getUserTeams(userId: number, organizationId: number): Promise<{ id: number; name: string }[]> {
     try {
-      const { organizationMembers } = await import('@/drizzle/team-schema');
+      const { organizationMembers } = await import('@/drizzle/schema');
       
       // Por ahora, todos los miembros de una organización están en el mismo "equipo"
       // En el futuro se puede implementar una tabla de equipos separada

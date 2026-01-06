@@ -6,7 +6,6 @@ export default defineConfig({
     './drizzle/schema.ts',
     './drizzle/sharing-settings-schema.ts',
     './drizzle/modules-schema.ts',
-    './drizzle/team-schema.ts',
     './drizzle/inventory-schema.ts',
     './drizzle/crm-schema.ts',
     './drizzle/calendar-schema.ts',

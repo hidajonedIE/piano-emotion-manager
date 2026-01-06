@@ -199,7 +199,7 @@ async function saveVerificationLog(log: VerificationLog): Promise<void> {
     
     // Guardar en tabla verification_logs
     try {
-      const { purchaseVerificationLogs } = await import('@/drizzle/distributor-schema');
+      const { purchaseVerificationLogs } = await import('@/drizzle/schema');
       
       await db.insert(purchaseVerificationLogs).values({
         logId: log.id,
