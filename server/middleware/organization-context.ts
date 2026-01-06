@@ -13,10 +13,10 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { db } from "../db";
-import { users, organizations } from "../../drizzle/schema";
-import { organizationMembers } from "../../drizzle/team-schema";
-import { organizationSharingSettings } from "../../drizzle/sharing-settings-schema";
+import { getDb } from "../db.js";
+import { users } from "../../drizzle/schema.js";
+import { organizations, organizationMembers } from "../../drizzle/team-schema.js";
+import { organizationSharingSettings } from "../../drizzle/sharing-settings-schema.js";
 import { eq, and } from "drizzle-orm";
 
 /**
@@ -40,6 +40,8 @@ export interface OrganizationContext {
  */
 export async function getOrganizationContext(userId: number): Promise<OrganizationContext> {
   try {
+    const db = await getDb();
+    
     // 1. Obtener información básica del usuario
     const user = await db
       .select({
