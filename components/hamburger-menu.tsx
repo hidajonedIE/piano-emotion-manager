@@ -7,6 +7,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
+import { useUserRole } from '@/hooks/use-user-role';
 
 interface MenuItem {
   key: string;
@@ -69,6 +70,8 @@ export function HamburgerMenu() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { logout } = useAuth();
+  
+  const { isAdmin } = useUserRole();
   
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -171,6 +174,10 @@ export function HamburgerMenu() {
             {/* Items del menú */}
             <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
               {MENU_ITEMS.map((item) => {
+                // Ocultar sección de administración si no es admin
+                if ((item.key === 'section_admin' || item.key === 'admin_help' || item.key === 'divider4') && !isAdmin) {
+                  return null;
+                }
                 // Divisor
                 if (item.key.startsWith('divider')) {
                   return <View key={item.key} style={[styles.divider, { backgroundColor: borderColor }]} />;
