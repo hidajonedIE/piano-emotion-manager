@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { Stack, router } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
+import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserRole } from '@/hooks/use-user-role';
 
