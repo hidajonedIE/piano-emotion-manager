@@ -165,10 +165,10 @@ export default function RootLayout() {
                       <Stack.Screen name="service-categories" options={{ title: 'Categorías de Servicios', headerShown: false }} />
                       <Stack.Screen name="admin" options={{ title: 'Administración', headerShown: false }} />
                     </Stack>
+                    <AIAssistant />
                     </OnboardingGuard>
                     </AuthGuard>
                     <StatusBar style="auto" />
-                    <AIAssistant />
                     </SnackbarProvider>
                   </LanguageProvider>
                 </SubscriptionProvider>
