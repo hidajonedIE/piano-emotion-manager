@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { router, protectedProcedure } from '../trpc';
-import { db } from '@/server/db';
+import { db } from '@/drizzle/db';
 import { 
   alertSettings, 
   alertHistory, 
