@@ -18,6 +18,8 @@ import { useTranslation } from '@/hooks/use-translation';
 import { useUserTier } from '@/hooks/use-user-tier';
 import { useDashboardEditorConfig } from '@/hooks/use-dashboard-editor-config';
 import { WidgetRenderer } from '@/components/dashboard-editor/widget-renderer';
+import { DashboardEditorTutorial } from '@/components/dashboard-editor/dashboard-editor-tutorial';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -118,6 +120,36 @@ export default function DashboardEditorScreen() {
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [showLayoutSettings, setShowLayoutSettings] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Verificar si es la primera vez que el usuario accede al Dashboard Editor
+  useEffect(() => {
+    const checkFirstTime = async () => {
+      try {
+        const hasSeenTutorial = await AsyncStorage.getItem('@dashboard_editor_tutorial_seen');
+        if (!hasSeenTutorial && !isTierLoading && (tier === 'pro' || tier === 'premium')) {
+          setShowTutorial(true);
+        }
+      } catch (error) {
+        console.error('Error checking tutorial status:', error);
+      }
+    };
+    checkFirstTime();
+  }, [isTierLoading, tier]);
+
+  const handleCloseTutorial = async () => {
+    try {
+      await AsyncStorage.setItem('@dashboard_editor_tutorial_seen', 'true');
+      setShowTutorial(false);
+    } catch (error) {
+      console.error('Error saving tutorial status:', error);
+      setShowTutorial(false);
+    }
+  };
+
+  const handleOpenTutorial = () => {
+    setShowTutorial(true);
+  };
 
   // Usar el layout desde la configuración persistente
   const layout = currentLayout;
@@ -459,16 +491,28 @@ export default function DashboardEditorScreen() {
             </View>
           )}
         </View>
-        <TouchableOpacity
-          onPress={() => setIsEditing(!isEditing)}
-          style={[styles.editButton, isEditing && { backgroundColor: colors.primary }]}
-        >
-          <Ionicons
-            name={isEditing ? 'checkmark' : 'create-outline'}
-            size={20}
-            color={isEditing ? '#fff' : textPrimary}
-          />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={handleOpenTutorial}
+            style={styles.helpButton}
+          >
+            <Ionicons
+              name="help-circle-outline"
+              size={24}
+              color={textPrimary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setIsEditing(!isEditing)}
+            style={[styles.editButton, isEditing && { backgroundColor: colors.primary }]}
+          >
+            <Ionicons
+              name={isEditing ? 'checkmark' : 'create-outline'}
+              size={20}
+              color={isEditing ? '#fff' : textPrimary}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Toolbar de edición */}
@@ -522,6 +566,12 @@ export default function DashboardEditorScreen() {
       {/* Modales */}
       {renderWidgetPicker()}
       {renderTemplatePicker()}
+      
+      {/* Tutorial */}
+      <DashboardEditorTutorial
+        visible={showTutorial}
+        onClose={handleCloseTutorial}
+      />
     </ThemedView>
   );
 }
@@ -548,6 +598,14 @@ const styles = StyleSheet.create({
   },
   savingIndicator: {
     marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  helpButton: {
+    padding: 4,
   },
   editButton: {
     padding: 8,
