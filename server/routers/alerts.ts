@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { router, protectedProcedure } from '../trpc';
-import { db } from '@/drizzle/db';
+import * as db from '../db.js';
 import { 
   alertSettings, 
   alertHistory, 
@@ -14,7 +14,7 @@ import {
   pianos,
   clients,
   services,
-} from '@/drizzle/schema';
+} from '../../drizzle/schema.js';
 
 export const alertsRouter = router({
   /**
@@ -22,7 +22,10 @@ export const alertsRouter = router({
    */
   getGlobalSettings: protectedProcedure
     .query(async ({ ctx }) => {
-      const settings = await db.query.alertSettings.findFirst({
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const settings = await database.query.alertSettings.findFirst({
         where: and(
           eq(alertSettings.partnerId, 1),
           sql`${alertSettings.userId} IS NULL`,
@@ -32,7 +35,7 @@ export const alertsRouter = router({
 
       // Si no existe, crear configuración por defecto
       if (!settings) {
-        const [newSettings] = await db.insert(alertSettings).values({
+        const [newSettings] = await database.insert(alertSettings).values({
           partnerId: 1,
           userId: null,
           organizationId: null,
@@ -66,11 +69,14 @@ export const alertsRouter = router({
       weeklyDigestDay: z.number().min(1).max(7),
     }))
     .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
       // Verificar que el usuario es admin
       // TODO: Implementar verificación de rol admin
       
       // Buscar configuración global existente
-      const existing = await db.query.alertSettings.findFirst({
+      const existing = await database.query.alertSettings.findFirst({
         where: and(
           eq(alertSettings.partnerId, 1),
           sql`${alertSettings.userId} IS NULL`,
@@ -80,7 +86,7 @@ export const alertsRouter = router({
 
       if (existing) {
         // Actualizar existente
-        const [updated] = await db.update(alertSettings)
+        const [updated] = await database.update(alertSettings)
           .set({
             ...input,
             updatedAt: new Date(),
@@ -90,7 +96,7 @@ export const alertsRouter = router({
         return updated;
       } else {
         // Crear nueva
-        const [created] = await db.insert(alertSettings)
+        const [created] = await database.insert(alertSettings)
           .values({
             partnerId: 1,
             userId: null,
@@ -107,7 +113,10 @@ export const alertsRouter = router({
    */
   getUserSettings: protectedProcedure
     .query(async ({ ctx }) => {
-      const settings = await db.query.alertSettings.findFirst({
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const settings = await database.query.alertSettings.findFirst({
         where: eq(alertSettings.userId, ctx.userId),
       });
 
@@ -125,12 +134,15 @@ export const alertsRouter = router({
       weeklyDigestDay: z.number().min(1).max(7),
     }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await db.query.alertSettings.findFirst({
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const existing = await database.query.alertSettings.findFirst({
         where: eq(alertSettings.userId, ctx.userId),
       });
 
       if (existing) {
-        const [updated] = await db.update(alertSettings)
+        const [updated] = await database.update(alertSettings)
           .set({
             ...input,
             updatedAt: new Date(),
@@ -140,7 +152,7 @@ export const alertsRouter = router({
         return updated;
       } else {
         // Crear nueva configuración de usuario
-        const [created] = await db.insert(alertSettings)
+        const [created] = await database.insert(alertSettings)
           .values({
             partnerId: 1,
             userId: ctx.userId,
@@ -162,6 +174,9 @@ export const alertsRouter = router({
       offset: z.number().min(0).default(0),
     }))
     .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
       const conditions = [eq(alertHistory.userId, ctx.userId)];
       
       if (input.status) {
@@ -172,7 +187,7 @@ export const alertsRouter = router({
         conditions.push(eq(alertHistory.priority, input.priority));
       }
 
-      const alerts = await db.query.alertHistory.findMany({
+      const alerts = await database.query.alertHistory.findMany({
         where: and(...conditions),
         orderBy: [desc(alertHistory.createdAt)],
         limit: input.limit,
@@ -197,7 +212,7 @@ export const alertsRouter = router({
       });
 
       // Contar total
-      const [{ count }] = await db
+      const [{ count }] = await database
         .select({ count: sql<number>`count(*)` })
         .from(alertHistory)
         .where(and(...conditions));
@@ -217,7 +232,10 @@ export const alertsRouter = router({
       alertId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const [updated] = await db.update(alertHistory)
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const [updated] = await database.update(alertHistory)
         .set({
           status: 'acknowledged',
           acknowledgedAt: new Date(),
@@ -248,7 +266,10 @@ export const alertsRouter = router({
       serviceId: z.number().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const [updated] = await db.update(alertHistory)
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const [updated] = await database.update(alertHistory)
         .set({
           status: 'resolved',
           resolvedAt: new Date(),
@@ -279,7 +300,10 @@ export const alertsRouter = router({
       alertId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const [updated] = await db.update(alertHistory)
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const [updated] = await database.update(alertHistory)
         .set({
           status: 'dismissed',
           updatedAt: new Date(),
@@ -305,8 +329,11 @@ export const alertsRouter = router({
    */
   getStatistics: protectedProcedure
     .query(async ({ ctx }) => {
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
       // Contar alertas activas por prioridad
-      const [urgentCount] = await db
+      const [urgentCount] = await database
         .select({ count: sql<number>`count(*)` })
         .from(alertHistory)
         .where(and(
@@ -315,7 +342,7 @@ export const alertsRouter = router({
           eq(alertHistory.priority, 'urgent')
         ));
 
-      const [pendingCount] = await db
+      const [pendingCount] = await database
         .select({ count: sql<number>`count(*)` })
         .from(alertHistory)
         .where(and(
@@ -328,7 +355,7 @@ export const alertsRouter = router({
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const [resolvedCount] = await db
+      const [resolvedCount] = await database
         .select({ count: sql<number>`count(*)` })
         .from(alertHistory)
         .where(and(
@@ -338,7 +365,7 @@ export const alertsRouter = router({
         ));
 
       // Tiempo promedio de resolución (en días)
-      const [avgResolutionTime] = await db
+      const [avgResolutionTime] = await database
         .select({
           avg: sql<number>`AVG(DATEDIFF(${alertHistory.resolvedAt}, ${alertHistory.createdAt}))`,
         })
@@ -370,7 +397,10 @@ export const alertsRouter = router({
       daysSinceLastService: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const [alert] = await db.insert(alertHistory)
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const [alert] = await database.insert(alertHistory)
         .values({
           ...input,
           userId: ctx.userId,
