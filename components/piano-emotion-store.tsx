@@ -244,7 +244,7 @@ export function PianoEmotionStore({ collapsed: collapsedProp = false, onToggle }
           {/* Footer con enlace */}
           <Pressable style={styles.footer} onPress={openPianoEmotion}>
             <Text style={styles.footerText}>www.pianoemotion.es</Text>
-            <IconSymbol name="arrow.up.right" size={14} color="#5B9A8B" />
+            <IconSymbol name="c.circle" size={14} color="#5B9A8B" />
           </Pressable>
         </View>
       )}
