@@ -25,11 +25,14 @@ export function DashboardAlerts({ urgentCount, pendingCount }: DashboardAlertsPr
   // Determinar el color principal basado en si hay urgentes
   const hasUrgent = urgentCount > 0;
   const primaryColor = hasAlerts ? (hasUrgent ? error : warning) : '#10B981';
-  const bgColor = hasAlerts ? (hasUrgent ? '#FEE2E2' : '#FEF3C7') : '#D1FAE5';
+  
+  // Usar colores del tema para el fondo
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const border = useThemeColor({}, 'border');
 
   return (
     <Pressable
-      style={[styles.alertBanner, { backgroundColor: bgColor, borderColor: primaryColor }]}
+      style={[styles.alertBanner, { backgroundColor: cardBackground, borderColor: border }]}
       onPress={() => router.push('/(tabs)/pianos')}
     >
       <IconSymbol 
