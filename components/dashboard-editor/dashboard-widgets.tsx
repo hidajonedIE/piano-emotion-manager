@@ -277,18 +277,46 @@ export function PredictionsWidget({ config, isEditing }: WidgetProps) {
 // WIDGET: ESTE MES (ESTADÍSTICAS)
 // ============================================================================
 
+const MONTHS = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+const MONTHS_SHORT = [
+  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+];
+
 export function StatsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
+  const router = useRouter();
   const { services } = useServicesData();
   const { clients } = useClientsData();
   const { pianos } = usePianosData();
-  const { invoices } = useInvoices();
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
-  const stats = useMemo(() => {
+  // Calcular título del mes
+  const monthTitle = useMemo(() => {
     const now = new Date();
-    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const isCurrentMonth = selectedMonth.getMonth() === now.getMonth() && 
+                          selectedMonth.getFullYear() === now.getFullYear();
+    if (isCurrentMonth) {
+      return 'Este Mes';
+    }
+    const monthName = MONTHS_SHORT[selectedMonth.getMonth()];
+    return `${monthName} ${selectedMonth.getFullYear()}`;
+  }, [selectedMonth]);
 
-    const monthlyServices = services.filter(s => new Date(s.date) >= thisMonth);
+  // Calcular estadísticas del mes seleccionado
+  const stats = useMemo(() => {
+    const monthStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+    const monthEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0, 23, 59, 59);
+
+    const monthlyServices = services.filter(s => {
+      const serviceDate = new Date(s.date);
+      return serviceDate >= monthStart && serviceDate <= monthEnd;
+    });
+    
     const monthlyRevenue = monthlyServices.reduce((sum, s) => sum + (s.cost || 0), 0);
 
     return [
@@ -321,10 +349,75 @@ export function StatsWidget({ config, isEditing }: WidgetProps) {
         value: pianos.length,
       },
     ];
-  }, [services, clients, pianos]);
+  }, [services, clients, pianos, selectedMonth]);
+
+  // Navegación entre meses
+  const handlePreviousMonth = () => {
+    setSelectedMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() - 1);
+      return newDate;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setSelectedMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + 1);
+      return newDate;
+    });
+  };
+
+  const handleGoToCurrentMonth = () => {
+    setSelectedMonth(new Date());
+  };
+
+  const handleGoToCalendar = () => {
+    if (!isEditing) {
+      router.push('/agenda' as any);
+    }
+  };
 
   return (
     <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
+      {/* Header con navegación de meses */}
+      <View style={styles.statsHeader}>
+        <ThemedText style={[styles.statsTitle, { color: colors.text }]}>
+          {monthTitle}
+        </ThemedText>
+        <View style={styles.monthNavigation}>
+          <Pressable 
+            onPress={handlePreviousMonth} 
+            style={styles.monthNavButton}
+            disabled={isEditing}
+          >
+            <Ionicons name="chevron-back" size={18} color={colors.primary} />
+          </Pressable>
+          <Pressable 
+            onPress={handleGoToCurrentMonth} 
+            style={[styles.todayButton, { borderColor: colors.primary }]}
+            disabled={isEditing}
+          >
+            <ThemedText style={[styles.todayButtonText, { color: colors.primary }]}>Hoy</ThemedText>
+          </Pressable>
+          <Pressable 
+            onPress={handleNextMonth} 
+            style={styles.monthNavButton}
+            disabled={isEditing}
+          >
+            <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+          </Pressable>
+          <Pressable 
+            onPress={handleGoToCalendar} 
+            style={[styles.calendarButton, { backgroundColor: colors.primary }]}
+            disabled={isEditing}
+          >
+            <Ionicons name="calendar" size={16} color="#FFFFFF" />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Grid de estadísticas */}
       <View style={styles.statsGrid}>
         {stats.map((stat) => (
           <View key={stat.id} style={styles.statItem}>
@@ -1044,6 +1137,45 @@ const additionalStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 12,
+  },
+
+  // Stats Widget
+  statsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  statsTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  monthNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  monthNavButton: {
+    padding: 4,
+  },
+  todayButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  todayButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  calendarButton: {
+    padding: 6,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

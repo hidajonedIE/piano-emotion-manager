@@ -16,6 +16,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { useUserTier } from '@/hooks/use-user-tier';
+import { useDashboardEditorConfig } from '@/hooks/use-dashboard-editor-config';
 import { WidgetRenderer } from '@/components/dashboard-editor/widget-renderer';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -100,6 +101,17 @@ export default function DashboardEditorScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { tier, isLoading: isTierLoading } = useUserTier();
+  
+  // Hook de configuración persistente
+  const {
+    currentLayout,
+    isLoading: isConfigLoading,
+    isSaving,
+    addWidget: addWidgetToConfig,
+    removeWidget: removeWidgetFromConfig,
+    updateWidget: updateWidgetInConfig,
+    updateCurrentLayout,
+  } = useDashboardEditorConfig();
 
   const [isEditing, setIsEditing] = useState(false);
   const [showWidgetPicker, setShowWidgetPicker] = useState(false);
@@ -107,19 +119,8 @@ export default function DashboardEditorScreen() {
   const [showLayoutSettings, setShowLayoutSettings] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
 
-  const [layout, setLayout] = useState<Layout>({
-    id: '1',
-    name: 'Mi Dashboard',
-    columns: 3,
-    widgets: [
-      { id: '1', type: 'alerts', title: 'Alertas', size: 'wide', positionX: 0, positionY: 0, config: {} },
-      { id: '2', type: 'quick_actions', title: 'Acciones Rápidas', size: 'medium', positionX: 0, positionY: 1, config: {} },
-      { id: '3', type: 'predictions', title: 'Predicciones IA', size: 'medium', positionX: 1, positionY: 1, config: {} },
-      { id: '4', type: 'stats', title: 'Este Mes', size: 'wide', positionX: 0, positionY: 2, config: {} },
-      { id: '5', type: 'recent_services', title: 'Servicios Recientes', size: 'medium', positionX: 0, positionY: 3, config: { limit: 5 } },
-      { id: '6', type: 'access_shortcuts', title: 'Accesos Rápidos', size: 'medium', positionX: 1, positionY: 3, config: {} },
-    ],
-  });
+  // Usar el layout desde la configuración persistente
+  const layout = currentLayout;
 
   const textPrimary = colors.text;
   const textSecondary = colors.textSecondary;
@@ -152,7 +153,7 @@ export default function DashboardEditorScreen() {
     }
   };
 
-  const addWidget = (type: WidgetType) => {
+  const addWidget = async (type: WidgetType) => {
     const catalogItem = WIDGET_CATALOG.find(w => w.type === type);
     const newWidget: Widget = {
       id: Date.now().toString(),
@@ -163,11 +164,13 @@ export default function DashboardEditorScreen() {
       positionY: layout.widgets.length,
       config: {},
     };
-    setLayout(prev => ({
-      ...prev,
-      widgets: [...prev.widgets, newWidget],
-    }));
-    setShowWidgetPicker(false);
+    
+    const success = await addWidgetToConfig(newWidget);
+    if (success) {
+      setShowWidgetPicker(false);
+    } else {
+      Alert.alert('Error', 'No se pudo añadir el widget');
+    }
   };
 
   const removeWidget = (widgetId: string) => {
@@ -179,11 +182,11 @@ export default function DashboardEditorScreen() {
         {
           text: 'Eliminar',
           style: 'destructive',
-          onPress: () => {
-            setLayout(prev => ({
-              ...prev,
-              widgets: prev.widgets.filter(w => w.id !== widgetId),
-            }));
+          onPress: async () => {
+            const success = await removeWidgetFromConfig(widgetId);
+            if (!success) {
+              Alert.alert('Error', 'No se pudo eliminar el widget');
+            }
           },
         },
       ]
@@ -444,9 +447,18 @@ export default function DashboardEditorScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={textPrimary} />
         </TouchableOpacity>
-        <ThemedText type="title" style={{ color: textPrimary }}>
-          {isEditing ? 'Editar Dashboard' : 'Dashboard'}
-        </ThemedText>
+        <View style={styles.headerCenter}>
+          <ThemedText type="title" style={{ color: textPrimary }}>
+            {isEditing ? 'Editar Dashboard' : 'Dashboard'}
+          </ThemedText>
+          {isSaving && (
+            <View style={styles.savingIndicator}>
+              <ThemedText style={{ color: colors.textSecondary, fontSize: 11 }}>
+                Guardando...
+              </ThemedText>
+            </View>
+          )}
+        </View>
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
           style={[styles.editButton, isEditing && { backgroundColor: colors.primary }]}
@@ -528,6 +540,14 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  savingIndicator: {
+    marginTop: 2,
   },
   editButton: {
     padding: 8,
