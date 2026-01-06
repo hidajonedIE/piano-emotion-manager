@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   filterChip: {
-    paddingVertical: Spacing.xs,
+    paddingVertical: 6,
     paddingHorizontal: Spacing.md,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
