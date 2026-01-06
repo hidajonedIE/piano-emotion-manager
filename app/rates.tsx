@@ -179,6 +179,7 @@ export default function RatesScreen() {
         keyExtractor={(item) => item}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.categoriesContainer}
+        style={{ flexGrow: 0 }}
         renderItem={({ item }) => (
           <Pressable
             style={[
@@ -259,8 +260,10 @@ const styles = StyleSheet.create({
   categoryFilter: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
+    height: 34,
+    justifyContent: 'center',
   },
   categoryFilterText: {
     fontSize: 13,
