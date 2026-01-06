@@ -207,7 +207,7 @@ export default function RatesScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderRate}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 100 }]}
-        style={{ marginTop: Spacing.md }}
+        style={{ marginTop: 40 }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -257,7 +257,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
     marginBottom: Spacing.lg,
-    justifyContent: 'center',
   },
   categoryFilter: {
     paddingHorizontal: Spacing.md,
