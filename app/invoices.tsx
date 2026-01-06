@@ -165,12 +165,14 @@ export default function InvoicesScreen() {
       </View>
 
       {/* Filtros de estado */}
-      <FlatList
-        horizontal
-        data={statuses}
-        keyExtractor={(item) => item}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filtersContainer}
+      <View style={styles.filtersWrapper}>
+        <FlatList
+          horizontal
+          data={statuses}
+          keyExtractor={(item) => item}
+          showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
+          contentContainerStyle={styles.filtersContainer}
         renderItem={({ item }) => (
           <Pressable
             style={[
@@ -190,7 +192,8 @@ export default function InvoicesScreen() {
             </ThemedText>
           </Pressable>
         )}
-      />
+        />
+      </View>
 
       {/* Filtros de fecha */}
       <View style={styles.dateFiltersRow}>
@@ -200,6 +203,7 @@ export default function InvoicesScreen() {
           data={['all', 'thisMonth', 'lastMonth', 'thisYear'] as const}
           keyExtractor={(item) => item}
           showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
           contentContainerStyle={styles.dateFiltersContainer}
           renderItem={({ item }) => {
             const labels = {
@@ -301,15 +305,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 4,
   },
+  filtersWrapper: {
+    alignItems: 'center',
+  },
   filtersContainer: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
     gap: Spacing.sm,
   },
   filterChip: {
-    paddingVertical: Spacing.sm,
+    paddingVertical: 6,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   filterText: {
