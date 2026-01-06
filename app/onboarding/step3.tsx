@@ -20,7 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSnackbar } from '@/hooks/use-snackbar';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/lib/clerk-wrapper';

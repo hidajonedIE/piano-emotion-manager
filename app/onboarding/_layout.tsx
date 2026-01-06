@@ -3,7 +3,7 @@
  * Layout para el flujo de onboarding
  */
 import { Stack } from 'expo-router';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function OnboardingLayout() {
   const backgroundColor = useThemeColor({}, 'background');
