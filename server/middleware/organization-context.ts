@@ -103,7 +103,7 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
       // 4. Obtener la configuración de sharing de la organización
       const settings = await db
         .select({
-          resource: organizationSharingSettings.sharableResource,
+          resource: organizationSharingSettings.resource,
           model: organizationSharingSettings.sharingModel,
         })
         .from(organizationSharingSettings)
