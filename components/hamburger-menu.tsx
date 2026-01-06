@@ -8,6 +8,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserRole } from '@/hooks/use-user-role';
+import { useUser } from '@clerk/clerk-expo';
 
 interface MenuItem {
   key: string;
@@ -50,6 +51,8 @@ const MENU_ITEMS: MenuItem[] = [
   
   // Administración
   { key: 'section_admin', label: 'Administración', icon: '', route: '', color: '', section: 'header' },
+  { key: 'admin_alerts', label: 'Configuración Global de Alertas', icon: 'bell.badge.fill', route: '/admin/alerts', color: '#F59E0B' },
+  { key: 'admin_alert_history', label: 'Historial de Alertas', icon: 'clock.fill', route: '/admin/alert-history', color: '#8B5CF6' },
   { key: 'admin_help', label: 'Gestión de Ayuda', icon: 'questionmark.circle.fill', route: '/admin/help', color: '#EF4444' },
   
   { key: 'divider4', label: '', icon: '', route: '', color: '' },
@@ -70,8 +73,11 @@ export function HamburgerMenu() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { logout } = useAuth();
-  
+  const { user } = useUser();
   const { isAdmin } = useUserRole();
+  
+  // Verificar si es admin por rol O por email (fallback)
+  const isAdminUser = isAdmin || user?.primaryEmailAddress?.emailAddress === 'jnavarrete@inboundemotion.com';
   
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -175,7 +181,7 @@ export function HamburgerMenu() {
             <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
               {MENU_ITEMS.map((item) => {
                 // Ocultar sección de administración si no es admin
-                if ((item.key === 'section_admin' || item.key === 'admin_help' || item.key === 'divider4') && !isAdmin) {
+                if ((item.key === 'section_admin' || item.key === 'admin_alerts' || item.key === 'admin_alert_history' || item.key === 'admin_help' || item.key === 'divider4') && !isAdminUser) {
                   return null;
                 }
                 // Divisor
