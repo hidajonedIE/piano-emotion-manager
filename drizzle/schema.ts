@@ -567,6 +567,7 @@ export type InsertQuoteTemplate = typeof quoteTemplates.$inferInsert;
 // TEAM-SCHEMA
 // ============================================================================
 
+/**
  * Esquema de base de datos para Gestión de Equipos Multi-Tenant
  * Piano Emotion Manager
  * 
@@ -1133,6 +1134,7 @@ export const organizationMembersRelations = relations(organizationMembers, ({ on
 // DISTRIBUTOR-SCHEMA
 // ============================================================================
 
+/**
  * Esquema de Distribuidor
  * Piano Emotion Manager
  * 
@@ -1314,14 +1316,13 @@ export type InsertPurchaseVerificationLog = typeof purchaseVerificationLogs.$inf
 // LICENSE-SCHEMA
 // ============================================================================
 
+/**
  * Esquema de Licencias
  * Piano Emotion Manager
  * 
  * Sistema de licencias para gestionar el acceso de técnicos
  * tanto individuales como clientes de distribuidores.
  */
-
-import { distributors } from './distributor-schema';
 
 // ============================================================================
 // Enums
@@ -1801,6 +1802,7 @@ export const campaignRecipientsRelations = relations(campaignRecipients, ({ one 
 // NOTIFICATIONS-SCHEMA
 // ============================================================================
 
+/**
  * Esquema de Notificaciones
  * Piano Emotion Manager
  * 
