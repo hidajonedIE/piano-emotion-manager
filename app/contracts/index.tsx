@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 8,
     borderWidth: 1,
     marginRight: 8,
   },

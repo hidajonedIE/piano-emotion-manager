@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   filterChipText: {

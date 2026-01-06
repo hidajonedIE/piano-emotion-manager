@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 4, // Más cuadrado como pidió el usuario
+    borderRadius: 8,
     borderWidth: 1,
     minHeight: 48, // Altura táctil estándar y cómoda
     minWidth: 100, // Asegurar un ancho mínimo mayor

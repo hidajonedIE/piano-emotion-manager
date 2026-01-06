@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 8,
     borderWidth: 1,
   },
   filterText: {
