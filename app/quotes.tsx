@@ -198,6 +198,7 @@ export default function QuotesScreen() {
         data={statuses}
         keyExtractor={(item) => item}
         showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
         contentContainerStyle={styles.filtersContainer}
         renderItem={({ item }) => (
           <Pressable
