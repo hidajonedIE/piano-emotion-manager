@@ -575,20 +575,6 @@ export type InsertQuoteTemplate = typeof quoteTemplates.$inferInsert;
  * con múltiples técnicos, roles y permisos.
  */
 
-import {
-  int,
-  mysqlEnum,
-  mysqlTable,
-  text,
-  timestamp,
-  varchar,
-  boolean,
-  decimal,
-  json,
-  uniqueIndex,
-  index,
-} from "drizzle-orm/mysql-core";
-
 // ==========================================
 // ENUMS
 // ==========================================
