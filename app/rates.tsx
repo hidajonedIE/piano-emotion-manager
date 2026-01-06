@@ -258,12 +258,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   categoryFilter: {
-    paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
     borderRadius: BorderRadius.sm,
     borderWidth: 1,
     height: 34,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   categoryFilterText: {
     fontSize: 13,
