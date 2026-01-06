@@ -173,33 +173,35 @@ export default function RatesScreen() {
       </View>
 
       {/* Filtros de categoría */}
-      <FlatList
-        horizontal
-        data={categories}
-        keyExtractor={(item) => item}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoriesContainer}
-        style={{ flexGrow: 0 }}
-        renderItem={({ item }) => (
-          <Pressable
-            style={[
-              styles.categoryFilter,
-              { borderColor },
-              selectedCategory === item && { backgroundColor: accent, borderColor: accent },
-            ]}
-            onPress={() => setSelectedCategory(item)}
-          >
-            <ThemedText
+      <View style={{ alignItems: 'center' }}>
+        <FlatList
+          horizontal
+          data={categories}
+          keyExtractor={(item) => item}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContainer}
+          style={{ flexGrow: 0 }}
+          renderItem={({ item }) => (
+            <Pressable
               style={[
-                styles.categoryFilterText,
-                { color: selectedCategory === item ? '#FFFFFF' : textSecondary },
+                styles.categoryFilter,
+                { borderColor },
+                selectedCategory === item && { backgroundColor: accent, borderColor: accent },
               ]}
+              onPress={() => setSelectedCategory(item)}
             >
-              {item === 'all' ? 'Todos' : SERVICE_RATE_CATEGORY_LABELS[item]}
-            </ThemedText>
-          </Pressable>
-        )}
-      />
+              <ThemedText
+                style={[
+                  styles.categoryFilterText,
+                  { color: selectedCategory === item ? '#FFFFFF' : textSecondary },
+                ]}
+              >
+                {item === 'all' ? 'Todos' : SERVICE_RATE_CATEGORY_LABELS[item]}
+              </ThemedText>
+            </Pressable>
+          )}
+        />
+      </View>
 
       {/* Lista de tarifas */}
       <FlatList
