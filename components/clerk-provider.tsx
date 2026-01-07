@@ -28,6 +28,9 @@ function getPublishableKey(): string {
 
 const publishableKey = getPublishableKey();
 
+console.log('[ClerkProvider] Platform:', Platform.OS);
+console.log('[ClerkProvider] Publishable Key:', publishableKey ? `${publishableKey.substring(0, 20)}...` : 'NOT FOUND');
+
 export function ClerkProvider({ children }: ClerkProviderProps) {
   // If no publishable key, render children without Clerk wrapper
   // This allows the app to work with demo login while Clerk is being set up
@@ -36,11 +39,15 @@ export function ClerkProvider({ children }: ClerkProviderProps) {
     return <>{children}</>;
   }
 
+  console.log('[ClerkProvider] Using provider for platform:', Platform.OS);
+
   // Use different providers for web and native
   if (Platform.OS === "web") {
     // For web, use @clerk/clerk-react
     try {
+      console.log('[ClerkProvider] Loading @clerk/clerk-react for web...');
       const { ClerkProvider: ClerkProviderWeb } = require("@clerk/clerk-react");
+      console.log('[ClerkProvider] @clerk/clerk-react loaded successfully');
       return (
         <ClerkProviderWeb publishableKey={publishableKey}>
           {children}
