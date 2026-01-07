@@ -1,37 +1,24 @@
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
-// Dynamic imports based on platform
-let clerkModule: any;
+// Load the correct Clerk module based on platform
+const clerkModule = Platform.OS === 'web'
+  ? require("@clerk/clerk-react")
+  : require("@clerk/clerk-expo");
 
-if (Platform.OS === 'web') {
-  // For web, use @clerk/clerk-react
-  try {
-    clerkModule = require('@clerk/clerk-react');
-  } catch (e) {
-    console.warn('Failed to load @clerk/clerk-react');
-    clerkModule = {
-      useSignIn: () => ({ isLoaded: false, signIn: null, setActive: () => {} }),
-      useSignUp: () => ({ isLoaded: false, signUp: null, setActive: () => {} }),
-      useAuth: () => ({ isSignedIn: false }),
-      useUser: () => ({ user: null, isLoaded: false }),
-      useSession: () => ({ session: null, isLoaded: false }),
-    };
-  }
-} else {
-  // For native, use @clerk/clerk-expo
-  clerkModule = require('@clerk/clerk-expo');
-}
+console.log('[clerk-wrapper] Platform:', Platform.OS);
+console.log('[clerk-wrapper] Using Clerk module:', Platform.OS === 'web' ? '@clerk/clerk-react' : '@clerk/clerk-expo');
 
-// Export all Clerk hooks
-export const useSignIn = clerkModule.useSignIn;
-export const useSignUp = clerkModule.useSignUp;
-export const useAuth = clerkModule.useAuth;
+// Export hooks directly from the correct module
 export const useUser = clerkModule.useUser;
 export const useSession = clerkModule.useSession;
+export const useAuth = clerkModule.useAuth;
+export const useSignIn = clerkModule.useSignIn;
+export const useSignUp = clerkModule.useSignUp;
 
-// For SSO, provide a web implementation
+// For SSO, provide platform-specific implementation
 export const useSSO = Platform.OS === 'web'
   ? () => {
+      // For web with @clerk/clerk-react, use useSignIn
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const { signIn } = clerkModule.useSignIn();
       return {
@@ -43,6 +30,7 @@ export const useSSO = Platform.OS === 'web'
           
           try {
             console.log('[useSSO] Starting OAuth with strategy:', strategy);
+            console.log('[useSSO] Redirect URL:', redirectUrl || window.location.origin);
             
             // Use authenticateWithRedirect which handles the full OAuth flow
             await signIn.authenticateWithRedirect({
