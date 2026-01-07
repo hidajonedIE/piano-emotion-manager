@@ -413,28 +413,46 @@ export default function LoginScreen() {
   /**
    * Inicio de sesión con Google
    */
-  // Hook de OAuth de Clerk para Google
+  // Hook de OAuth de Clerk para Google (solo para native)
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const handleGoogleSignIn = useCallback(async () => {
     console.log('[handleGoogleSignIn] Starting OAuth flow...');
+    console.log('[handleGoogleSignIn] Platform:', Platform.OS);
     
     try {
       setLoading(true);
       setError(null);
 
-      // Iniciar el flujo de OAuth con Google
-      const { createdSessionId, setActive } = await startOAuthFlow();
-      
-      console.log('[handleGoogleSignIn] OAuth flow completed, sessionId:', createdSessionId);
-
-      if (createdSessionId) {
-        // Activar la sesión
-        await setActive({ session: createdSessionId });
-        console.log('[handleGoogleSignIn] Session activated successfully');
+      if (Platform.OS === 'web') {
+        // Para web, usar window.Clerk directamente
+        console.log('[handleGoogleSignIn] Using window.Clerk for web');
         
-        // Redirigir al dashboard
-        router.replace("/(tabs)");
+        if (typeof window !== 'undefined' && (window as any).Clerk) {
+          const clerk = (window as any).Clerk;
+          console.log('[handleGoogleSignIn] Clerk instance found:', !!clerk);
+          
+          // Usar signIn.authenticateWithRedirect para web
+          await clerk.signIn.authenticateWithRedirect({
+            strategy: 'oauth_google',
+            redirectUrl: `${window.location.origin}/oauth-native-callback`,
+            redirectUrlComplete: `${window.location.origin}/(tabs)`,
+          });
+        } else {
+          throw new Error('Clerk no está disponible en window');
+        }
+      } else {
+        // Para native, usar useOAuth hook
+        console.log('[handleGoogleSignIn] Using useOAuth for native');
+        const { createdSessionId, setActive } = await startOAuthFlow();
+        
+        console.log('[handleGoogleSignIn] OAuth flow completed, sessionId:', createdSessionId);
+
+        if (createdSessionId) {
+          await setActive({ session: createdSessionId });
+          console.log('[handleGoogleSignIn] Session activated successfully');
+          router.replace("/(tabs)");
+        }
       }
     } catch (err) {
       console.error("[handleGoogleSignIn] Error:", err);
