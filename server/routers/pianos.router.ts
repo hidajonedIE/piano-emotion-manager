@@ -108,7 +108,8 @@ export const pianosRouter = router({
       if (!database) return { items: [], total: 0 };
 
       const whereClauses = [
-        filterByPartner(pianos, ctx.partnerId)
+        filterByPartner(pianos.partnerId, ctx.partnerId),
+        eq(pianos.odId, ctx.user.openId)
       ];
       
       if (search) {
