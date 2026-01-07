@@ -97,11 +97,13 @@ export const clientsRouter = router({
         return { items: [], total: 0 };
       }
 
-      console.log('[clients.list] Filtering by partnerId:', ctx.partnerId);
+      console.log('[clients.list] STEP 1: Filtering by partnerId:', ctx.partnerId);
       // Solo filtrar por partnerId
       const whereClauses = [eq(clients.partnerId, ctx.partnerId)];
+      console.log('[clients.list] STEP 2: whereClauses created');
       
       if (search) {
+        console.log('[clients.list] STEP 3: Adding search filter:', search);
         whereClauses.push(
           or(
             ilike(clients.name, `%${search}%`),
@@ -112,9 +114,16 @@ export const clientsRouter = router({
         );
       }
       
-      if (region) whereClauses.push(eq(clients.region, region));
-      if (routeGroup) whereClauses.push(eq(clients.routeGroup, routeGroup));
+      if (region) {
+        console.log('[clients.list] STEP 4: Adding region filter:', region);
+        whereClauses.push(eq(clients.region, region));
+      }
+      if (routeGroup) {
+        console.log('[clients.list] STEP 5: Adding routeGroup filter:', routeGroup);
+        whereClauses.push(eq(clients.routeGroup, routeGroup));
+      }
 
+      console.log('[clients.list] STEP 6: Creating sortColumn map');
       // Mapeo explícito de sortBy a columnas de Drizzle
       const sortColumnMap: Record<string, any> = {
         name: clients.name,
@@ -126,33 +135,40 @@ export const clientsRouter = router({
         updatedAt: clients.updatedAt,
       };
       const sortColumn = sortColumnMap[sortBy] || clients.name;
+      console.log('[clients.list] STEP 7: sortBy:', sortBy, 'sortOrder:', sortOrder);
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       const offset = cursor || 0;
-      const items = await database
-        .select()
-        .from(clients)
-        .where(and(...whereClauses))
-        .orderBy(orderByClause)
-        .limit(limit)
-        .offset(offset);
+      console.log('[clients.list] STEP 8: About to execute query with limit:', limit, 'offset:', offset);
+      
+      try {
+        const items = await database
+          .select()
+          .from(clients)
+          .where(and(...whereClauses))
+          .orderBy(orderByClause)
+          .limit(limit)
+          .offset(offset);
+        console.log('[clients.list] STEP 9: Query executed successfully, items:', items.length);
 
-      console.log('[clients.list] Found items:', items.length);
+        console.log('[clients.list] STEP 10: About to count total');
+        const [{ total }] = await database
+          .select({ total: count() })
+          .from(clients)
+          .where(and(...whereClauses));
+        console.log('[clients.list] STEP 11: Total counted:', total);
 
-      const [{ total }] = await database
-        .select({ total: count() })
-        .from(clients)
-        .where(and(...whereClauses));
+        let nextCursor: number | undefined = undefined;
+        if (items.length === limit) {
+          nextCursor = offset + limit;
+        }
 
-      console.log('[clients.list] Total count:', total);
-
-      let nextCursor: number | undefined = undefined;
-      if (items.length === limit) {
-        nextCursor = offset + limit;
+        console.log('[clients.list] STEP 12: Returning:', { itemsCount: items.length, nextCursor, total });
+        return { items, nextCursor, total };
+      } catch (error) {
+        console.error('[clients.list] ERROR in query execution:', error);
+        throw error;
       }
-
-      console.log('[clients.list] Returning:', { itemsCount: items.length, nextCursor, total });
-      return { items, nextCursor, total };
     }),
   
   listAll: protectedProcedure.query(async ({ ctx }) => {
