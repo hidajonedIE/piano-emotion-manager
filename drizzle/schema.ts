@@ -738,8 +738,8 @@ export const organizationMembers = mysqlTable("organization_members", {
   userId: int("userId").notNull(), // FK a users.id
   
   // Rol y estado
-  role: organizationRoleEnum.default("technician").notNull(),
-  status: membershipStatusEnum.default("pending_invitation").notNull(),
+  organizationRole: organizationRoleEnum("organizationRole").default("technician").notNull(),
+  membershipStatus: membershipStatusEnum("membershipStatus").default("pending_invitation").notNull(),
   
   // Información del miembro dentro de la organización
   displayName: varchar("displayName", { length: 100 }), // Nombre a mostrar
@@ -776,7 +776,7 @@ export const organizationMembers = mysqlTable("organization_members", {
   orgUserIdx: uniqueIndex("org_user_idx").on(table.organizationId, table.userId),
   orgIdx: index("org_idx").on(table.organizationId),
   userIdx: index("user_idx").on(table.userId),
-  statusIdx: index("status_idx").on(table.status),
+  statusIdx: index("status_idx").on(table.membershipStatus),
 }));
 
 export type OrganizationMember = typeof organizationMembers.$inferSelect;
