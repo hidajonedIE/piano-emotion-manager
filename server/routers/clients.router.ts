@@ -171,9 +171,6 @@ export const clientsRouter = router({
           .limit(limit)
           .offset(offset);
         
-        const sqlQuery = queryBuilder.toSQL();
-        console.log('[clients.list] STEP 8.5: SQL Query:', JSON.stringify(sqlQuery));
-        
         const items = await queryBuilder;
         console.log('[clients.list] STEP 9: Query executed successfully, items.length:', items.length);
         console.log('[clients.list] STEP 9.1: items type:', typeof items, 'isArray:', Array.isArray(items));
