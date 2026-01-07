@@ -207,23 +207,14 @@ export const clientsRouter = router({
         address = parts.join(", ");
       }
       
-      // Filtrar solo los campos que existen en la tabla
+      // Eliminar campos que no existen en la tabla
+      const { addressStructured, taxId, ...validInput } = input;
+      
       const clientData = {
+        ...validInput,
+        address,
         odId: ctx.user.openId,
         partnerId: ctx.partnerId,
-        organizationId: null, // Por defecto null para técnicos individuales
-        name: input.name,
-        email: input.email || null,
-        phone: input.phone || null,
-        address: address || null,
-        clientType: input.clientType || 'particular',
-        notes: input.notes || null,
-        region: input.region || null,
-        city: input.city || null,
-        postalCode: input.postalCode || null,
-        latitude: input.latitude || null,
-        longitude: input.longitude || null,
-        routeGroup: input.routeGroup || null,
       };
       
       console.log('[clients.create] DEBUG clientData:', JSON.stringify(clientData));
