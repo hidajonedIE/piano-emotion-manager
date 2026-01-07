@@ -73,7 +73,7 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
       .where(
         and(
           eq(organizationMembers.userId, userId),
-          eq(organizationMembers.status, "active")
+          eq(organizationMembers.membershipStatus, "active")
         )
       )
       .limit(1);
