@@ -107,10 +107,9 @@ export const clientsRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      // TEMPORAL: Filtro simplificado sin multi-tenant
+      // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
       const whereClauses = [
-        filterByPartner(clients.partnerId, ctx.partnerId),
-        eq(clients.odId, ctx.user.openId)
+        filterByPartner(clients.partnerId, ctx.partnerId)
       ];
       
       if (search) {
@@ -213,15 +212,12 @@ export const clientsRouter = router({
         address = parts.join(", ");
       }
       
-      // Añadir partnerId, odId y organizationId según sharing settings
-      const clientData = addOrganizationToInsert(
-        {
-          ...input,
-          address,
-        },
-        ctx.orgContext,
-        "clients"
-      );
+      // TEMPORAL: Solo asignar partnerId (sistema multi-tenant desactivado)
+      const clientData = {
+        ...input,
+        address,
+        partnerId: ctx.partnerId,
+      };
       
       return db.createClient(clientData);
     }),

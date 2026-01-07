@@ -107,15 +107,10 @@ export const pianosRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
-      console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
-      
+      // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
       const whereClauses = [
-        filterByPartner(pianos.partnerId, ctx.partnerId),
-        eq(pianos.odId, ctx.user.openId)
+        filterByPartner(pianos.partnerId, ctx.partnerId)
       ];
-      
-      console.log('[PIANOS DEBUG] whereClauses length:', whereClauses.length);
       
       if (search) {
         whereClauses.push(
@@ -221,11 +216,11 @@ export const pianosRouter = router({
   create: orgProcedure
     .input(pianoBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const pianoData = addOrganizationToInsert(
-        input,
-        ctx.orgContext,
-        "pianos"
-      );
+      // TEMPORAL: Solo asignar partnerId (sistema multi-tenant desactivado)
+      const pianoData = {
+        ...input,
+        partnerId: ctx.partnerId,
+      };
       
       return db.createPiano(pianoData);
     }),

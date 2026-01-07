@@ -125,10 +125,9 @@ export const servicesRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      // TEMPORAL: Filtro simplificado sin multi-tenant
+      // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
       const whereClauses = [
-        filterByPartner(services.partnerId, ctx.partnerId),
-        eq(services.odId, ctx.user.openId)
+        filterByPartner(services.partnerId, ctx.partnerId)
       ];
       
       if (search) {
@@ -309,11 +308,11 @@ export const servicesRouter = router({
   create: orgProcedure
     .input(serviceBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const serviceData = addOrganizationToInsert(
-        input,
-        ctx.orgContext,
-        "services"
-      );
+      // TEMPORAL: Solo asignar partnerId (sistema multi-tenant desactivado)
+      const serviceData = {
+        ...input,
+        partnerId: ctx.partnerId,
+      };
       
       return db.createService(serviceData);
     }),
@@ -390,10 +389,9 @@ export const servicesRouter = router({
       const database = await db.getDb();
       if (!database) return { total: 0, totalRevenue: 0, byType: [], byStatus: [] };
 
-      // TEMPORAL: Filtro simplificado sin multi-tenant
+      // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
       const whereClauses = [
-        filterByPartner(services.partnerId, ctx.partnerId),
-        eq(services.odId, ctx.user.openId)
+        filterByPartner(services.partnerId, ctx.partnerId)
       ];
 
       if (input?.dateFrom) whereClauses.push(gte(services.date, new Date(input.dateFrom)));
