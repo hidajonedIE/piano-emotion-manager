@@ -100,7 +100,7 @@ const orgProcedure = protectedProcedure.use(withOrganizationContext);
 // ============================================================================
 
 export const pianosRouter = router({
-  list: orgProcedure
+  list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "brand", sortOrder = "asc", search, category, brand, condition, clientId, yearFrom, yearTo } = input || {};
@@ -108,12 +108,7 @@ export const pianosRouter = router({
       if (!database) return { items: [], total: 0 };
 
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          pianos,
-          ctx.partnerId,
-          ctx.orgContext,
-          "pianos"
-        )
+        filterByPartner(pianos, ctx.partnerId)
       ];
       
       if (search) {
