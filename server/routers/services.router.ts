@@ -109,7 +109,9 @@ const paginationSchema = z.object({
 // PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
 // ============================================================================
 
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
+// TEMPORAL: Sistema multi-tenant desactivado para diagnóstico
+// const orgProcedure = protectedProcedure.use(withOrganizationContext);
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ROUTER
@@ -123,13 +125,10 @@ export const servicesRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
+      // TEMPORAL: Filtro simplificado sin multi-tenant
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          services,
-          ctx.partnerId,
-          ctx.orgContext,
-          "services"
-        )
+        filterByPartner(services.partnerId, ctx.partnerId),
+        eq(services.odId, ctx.user.openId)
       ];
       
       if (search) {
@@ -391,13 +390,10 @@ export const servicesRouter = router({
       const database = await db.getDb();
       if (!database) return { total: 0, totalRevenue: 0, byType: [], byStatus: [] };
 
+      // TEMPORAL: Filtro simplificado sin multi-tenant
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          services,
-          ctx.partnerId,
-          ctx.orgContext,
-          "services"
-        )
+        filterByPartner(services.partnerId, ctx.partnerId),
+        eq(services.odId, ctx.user.openId)
       ];
 
       if (input?.dateFrom) whereClauses.push(gte(services.date, new Date(input.dateFrom)));

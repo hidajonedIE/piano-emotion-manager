@@ -81,7 +81,9 @@ const clientBaseSchema = z.object({
 // PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
 // ============================================================================
 
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
+// TEMPORAL: Sistema multi-tenant desactivado para diagnóstico
+// const orgProcedure = protectedProcedure.use(withOrganizationContext);
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ROUTER
@@ -105,14 +107,10 @@ export const clientsRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      // Filtrar por partner y organización (respetando sharing settings)
+      // TEMPORAL: Filtro simplificado sin multi-tenant
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          clients,
-          ctx.partnerId,
-          ctx.orgContext,
-          "clients"
-        )
+        filterByPartner(clients.partnerId, ctx.partnerId),
+        eq(clients.odId, ctx.user.openId)
       ];
       
       if (search) {
