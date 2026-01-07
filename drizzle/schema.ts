@@ -738,8 +738,8 @@ export const organizationMembers = mysqlTable("organization_members", {
   userId: int("userId").notNull(), // FK a users.id
   
   // Rol y estado
-  organizationRole: organizationRoleEnum("organizationRole").default("technician").notNull(),
-  membershipStatus: membershipStatusEnum("membershipStatus").default("pending_invitation").notNull(),
+  organizationRole: organizationRoleEnum.default("technician").notNull(),
+  membershipStatus: membershipStatusEnum.default("pending_invitation").notNull(),
   
   // Información del miembro dentro de la organización
   displayName: varchar("displayName", { length: 100 }), // Nombre a mostrar
