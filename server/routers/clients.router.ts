@@ -144,7 +144,25 @@ export const clientsRouter = router({
       
       try {
         const items = await database
-          .select()
+          .select({
+            id: clients.id,
+            odId: clients.odId,
+            partnerId: clients.partnerId,
+            name: clients.name,
+            email: clients.email,
+            phone: clients.phone,
+            address: clients.address,
+            clientType: clients.clientType,
+            notes: clients.notes,
+            region: clients.region,
+            city: clients.city,
+            postalCode: clients.postalCode,
+            latitude: clients.latitude,
+            longitude: clients.longitude,
+            routeGroup: clients.routeGroup,
+            createdAt: clients.createdAt,
+            updatedAt: clients.updatedAt,
+          })
           .from(clients)
           .where(and(...whereClauses))
           .orderBy(orderByClause)
