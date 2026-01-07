@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, int, varchar, timestamp, foreignKey, mysqlEnum, text, json, decimal, datetime } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, int, varchar, timestamp, foreignKey, mysqlEnum, text, json, decimal, datetime, tinyint } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const aiUsageTracking = mysqlTable("ai_usage_tracking", {
