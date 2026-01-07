@@ -111,11 +111,11 @@ export const pianosRouter = router({
       console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
       
       const whereClauses = [
-        filterByPartner(pianos.partnerId, ctx.partnerId),
-        eq(pianos.odId, ctx.user.openId)
+        filterByPartner(pianos.partnerId, ctx.partnerId)
+        // TEMPORALMENTE DESACTIVADO: eq(pianos.odId, ctx.user.openId)
       ];
       
-      console.log('[PIANOS DEBUG] whereClauses:', whereClauses);
+      console.log('[PIANOS DEBUG] whereClauses (solo partnerId):', whereClauses);
       
       if (search) {
         whereClauses.push(
