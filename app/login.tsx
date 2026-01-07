@@ -421,6 +421,7 @@ export default function LoginScreen() {
 
       const result = await startSSOFlow({
         strategy: "oauth_google",
+        redirectUrl: "/",
       });
 
       if (result && result.createdSessionId && result.setActive) {
