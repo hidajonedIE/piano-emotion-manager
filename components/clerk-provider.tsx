@@ -1,13 +1,9 @@
-import { ClerkProvider as ClerkProviderBase, ClerkLoaded } from "@clerk/clerk-expo";
-import { tokenCache } from "@/lib/clerk-token-cache";
-import Constants from "expo-constants";
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
 type ClerkProviderProps = {
   children: React.ReactNode;
 };
-
-// Clerk publishable key should come from environment variables
 
 // Get the publishable key from environment variables with fallback
 function getPublishableKey(): string {
@@ -40,14 +36,34 @@ export function ClerkProvider({ children }: ClerkProviderProps) {
     return <>{children}</>;
   }
 
-  return (
-    <ClerkProviderBase 
-      publishableKey={publishableKey}
-      tokenCache={Platform.OS !== "web" ? tokenCache : undefined}
-    >
-      <ClerkLoaded>
-        {children}
-      </ClerkLoaded>
-    </ClerkProviderBase>
-  );
+  // Use different providers for web and native
+  if (Platform.OS === "web") {
+    // For web, use @clerk/clerk-react
+    try {
+      const { ClerkProvider: ClerkProviderWeb } = require("@clerk/clerk-react");
+      return (
+        <ClerkProviderWeb publishableKey={publishableKey}>
+          {children}
+        </ClerkProviderWeb>
+      );
+    } catch (e) {
+      console.error("[ClerkProvider] Failed to load @clerk/clerk-react:", e);
+      return <>{children}</>;
+    }
+  } else {
+    // For native, use @clerk/clerk-expo
+    const { ClerkProvider: ClerkProviderNative, ClerkLoaded } = require("@clerk/clerk-expo");
+    const { tokenCache } = require("@/lib/clerk-token-cache");
+    
+    return (
+      <ClerkProviderNative 
+        publishableKey={publishableKey}
+        tokenCache={tokenCache}
+      >
+        <ClerkLoaded>
+          {children}
+        </ClerkLoaded>
+      </ClerkProviderNative>
+    );
+  }
 }
