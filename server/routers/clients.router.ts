@@ -79,18 +79,25 @@ export const clientsRouter = router({
         z.object({
           limit: z.number().min(1).max(100).default(30),
           cursor: z.number().optional(),
-          search: z.string().optional(),
-          region: z.string().optional(),
-          routeGroup: z.string().optional(),
+          search: z.string().optional().nullable(),
+          region: z.string().optional().nullable(),
+          routeGroup: z.string().optional().nullable(),
           sortBy: z.string().default("name"),
-          sortOrder: z.enum(["asc", "desc"]).default("asc"),
+          direction: z.enum(["forward", "backward"]).default("forward"),
         })
       )
      .query(async ({ ctx, input }) => {
-      const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
+      console.log('[clients.list] Input received:', JSON.stringify(input));
+      const { limit, cursor, search, region, routeGroup, sortBy, direction } = input;
+      const sortOrder = direction === "forward" ? "asc" : "desc";
+      console.log('[clients.list] Converted direction to sortOrder:', sortOrder);
       const database = await db.getDb();
-      if (!database) return { items: [], total: 0 };
+      if (!database) {
+        console.error('[clients.list] Database not available');
+        return { items: [], total: 0 };
+      }
 
+      console.log('[clients.list] Filtering by partnerId:', ctx.partnerId);
       // Solo filtrar por partnerId
       const whereClauses = [eq(clients.partnerId, ctx.partnerId)];
       
@@ -120,16 +127,21 @@ export const clientsRouter = router({
         .limit(limit)
         .offset(offset);
 
+      console.log('[clients.list] Found items:', items.length);
+
       const [{ total }] = await database
         .select({ total: count() })
         .from(clients)
         .where(and(...whereClauses));
+
+      console.log('[clients.list] Total count:', total);
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {
         nextCursor = offset + limit;
       }
 
+      console.log('[clients.list] Returning:', { itemsCount: items.length, nextCursor, total });
       return { items, nextCursor, total };
     }),
   
@@ -164,7 +176,10 @@ export const clientsRouter = router({
   create: protectedProcedure
     .input(clientBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      let address = input.address;
+      try {
+        console.log('[clients.create] Input received:', JSON.stringify(input));
+        console.log('[clients.create] partnerId:', ctx.partnerId);
+        let address = input.address;
       if (!address && input.addressStructured) {
         const addr = input.addressStructured;
         const parts = [];
@@ -188,7 +203,14 @@ export const clientsRouter = router({
         partnerId: ctx.partnerId,
       };
       
-      return db.createClient(clientData);
+      console.log('[clients.create] Creating client with data:', JSON.stringify(clientData));
+      const result = await db.createClient(clientData);
+      console.log('[clients.create] Client created successfully:', result);
+      return result;
+      } catch (error) {
+        console.error('[clients.create] Error creating client:', error);
+        throw error;
+      }
     }),
   
   update: protectedProcedure
