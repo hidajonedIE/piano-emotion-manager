@@ -137,6 +137,15 @@ export class SmartFilterService {
   ): SQL {
     const strategy = this.getFilterStrategy(orgContext, options);
     const { userOdId } = options;
+    
+    // DEBUG: Log para diagnosticar el problema
+    console.log('[SmartFilter] buildWhereCondition:', {
+      resource: options.resource,
+      userOdId,
+      organizationId: orgContext.organizationId,
+      strategy,
+      sharingModel: orgContext.sharingSettings.get(options.resource)
+    });
 
     if (strategy.shouldFilterByOdId) {
       // Filtrar solo por odId (datos privados)
