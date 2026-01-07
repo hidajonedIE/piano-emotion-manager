@@ -46,7 +46,7 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
     const user = await db
       .select({
         id: users.id,
-        odId: users.odId,
+        odId: users.openId,
         partnerId: users.partnerId,
       })
       .from(users)
