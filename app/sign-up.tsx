@@ -9,8 +9,7 @@ export default function SignUpScreen() {
   return (
     <View style={styles.container}>
       <SignUp 
-        path="/sign-up"
-        routing="path"
+        routing="virtual"
         signInUrl="/login"
         afterSignUpUrl="/(tabs)"
       />
