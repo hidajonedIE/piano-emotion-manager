@@ -143,7 +143,8 @@ export const clientsRouter = router({
       console.log('[clients.list] STEP 8: About to execute query with limit:', limit, 'offset:', offset);
       
       try {
-        const items = await database
+        // Log del SQL exacto que genera Drizzle
+        const queryBuilder = database
           .select({
             id: clients.id,
             odId: clients.odId,
@@ -169,6 +170,11 @@ export const clientsRouter = router({
           .orderBy(orderByClause)
           .limit(limit)
           .offset(offset);
+        
+        const sqlQuery = queryBuilder.toSQL();
+        console.log('[clients.list] STEP 8.5: SQL Query:', JSON.stringify(sqlQuery));
+        
+        const items = await queryBuilder;
         console.log('[clients.list] STEP 9: Query executed successfully, items:', items.length);
 
         console.log('[clients.list] STEP 10: About to count total');
