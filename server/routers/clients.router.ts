@@ -175,7 +175,13 @@ export const clientsRouter = router({
         console.log('[clients.list] STEP 8.5: SQL Query:', JSON.stringify(sqlQuery));
         
         const items = await queryBuilder;
-        console.log('[clients.list] STEP 9: Query executed successfully, items:', items.length);
+        console.log('[clients.list] STEP 9: Query executed successfully, items.length:', items.length);
+        console.log('[clients.list] STEP 9.1: items type:', typeof items, 'isArray:', Array.isArray(items));
+        if (items.length > 0) {
+          console.log('[clients.list] STEP 9.2: First 3 items:', JSON.stringify(items.slice(0, 3)));
+        } else {
+          console.log('[clients.list] STEP 9.2: No items returned from query');
+        }
 
         console.log('[clients.list] STEP 10: About to count total');
         const [{ total }] = await database
