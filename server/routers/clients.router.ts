@@ -231,6 +231,7 @@ export const clientsRouter = router({
         address,
         odId: ctx.user.openId,
         partnerId: ctx.partnerId,
+        organizationId: null, // Por defecto null para técnicos individuales
       };
       
       console.log('[clients.create] DEBUG clientData:', JSON.stringify(clientData));
