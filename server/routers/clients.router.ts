@@ -143,28 +143,9 @@ export const clientsRouter = router({
       console.log('[clients.list] STEP 8: About to execute query with limit:', limit, 'offset:', offset);
       
       try {
-        // Log del SQL exacto que genera Drizzle
+        // Use select() without explicit fields to let Drizzle use the schema automatically
         const queryBuilder = database
-          .select({
-            id: clients.id,
-            odId: clients.odId,
-            partnerId: clients.partnerId,
-            // organization_id: clients.organization_id,  // Removed: causes undefined error
-            name: clients.name,
-            email: clients.email,
-            phone: clients.phone,
-            address: clients.address,
-            clientType: clients.clientType,
-            notes: clients.notes,
-            region: clients.region,
-            city: clients.city,
-            postalCode: clients.postalCode,
-            latitude: clients.latitude,
-            longitude: clients.longitude,
-            routeGroup: clients.routeGroup,
-            createdAt: clients.createdAt,
-            updatedAt: clients.updatedAt,
-          })
+          .select()
           .from(clients)
           .where(and(...whereClauses))
           .orderBy(orderByClause)
