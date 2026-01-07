@@ -241,7 +241,7 @@ export const clientsRouter = router({
         address,
         odId: ctx.user.openId,
         partnerId: ctx.partnerId,
-        organizationId: null, // Por defecto null para técnicos individuales
+        // organizationId removed: column doesn't exist in production DB
       };
       
       console.log('[clients.create] DEBUG clientData:', JSON.stringify(clientData));
