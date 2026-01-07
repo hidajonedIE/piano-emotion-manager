@@ -425,21 +425,20 @@ export default function LoginScreen() {
       setError(null);
 
       if (Platform.OS === 'web') {
-        // Para web, usar window.Clerk directamente
-        console.log('[handleGoogleSignIn] Using window.Clerk for web');
+        // Para web, usar signIn.authenticateWithRedirect
+        console.log('[handleGoogleSignIn] Using signIn.authenticateWithRedirect for web');
         
-        if (typeof window !== 'undefined' && (window as any).Clerk) {
-          const clerk = (window as any).Clerk;
-          console.log('[handleGoogleSignIn] Clerk instance found:', !!clerk);
+        if (signIn) {
+          console.log('[handleGoogleSignIn] signIn object available:', !!signIn);
           
-          // Usar signIn.authenticateWithRedirect para web
-          await clerk.signIn.authenticateWithRedirect({
+          // Usar authenticateWithRedirect para web
+          await signIn.authenticateWithRedirect({
             strategy: 'oauth_google',
             redirectUrl: `${window.location.origin}/oauth-native-callback`,
             redirectUrlComplete: `${window.location.origin}/(tabs)`,
           });
         } else {
-          throw new Error('Clerk no está disponible en window');
+          throw new Error('signIn no está disponible');
         }
       } else {
         // Para native, usar useOAuth hook
@@ -463,7 +462,7 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
-  }, [startOAuthFlow, router]);
+  }, [signIn, startOAuthFlow, router]);
 
   /**
    * Reenviar código de verificación
