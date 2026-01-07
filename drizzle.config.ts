@@ -15,9 +15,6 @@ export default defineConfig({
   dialect: 'mysql',
   dbCredentials: {
     url: process.env.DATABASE_URL!,
-    ssl: {
-      rejectUnauthorized: true
-    }
   },
-  casing: 'preserve', // Preservar el casing exacto de los nombres de columna
+  casing: 'camelCase',
 });
