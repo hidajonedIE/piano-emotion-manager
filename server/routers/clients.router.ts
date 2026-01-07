@@ -115,7 +115,18 @@ export const clientsRouter = router({
       if (region) whereClauses.push(eq(clients.region, region));
       if (routeGroup) whereClauses.push(eq(clients.routeGroup, routeGroup));
 
-      const sortColumn = clients[sortBy as keyof typeof clients] || clients.name;
+      // Mapeo explícito de sortBy a columnas de Drizzle
+      const sortColumnMap: Record<string, any> = {
+        name: clients.name,
+        email: clients.email,
+        phone: clients.phone,
+        city: clients.city,
+        region: clients.region,
+        createdAt: clients.createdAt,
+        updatedAt: clients.updatedAt,
+      };
+      const sortColumn = sortColumnMap[sortBy] || clients.name;
+      console.log('[clients.list] sortBy:', sortBy, 'sortColumn:', sortColumn);
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       const offset = cursor || 0;
