@@ -149,7 +149,7 @@ export const clientsRouter = router({
             id: clients.id,
             odId: clients.odId,
             partnerId: clients.partnerId,
-            organization_id: clients.organization_id,
+            // organization_id: clients.organization_id,  // Removed: causes undefined error
             name: clients.name,
             email: clients.email,
             phone: clients.phone,
