@@ -36,12 +36,27 @@ export const useSSO = Platform.OS === 'web'
       const { signIn } = clerkModule.useSignIn();
       return {
         startSSOFlow: async ({ strategy, redirectUrl }: any) => {
-          if (!signIn) return {};
-          return signIn.authenticateWithRedirect({
-            strategy,
-            redirectUrl: redirectUrl || '/',
-            redirectUrlComplete: redirectUrl || '/',
-          });
+          if (!signIn) {
+            console.error('[useSSO] signIn not available');
+            return {};
+          }
+          
+          try {
+            console.log('[useSSO] Starting OAuth with strategy:', strategy);
+            
+            // Use authenticateWithRedirect which handles the full OAuth flow
+            await signIn.authenticateWithRedirect({
+              strategy,
+              redirectUrl: redirectUrl || window.location.origin,
+              redirectUrlComplete: redirectUrl || window.location.origin,
+            });
+            
+            // This won't execute because authenticateWithRedirect redirects the page
+            return {};
+          } catch (error) {
+            console.error('[useSSO] OAuth error:', error);
+            throw error;
+          }
         },
       };
     }
