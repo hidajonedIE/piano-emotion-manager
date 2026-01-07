@@ -126,7 +126,6 @@ export const clientsRouter = router({
         updatedAt: clients.updatedAt,
       };
       const sortColumn = sortColumnMap[sortBy] || clients.name;
-      console.log('[clients.list] sortBy:', sortBy, 'sortColumn:', sortColumn);
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       const offset = cursor || 0;
