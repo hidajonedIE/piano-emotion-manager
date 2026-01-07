@@ -416,49 +416,48 @@ export default function LoginScreen() {
    */
   const handleGoogleSignIn = useCallback(async () => {
     console.log('[handleGoogleSignIn] Button clicked');
-    console.log('[handleGoogleSignIn] startSSOFlow available:', typeof startSSOFlow);
+    console.log('[handleGoogleSignIn] signIn available:', !!signIn);
     
     try {
       setLoading(true);
       setError(null);
 
-      const result = await startSSOFlow({
+      if (!signIn) {
+        console.error('[handleGoogleSignIn] signIn not available');
+        setError('Error al inicializar el sistema de autenticación');
+        return;
+      }
+
+      console.log('[handleGoogleSignIn] Creating sign-in attempt...');
+      
+      // Create sign-in attempt with OAuth strategy
+      const signInAttempt = await signIn.create({
         strategy: "oauth_google",
-        redirectUrl: "/",
       });
-
-      if (result && result.createdSessionId && result.setActive) {
-        await result.setActive({ session: result.createdSessionId });
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        router.replace("/");
+      
+      console.log('[handleGoogleSignIn] Sign-in attempt created:', signInAttempt);
+      
+      // Get the OAuth redirect URL
+      const redirectUrl = signInAttempt.firstFactorVerification?.externalVerificationRedirectURL;
+      
+      if (!redirectUrl) {
+        console.error('[handleGoogleSignIn] No redirect URL from Clerk');
+        setError('Error al iniciar sesión con Google');
         return;
       }
-
-      if (result && result.signUp?.createdSessionId && result.setActive) {
-        await result.setActive({ session: result.signUp.createdSessionId });
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        router.replace("/");
-        return;
-      }
-
-      if (result && result.signIn?.createdSessionId && result.setActive) {
-        await result.setActive({ session: result.signIn.createdSessionId });
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        router.replace("/");
-        return;
-      }
-
-    } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err);
-      setError(errorMessage);
+      
+      console.log('[handleGoogleSignIn] Redirecting to:', redirectUrl);
+      
+      // Redirect to Google OAuth
+      window.location.href = redirectUrl;
+    } catch (err) {
+      console.error("[handleGoogleSignIn] Error:", err);
+      setError(getErrorMessage(err));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setLoading(false);
     }
-  }, [startSSOFlow, router]);
-
-  /**
-   * Reenviar código de verificación
+  }, [signIn]);* Reenviar código de verificación
    */
   const handleResendCode = useCallback(async () => {
     if (!isSignUpLoaded || !signUp) return;
