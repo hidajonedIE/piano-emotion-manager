@@ -457,7 +457,10 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
-  }, [signIn]);* Reenviar código de verificación
+  }, [signIn]);
+
+  /**
+   * Reenviar código de verificación
    */
   const handleResendCode = useCallback(async () => {
     if (!isSignUpLoaded || !signUp) return;
