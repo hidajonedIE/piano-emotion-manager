@@ -207,18 +207,10 @@ export const clientsRouter = router({
         address = parts.join(", ");
       }
       
-      // DEBUG: Verificar contexto
-      console.log('[clients.create] DEBUG ctx:', JSON.stringify({
-        hasUser: !!ctx.user,
-        userKeys: ctx.user ? Object.keys(ctx.user) : [],
-        openId: ctx.openId,
-        partnerId: ctx.partnerId,
-      }));
-      
       const clientData = {
         ...input,
         address,
-        odId: ctx.openId, // Agregar odId del usuario autenticado
+        odId: ctx.user.openId, // FIX: usar ctx.user.openId en lugar de ctx.openId
         partnerId: ctx.partnerId,
       };
       
