@@ -107,10 +107,15 @@ export const pianosRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
+      console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
+      console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
+      
       const whereClauses = [
         filterByPartner(pianos.partnerId, ctx.partnerId),
         eq(pianos.odId, ctx.user.openId)
       ];
+      
+      console.log('[PIANOS DEBUG] whereClauses:', whereClauses);
       
       if (search) {
         whereClauses.push(
