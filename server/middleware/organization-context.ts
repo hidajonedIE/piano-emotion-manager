@@ -66,8 +66,8 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
     const membership = await db
       .select({
         organizationId: organizationMembers.organizationId,
-        role: organizationMembers.role,
-        status: organizationMembers.status,
+        role: organizationMembers.organizationRole,
+        status: organizationMembers.membershipStatus,
       })
       .from(organizationMembers)
       .where(
