@@ -170,6 +170,8 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       secretKey: process.env.CLERK_SECRET_KEY,
       authorizedParties: [
         'https://pianoemotion.com',
+        'https://clerk.pianoemotion.com',
+        'https://accounts.pianoemotion.com',
         'https://piano-emotion-manager.vercel.app',
         'http://localhost:3000'
       ],
