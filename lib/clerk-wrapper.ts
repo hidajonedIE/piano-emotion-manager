@@ -29,7 +29,20 @@ export const useAuth = clerkModule.useAuth;
 export const useUser = clerkModule.useUser;
 export const useSession = clerkModule.useSession;
 
-// For SSO, provide a fallback on web
-export const useSSO = Platform.OS === 'web' 
-  ? () => ({ startSSOFlow: async () => {} })
+// For SSO, provide a web implementation
+export const useSSO = Platform.OS === 'web'
+  ? () => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const { signIn } = clerkModule.useSignIn();
+      return {
+        startSSOFlow: async ({ strategy, redirectUrl }: any) => {
+          if (!signIn) return {};
+          return signIn.authenticateWithRedirect({
+            strategy,
+            redirectUrl: redirectUrl || '/',
+            redirectUrlComplete: redirectUrl || '/',
+          });
+        },
+      };
+    }
   : clerkModule.useSSO;
