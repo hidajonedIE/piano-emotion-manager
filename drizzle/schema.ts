@@ -197,7 +197,7 @@ export const clients = mysqlTable("clients", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 50 }),
@@ -233,7 +233,7 @@ export const pianos = mysqlTable("pianos", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   clientId: int("clientId").notNull(),
   brand: varchar("brand", { length: 100 }).notNull(),
   model: varchar("model", { length: 100 }),
@@ -268,7 +268,7 @@ export const services = mysqlTable("services", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   pianoId: int("pianoId").notNull(),
   clientId: int("clientId").notNull(),
   serviceType: mysqlEnum("serviceType", [
@@ -310,7 +310,7 @@ export const inventory = mysqlTable("inventory", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   category: mysqlEnum("category", [
     "strings",
@@ -347,7 +347,7 @@ export const appointments = mysqlTable("appointments", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   clientId: int("clientId").notNull(),
   pianoId: int("pianoId"),
   title: varchar("title", { length: 255 }).notNull(),
@@ -373,7 +373,7 @@ export const invoices = mysqlTable("invoices", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   invoiceNumber: varchar("invoiceNumber", { length: 50 }).notNull(),
   clientId: int("clientId").notNull(),
   clientName: varchar("clientName", { length: 255 }).notNull(),
@@ -413,7 +413,7 @@ export const serviceRates = mysqlTable("serviceRates", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   category: mysqlEnum("category", [
@@ -468,7 +468,7 @@ export const reminders = mysqlTable("reminders", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   clientId: int("clientId").notNull(),
   pianoId: int("pianoId"),
   reminderType: mysqlEnum("reminderType", ["call", "visit", "email", "whatsapp", "follow_up"]).notNull(),
@@ -494,7 +494,7 @@ export const quotes = mysqlTable("quotes", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   quoteNumber: varchar("quoteNumber", { length: 50 }).notNull(),
   clientId: int("clientId").notNull(),
   clientName: varchar("clientName", { length: 255 }).notNull(),
@@ -556,7 +556,7 @@ export const quoteTemplates = mysqlTable("quoteTemplates", {
   // Multi-tenant field
   partnerId: int("partnerId").notNull().default(1).references(() => partners.id),
   // Organization field (nullable for individual technicians)
-  organizationId: int("organizationId"), // FK to organizations.id
+  organizationId: int("organization_id"), // FK to organizations.id
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   category: mysqlEnum("category", ["tuning", "repair", "restoration", "maintenance", "moving", "evaluation", "custom"]).default("custom").notNull(),
