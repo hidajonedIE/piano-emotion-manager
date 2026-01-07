@@ -189,7 +189,6 @@ export default function LoginScreen() {
   const { signIn, setActive: setSignInActive, isLoaded: isSignInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: isSignUpLoaded } = useSignUp();
   const { isSignedIn } = useAuth();
-  const { startSSOFlow } = useSSO();
   const router = useRouter();
 
   // Estados del formulario
