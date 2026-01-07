@@ -23,6 +23,9 @@ export const useSSO = Platform.OS === 'web'
       const { signIn, setActive } = clerkModule.useSignIn();
       return {
         startSSOFlow: async ({ strategy, redirectUrl }: any) => {
+          console.log('[useSSO] startSSOFlow called with strategy:', strategy);
+          console.log('[useSSO] signIn object:', signIn);
+          
           if (!signIn) {
             console.error('[useSSO] signIn not available');
             return {};
