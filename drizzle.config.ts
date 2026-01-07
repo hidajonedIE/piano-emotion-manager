@@ -19,4 +19,5 @@ export default defineConfig({
       rejectUnauthorized: true
     }
   },
+  casing: 'preserve', // Preservar el casing exacto de los nombres de columna
 });

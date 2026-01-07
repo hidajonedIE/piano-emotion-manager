@@ -17,7 +17,7 @@ export async function getDb() {
           rejectUnauthorized: true,
         },
       });
-      _db = drizzle(pool);
+      _db = drizzle(pool, { casing: 'preserve' });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
