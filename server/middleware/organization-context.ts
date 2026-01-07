@@ -162,6 +162,8 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
  * ```
  */
 export const withOrganizationContext = async ({ ctx, next }: any) => {
+  console.log('[OrganizationContext] Middleware iniciado, ctx.user:', ctx.user);
+  
   if (!ctx.user || !ctx.user.id) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
@@ -170,6 +172,8 @@ export const withOrganizationContext = async ({ ctx, next }: any) => {
   }
 
   const orgContext = await getOrganizationContext(ctx.user.id);
+  
+  console.log('[OrganizationContext] Contexto obtenido:', orgContext);
 
   return next({
     ctx: {
