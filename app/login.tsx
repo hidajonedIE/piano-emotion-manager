@@ -433,6 +433,7 @@ export default function LoginScreen() {
       // Create sign-in attempt with OAuth strategy
       const signInAttempt = await signIn.create({
         strategy: "oauth_google",
+        redirectUrl: window.location.origin,
       });
       
       console.log('[handleGoogleSignIn] Sign-in attempt created:', signInAttempt);
