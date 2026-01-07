@@ -148,6 +148,7 @@ export const clientsRouter = router({
             id: clients.id,
             odId: clients.odId,
             partnerId: clients.partnerId,
+            organization_id: clients.organization_id,
             name: clients.name,
             email: clients.email,
             phone: clients.phone,
