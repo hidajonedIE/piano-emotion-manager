@@ -98,7 +98,7 @@ export const clientsRouter = router({
         return { items: [], total: 0 };
       }
 
-      console.log('[clients.list] STEP 1: Filtering by partnerId:', ctx.partnerId);
+      console.log('[clients.list] ===== TEST DESPLIEGUE d947060 ===== Filtering by partnerId:', ctx.partnerId);
       // Solo filtrar por partnerId
       const whereClauses = [eq(clients.partnerId, ctx.partnerId)];
       console.log('[clients.list] STEP 2: whereClauses created');
