@@ -1,5 +1,5 @@
 import { useSignIn, useSignUp, useAuth } from "@clerk/clerk-expo";
-import { useSSO } from "@clerk/clerk-expo";
+import { useOAuth } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import {
@@ -414,51 +414,39 @@ export default function LoginScreen() {
   /**
    * Inicio de sesión con Google
    */
+  // Hook de OAuth de Clerk para Google
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
+
   const handleGoogleSignIn = useCallback(async () => {
-    console.log('[handleGoogleSignIn] Button clicked');
-    console.log('[handleGoogleSignIn] signIn available:', !!signIn);
+    console.log('[handleGoogleSignIn] Starting OAuth flow...');
     
     try {
       setLoading(true);
       setError(null);
 
-      if (!signIn) {
-        console.error('[handleGoogleSignIn] signIn not available');
-        setError('Error al inicializar el sistema de autenticación');
-        return;
-      }
+      // Iniciar el flujo de OAuth con Google
+      const { createdSessionId, setActive } = await startOAuthFlow();
+      
+      console.log('[handleGoogleSignIn] OAuth flow completed, sessionId:', createdSessionId);
 
-      console.log('[handleGoogleSignIn] Creating sign-in attempt...');
-      
-      // Create sign-in attempt with OAuth strategy
-      const signInAttempt = await signIn.create({
-        strategy: "oauth_google",
-        redirectUrl: window.location.origin,
-      });
-      
-      console.log('[handleGoogleSignIn] Sign-in attempt created:', signInAttempt);
-      
-      // Get the OAuth redirect URL
-      const redirectUrl = signInAttempt.firstFactorVerification?.externalVerificationRedirectURL;
-      
-      if (!redirectUrl) {
-        console.error('[handleGoogleSignIn] No redirect URL from Clerk');
-        setError('Error al iniciar sesión con Google');
-        return;
+      if (createdSessionId) {
+        // Activar la sesión
+        await setActive({ session: createdSessionId });
+        console.log('[handleGoogleSignIn] Session activated successfully');
+        
+        // Redirigir al dashboard
+        router.replace("/(tabs)");
       }
-      
-      console.log('[handleGoogleSignIn] Redirecting to:', redirectUrl);
-      
-      // Redirect to Google OAuth
-      window.location.href = redirectUrl;
     } catch (err) {
       console.error("[handleGoogleSignIn] Error:", err);
       setError(getErrorMessage(err));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
     } finally {
       setLoading(false);
     }
-  }, [signIn]);
+  }, [startOAuthFlow, router]);
 
   /**
    * Reenviar código de verificación
