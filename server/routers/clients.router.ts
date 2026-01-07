@@ -207,6 +207,14 @@ export const clientsRouter = router({
         address = parts.join(", ");
       }
       
+      // DEBUG: Verificar contexto
+      console.log('[clients.create] DEBUG ctx:', JSON.stringify({
+        hasUser: !!ctx.user,
+        userKeys: ctx.user ? Object.keys(ctx.user) : [],
+        openId: ctx.openId,
+        partnerId: ctx.partnerId,
+      }));
+      
       const clientData = {
         ...input,
         address,
@@ -214,7 +222,7 @@ export const clientsRouter = router({
         partnerId: ctx.partnerId,
       };
       
-      console.log('[clients.create] Creating client with data:', JSON.stringify(clientData));
+      console.log('[clients.create] DEBUG clientData:', JSON.stringify(clientData));
       const result = await db.createClient(clientData);
       console.log('[clients.create] Client created successfully:', result);
       return result;
