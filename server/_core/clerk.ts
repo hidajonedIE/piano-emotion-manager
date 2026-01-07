@@ -212,7 +212,24 @@ export async function getOrCreateUserFromClerk(
 ): Promise<DatabaseUser> {
   // Check if user exists in database
   const existingUsers = await db
-    .select()
+    .select({
+      id: usersTable.id,
+      openId: usersTable.openId,
+      name: usersTable.name,
+      email: usersTable.email,
+      loginMethod: usersTable.loginMethod,
+      role: usersTable.role,
+      partnerId: usersTable.partnerId,
+      preferredLanguage: usersTable.preferredLanguage,
+      createdAt: usersTable.createdAt,
+      updatedAt: usersTable.updatedAt,
+      lastSignedIn: usersTable.lastSignedIn,
+      stripeCustomerId: usersTable.stripeCustomerId,
+      subscriptionPlan: usersTable.subscriptionPlan,
+      subscriptionStatus: usersTable.subscriptionStatus,
+      subscriptionId: usersTable.subscriptionId,
+      subscriptionEndDate: usersTable.subscriptionEndDate,
+    })
     .from(usersTable)
     .where(eq(usersTable.openId, clerkUser.id))
     .limit(1) as DatabaseUser[];
@@ -241,7 +258,24 @@ export async function getOrCreateUserFromClerk(
 
   if (insertedId) {
     const createdUsers = await db
-      .select()
+      .select({
+        id: usersTable.id,
+        openId: usersTable.openId,
+        name: usersTable.name,
+        email: usersTable.email,
+        loginMethod: usersTable.loginMethod,
+        role: usersTable.role,
+        partnerId: usersTable.partnerId,
+        preferredLanguage: usersTable.preferredLanguage,
+        createdAt: usersTable.createdAt,
+        updatedAt: usersTable.updatedAt,
+        lastSignedIn: usersTable.lastSignedIn,
+        stripeCustomerId: usersTable.stripeCustomerId,
+        subscriptionPlan: usersTable.subscriptionPlan,
+        subscriptionStatus: usersTable.subscriptionStatus,
+        subscriptionId: usersTable.subscriptionId,
+        subscriptionEndDate: usersTable.subscriptionEndDate,
+      })
       .from(usersTable)
       .where(eq(usersTable.id, insertedId))
       .limit(1) as DatabaseUser[];
@@ -250,7 +284,24 @@ export async function getOrCreateUserFromClerk(
 
   // If insert didn't return ID, fetch by openId
   const createdUsers = await db
-    .select()
+    .select({
+      id: usersTable.id,
+      openId: usersTable.openId,
+      name: usersTable.name,
+      email: usersTable.email,
+      loginMethod: usersTable.loginMethod,
+      role: usersTable.role,
+      partnerId: usersTable.partnerId,
+      preferredLanguage: usersTable.preferredLanguage,
+      createdAt: usersTable.createdAt,
+      updatedAt: usersTable.updatedAt,
+      lastSignedIn: usersTable.lastSignedIn,
+      stripeCustomerId: usersTable.stripeCustomerId,
+      subscriptionPlan: usersTable.subscriptionPlan,
+      subscriptionStatus: usersTable.subscriptionStatus,
+      subscriptionId: usersTable.subscriptionId,
+      subscriptionEndDate: usersTable.subscriptionEndDate,
+    })
     .from(usersTable)
     .where(eq(usersTable.openId, clerkUser.id))
     .limit(1) as DatabaseUser[];
