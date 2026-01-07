@@ -20,7 +20,7 @@ export const useSSO = Platform.OS === 'web'
   ? () => {
       // For web with @clerk/clerk-react, use useSignIn
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { signIn } = clerkModule.useSignIn();
+      const { signIn, setActive } = clerkModule.useSignIn();
       return {
         startSSOFlow: async ({ strategy, redirectUrl }: any) => {
           if (!signIn) {
@@ -30,16 +30,29 @@ export const useSSO = Platform.OS === 'web'
           
           try {
             console.log('[useSSO] Starting OAuth with strategy:', strategy);
-            console.log('[useSSO] Redirect URL:', redirectUrl || window.location.origin);
             
-            // Use authenticateWithRedirect which handles the full OAuth flow
-            await signIn.authenticateWithRedirect({
+            // Create a sign-in attempt with the OAuth strategy
+            const signInAttempt = await signIn.create({
               strategy,
-              redirectUrl: redirectUrl || window.location.origin,
-              redirectUrlComplete: redirectUrl || window.location.origin,
             });
             
-            // This won't execute because authenticateWithRedirect redirects the page
+            console.log('[useSSO] Sign-in attempt created:', signInAttempt);
+            
+            // Get the external verification redirect URL
+            const redirectUrlFromClerk = 
+              signInAttempt.firstFactorVerification?.externalVerificationRedirectURL;
+            
+            if (!redirectUrlFromClerk) {
+              console.error('[useSSO] No redirect URL from Clerk');
+              return {};
+            }
+            
+            console.log('[useSSO] Opening OAuth URL:', redirectUrlFromClerk);
+            
+            // Redirect the current page to Google OAuth
+            window.location.href = redirectUrlFromClerk;
+            
+            // Return empty object as we're redirecting
             return {};
           } catch (error) {
             console.error('[useSSO] OAuth error:', error);
