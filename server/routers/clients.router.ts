@@ -73,6 +73,7 @@ const clientBaseSchema = z.object({
 // ROUTER
 // ============================================================================
 
+// Force redeploy to refresh DB schema cache - organization_id
 export const clientsRouter = router({
   list: protectedProcedure
      .input(
