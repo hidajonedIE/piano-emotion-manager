@@ -210,6 +210,7 @@ export const clientsRouter = router({
       const clientData = {
         ...input,
         address,
+        odId: ctx.openId, // Agregar odId del usuario autenticado
         partnerId: ctx.partnerId,
       };
       
