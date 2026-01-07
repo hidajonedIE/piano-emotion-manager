@@ -415,6 +415,9 @@ export default function LoginScreen() {
    * Inicio de sesión con Google
    */
   const handleGoogleSignIn = useCallback(async () => {
+    console.log('[handleGoogleSignIn] Button clicked');
+    console.log('[handleGoogleSignIn] startSSOFlow available:', typeof startSSOFlow);
+    
     try {
       setLoading(true);
       setError(null);
