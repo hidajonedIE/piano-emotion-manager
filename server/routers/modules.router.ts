@@ -36,7 +36,8 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
       const planMap: Record<string, SubscriptionPlan> = {
         'free': 'free',
         'starter': 'free',
-        'professional': 'professional',
+        'pro': 'pro',
+        'professional': 'pro',
         'enterprise': 'premium',
         'premium_ia': 'premium',
         'premium': 'premium',

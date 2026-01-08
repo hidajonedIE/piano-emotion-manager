@@ -10,7 +10,7 @@ import { trpc } from '@/utils/trpc';
 // Types
 // ============================================================================
 
-export type SubscriptionPlan = 'free' | 'professional' | 'premium';
+export type SubscriptionPlan = 'free' | 'pro' | 'premium';
 
 export interface ModuleInfo {
   code: string;

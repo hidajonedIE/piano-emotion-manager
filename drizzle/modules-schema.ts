@@ -253,7 +253,7 @@ export const subscriptionHistoryRelations = relations(subscriptionHistory, ({ on
 // ============================================================================
 
 export type ModuleType = 'core' | 'free' | 'premium' | 'addon';
-export type SubscriptionPlan = 'free' | 'professional' | 'professional' | 'premium';
+export type SubscriptionPlan = 'free' | 'pro' | 'premium';
 export type SubscriptionStatus = 'active' | 'trial' | 'past_due' | 'cancelled' | 'expired';
 
 export type Module = typeof modules.$inferSelect;

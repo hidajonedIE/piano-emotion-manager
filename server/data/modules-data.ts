@@ -62,7 +62,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'people',
     color: '#8b5cf6',
     type: 'core',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'pianos',
@@ -71,7 +71,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'musical-notes',
     color: '#ec4899',
     type: 'core',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'services',
@@ -80,7 +80,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'construct',
     color: '#f59e0b',
     type: 'core',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'calendar',
@@ -89,7 +89,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'calendar',
     color: '#3b82f6',
     type: 'core',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   // Free optional modules
   {
@@ -99,7 +99,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'document-text',
     color: '#14b8a6',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'inventory',
@@ -108,7 +108,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'cube',
     color: '#6366f1',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'team_management',
@@ -117,7 +117,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'people-circle',
     color: '#10b981',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'communications',
@@ -126,7 +126,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'chatbubbles',
     color: '#10b981',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'reminders',
@@ -135,7 +135,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'alarm',
     color: '#f59e0b',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'contracts',
@@ -144,7 +144,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'document',
     color: '#3b82f6',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'client_map',
@@ -153,7 +153,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'map',
     color: '#ec4899',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'routes',
@@ -162,7 +162,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'navigate',
     color: '#8b5cf6',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'import_export',
@@ -171,7 +171,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'swap-horizontal',
     color: '#06b6d4',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   {
     code: 'client_portal',
@@ -180,7 +180,7 @@ export const DEFAULT_MODULES: Array<{
     icon: 'globe',
     color: '#ec4899',
     type: 'free',
-    includedInPlans: ['free', 'professional', 'premium'],
+    includedInPlans: ['free', 'pro', 'premium'],
   },
   // Pro modules (Professional and Premium)
   {
@@ -189,8 +189,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Facturas electrónicas con validación fiscal',
     icon: 'receipt',
     color: '#14b8a6',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'inventory_advanced',
@@ -198,8 +198,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Gestión avanzada de inventario con alertas y proveedores',
     icon: 'cube-outline',
     color: '#6366f1',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'marketing',
@@ -207,8 +207,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Crea y gestiona campañas de marketing',
     icon: 'megaphone',
     color: '#f59e0b',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'crm_basic',
@@ -216,8 +216,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Gestión avanzada de relaciones con clientes',
     icon: 'people-circle',
     color: '#8b5cf6',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'multi_technician',
@@ -225,8 +225,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Gestión de equipos con múltiples técnicos',
     icon: 'people',
     color: '#3b82f6',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'accounting_basic',
@@ -234,8 +234,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Gestión básica de gastos e ingresos',
     icon: 'calculator',
     color: '#f97316',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'analytics',
@@ -243,8 +243,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Análisis y reportes de tu negocio',
     icon: 'bar-chart',
     color: '#06b6d4',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'automations',
@@ -252,8 +252,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Automatiza tareas repetitivas',
     icon: 'flash',
     color: '#eab308',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'calendar_sync',
@@ -261,8 +261,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Sincroniza con Google Calendar y Outlook',
     icon: 'sync',
     color: '#a855f7',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   {
     code: 'payment_gateways',
@@ -270,8 +270,8 @@ export const DEFAULT_MODULES: Array<{
     description: 'Acepta pagos online con Stripe y otras pasarelas',
     icon: 'card',
     color: '#14b8a6',
-    type: 'professional',
-    includedInPlans: ['professional', 'premium'],
+    type: 'pro',
+    includedInPlans: ['pro', 'premium'],
   },
   // Premium IA modules (Premium only)
   {
@@ -390,7 +390,7 @@ export const DEFAULT_PLANS: PlanInfo[] = [
     isPopular: false,
   },
   {
-    code: 'professional',
+    code: 'pro',
     name: 'Plan Pro',
     description: '€30/año',
     monthlyPrice: 2.5,
