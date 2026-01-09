@@ -44,6 +44,7 @@ export function createTRPCClient() {
             // Get the token from Clerk
             const { getToken } = require('@clerk/clerk-react');
             const token = await getToken();
+            console.log('[tRPC fetch] Token obtained from Clerk:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
             
             return fetch(url, {
               ...options,
