@@ -149,22 +149,27 @@ export const modulesRouter = router({
   }),
 
   // Obtener plan actual
-  getCurrentPlan: publicProcedure.query(async ({ ctx }) => {
-    console.log('[getCurrentPlan] ctx.user:', ctx.user ? { id: ctx.user.id, email: ctx.user.email, openId: ctx.user.openId } : null);
-    const userId = ctx.user?.openId;
-    console.log('[getCurrentPlan] userId:', userId);
-    
-    // If no userId, return free plan
-    if (!userId) {
-      console.log('[getCurrentPlan] No userId found, returning free plan');
-      return { plan: 'free' };
-    }
-    
-    // userId es el Clerk ID (string), se pasa directamente a getUserPlan
-    const plan = await getUserPlan(userId);
-    console.log('[getCurrentPlan] plan:', plan);
-    return { plan };
-  }),
+  getCurrentPlan: publicProcedure
+    .input(z.object({ userId: z.string().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      console.log('[getCurrentPlan] ctx.user:', ctx.user ? { id: ctx.user.id, email: ctx.user.email, openId: ctx.user.openId } : null);
+      console.log('[getCurrentPlan] input:', input);
+      
+      // Try to get userId from input first (passed from client), then from context
+      const userId = input?.userId || ctx.user?.openId;
+      console.log('[getCurrentPlan] userId:', userId);
+      
+      // If no userId, return free plan
+      if (!userId) {
+        console.log('[getCurrentPlan] No userId found, returning free plan');
+        return { plan: 'free' };
+      }
+      
+      // userId es el Clerk ID (string), se pasa directamente a getUserPlan
+      const plan = await getUserPlan(userId);
+      console.log('[getCurrentPlan] plan:', plan);
+      return { plan };
+    }),
 
   // Obtener planes disponibles
   getAvailablePlans: publicProcedure.query(async () => {

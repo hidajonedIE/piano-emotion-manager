@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { trpc } from '@/utils/trpc';
 
 // ============================================================================
@@ -130,8 +131,12 @@ export function useModules() {
 // ============================================================================
 
 export function useSubscription() {
+  const { user: clerkUser } = useUser();
   const { data: subscription, isLoading: subscriptionLoading } = trpc.modules.getCurrentSubscription.useQuery();
-  const { data: planFromServer, isLoading: planLoading } = trpc.modules.getCurrentPlan.useQuery();
+  const { data: planFromServer, isLoading: planLoading } = trpc.modules.getCurrentPlan.useQuery(
+    clerkUser?.id ? { userId: clerkUser.id } : undefined,
+    { enabled: !!clerkUser?.id }
+  );
   const { data: plans, isLoading: plansLoading } = trpc.modules.getAvailablePlans.useQuery();
   const { data: usage, isLoading: usageLoading, refetch: refetchUsage } = trpc.modules.getResourceUsage.useQuery();
 
