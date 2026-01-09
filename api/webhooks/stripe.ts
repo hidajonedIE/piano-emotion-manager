@@ -5,8 +5,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Stripe from 'stripe';
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
+
 import { users } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -29,15 +28,7 @@ export const config = {
 };
 
 // Crear conexión a la base de datos
-async function getDb() {
-  const connection = await mysql.createConnection({
-    uri: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: true,
-    },
-  });
-  return drizzle(connection);
-}
+import { getDb } from '../../server/_core/db.js';
 
 async function getRawBody(req: VercelRequest): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -147,7 +138,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       subscriptionStatus: 'active',
       subscriptionEndDate: new Date(subscription.current_period_end * 1000),
     })
-    .where(eq(users.openId, userId));
+    .where(eq(users.clerkId, userId));
 
 }
 

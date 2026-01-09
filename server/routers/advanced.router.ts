@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import { getUserByClerkId } from "../_core/db.js";
 import { storageRouter } from "./storage/index.js";
 
 // Funciones auxiliares para el chat
@@ -243,12 +243,12 @@ export const advancedRouter = router({
         try {
           // ✅ VERIFICAR LÍMITES DE SUSCRIPCIÓN
           const { requireAIFeature, recordAIUsage } = await import('../_core/subscription-middleware.js');
-          const { usage, limit } = await requireAIFeature(ctx.user.openId, 'chat');
+          const { usage, limit } = await requireAIFeature(ctx.user.id, 'chat');
           
           const { pianoAssistantChat } = await import('../_core/gemini.js');
           
-          const clients = await db.getClients(ctx.user.openId);
-          const services = await db.getServices(ctx.user.openId);
+          const clients = await getClients(ctx.user.id);
+          const services = await getServices(ctx.user.id);
           const pendingServices = services.filter(s => s.status === 'scheduled').length;
           
           const response = await pianoAssistantChat(input.message, {
@@ -258,7 +258,7 @@ export const advancedRouter = router({
           }, ctx.language);
           
           // ✅ REGISTRAR USO
-          await recordAIUsage(ctx.user.openId, 'chat', response.tokensUsed || 0);
+          await recordAIUsage(ctx.user.id, 'chat', response.tokensUsed || 0);
           
           return {
             success: true,
@@ -318,7 +318,7 @@ export const advancedRouter = router({
           
           const session = await createCheckoutSession({
             priceId,
-            userId: ctx.user.openId,
+            userId: ctx.user.id,
             userEmail: ctx.user.email || '',
             successUrl: input.successUrl,
             cancelUrl: input.cancelUrl,
@@ -332,7 +332,7 @@ export const advancedRouter = router({
       }),
 
     getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
-      const user = await db.getUserByClerkId(ctx.user.id);
+      const user = await getUserByClerkId(ctx.user.id);
       return {
         plan: (user as Record<string, unknown>)?.subscriptionPlan || 'FREE',
         status: (user as Record<string, unknown>)?.subscriptionStatus || 'inactive',
@@ -347,7 +347,7 @@ export const advancedRouter = router({
       .mutation(async ({ ctx, input }) => {
         try {
           const { createPortalSession } = await import('../_core/stripe.js');
-          const user = await db.getUserByOpenId(ctx.user.openId);
+          const user = await getUserByClerkId(ctx.user.id);
           
           if (!(user as Record<string, unknown>)?.stripeCustomerId) {
             throw new Error('No tienes una suscripción activa');
