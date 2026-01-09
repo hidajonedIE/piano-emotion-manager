@@ -332,7 +332,7 @@ export const advancedRouter = router({
       }),
 
     getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
-      const user = await getUserByClerkId(ctx.user.id);
+      const user = await getUserByClerkId(ctx.user.clerkId);
       return {
         plan: (user as Record<string, unknown>)?.subscriptionPlan || 'FREE',
         status: (user as Record<string, unknown>)?.subscriptionStatus || 'inactive',
@@ -347,7 +347,7 @@ export const advancedRouter = router({
       .mutation(async ({ ctx, input }) => {
         try {
           const { createPortalSession } = await import('../_core/stripe.js');
-          const user = await getUserByClerkId(ctx.user.id);
+          const user = await getUserByClerkId(ctx.user.clerkId);
           
           if (!(user as Record<string, unknown>)?.stripeCustomerId) {
             throw new Error('No tienes una suscripción activa');
