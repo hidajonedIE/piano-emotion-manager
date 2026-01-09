@@ -962,7 +962,7 @@ export const users = mysqlTable("users", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	lastSignedIn: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	stripeCustomerId: varchar({ length: 255 }),
-	subscriptionPlan: mysqlEnum(['free','pro','premium']).default('free').notNull(),
+	subscriptionPlan: mysqlEnum(['free','pro','premium','premium_ia']).default('free').notNull(),
 	subscriptionStatus: mysqlEnum(['active','canceled','past_due','trialing','none']).default('none').notNull(),
 	subscriptionId: varchar({ length: 255 }),
 	subscriptionEndDate: timestamp({ mode: 'string' }),
