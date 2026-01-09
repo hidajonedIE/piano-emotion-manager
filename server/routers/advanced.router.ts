@@ -434,7 +434,7 @@ export const advancedRouter = router({
         },
         {
           id: 'PREMIUM_IA',
-          name: 'Plan Premium IA',
+          name: 'Plan Premium',
           price: 50,
           currency: 'EUR',
           interval: 'year',

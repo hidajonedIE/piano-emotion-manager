@@ -423,7 +423,7 @@ export const DEFAULT_PLANS: PlanInfo[] = [
   },
   {
     code: 'premium',
-    name: 'Plan Premium IA',
+    name: 'Plan Premium',
     description: '€50/año',
     monthlyPrice: 4.17,
     yearlyPrice: 50,

@@ -218,7 +218,7 @@ const PLANS: PlanInfo[] = [
   },
   {
     code: 'premium',
-    name: 'Premium IA',
+    name: 'Premium',
     description: 'Para técnicos con alto volumen',
     monthlyPrice: 14.99,
     yearlyPrice: 149,
