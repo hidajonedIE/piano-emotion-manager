@@ -951,9 +951,8 @@ export const technicianZones = mysqlTable("technician_zones", {
 ]);
 
 export const users = mysqlTable("users", {
-  clerkId: varchar("clerkId", { length: 255 }).unique(),
 	id: int().autoincrement().notNull(),
-	openId: varchar({ length: 64 }).notNull(),
+	openId: varchar({ length: 64 }).notNull().unique(),
 	name: text(),
 	email: varchar({ length: 320 }),
 	loginMethod: varchar({ length: 64 }),
@@ -974,10 +973,7 @@ export const users = mysqlTable("users", {
 	smtpPassword: text(),
 	smtpSecure: tinyint().default(0),
 	smtpFromName: varchar({ length: 255 }),
-},
-(table) => [
-	index("users_openId_unique").on(table.openId),
-]);
+	});
 
 export const workAssignments = mysqlTable("work_assignments", {
 	id: int().autoincrement().notNull(),
