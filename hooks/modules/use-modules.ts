@@ -4,8 +4,29 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { Platform } from 'react-native';
 import { trpc } from '@/utils/trpc';
+
+// Hook personalizado que funciona en ambas plataformas
+function useClerkUser() {
+  if (Platform.OS === 'web') {
+    try {
+      const { useUser } = require('@clerk/clerk-react');
+      return useUser();
+    } catch (e) {
+      console.error('[useClerkUser] Error loading useUser from @clerk/clerk-react:', e);
+      return { user: null, isLoaded: false };
+    }
+  } else {
+    try {
+      const { useUser } = require('@clerk/clerk-expo');
+      return useUser();
+    } catch (e) {
+      console.error('[useClerkUser] Error loading useUser from @clerk/clerk-expo:', e);
+      return { user: null, isLoaded: false };
+    }
+  }
+}
 
 // ============================================================================
 // Types
@@ -131,7 +152,7 @@ export function useModules() {
 // ============================================================================
 
 export function useSubscription() {
-  const { user: clerkUser } = useUser();
+  const { user: clerkUser } = useClerkUser();
   const { data: subscription, isLoading: subscriptionLoading } = trpc.modules.getCurrentSubscription.useQuery();
   const { data: planFromServer, isLoading: planLoading } = trpc.modules.getCurrentPlan.useQuery(
     clerkUser?.id ? { userId: clerkUser.id } : undefined,
