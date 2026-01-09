@@ -332,7 +332,9 @@ export const advancedRouter = router({
       }),
 
     getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+      console.log('[getCurrentPlan] ctx.user:', { id: ctx.user.id, clerkId: ctx.user.clerkId, email: ctx.user.email });
       const user = await getUserByClerkId(ctx.user.clerkId);
+      console.log('[getCurrentPlan] user found:', { id: (user as any)?.id, clerkId: (user as any)?.clerkId, subscriptionPlan: (user as any)?.subscriptionPlan });
       return {
         plan: (user as Record<string, unknown>)?.subscriptionPlan || 'FREE',
         status: (user as Record<string, unknown>)?.subscriptionStatus || 'inactive',
