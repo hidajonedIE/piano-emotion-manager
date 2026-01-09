@@ -138,7 +138,10 @@ export function useSubscription() {
   const changePlan = trpc.modules.changePlan.useMutation();
 
   // Usar el plan real del servidor
+  console.log('[useSubscription] planFromServer:', planFromServer);
+  console.log('[useSubscription] planFromServer?.plan:', planFromServer?.plan);
   const plan = planFromServer?.plan || 'free';
+  console.log('[useSubscription] final plan:', plan);
 
   const isLoading = subscriptionLoading || planLoading || plansLoading || usageLoading;
 
