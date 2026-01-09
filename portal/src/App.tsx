@@ -1,50 +1,103 @@
 import React from 'react';
-import { ClerkProvider, SignedIn, SignedOut, SignInButton, UserButton, useAuth } from "@clerk/clerk-react";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import Layout from '@/components/Layout';
+import Login from '@/pages/Login';
+import VerifyMagicLink from '@/pages/VerifyMagicLink';
+import Dashboard from '@/pages/Dashboard';
+import Pianos from '@/pages/Pianos';
+import PianoDetail from '@/pages/PianoDetail';
+import Servicios from '@/pages/Servicios';
+import ServicioDetail from '@/pages/ServicioDetail';
+import Facturas from '@/pages/Facturas';
+import Citas from '@/pages/Citas';
+import NuevaCita from '@/pages/NuevaCita';
+import Mensajes from '@/pages/Mensajes';
 
-const PUBLISHABLE_KEY = "pk_test_dG91Y2hpbmctY2F0ZmlzaC04LmNsZXJrLmFjY291bnRzLmRldiQ";
+// Componente para rutas protegidas
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
 
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
 }
 
-function TokenComponent() {
-  const { getToken } = useAuth();
+// Componente para rutas públicas (redirige si ya está autenticado)
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
 
-  React.useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const token = await getToken();
-        console.log('Token:', token);
-      } catch (error) {
-        console.error('Error fetching token:', error);
-      }
-    };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
 
-    fetchToken();
-  }, [getToken]);
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
-  return <div>Check the console for the token.</div>;
+  return <>{children}</>;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Rutas públicas */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route path="/verify" element={<VerifyMagicLink />} />
+
+      {/* Rutas protegidas */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="pianos" element={<Pianos />} />
+        <Route path="pianos/:id" element={<PianoDetail />} />
+        <Route path="servicios" element={<Servicios />} />
+        <Route path="servicios/:id" element={<ServicioDetail />} />
+        <Route path="facturas" element={<Facturas />} />
+        <Route path="citas" element={<Citas />} />
+        <Route path="citas/nueva" element={<NuevaCita />} />
+        <Route path="mensajes" element={<Mensajes />} />
+      </Route>
+
+      {/* Ruta por defecto */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
 export default function App() {
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <header>
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </header>
-      <main>
-        <SignedIn>
-          <TokenComponent />
-        </SignedIn>
-        <SignedOut>
-          <div>Please sign in to test token retrieval.</div>
-        </SignedOut>
-      </main>
-    </ClerkProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

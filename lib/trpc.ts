@@ -25,7 +25,7 @@ export function createTRPCClient() {
   // Try to get token synchronously (it may be cached)
   if (typeof window !== 'undefined') {
     try {
-      const { getToken } = require('@clerk/clerk-react');
+      
       // This is async, but we'll handle it in the fetch function
     } catch (e) {
       console.error('[createTRPCClient] Error loading Clerk:', e);
@@ -42,8 +42,9 @@ export function createTRPCClient() {
         async fetch(url, options) {
           try {
             // Get the token from Clerk
-            const { getToken } = require('@clerk/clerk-react');
-            const token = await getToken();
+            
+            
+            const token = await window.Clerk.session?.getToken();
             console.log('[tRPC fetch] Token obtained from Clerk:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
             
             return fetch(url, {
