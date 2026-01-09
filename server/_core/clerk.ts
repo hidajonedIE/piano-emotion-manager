@@ -261,11 +261,11 @@ export async function getOrCreateUserFromClerk(
   usersTable: UsersTable,
   eq: EqFunction
 ): Promise<DatabaseUser> {
-  // 1. Find user by clerkId (primary)
+  // 1. Find user by openId (primary) - database uses openId, not clerkId
   let existingUser = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.clerkId, clerkUser.id))
+    .where(eq(usersTable.openId, clerkUser.id))
     .limit(1) as DatabaseUser[];
 
   if (existingUser.length > 0) {
@@ -285,18 +285,17 @@ export async function getOrCreateUserFromClerk(
     .limit(1) as DatabaseUser[];
 
   if (existingUser.length > 0) {
-    // User exists, but clerkId is missing. Update it.
+    // User exists, but openId might be missing. Update it.
     await db
       .update(usersTable)
-      .set({ clerkId: clerkUser.id, lastSignedIn: new Date() })
+      .set({ openId: clerkUser.id, lastSignedIn: new Date() })
       .where(eq(usersTable.id, existingUser[0].id));
-    return { ...existingUser[0], clerkId: clerkUser.id };
+    return { ...existingUser[0], openId: clerkUser.id };
   }
 
   // 3. Create new user
   const newUser = {
-    clerkId: clerkUser.id,
-    openId: clerkUser.id, // For backwards compatibility, if needed
+    openId: clerkUser.id, // Database uses openId, not clerkId
     email: clerkUser.email,
     name: clerkUser.name,
     loginMethod: "clerk",
@@ -315,11 +314,11 @@ export async function getOrCreateUserFromClerk(
     return createdUsers[0];
   }
 
-  // If insert didn't return ID, fetch by clerkId
+  // If insert didn't return ID, fetch by openId
   const createdUsers = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.clerkId, clerkUser.id))
+    .where(eq(usersTable.openId, clerkUser.id))
     .limit(1) as DatabaseUser[];
 
   return createdUsers[0];
