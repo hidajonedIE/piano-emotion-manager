@@ -149,7 +149,7 @@ export const modulesRouter = router({
   }),
 
   // Obtener plan actual
-  getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+  getCurrentPlan: publicProcedure.query(async ({ ctx }) => {
     console.log('[getCurrentPlan] ctx.user:', ctx.user ? { id: ctx.user.id, email: ctx.user.email, openId: ctx.user.openId } : null);
     const userId = ctx.user?.openId;
     console.log('[getCurrentPlan] userId:', userId);
