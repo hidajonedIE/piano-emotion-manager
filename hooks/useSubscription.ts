@@ -257,7 +257,7 @@ interface UseSubscriptionReturn {
 
 export function useSubscription(): UseSubscriptionReturn {
   // Get current subscription from backend via tRPC
-  const { data: subscriptionData, isLoading: subscriptionLoading } = trpc.advanced.subscription.getCurrentPlan.useQuery();
+  const { data: subscriptionData, isLoading: subscriptionLoading } = trpc.modules.getCurrentPlan.useQuery();
   
   // Map database plan values to frontend types
   const mapDatabasePlanToFrontend = (dbPlan: string | undefined): SubscriptionPlan => {
