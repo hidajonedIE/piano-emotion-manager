@@ -35,11 +35,7 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
       // Mapear el plan de la tabla users al tipo SubscriptionPlan
       const planMap: Record<string, SubscriptionPlan> = {
         'free': 'free',
-        'starter': 'free',
         'pro': 'pro',
-        'professional': 'pro',
-        'enterprise': 'premium',
-        'premium_ia': 'premium',
         'premium': 'premium',
       };
       
