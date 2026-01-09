@@ -119,33 +119,42 @@ function getSessionToken(req: VercelRequest): string | null {
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
-
+    console.log("[Clerk] ========== VERIFICACIÓN DE SESIÓN INICIADA ==========");
+    console.log("[Clerk] URL:", req.url);
+    console.log("[Clerk] Método:", req.method);
+    
     // DEBUG: Log all cookies to identify the correct cookie name
-    console.log("[Clerk DEBUG] All cookies:", JSON.stringify(req.cookies || {}));
-    console.log("[Clerk DEBUG] Authorization header:", req.headers?.authorization);
+    console.log("[Clerk] Cookies recibidos:", JSON.stringify(req.cookies || {}));
+    console.log("[Clerk] Header Cookie:", req.headers?.cookie ? req.headers.cookie.substring(0, 100) + '...' : 'NO PRESENTE');
+    console.log("[Clerk] Authorization header:", req.headers?.authorization ? 'PRESENTE' : 'NO PRESENTE');
     
     // Get the session token from Authorization header or cookies
     const sessionToken = getSessionToken(req);
 
     if (!sessionToken) {
-      console.log("[Clerk] No session token found in request");
+      console.log("[Clerk] ❌ NO SE ENCONTRÓ TOKEN DE SESIÓN");
+      console.log("[Clerk] Cookies disponibles:", Object.keys(req.cookies || {}));
       return null;
     }
+    
+    console.log("[Clerk] ✓ Token de sesión encontrado (primeros 50 caracteres):", sessionToken.substring(0, 50));
 
     // Verify the token
     const secretKey = process.env.CLERK_SECRET_KEY;
     if (!secretKey) {
-      console.error("[Clerk] CLERK_SECRET_KEY not configured");
+      console.error("[Clerk] ❌ CLERK_SECRET_KEY NO CONFIGURADA");
       return null;
     }
+    console.log("[Clerk] ✓ CLERK_SECRET_KEY está configurada");
 
     // Use Clerk's authenticateRequest for proper verification
     // Note: CLERK_PUBLISHABLE_KEY is available on the server, NEXT_PUBLIC_* vars are for client only
     const publishableKey = process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
     if (!publishableKey) {
-      console.error("[Clerk] CLERK_PUBLISHABLE_KEY not configured");
+      console.error("[Clerk] ❌ CLERK_PUBLISHABLE_KEY NO CONFIGURADA");
       return null;
     }
+    console.log("[Clerk] ✓ CLERK_PUBLISHABLE_KEY está configurada");
 
     // Create a minimal Request object for authenticateRequest
     const url = `https://pianoemotion.com${req.url || ""}`;
@@ -167,31 +176,53 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     });
 
     // Use Clerk's authenticateRequest method
-    const authResult = await clerkClient.authenticateRequest(request, {
-      publishableKey,
-      secretKey: process.env.CLERK_SECRET_KEY,
-      authorizedParties: [
-        "https://pianoemotion.com",
-        "https://clerk.pianoemotion.com",
-        "https://accounts.pianoemotion.com",
-        "https://piano-emotion-manager.vercel.app",
-        "http://localhost:3000"
-      ],
-    });
+    console.log("[Clerk] Intentando verificar con authenticateRequest...");
+    let authResult;
+    try {
+      authResult = await clerkClient.authenticateRequest(request, {
+        publishableKey,
+        secretKey: process.env.CLERK_SECRET_KEY,
+        authorizedParties: [
+          "https://pianoemotion.com",
+          "https://clerk.pianoemotion.com",
+          "https://accounts.pianoemotion.com",
+          "https://piano-emotion-manager.vercel.app",
+          "http://localhost:3000"
+        ],
+      });
+      console.log("[Clerk] ✓ authenticateRequest completado sin errores");
+    } catch (authError) {
+      console.error("[Clerk] ❌ Error en authenticateRequest:", authError);
+      throw authError;
+    }
 
+    console.log("[Clerk] isSignedIn:", authResult.isSignedIn);
+    console.log("[Clerk] userId:", authResult.toAuth().userId);
+    
     if (!authResult.isSignedIn || !authResult.toAuth().userId) {
-      console.log("[Clerk] User not signed in or no user ID");
+      console.log("[Clerk] ❌ Usuario no autenticado o sin ID");
       return null;
     }
+    
+    console.log("[Clerk] ✓ Usuario autenticado");
 
     const userId = authResult.toAuth().userId;
     if (!userId) {
-      console.log("[Clerk] No user ID in auth result");
+      console.log("[Clerk] ❌ No hay ID de usuario en el resultado");
       return null;
     }
+    
+    console.log("[Clerk] ✓ ID de usuario obtenido:", userId);
 
     // Get user details from Clerk
+    console.log("[Clerk] Obteniendo detalles del usuario desde Clerk...");
     const user = await clerkClient.users.getUser(userId);
+    
+    console.log("[Clerk] ✓ Usuario obtenido:", {
+      id: user.id,
+      email: user.emailAddresses[0]?.emailAddress,
+      name: `${user.firstName || ""} ${user.lastName || ""}`.trim()
+    });
 
     return {
       id: user.id,
@@ -200,8 +231,14 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       imageUrl: user.imageUrl,
     };
   } catch (error) {
-    console.error("[Clerk] Error verifying session:", error);
+    console.error("[Clerk] ❌ ERROR VERIFICANDO SESIÓN:", error instanceof Error ? error.message : error);
+    if (error instanceof Error && error.stack) {
+      console.error("[Clerk] Stack trace:", error.stack);
+    }
     return null;
+  }
+  finally {
+    console.log("[Clerk] ========== VERIFICACIÓN DE SESIÓN FINALIZADA ==========");
   }
 }
 
