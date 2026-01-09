@@ -6,15 +6,10 @@
  * Handles the display of locked features and upgrade prompts.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { trpc } from '@/lib/trpc';
 
-export type SubscriptionPlan = 
-  | 'free' 
-  | 'professional_basic' 
-  | 'professional_advanced' 
-  | 'enterprise_basic' 
-  | 'enterprise_advanced';
+export type SubscriptionPlan = 'free' | 'pro' | 'premium';
 
 export type FeatureKey = 
   | 'whatsapp_integration'
@@ -60,140 +55,140 @@ const FEATURES: FeatureInfo[] = [
     key: 'whatsapp_integration',
     name: 'WhatsApp Business',
     description: 'Envía mensajes de WhatsApp a tus clientes directamente desde la app',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'logo-whatsapp',
   },
   {
     key: 'email_integration',
     name: 'Email integrado',
     description: 'Envía emails profesionales a tus clientes',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'mail',
   },
   {
     key: 'automatic_reminders',
     name: 'Recordatorios automáticos',
     description: 'Envía recordatorios automáticos de citas a tus clientes',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'notifications',
   },
   {
     key: 'appointment_confirmations',
     name: 'Confirmaciones de cita',
     description: 'Solicita confirmación de citas automáticamente',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'checkmark-circle',
   },
   {
     key: 'marketing_automation',
     name: 'Marketing automatizado',
     description: 'Campañas de marketing básicas automatizadas',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'megaphone',
   },
   {
     key: 'image_storage',
     name: 'Almacenamiento de imágenes',
     description: 'Guarda fotos de pianos e intervenciones en la nube',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'images',
   },
   {
     key: 'document_storage',
     name: 'Almacenamiento de documentos',
     description: 'Guarda facturas, contratos y documentos en la nube',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'document',
   },
   {
     key: 'backup_cloud',
     name: 'Backup en la nube',
     description: 'Copias de seguridad automáticas de tus datos',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'cloud-upload',
   },
   {
     key: 'advanced_marketing_campaigns',
     name: 'Campañas avanzadas',
     description: 'Campañas de marketing segmentadas y personalizadas',
-    availableFrom: 'professional_advanced',
+    availableFrom: 'premium',
     icon: 'trending-up',
   },
   {
     key: 'unlimited_templates',
     name: 'Plantillas ilimitadas',
     description: 'Crea plantillas personalizadas sin límite',
-    availableFrom: 'professional_advanced',
+    availableFrom: 'premium',
     icon: 'copy',
   },
   {
     key: 'multi_technician',
     name: 'Multi-técnico',
     description: 'Gestiona un equipo de técnicos',
-    availableFrom: 'enterprise_basic',
+    availableFrom: 'premium',
     icon: 'people',
   },
   {
     key: 'admin_panel',
     name: 'Panel de administración',
     description: 'Panel centralizado para gestionar tu equipo',
-    availableFrom: 'enterprise_basic',
+    availableFrom: 'premium',
     icon: 'settings',
   },
   {
     key: 'client_assignment',
     name: 'Asignación de clientes',
     description: 'Asigna clientes a técnicos específicos',
-    availableFrom: 'enterprise_basic',
+    availableFrom: 'premium',
     icon: 'person-add',
   },
   {
     key: 'team_reports',
     name: 'Reportes de equipo',
     description: 'Informes de rendimiento del equipo',
-    availableFrom: 'enterprise_basic',
+    availableFrom: 'premium',
     icon: 'bar-chart',
   },
   {
     key: 'technician_statistics',
     name: 'Estadísticas por técnico',
     description: 'Estadísticas detalladas de cada técnico',
-    availableFrom: 'enterprise_advanced',
+    availableFrom: 'premium',
     icon: 'analytics',
   },
   {
     key: 'priority_support',
     name: 'Soporte prioritario',
     description: 'Atención prioritaria en soporte técnico',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'headset',
   },
   {
     key: 'premium_support',
     name: 'Soporte premium',
     description: 'Soporte premium con respuesta garantizada en 24h',
-    availableFrom: 'professional_advanced',
+    availableFrom: 'premium',
     icon: 'star',
   },
   {
     key: 'advanced_analytics',
     name: 'Analíticas avanzadas',
     description: 'Dashboards y métricas avanzadas de tu negocio',
-    availableFrom: 'professional_advanced',
+    availableFrom: 'premium',
     icon: 'stats-chart',
   },
   {
     key: 'custom_reports',
     name: 'Informes personalizados',
     description: 'Crea informes personalizados de tu actividad',
-    availableFrom: 'enterprise_basic',
+    availableFrom: 'premium',
     icon: 'document-text',
   },
   {
     key: 'export_data',
     name: 'Exportación de datos',
     description: 'Exporta tus datos en múltiples formatos',
-    availableFrom: 'professional_basic',
+    availableFrom: 'pro',
     icon: 'download',
   },
 ];
@@ -201,10 +196,8 @@ const FEATURES: FeatureInfo[] = [
 // Plan hierarchy
 const PLAN_HIERARCHY: Record<SubscriptionPlan, number> = {
   'free': 0,
-  'professional_basic': 1,
-  'professional_advanced': 2,
-  'enterprise_basic': 3,
-  'enterprise_advanced': 4,
+  'pro': 1,
+  'premium': 2,
 };
 
 // Plan info
@@ -217,30 +210,16 @@ const PLANS: PlanInfo[] = [
     yearlyPrice: 0,
   },
   {
-    code: 'professional_basic',
-    name: 'Profesional Básico',
+    code: 'pro',
+    name: 'Pro',
     description: 'Para técnicos independientes',
     monthlyPrice: 9.99,
     yearlyPrice: 99,
   },
   {
-    code: 'professional_advanced',
-    name: 'Profesional Avanzado',
+    code: 'premium',
+    name: 'Premium IA',
     description: 'Para técnicos con alto volumen',
-    monthlyPrice: 14.99,
-    yearlyPrice: 149,
-  },
-  {
-    code: 'enterprise_basic',
-    name: 'Empresa Básico',
-    description: 'Para equipos de técnicos',
-    monthlyPrice: 9.99,
-    yearlyPrice: 99,
-  },
-  {
-    code: 'enterprise_advanced',
-    name: 'Empresa Avanzado',
-    description: 'Para equipos con alto volumen',
     monthlyPrice: 14.99,
     yearlyPrice: 149,
   },
@@ -249,7 +228,7 @@ const PLANS: PlanInfo[] = [
 interface UseSubscriptionReturn {
   // Current plan
   currentPlan: SubscriptionPlan;
-  planInfo: PlanInfo | undefined;
+  currentPlanInfo: PlanInfo | undefined;
   isLoading: boolean;
   
   // Feature checks
@@ -277,8 +256,23 @@ interface UseSubscriptionReturn {
 }
 
 export function useSubscription(): UseSubscriptionReturn {
-  // Get current subscription from backend
-  // For now, we'll use a default value - in production this would come from tRPC
+  // Get current subscription from backend via tRPC
+  const { data: subscriptionData, isLoading: subscriptionLoading } = trpc.advanced.subscription.getCurrentPlan.useQuery();
+  
+  // Map database plan values to frontend types
+  const mapDatabasePlanToFrontend = (dbPlan: string | undefined): SubscriptionPlan => {
+    if (!dbPlan) return 'free';
+    
+    const planMap: Record<string, SubscriptionPlan> = {
+      'free': 'free',
+      'pro': 'pro',
+      'premium': 'premium',
+      'premium_ia': 'premium',
+    };
+    
+    return planMap[dbPlan] || 'free';
+  };
+  
   const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>('free');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -287,8 +281,17 @@ export function useSubscription(): UseSubscriptionReturn {
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<FeatureKey | null>(null);
   const [upgradeModalPlan, setUpgradeModalPlan] = useState<PlanInfo | null>(null);
   
+  // Update current plan when subscription data is received
+  useEffect(() => {
+    if (subscriptionData?.plan) {
+      const mappedPlan = mapDatabasePlanToFrontend(subscriptionData.plan);
+      setCurrentPlan(mappedPlan);
+    }
+    setIsLoading(subscriptionLoading);
+  }, [subscriptionData, subscriptionLoading]);
+  
   // Get plan info
-  const planInfo = useMemo(() => {
+  const currentPlanInfo = useMemo(() => {
     return PLANS.find(p => p.code === currentPlan);
   }, [currentPlan]);
   
@@ -364,7 +367,7 @@ export function useSubscription(): UseSubscriptionReturn {
   
   return {
     currentPlan,
-    planInfo,
+    currentPlanInfo,
     isLoading,
     hasFeature,
     isFeatureLocked,
