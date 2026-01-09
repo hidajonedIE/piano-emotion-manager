@@ -14,29 +14,29 @@ export function useUserTier(): { tier: UserTier; isLoading: boolean } {
 
   // Mapear el plan de la base de datos al tier del componente
   const mapPlanToTier = (plan?: string, subscriptionStatus?: string): UserTier => {
-    // Si no hay plan o la suscripción no está activa, devolver free
-    if (!plan || subscriptionStatus !== 'active') return 'free';
+    // Si no hay plan, devolver free
+    if (!plan) return 'free';
     
     // Mapeo de planes de la base de datos a tiers del UI
     const normalizedPlan = plan?.toLowerCase();
+    
+    // Si el plan es premium o pro, le damos acceso aunque el status no sea 'active'
+    // (por ejemplo, si está en 'past_due' o 'trialing')
     switch (normalizedPlan) {
-      case 'free':
-        return 'free';
       case 'pro':
       case 'professional':
+      case 'starter':
         return 'pro';
       case 'premium':
       case 'premium_ia':
         return 'premium';
+      case 'free':
       default:
         return 'free';
     }
   };
 
-  // BYPASS DEFINITIVO PARA EL USUARIO PRINCIPAL
-  // Si el usuario es el administrador, forzamos el tier premium
-  const isOwner = userData?.email === 'jnavarrete@inboundemotion.com';
-  const tier = isOwner ? 'premium' : mapPlanToTier(userData?.subscriptionPlan, userData?.subscriptionStatus);
+  const tier = mapPlanToTier(userData?.subscriptionPlan, userData?.subscriptionStatus);
 
   return {
     tier,
