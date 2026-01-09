@@ -105,7 +105,7 @@ async function calculateResourceUsage(userId: string | undefined, plan: Subscrip
 export const modulesRouter = router({
   // Obtener módulos con estado
   getModulesWithStatus: publicProcedure.query(async ({ ctx }): Promise<ModuleInfo[]> => {
-    const userId = ctx.user?.clerkId || ctx.user?.openId;
+    const userId = ctx.user?.openId;
     // userId es el Clerk ID (string)
     const plan = await getUserPlan(userId);
     return getModulesForPlan(plan);
@@ -113,7 +113,7 @@ export const modulesRouter = router({
 
   // Obtener suscripción actual
   getCurrentSubscription: publicProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user?.clerkId || ctx.user?.openId;
+    const userId = ctx.user?.openId;
     
     if (!userId) {
       return { plan: 'free', status: 'active', expiresAt: null };
@@ -150,7 +150,7 @@ export const modulesRouter = router({
 
   // Obtener plan actual
   getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user?.clerkId || ctx.user?.openId;
+    const userId = ctx.user?.openId;
     // userId es el Clerk ID (string), se pasa directamente a getUserPlan
     const plan = await getUserPlan(userId);
     return { plan };
@@ -171,7 +171,7 @@ export const modulesRouter = router({
 
   // Obtener uso de recursos
   getResourceUsage: publicProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user?.clerkId || ctx.user?.openId;
+    const userId = ctx.user?.openId;
     // userId es el Clerk ID (string)
     const plan = await getUserPlan(userId);
     return await calculateResourceUsage(userId, plan);
@@ -184,7 +184,7 @@ export const modulesRouter = router({
       enabled: z.boolean(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user?.clerkId || ctx.user?.openId;
+      const userId = ctx.user?.openId;
       
       if (!userId) {
         throw new Error('Usuario no autenticado');
@@ -203,7 +203,7 @@ export const modulesRouter = router({
       billingCycle: z.enum(['monthly', 'yearly']),
     }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user?.clerkId || ctx.user?.openId;
+      const userId = ctx.user?.openId;
       
       if (!userId) {
         throw new Error('Usuario no autenticado');
@@ -221,7 +221,7 @@ export const modulesRouter = router({
       resource: z.enum(['users', 'clients', 'pianos', 'invoices', 'storage']),
     }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user?.clerkId || ctx.user?.openId;
+      const userId = ctx.user?.openId;
       
       if (!userId) {
         return { allowed: false };
