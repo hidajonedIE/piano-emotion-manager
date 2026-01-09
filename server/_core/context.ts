@@ -5,6 +5,8 @@ import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
 import { getDb } from "../db.js";
 import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
+import { COOKIE_NAME } from "../../shared/const.js";
+import { SignJWT } from "jose";
 
 // ============================================================================
 // Tipos de Request/Response
@@ -55,6 +57,27 @@ export type CreateContextOptions = {
 };
 
 /**
+ * Crea un JWT compatible con el SDK legacy para que pueda verificar la sesión
+ */
+async function createSessionJWT(user: User): Promise<string> {
+  const secretKey = new TextEncoder().encode(
+    process.env.SESSION_SECRET || "default-secret-key-change-in-production"
+  );
+  
+  const now = Math.floor(Date.now() / 1000);
+  const expirationSeconds = now + (365 * 24 * 60 * 60); // 1 year
+  
+  return new SignJWT({
+    openId: user.openId || user.clerkId || String(user.id),
+    appId: process.env.NEXT_PUBLIC_APP_ID || "piano-emotion-manager",
+    name: user.name || user.email || "User",
+  })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setExpirationTime(expirationSeconds)
+    .sign(secretKey);
+}
+
+/**
  * Crea el contexto de tRPC para cada request
  * Intenta autenticar primero con Clerk, luego con el SDK legacy
  */
@@ -62,9 +85,6 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
   let user: User | null = null;
 
   // Try Clerk authentication first (new system)
-  // TEMPORARILY DISABLED: Clerk is failing with JOSEAlgNotAllowed error
-  // TODO: Fix Clerk JWT verification configuration
-  /*
   try {
     console.log('[Context] Attempting Clerk authentication...');
     const clerkUser = await verifyClerkSession(opts.req);
@@ -78,6 +98,16 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
         const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
         user = dbUser as User;
         const partnerId = user.partnerId || null;
+        
+        // Create a session JWT compatible with SDK legacy
+        try {
+          const sessionJWT = await createSessionJWT(user);
+          // Set the cookie so SDK legacy can also authenticate
+          opts.res.setHeader('Set-Cookie', `${COOKIE_NAME}=${sessionJWT}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`);
+          console.log('[Context] Session JWT cookie set for SDK legacy compatibility');
+        } catch (error) {
+          console.error('[Context] Failed to create session JWT:', error);
+        }
         
         // Detect language: user preference > partner default > browser > default
         let language = 'es'; // Default fallback
@@ -111,7 +141,6 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
     console.error('[Context] Clerk authentication error:', error);
     // Clerk authentication failed, continue to legacy auth
   }
-  */
 
   // Fall back to legacy SDK authentication (demo login, etc.)
   try {
