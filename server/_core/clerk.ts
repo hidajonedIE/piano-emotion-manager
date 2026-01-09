@@ -129,9 +129,9 @@ function getSessionToken(req: VercelRequest): string | null {
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
-    console.log("[DEBUG] [Clerk] ========== VERIFICACIÓN DE SESIÓN INICIADA ==========");
+    console.log("[DEBUG] [Clerk] ========== VERIFICACION DE SESION INICIADA ==========");
     console.log("[DEBUG] [Clerk] URL:", req.url);
-    console.log("[DEBUG] [Clerk] Método:", req.method);
+    console.log("[DEBUG] [Clerk] Metodo:", req.method);
     
     // DEBUG: Log all cookies to identify the correct cookie name
     console.log("[DEBUG] [Clerk] Cookies recibidos:", JSON.stringify(req.cookies || {}));
@@ -142,93 +142,108 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     const sessionToken = getSessionToken(req);
 
     if (!sessionToken) {
-      console.log("[DEBUG] [Clerk] ❌ NO SE ENCONTRÓ TOKEN DE SESIÓN");
+      console.log("[DEBUG] [Clerk] NO SE ENCONTRO TOKEN DE SESION");
       console.log("[DEBUG] [Clerk] Cookies disponibles:", Object.keys(req.cookies || {}));
       return null;
     }
     
-    console.log("[DEBUG] [Clerk] ✓ Token de sesión encontrado (primeros 50 caracteres):", sessionToken.substring(0, 50));
+    console.log("[DEBUG] [Clerk] Token de sesion encontrado (primeros 50 caracteres):", sessionToken.substring(0, 50));
 
     // Verify the token
     const secretKey = process.env.CLERK_SECRET_KEY;
     if (!secretKey) {
-      console.error("[DEBUG] [Clerk] ❌ CLERK_SECRET_KEY NO CONFIGURADA");
+      console.error("[DEBUG] [Clerk] CLERK_SECRET_KEY NO CONFIGURADA");
       return null;
     }
-    console.log("[DEBUG] [Clerk] ✓ CLERK_SECRET_KEY está configurada");
+    console.log("[DEBUG] [Clerk] CLERK_SECRET_KEY esta configurada");
 
-    // Use Clerk's authenticateRequest for proper verification
-    // Note: CLERK_PUBLISHABLE_KEY is available on the server, NEXT_PUBLIC_* vars are for client only
+    // Use Clerk's verifyToken method directly (simpler and more reliable)
     const publishableKey = process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
     if (!publishableKey) {
-      console.error("[DEBUG] [Clerk] ❌ CLERK_PUBLISHABLE_KEY NO CONFIGURADA");
+      console.error("[DEBUG] [Clerk] CLERK_PUBLISHABLE_KEY NO CONFIGURADA");
       return null;
     }
-    console.log("[DEBUG] [Clerk] ✓ CLERK_PUBLISHABLE_KEY está configurada");
+    console.log("[DEBUG] [Clerk] CLERK_PUBLISHABLE_KEY esta configurada");
 
-    // Create a minimal Request object for authenticateRequest
-    const url = `https://pianoemotion.com${req.url || ""}`;
-    const headers = new Headers();
+    console.log("[DEBUG] [Clerk] Intentando verificar token con verifyToken...");
+    let userId: string | null = null;
     
-    // Add Authorization header if present
-    if (req.headers.authorization) {
-      headers.set("Authorization", req.headers.authorization);
-    }
-    
-    // Add Cookie header if present
-    if (req.headers.cookie) {
-      headers.set("Cookie", req.headers.cookie);
-    }
-    
-    const request = new Request(url, {
-      headers,
-      method: req.method || "GET",
-    });
-
-    // Use Clerk's authenticateRequest method
-    console.log("[DEBUG] [Clerk] Intentando verificar con authenticateRequest...");
-    let authResult;
     try {
-      authResult = await clerkClient.authenticateRequest(request, {
+      // Try to verify the token directly using verifyToken
+      const decoded = await clerkClient.verifyToken(sessionToken, {
         publishableKey,
-        secretKey: process.env.CLERK_SECRET_KEY,
-        authorizedParties: [
-          "https://pianoemotion.com",
-          "https://clerk.pianoemotion.com",
-          "https://accounts.pianoemotion.com",
-          "https://piano-emotion-manager.vercel.app",
-          "http://localhost:3000"
-        ],
       });
-      console.log("[DEBUG] [Clerk] ✓ authenticateRequest completado sin errores");
-    } catch (authError) {
-      console.error("[DEBUG] [Clerk] ❌ Error en authenticateRequest:", authError);
-      throw authError;
-    }
+      
+      console.log("[DEBUG] [Clerk] Token verificado exitosamente");
+      console.log("[DEBUG] [Clerk] Decoded token sub:", decoded.sub);
+      
+      userId = decoded.sub;
+      
+      if (!userId) {
+        console.log("[DEBUG] [Clerk] No hay ID de usuario en el token");
+        return null;
+      }
+    } catch (tokenError) {
+      console.error("[DEBUG] [Clerk] Error verificando token:", tokenError instanceof Error ? tokenError.message : tokenError);
+      
+      // If direct token verification fails, try authenticateRequest as fallback
+      console.log("[DEBUG] [Clerk] Intentando con authenticateRequest como fallback...");
+      try {
+        const url = `https://pianoemotion.com${req.url || ""}`;
+        const headers = new Headers();
+        
+        if (req.headers.authorization) {
+          headers.set("Authorization", req.headers.authorization);
+        }
+        
+        if (req.headers.cookie) {
+          headers.set("Cookie", req.headers.cookie);
+        }
+        
+        const request = new Request(url, {
+          headers,
+          method: req.method || "GET",
+        });
 
-    console.log("[DEBUG] [Clerk] isSignedIn:", authResult.isSignedIn);
-    console.log("[DEBUG] [Clerk] userId:", authResult.toAuth().userId);
-    
-    if (!authResult.isSignedIn || !authResult.toAuth().userId) {
-      console.log("[DEBUG] [Clerk] ❌ Usuario no autenticado o sin ID");
-      return null;
+        const authResult = await clerkClient.authenticateRequest(request, {
+          publishableKey,
+          secretKey: process.env.CLERK_SECRET_KEY,
+          authorizedParties: [
+            "https://pianoemotion.com",
+            "https://clerk.pianoemotion.com",
+            "https://accounts.pianoemotion.com",
+            "https://piano-emotion-manager.vercel.app",
+            "http://localhost:3000"
+          ],
+        });
+        
+        console.log("[DEBUG] [Clerk] authenticateRequest completado");
+        console.log("[DEBUG] [Clerk] isSignedIn:", authResult.isSignedIn);
+        
+        if (!authResult.isSignedIn) {
+          console.log("[DEBUG] [Clerk] Usuario no autenticado en fallback");
+          return null;
+        }
+        
+        userId = authResult.toAuth().userId;
+      } catch (fallbackError) {
+        console.error("[DEBUG] [Clerk] Fallback tambien fallo:", fallbackError instanceof Error ? fallbackError.message : fallbackError);
+        throw tokenError; // Throw the original error
+      }
     }
     
-    console.log("[DEBUG] [Clerk] ✓ Usuario autenticado");
+    console.log("[DEBUG] [Clerk] Usuario ID obtenido:", userId);
 
-    const userId = authResult.toAuth().userId;
     if (!userId) {
-      console.log("[DEBUG] [Clerk] ❌ No hay ID de usuario en el resultado");
+      console.log("[DEBUG] [Clerk] No hay ID de usuario en el resultado");
       return null;
     }
-    
-    console.log("[DEBUG] [Clerk] ✓ ID de usuario obtenido:", userId);
 
     // Get user details from Clerk
     console.log("[DEBUG] [Clerk] Obteniendo detalles del usuario desde Clerk...");
     const user = await clerkClient.users.getUser(userId);
     
-    console.log("[DEBUG] [Clerk] ✓ Usuario obtenido:", {
+    console.log("[DEBUG] [Clerk] Usuario obtenido:", {
       id: user.id,
       email: user.emailAddresses[0]?.emailAddress,
       name: `${user.firstName || ""} ${user.lastName || ""}`.trim()
@@ -241,14 +256,14 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       imageUrl: user.imageUrl,
     };
   } catch (error) {
-    console.error("[DEBUG] [Clerk] ❌ ERROR VERIFICANDO SESIÓN:", error instanceof Error ? error.message : error);
+    console.error("[DEBUG] [Clerk] ERROR VERIFICANDO SESION:", error instanceof Error ? error.message : error);
     if (error instanceof Error && error.stack) {
       console.error("[DEBUG] [Clerk] Stack trace:", error.stack);
     }
     return null;
   }
   finally {
-    console.log("[DEBUG] [Clerk] ========== VERIFICACIÓN DE SESIÓN FINALIZADA ==========");
+    console.log("[DEBUG] [Clerk] ========== VERIFICACION DE SESION FINALIZADA ==========");
   }
 }
 
@@ -261,7 +276,7 @@ export async function getOrCreateUserFromClerk(
   usersTable: UsersTable,
   eq: EqFunction
 ): Promise<DatabaseUser> {
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Iniciando búsqueda de usuario", { clerkUserId: clerkUser.id, email: clerkUser.email });
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Iniciando busqueda de usuario", { clerkUserId: clerkUser.id, email: clerkUser.email });
   
   // 1. Find user by openId (primary) - database uses openId, not clerkId
   console.log("[DEBUG] [getOrCreateUserFromClerk] Buscando usuario por openId:", clerkUser.id);
@@ -271,7 +286,7 @@ export async function getOrCreateUserFromClerk(
     .where(eq(usersTable.openId, clerkUser.id))
     .limit(1) as DatabaseUser[];
 
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de búsqueda por openId:", { found: existingUser.length > 0, user: existingUser[0] });
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de busqueda por openId:", { found: existingUser.length > 0, user: existingUser[0] });
 
   if (existingUser.length > 0) {
     // Update last sign in and return
@@ -292,7 +307,7 @@ export async function getOrCreateUserFromClerk(
     .where(eq(usersTable.email, clerkUser.email))
     .limit(1) as DatabaseUser[];
 
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de búsqueda por email:", { found: existingUser.length > 0, user: existingUser[0] });
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de busqueda por email:", { found: existingUser.length > 0, user: existingUser[0] });
 
   if (existingUser.length > 0) {
     // User exists, but openId might be missing. Update it.
@@ -319,7 +334,7 @@ export async function getOrCreateUserFromClerk(
   const result = await db.insert(usersTable).values(newUser) as unknown as Array<{ insertId?: number }>;
   const insertedId = result[0]?.insertId;
 
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de inserción:", { insertedId, result });
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de insercion:", { insertedId, result });
 
   if (insertedId) {
     console.log("[DEBUG] [getOrCreateUserFromClerk] Recuperando usuario insertado por ID:", insertedId);
