@@ -951,6 +951,7 @@ export const technicianZones = mysqlTable("technician_zones", {
 ]);
 
 export const users = mysqlTable("users", {
+  clerkId: varchar("clerkId", { length: 255 }).unique(),
 	id: int().autoincrement().notNull(),
 	openId: varchar({ length: 64 }).notNull(),
 	name: text(),

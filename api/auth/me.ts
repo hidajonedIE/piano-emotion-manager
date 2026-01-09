@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Try Clerk authentication first (new system)
+    // Use Clerk as the single source of truth for authentication
     const clerkUser = await verifyClerkSession(req);
     if (clerkUser) {
       const db = await getDb();
@@ -21,7 +21,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.json({
           user: {
             id: (dbUser as any).id,
-            openId: (dbUser as any).openId || clerkUser.id,
+            clerkId: (dbUser as any).clerkId || clerkUser.id,
+            openId: (dbUser as any).openId, // Keep for backwards compatibility if needed
             name: dbUser.name,
             email: dbUser.email,
             loginMethod: "clerk",
@@ -33,40 +34,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Fall back to legacy SDK authentication
-    // Try to get token from cookie first, then from Authorization header
-    const cookieToken = req.cookies?.[COOKIE_NAME];
-    const authHeader = req.headers.authorization || req.headers.Authorization;
-    const bearerToken = typeof authHeader === "string" && authHeader.startsWith("Bearer ") 
-      ? authHeader.slice("Bearer ".length).trim() 
-      : null;
+    // If Clerk auth fails, return not authenticated
+    return res.status(401).json({ error: "Not authenticated", user: null });
 
-    const token = cookieToken || bearerToken;
-
-    if (!token) {
-      return res.status(401).json({ error: "Not authenticated", user: null });
-    }
-
-    // Authenticate using the token
-    const user = await sdk.authenticateRequest({
-      headers: { 
-        cookie: `${COOKIE_NAME}=${token}`,
-        authorization: bearerToken ? `Bearer ${bearerToken}` : undefined,
-      },
-    } as any);
-
-    return res.json({ 
-      user: {
-        id: (user as any)?.id ?? null,
-        openId: user?.openId ?? null,
-        name: user?.name ?? null,
-        email: user?.email ?? null,
-        loginMethod: user?.loginMethod ?? null,
-        lastSignedIn: (user?.lastSignedIn ?? new Date()).toISOString(),
-        subscriptionPlan: user?.subscriptionPlan ?? 'free',
-        subscriptionStatus: user?.subscriptionStatus ?? 'none',
-      }
-    });
   } catch (error) {
     console.error("[Auth] /api/auth/me failed:", error);
     return res.status(401).json({ error: "Not authenticated", user: null });

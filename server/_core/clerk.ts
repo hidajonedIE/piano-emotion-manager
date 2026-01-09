@@ -26,6 +26,7 @@ type UsersTable = MySqlTableWithColumns<{
   schema: undefined;
   columns: {
     id: unknown;
+    clerkId: unknown;
     openId: unknown;
     email: unknown;
     name: unknown;
@@ -47,6 +48,7 @@ interface DatabaseUser {
   id: string | number;
   email: string;
   name: string;
+  clerkId?: string;
   openId?: string;
 }
 
@@ -72,10 +74,10 @@ function parseCookies(cookieHeader: string | undefined): Record<string, string> 
   if (!cookieHeader) return {};
   
   const cookies: Record<string, string> = {};
-  cookieHeader.split(';').forEach(cookie => {
-    const [name, ...rest] = cookie.trim().split('=');
+  cookieHeader.split(";").forEach(cookie => {
+    const [name, ...rest] = cookie.trim().split("=");
     if (name && rest.length > 0) {
-      cookies[name] = decodeURIComponent(rest.join('='));
+      cookies[name] = decodeURIComponent(rest.join("="));
     }
   });
   return cookies;
@@ -99,9 +101,9 @@ function getSessionToken(req: VercelRequest): string | null {
     // Clerk uses __session cookie for session token in web
     // Try different possible cookie names
     const sessionToken = 
-      cookies['__session'] || 
-      cookies['__clerk_session'] ||
-      cookies['clerk-session'];
+      cookies["__session"] || 
+      cookies["__clerk_session"] ||
+      cookies["clerk-session"];
     
     if (sessionToken) {
       return sessionToken;
@@ -146,22 +148,22 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     }
 
     // Create a minimal Request object for authenticateRequest
-    const url = `https://pianoemotion.com${req.url || ''}`;
+    const url = `https://pianoemotion.com${req.url || ""}`;
     const headers = new Headers();
     
     // Add Authorization header if present
     if (req.headers.authorization) {
-      headers.set('Authorization', req.headers.authorization);
+      headers.set("Authorization", req.headers.authorization);
     }
     
     // Add Cookie header if present
     if (req.headers.cookie) {
-      headers.set('Cookie', req.headers.cookie);
+      headers.set("Cookie", req.headers.cookie);
     }
     
     const request = new Request(url, {
       headers,
-      method: req.method || 'GET',
+      method: req.method || "GET",
     });
 
     // Use Clerk's authenticateRequest method
@@ -169,11 +171,11 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       publishableKey,
       secretKey: process.env.CLERK_SECRET_KEY,
       authorizedParties: [
-        'https://pianoemotion.com',
-        'https://clerk.pianoemotion.com',
-        'https://accounts.pianoemotion.com',
-        'https://piano-emotion-manager.vercel.app',
-        'http://localhost:3000'
+        "https://pianoemotion.com",
+        "https://clerk.pianoemotion.com",
+        "https://accounts.pianoemotion.com",
+        "https://piano-emotion-manager.vercel.app",
+        "http://localhost:3000"
       ],
     });
 
@@ -212,43 +214,42 @@ export async function getOrCreateUserFromClerk(
   usersTable: UsersTable,
   eq: EqFunction
 ): Promise<DatabaseUser> {
-  // Check if user exists in database
-  const existingUsers = await db
-    .select({
-      id: usersTable.id,
-      openId: usersTable.openId,
-      name: usersTable.name,
-      email: usersTable.email,
-      loginMethod: usersTable.loginMethod,
-      role: usersTable.role,
-      partnerId: usersTable.partnerId,
-      preferredLanguage: usersTable.preferredLanguage,
-      createdAt: usersTable.createdAt,
-      updatedAt: usersTable.updatedAt,
-      lastSignedIn: usersTable.lastSignedIn,
-      stripeCustomerId: usersTable.stripeCustomerId,
-      subscriptionPlan: usersTable.subscriptionPlan,
-      subscriptionStatus: usersTable.subscriptionStatus,
-      subscriptionId: usersTable.subscriptionId,
-      subscriptionEndDate: usersTable.subscriptionEndDate,
-    })
+  // 1. Find user by clerkId (primary)
+  let existingUser = await db
+    .select()
     .from(usersTable)
-    .where(eq(usersTable.openId, clerkUser.id))
+    .where(eq(usersTable.clerkId, clerkUser.id))
     .limit(1) as DatabaseUser[];
 
-  if (existingUsers.length > 0) {
-    // Update last sign in
+  if (existingUser.length > 0) {
+    // Update last sign in and return
     await db
       .update(usersTable)
       .set({ lastSignedIn: new Date() })
-      .where(eq(usersTable.id, existingUsers[0].id));
-    
-    return existingUsers[0];
+      .where(eq(usersTable.id, existingUser[0].id));
+    return existingUser[0];
   }
 
-  // Create new user
+  // 2. Find user by email (fallback for migration)
+  existingUser = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, clerkUser.email))
+    .limit(1) as DatabaseUser[];
+
+  if (existingUser.length > 0) {
+    // User exists, but clerkId is missing. Update it.
+    await db
+      .update(usersTable)
+      .set({ clerkId: clerkUser.id, lastSignedIn: new Date() })
+      .where(eq(usersTable.id, existingUser[0].id));
+    return { ...existingUser[0], clerkId: clerkUser.id };
+  }
+
+  // 3. Create new user
   const newUser = {
-    openId: clerkUser.id,
+    clerkId: clerkUser.id,
+    openId: clerkUser.id, // For backwards compatibility, if needed
     email: clerkUser.email,
     name: clerkUser.name,
     loginMethod: "clerk",
@@ -260,52 +261,18 @@ export async function getOrCreateUserFromClerk(
 
   if (insertedId) {
     const createdUsers = await db
-      .select({
-        id: usersTable.id,
-        openId: usersTable.openId,
-        name: usersTable.name,
-        email: usersTable.email,
-        loginMethod: usersTable.loginMethod,
-        role: usersTable.role,
-        partnerId: usersTable.partnerId,
-        preferredLanguage: usersTable.preferredLanguage,
-        createdAt: usersTable.createdAt,
-        updatedAt: usersTable.updatedAt,
-        lastSignedIn: usersTable.lastSignedIn,
-        stripeCustomerId: usersTable.stripeCustomerId,
-        subscriptionPlan: usersTable.subscriptionPlan,
-        subscriptionStatus: usersTable.subscriptionStatus,
-        subscriptionId: usersTable.subscriptionId,
-        subscriptionEndDate: usersTable.subscriptionEndDate,
-      })
+      .select()
       .from(usersTable)
       .where(eq(usersTable.id, insertedId))
       .limit(1) as DatabaseUser[];
     return createdUsers[0];
   }
 
-  // If insert didn't return ID, fetch by openId
+  // If insert didn't return ID, fetch by clerkId
   const createdUsers = await db
-    .select({
-      id: usersTable.id,
-      openId: usersTable.openId,
-      name: usersTable.name,
-      email: usersTable.email,
-      loginMethod: usersTable.loginMethod,
-      role: usersTable.role,
-      partnerId: usersTable.partnerId,
-      preferredLanguage: usersTable.preferredLanguage,
-      createdAt: usersTable.createdAt,
-      updatedAt: usersTable.updatedAt,
-      lastSignedIn: usersTable.lastSignedIn,
-      stripeCustomerId: usersTable.stripeCustomerId,
-      subscriptionPlan: usersTable.subscriptionPlan,
-      subscriptionStatus: usersTable.subscriptionStatus,
-      subscriptionId: usersTable.subscriptionId,
-      subscriptionEndDate: usersTable.subscriptionEndDate,
-    })
+    .select()
     .from(usersTable)
-    .where(eq(usersTable.openId, clerkUser.id))
+    .where(eq(usersTable.clerkId, clerkUser.id))
     .limit(1) as DatabaseUser[];
 
   return createdUsers[0];
