@@ -73,7 +73,7 @@ try {
     bundle: true,
     platform: 'node',
     format: 'esm',
-    outdir: 'dist',
+    outdir: 'web-build',
     packages: 'external',
     plugins: [aliasPlugin],
     // Resolver extensiones .ts automáticamente
