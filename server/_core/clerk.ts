@@ -129,42 +129,42 @@ function getSessionToken(req: VercelRequest): string | null {
  */
 export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
   try {
-    console.log("[Clerk] ========== VERIFICACIÓN DE SESIÓN INICIADA ==========");
-    console.log("[Clerk] URL:", req.url);
-    console.log("[Clerk] Método:", req.method);
+    console.log("[DEBUG] [Clerk] ========== VERIFICACIÓN DE SESIÓN INICIADA ==========");
+    console.log("[DEBUG] [Clerk] URL:", req.url);
+    console.log("[DEBUG] [Clerk] Método:", req.method);
     
     // DEBUG: Log all cookies to identify the correct cookie name
-    console.log("[Clerk] Cookies recibidos:", JSON.stringify(req.cookies || {}));
-    console.log("[Clerk] Header Cookie:", req.headers?.cookie ? req.headers.cookie.substring(0, 100) + '...' : 'NO PRESENTE');
-    console.log("[Clerk] Authorization header:", req.headers?.authorization ? 'PRESENTE' : 'NO PRESENTE');
+    console.log("[DEBUG] [Clerk] Cookies recibidos:", JSON.stringify(req.cookies || {}));
+    console.log("[DEBUG] [Clerk] Header Cookie:", req.headers?.cookie ? req.headers.cookie.substring(0, 100) + '...' : 'NO PRESENTE');
+    console.log("[DEBUG] [Clerk] Authorization header:", req.headers?.authorization ? 'PRESENTE' : 'NO PRESENTE');
     
     // Get the session token from Authorization header or cookies
     const sessionToken = getSessionToken(req);
 
     if (!sessionToken) {
-      console.log("[Clerk] ❌ NO SE ENCONTRÓ TOKEN DE SESIÓN");
-      console.log("[Clerk] Cookies disponibles:", Object.keys(req.cookies || {}));
+      console.log("[DEBUG] [Clerk] ❌ NO SE ENCONTRÓ TOKEN DE SESIÓN");
+      console.log("[DEBUG] [Clerk] Cookies disponibles:", Object.keys(req.cookies || {}));
       return null;
     }
     
-    console.log("[Clerk] ✓ Token de sesión encontrado (primeros 50 caracteres):", sessionToken.substring(0, 50));
+    console.log("[DEBUG] [Clerk] ✓ Token de sesión encontrado (primeros 50 caracteres):", sessionToken.substring(0, 50));
 
     // Verify the token
     const secretKey = process.env.CLERK_SECRET_KEY;
     if (!secretKey) {
-      console.error("[Clerk] ❌ CLERK_SECRET_KEY NO CONFIGURADA");
+      console.error("[DEBUG] [Clerk] ❌ CLERK_SECRET_KEY NO CONFIGURADA");
       return null;
     }
-    console.log("[Clerk] ✓ CLERK_SECRET_KEY está configurada");
+    console.log("[DEBUG] [Clerk] ✓ CLERK_SECRET_KEY está configurada");
 
     // Use Clerk's authenticateRequest for proper verification
     // Note: CLERK_PUBLISHABLE_KEY is available on the server, NEXT_PUBLIC_* vars are for client only
     const publishableKey = process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
     if (!publishableKey) {
-      console.error("[Clerk] ❌ CLERK_PUBLISHABLE_KEY NO CONFIGURADA");
+      console.error("[DEBUG] [Clerk] ❌ CLERK_PUBLISHABLE_KEY NO CONFIGURADA");
       return null;
     }
-    console.log("[Clerk] ✓ CLERK_PUBLISHABLE_KEY está configurada");
+    console.log("[DEBUG] [Clerk] ✓ CLERK_PUBLISHABLE_KEY está configurada");
 
     // Create a minimal Request object for authenticateRequest
     const url = `https://pianoemotion.com${req.url || ""}`;
@@ -186,7 +186,7 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     });
 
     // Use Clerk's authenticateRequest method
-    console.log("[Clerk] Intentando verificar con authenticateRequest...");
+    console.log("[DEBUG] [Clerk] Intentando verificar con authenticateRequest...");
     let authResult;
     try {
       authResult = await clerkClient.authenticateRequest(request, {
@@ -200,35 +200,35 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
           "http://localhost:3000"
         ],
       });
-      console.log("[Clerk] ✓ authenticateRequest completado sin errores");
+      console.log("[DEBUG] [Clerk] ✓ authenticateRequest completado sin errores");
     } catch (authError) {
-      console.error("[Clerk] ❌ Error en authenticateRequest:", authError);
+      console.error("[DEBUG] [Clerk] ❌ Error en authenticateRequest:", authError);
       throw authError;
     }
 
-    console.log("[Clerk] isSignedIn:", authResult.isSignedIn);
-    console.log("[Clerk] userId:", authResult.toAuth().userId);
+    console.log("[DEBUG] [Clerk] isSignedIn:", authResult.isSignedIn);
+    console.log("[DEBUG] [Clerk] userId:", authResult.toAuth().userId);
     
     if (!authResult.isSignedIn || !authResult.toAuth().userId) {
-      console.log("[Clerk] ❌ Usuario no autenticado o sin ID");
+      console.log("[DEBUG] [Clerk] ❌ Usuario no autenticado o sin ID");
       return null;
     }
     
-    console.log("[Clerk] ✓ Usuario autenticado");
+    console.log("[DEBUG] [Clerk] ✓ Usuario autenticado");
 
     const userId = authResult.toAuth().userId;
     if (!userId) {
-      console.log("[Clerk] ❌ No hay ID de usuario en el resultado");
+      console.log("[DEBUG] [Clerk] ❌ No hay ID de usuario en el resultado");
       return null;
     }
     
-    console.log("[Clerk] ✓ ID de usuario obtenido:", userId);
+    console.log("[DEBUG] [Clerk] ✓ ID de usuario obtenido:", userId);
 
     // Get user details from Clerk
-    console.log("[Clerk] Obteniendo detalles del usuario desde Clerk...");
+    console.log("[DEBUG] [Clerk] Obteniendo detalles del usuario desde Clerk...");
     const user = await clerkClient.users.getUser(userId);
     
-    console.log("[Clerk] ✓ Usuario obtenido:", {
+    console.log("[DEBUG] [Clerk] ✓ Usuario obtenido:", {
       id: user.id,
       email: user.emailAddresses[0]?.emailAddress,
       name: `${user.firstName || ""} ${user.lastName || ""}`.trim()
@@ -241,14 +241,14 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       imageUrl: user.imageUrl,
     };
   } catch (error) {
-    console.error("[Clerk] ❌ ERROR VERIFICANDO SESIÓN:", error instanceof Error ? error.message : error);
+    console.error("[DEBUG] [Clerk] ❌ ERROR VERIFICANDO SESIÓN:", error instanceof Error ? error.message : error);
     if (error instanceof Error && error.stack) {
-      console.error("[Clerk] Stack trace:", error.stack);
+      console.error("[DEBUG] [Clerk] Stack trace:", error.stack);
     }
     return null;
   }
   finally {
-    console.log("[Clerk] ========== VERIFICACIÓN DE SESIÓN FINALIZADA ==========");
+    console.log("[DEBUG] [Clerk] ========== VERIFICACIÓN DE SESIÓN FINALIZADA ==========");
   }
 }
 

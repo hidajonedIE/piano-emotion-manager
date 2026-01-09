@@ -86,11 +86,11 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
 
   // Try Clerk authentication first (new system)
   try {
-    console.log('[Context] Attempting Clerk authentication...');
+    console.log("[DEBUG] [Context] Attempting Clerk authentication...");
     const clerkUser = await verifyClerkSession(opts.req);
     
     if (clerkUser) {
-      console.log('[Context] Clerk user verified:', { id: clerkUser.id, email: clerkUser.email });
+      console.log("[DEBUG] [Context] Clerk user verified:", { id: clerkUser.id, email: clerkUser.email });
       
       // Get or create user in database
       const db = await getDb();
@@ -104,9 +104,9 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
           const sessionJWT = await createSessionJWT(user);
           // Set the cookie so SDK legacy can also authenticate
           opts.res.setHeader('Set-Cookie', `${COOKIE_NAME}=${sessionJWT}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`);
-          console.log('[Context] Session JWT cookie set for SDK legacy compatibility');
+          console.log("[DEBUG] [Context] Session JWT cookie set for SDK legacy compatibility");
         } catch (error) {
-          console.error('[Context] Failed to create session JWT:', error);
+          console.error("[DEBUG] [Context] Failed to create session JWT:", error);
         }
         
         // Detect language: user preference > partner default > browser > default
@@ -126,32 +126,32 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
           }
         } catch (error) {
           // Fields might not exist yet if migration hasn't run
-          console.log('[Context] Language detection failed (fields may not exist yet), using default:', error);
+          console.log("[DEBUG] [Context] Language detection failed (fields may not exist yet), using default:", error);
         }
         
-        console.log('[Context] User authenticated successfully via Clerk:', { id: user.id, email: user.email, partnerId, language });
+        console.log("[DEBUG] [Context] User authenticated successfully via Clerk:", { id: user.id, email: user.email, partnerId, language });
         return { req: opts.req, res: opts.res, user, partnerId, language };
       } else {
-        console.error('[Context] Database connection failed');
+        console.error("[DEBUG] [Context] Database connection failed");
       }
     } else {
-      console.log('[Context] Clerk session verification returned null (user not signed in)');
+      console.log("[DEBUG] [Context] Clerk session verification returned null (user not signed in)");
     }
   } catch (error) {
-    console.error('[Context] Clerk authentication error:', error);
+    console.error("[DEBUG] [Context] Clerk authentication error:", error);
     // Clerk authentication failed, continue to legacy auth
   }
 
   // Fall back to legacy SDK authentication (demo login, etc.)
   try {
-    console.log('[Context] Attempting SDK legacy authentication...');
+    console.log("[DEBUG] [Context] Attempting SDK legacy authentication...");
     user = await sdk.authenticateRequest(opts.req);
     if (user) {
-      console.log('[Context] User authenticated via SDK legacy:', { id: user.id, email: user.email });
+      console.log("[DEBUG] [Context] User authenticated via SDK legacy:", { id: user.id, email: user.email });
     }
   } catch (error) {
     // Authentication is optional for public procedures.
-    console.log('[Context] SDK legacy authentication failed:', error);
+    console.log("[DEBUG] [Context] SDK legacy authentication failed:", error);
     user = null;
   }
 
@@ -176,7 +176,7 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
         }
       }
     } catch (error) {
-      console.log('[Context] Language detection failed for legacy auth, using default:', error);
+      console.log("[DEBUG] [Context] Language detection failed for legacy auth, using default:", error);
     }
   }
 

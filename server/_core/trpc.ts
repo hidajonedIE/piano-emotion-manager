@@ -11,6 +11,7 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 const requireUser = t.middleware(async (opts) => {
+  console.log('[DEBUG] Entering requireUser middleware...');
   const { ctx, next } = opts;
   
   console.log('[DEBUG] requireUser middleware - ctx.user:', ctx.user ? { id: ctx.user.id, openId: ctx.user.openId, email: ctx.user.email, partnerId: ctx.partnerId, language: ctx.language } : 'null/undefined');
@@ -18,8 +19,10 @@ const requireUser = t.middleware(async (opts) => {
   console.log('[DEBUG] requireUser middleware - ctx.partnerId:', ctx.partnerId);
   console.log('[DEBUG] requireUser middleware - ctx.language:', ctx.language);
 
+  console.log('[DEBUG] Checking for user in context:', ctx.user ? `User ID: ${ctx.user.id}` : 'No user');
   if (!ctx.user) {
     console.log('[DEBUG] requireUser middleware - REJECTING request: ctx.user is null/undefined');
+    console.error('[DEBUG] User not found in context, throwing UNAUTHORIZED error.');
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
   
@@ -29,6 +32,7 @@ const requireUser = t.middleware(async (opts) => {
   
   console.log('[DEBUG] requireUser middleware - ALLOWING request: ctx.user is valid');
 
+  console.log('[DEBUG] User found, proceeding with procedure.');
   return next({
     ctx: {
       ...ctx,
@@ -49,7 +53,8 @@ export const adminProcedure = t.procedure.use(
       throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
 
-    return next({
+    console.log('[DEBUG] User found, proceeding with procedure.');
+  return next({
       ctx: {
         ...ctx,
         user: ctx.user,
