@@ -18,12 +18,15 @@ export function useUserTier(): { tier: UserTier; isLoading: boolean } {
     if (!plan || subscriptionStatus !== 'active') return 'free';
     
     // Mapeo de planes de la base de datos a tiers del UI
-    switch (plan) {
+    const normalizedPlan = plan?.toLowerCase();
+    switch (normalizedPlan) {
       case 'free':
         return 'free';
       case 'pro':
+      case 'professional':
         return 'pro';
       case 'premium':
+      case 'premium_ia':
         return 'premium';
       default:
         return 'free';

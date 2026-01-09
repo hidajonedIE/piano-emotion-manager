@@ -106,8 +106,10 @@ export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdva
   });
 
   const canAccess = (moduleTier: PlanTier): boolean => {
-    if (userTier === 'premium') return true;
-    if (userTier === 'pro') return moduleTier !== 'premium';
+    // Normalizar el tier del usuario para asegurar compatibilidad
+    const normalizedTier = userTier?.toLowerCase();
+    if (normalizedTier === 'premium') return true;
+    if (normalizedTier === 'pro') return moduleTier !== 'premium';
     return moduleTier === 'free';
   };
 
@@ -135,6 +137,7 @@ export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdva
   };
 
   const getBadgeForModule = (tier: PlanTier): string | undefined => {
+    // Solo mostrar badge si el usuario NO tiene acceso al módulo
     if (tier === 'pro' && !canAccess('pro')) return 'PRO';
     if (tier === 'premium' && !canAccess('premium')) return 'PREMIUM';
     return undefined;
