@@ -153,6 +153,13 @@ export const modulesRouter = router({
     console.log('[getCurrentPlan] ctx.user:', ctx.user ? { id: ctx.user.id, email: ctx.user.email, openId: ctx.user.openId } : null);
     const userId = ctx.user?.openId;
     console.log('[getCurrentPlan] userId:', userId);
+    
+    // If no userId, return free plan
+    if (!userId) {
+      console.log('[getCurrentPlan] No userId found, returning free plan');
+      return { plan: 'free' };
+    }
+    
     // userId es el Clerk ID (string), se pasa directamente a getUserPlan
     const plan = await getUserPlan(userId);
     console.log('[getCurrentPlan] plan:', plan);
