@@ -155,7 +155,7 @@ export const modulesRouter = router({
   }),
 
   // Obtener plan actual
-  getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+  getCurrentPlan: publicProcedure.query(async ({ ctx }) => {
     const userId = ctx.user?.id;
     return await getUserPlan(userId);
   }),
