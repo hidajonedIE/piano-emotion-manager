@@ -33,7 +33,10 @@ export function useUserTier(): { tier: UserTier; isLoading: boolean } {
     }
   };
 
-  const tier = mapPlanToTier(userData?.subscriptionPlan, userData?.subscriptionStatus);
+  // BYPASS DEFINITIVO PARA EL USUARIO PRINCIPAL
+  // Si el usuario es el administrador, forzamos el tier premium
+  const isOwner = userData?.email === 'jnavarrete@inboundemotion.com';
+  const tier = isOwner ? 'premium' : mapPlanToTier(userData?.subscriptionPlan, userData?.subscriptionStatus);
 
   return {
     tier,
