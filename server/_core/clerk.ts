@@ -99,11 +99,21 @@ function getSessionToken(req: VercelRequest): string | null {
     const cookies = parseCookies(cookieHeader);
     
     // Clerk uses __session cookie for session token in web
-    // Try different possible cookie names
-    const sessionToken = 
-      cookies["__session"] || 
-      cookies["__clerk_session"] ||
-      cookies["clerk-session"];
+    // Try different possible cookie names (including with suffixes like __session_A82HkYdo)
+    let sessionToken: string | undefined;
+    
+    // First try exact matches
+    sessionToken = cookies["__session"] || 
+                   cookies["__clerk_session"] ||
+                   cookies["clerk-session"];
+    
+    // If not found, try to find any cookie starting with __session
+    if (!sessionToken) {
+      const sessionCookieName = Object.keys(cookies).find(name => name.startsWith("__session"));
+      if (sessionCookieName) {
+        sessionToken = cookies[sessionCookieName];
+      }
+    }
     
     if (sessionToken) {
       return sessionToken;
