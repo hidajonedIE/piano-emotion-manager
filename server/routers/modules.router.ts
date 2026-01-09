@@ -35,22 +35,14 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
       // Normalizar el plan de la base de datos
       const dbPlan = (user.subscriptionPlan || 'free').toLowerCase();
       
+      console.log('[getUserPlan] DB Plan:', dbPlan);
+      
       // Mapear el plan de la tabla users al tipo SubscriptionPlan
-      const planMap: Record<string, SubscriptionPlan> = {
-        'free': 'free',
-        'pro': 'pro',
-        'premium': 'premium',
-        'premium_ia': 'premium',
-        'professional': 'pro',
-        'starter': 'pro'
-      };
+      // Aseguramos que 'premium' y 'pro' sean los valores base
+      if (dbPlan.includes('premium')) return 'premium';
+      if (dbPlan.includes('pro') || dbPlan.includes('starter')) return 'pro';
       
-      const mappedPlan = planMap[dbPlan] || 'free';
-      
-      // Si el plan es premium o pro, lo tratamos como activo independientemente del status por ahora
-      // para asegurar que el usuario vea sus módulos mientras se sincroniza Stripe
-      console.log('[getUserPlan] Returning plan:', mappedPlan);
-      return mappedPlan;
+      return 'free';
     }
 
     console.log('[getUserPlan] User not found or subscription not active, returning free');

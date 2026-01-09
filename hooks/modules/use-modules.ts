@@ -165,8 +165,14 @@ export function useSubscription() {
 
   // Usar el plan real del servidor
   console.log('[useSubscription] planFromServer:', planFromServer);
-  console.log('[useSubscription] planFromServer?.plan:', planFromServer?.plan);
-  const plan = planFromServer?.plan || 'free';
+  
+  const plan = useMemo(() => {
+    const rawPlan = (planFromServer?.plan || 'free').toLowerCase();
+    if (rawPlan.includes('premium')) return 'premium';
+    if (rawPlan.includes('pro') || rawPlan.includes('starter')) return 'pro';
+    return 'free';
+  }, [planFromServer]);
+
   console.log('[useSubscription] final plan:', plan);
 
   const isLoading = subscriptionLoading || planLoading || plansLoading || usageLoading;

@@ -465,14 +465,20 @@ export function getModulesForPlan(currentPlan: SubscriptionPlan = 'free'): Modul
     // Un módulo está incluido si:
     // 1. Es un módulo core
     // 2. El plan actual está explícitamente en includedInPlans
-    // 3. El usuario es Premium (tiene acceso a todo)
-    // 4. El usuario es Pro y el módulo es de tipo 'free' o 'pro'
-    let isIncluded = module.type === 'core' || module.includedInPlans.includes(normalizedPlan);
+    // 3. El usuario es Premium (tiene acceso a todo: core, free, pro, premium)
+    // 4. El usuario es Pro y el módulo es de tipo 'core', 'free' o 'pro'
+    
+    let isIncluded = false;
     
     if (normalizedPlan === 'premium') {
-      isIncluded = true; // Premium tiene todo
-    } else if (normalizedPlan === 'pro') {
+      // Premium tiene acceso a ABSOLUTAMENTE TODO
+      isIncluded = true;
+    } else if (normalizedPlan === 'pro' || normalizedPlan === 'professional') {
+      // Pro tiene acceso a core, free y pro
       isIncluded = module.type === 'core' || module.type === 'free' || module.type === 'pro';
+    } else {
+      // Free solo tiene acceso a core y free
+      isIncluded = module.type === 'core' || module.type === 'free' || module.includedInPlans.includes('free');
     }
 
     return {

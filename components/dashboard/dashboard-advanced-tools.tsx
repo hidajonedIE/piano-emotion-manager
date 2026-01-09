@@ -106,15 +106,21 @@ export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdva
   });
 
   const canAccess = (moduleTier: PlanTier): boolean => {
-    // BYPASS DEFINITIVO: Si el usuario es Premium, tiene acceso a TODO.
     // Normalizar el plan actual para asegurar compatibilidad
-    const normalizedTier = userTier?.toLowerCase();
+    const normalizedTier = userTier?.toLowerCase() || 'free';
     
-    // Log para debug en desarrollo
+    // Log para debug
     console.log('[DashboardAdvancedTools] Checking access:', { userTier: normalizedTier, moduleTier });
 
-    if (normalizedTier === 'premium' || normalizedTier === 'premium_ia') return true;
-    if (normalizedTier === 'pro') return moduleTier !== 'premium';
+    // 1. Premium tiene acceso a TODO
+    if (normalizedTier.includes('premium')) return true;
+    
+    // 2. Pro tiene acceso a Pro y Free
+    if (normalizedTier.includes('pro') || normalizedTier.includes('starter')) {
+      return moduleTier === 'pro' || moduleTier === 'free';
+    }
+    
+    // 3. Free solo tiene acceso a Free
     return moduleTier === 'free';
   };
 

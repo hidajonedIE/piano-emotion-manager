@@ -22,18 +22,10 @@ export function useUserTier(): { tier: UserTier; isLoading: boolean } {
     
     // Si el plan es premium o pro, le damos acceso aunque el status no sea 'active'
     // (por ejemplo, si está en 'past_due' o 'trialing')
-    switch (normalizedPlan) {
-      case 'pro':
-      case 'professional':
-      case 'starter':
-        return 'pro';
-      case 'premium':
-      case 'premium_ia':
-        return 'premium';
-      case 'free':
-      default:
-        return 'free';
-    }
+    if (normalizedPlan.includes('premium')) return 'premium';
+    if (normalizedPlan.includes('pro') || normalizedPlan.includes('starter')) return 'pro';
+    
+    return 'free';
   };
 
   const tier = mapPlanToTier(userData?.subscriptionPlan, userData?.subscriptionStatus);
