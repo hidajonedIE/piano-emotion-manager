@@ -150,9 +150,12 @@ export const modulesRouter = router({
 
   // Obtener plan actual
   getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+    console.log('[getCurrentPlan] ctx.user:', ctx.user ? { id: ctx.user.id, email: ctx.user.email, openId: ctx.user.openId } : null);
     const userId = ctx.user?.openId;
+    console.log('[getCurrentPlan] userId:', userId);
     // userId es el Clerk ID (string), se pasa directamente a getUserPlan
     const plan = await getUserPlan(userId);
+    console.log('[getCurrentPlan] plan:', plan);
     return { plan };
   }),
 
