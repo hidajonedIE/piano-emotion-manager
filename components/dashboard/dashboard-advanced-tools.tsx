@@ -11,7 +11,7 @@ import { AnimatedCard } from '@/components/animated-card';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Spacing, BorderRadius } from '@/constants/theme';
-import { useModules } from '@/hooks/modules/use-modules';
+import { useUserTier } from '@/hooks/use-user-tier';
 
 // Tipos de plan
 type PlanTier = 'free' | 'pro' | 'premium';
@@ -97,35 +97,31 @@ interface DashboardAdvancedToolsProps {
 
 export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdvancedToolsProps) {
   const router = useRouter();
-  const { professionalModules, premiumModules, isLoading } = useModules();
-  
+  const { tier: tierFromHook, isLoading } = useUserTier();
+  const userTier = userTierProp || tierFromHook;
   
   const [upgradeModal, setUpgradeModal] = useState<{ visible: boolean; tier: 'pro' | 'premium' | null }>({
     visible: false,
     tier: null,
   });
 
-  const canAccess = (moduleKey: string): boolean => {
+  const canAccess = (moduleTier: PlanTier): boolean => {
     // Normalizar el plan actual para asegurar compatibilidad
-    const proModule = professionalModules.find(m => m.key === moduleKey);
-    if (proModule) return proModule.isEnabled;
-
-    const premiumModule = premiumModules.find(m => m.key === moduleKey);
-    if (premiumModule) return premiumModule.isEnabled;
-
-    return true; // Free modules are always accessible
+    const normalizedTier = userTier?.toLowerCase() || 'free';
     
     // Log para debug
     console.log('[DashboardAdvancedTools] Checking access:', { userTier: normalizedTier, moduleTier });
 
     // 1. Premium tiene acceso a TODO
-    
+    if (normalizedTier.includes('premium')) return true;
     
     // 2. Pro tiene acceso a Pro y Free
-    
+    if (normalizedTier.includes('pro') || normalizedTier.includes('starter')) {
+      return moduleTier === 'pro' || moduleTier === 'free';
+    }
     
     // 3. Free solo tiene acceso a Free
-    
+    return moduleTier === 'free';
   };
 
   const handleAction = (module: typeof ADVANCED_MODULES[0]) => {
@@ -151,11 +147,11 @@ export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdva
     router.push('/settings/modules' as any);
   };
 
-  
+  const getBadgeForModule = (tier: PlanTier): string | undefined => {
     // Solo mostrar badge si el usuario NO tiene acceso al módulo
-    
-    
-    
+    if (tier === 'pro' && !canAccess('pro')) return 'PRO';
+    if (tier === 'premium' && !canAccess('premium')) return 'PREMIUM';
+    return undefined;
   };
 
   return (
@@ -168,8 +164,8 @@ export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdva
       >
         <View style={styles.centeredGrid}>
           {ADVANCED_MODULES.map((module) => {
-            const hasAccess = canAccess(module.key);
-            const badge = !hasAccess ? (module.tier === 'pro' ? 'PRO' : 'PREMIUM') : undefined;
+            const hasAccess = canAccess(module.tier);
+            const badge = getBadgeForModule(module.tier);
             
             return (
               <AnimatedCard
