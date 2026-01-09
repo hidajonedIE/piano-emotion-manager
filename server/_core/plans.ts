@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-export type PlanType = 'free' | 'professional' | 'premium_ia';
+export type PlanType = 'free' | 'pro' | 'premium';
 
 export interface PlanLimits {
   clients: number;          // Límite de clientes (-1 = ilimitado)
@@ -124,8 +124,8 @@ export const PLANS: Record<PlanType, Plan> = {
     },
   },
   
-  professional: {
-    id: 'professional',
+  pro: {
+    id: 'pro',
     name: 'Plan Pro',
     price: 30,
     billingPeriod: 'year',
@@ -179,9 +179,9 @@ export const PLANS: Record<PlanType, Plan> = {
     },
   },
   
-  premium_ia: {
-    id: 'premium_ia',
-    name: 'Plan Premium IA',
+  premium: {
+    id: 'premium',
+    name: 'Plan Premium',
     price: 50,
     billingPeriod: 'year',
     stripePriceId: 'price_1SiMu2DpmJIxYFlv3ZHbLKBg',

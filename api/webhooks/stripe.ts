@@ -16,9 +16,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 // Price IDs para identificar el plan
-const PRICE_TO_PLAN: Record<string, 'free' | 'professional' | 'premium_ia'> = {
-  'price_1SiMRRDpmJIxYFlvsWO3zwIB': 'professional',
-  'price_1SiMSUDpmJIxYFlvIGnyWiDP': 'premium_ia',
+const PRICE_TO_PLAN: Record<string, 'free' | 'pro' | 'premium'> = {
+  'price_1SiMRRDpmJIxYFlvsWO3zwIB': 'pro',
+  'price_1SiMSUDpmJIxYFlvIGnyWiDP': 'premium',
 };
 
 export const config = {
@@ -125,7 +125,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Obtener detalles de la suscripción
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const priceId = subscription.items.data[0]?.price.id;
-  const plan = PRICE_TO_PLAN[priceId] || 'professional';
+  const plan = PRICE_TO_PLAN[priceId] || 'pro';
 
   // Actualizar usuario en la base de datos
   const db = await getDb();
@@ -149,7 +149,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   const customerId = subscription.customer as string;
   const priceId = subscription.items.data[0]?.price.id;
-  const plan = PRICE_TO_PLAN[priceId] || 'professional';
+  const plan = PRICE_TO_PLAN[priceId] || 'pro';
 
   const db = await getDb();
   

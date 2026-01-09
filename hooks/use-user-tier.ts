@@ -19,20 +19,12 @@ export function useUserTier(): { tier: UserTier; isLoading: boolean } {
     
     // Mapeo de planes de la base de datos a tiers del UI
     switch (plan) {
-      case 'professional':
-      case 'professional_basic':
-      case 'professional_advanced':
-        return 'pro';
-      
-      case 'premium':
-      case 'premium_ia':
-      case 'enterprise':
-      case 'enterprise_basic':
-      case 'enterprise_advanced':
-        return 'premium';
-      
-      case 'starter':
       case 'free':
+        return 'free';
+      case 'pro':
+        return 'pro';
+      case 'premium':
+        return 'premium';
       default:
         return 'free';
     }
