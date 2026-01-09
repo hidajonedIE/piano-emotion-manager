@@ -106,9 +106,14 @@ export function DashboardAdvancedTools({ userTier: userTierProp }: DashboardAdva
   });
 
   const canAccess = (moduleTier: PlanTier): boolean => {
-    // Normalizar el tier del usuario para asegurar compatibilidad
+    // BYPASS DEFINITIVO: Si el usuario es Premium, tiene acceso a TODO.
+    // Normalizar el plan actual para asegurar compatibilidad
     const normalizedTier = userTier?.toLowerCase();
-    if (normalizedTier === 'premium') return true;
+    
+    // Log para debug en desarrollo
+    console.log('[DashboardAdvancedTools] Checking access:', { userTier: normalizedTier, moduleTier });
+
+    if (normalizedTier === 'premium' || normalizedTier === 'premium_ia') return true;
     if (normalizedTier === 'pro') return moduleTier !== 'premium';
     return moduleTier === 'free';
   };
