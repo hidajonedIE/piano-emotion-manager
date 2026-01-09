@@ -508,3 +508,16 @@ export async function deleteQuoteTemplate(odId: string, id: number): Promise<voi
   if (!db) throw new Error("Database not available");
   await db.delete(quoteTemplates).where(and(eq(quoteTemplates.odId, odId), eq(quoteTemplates.id, id)));
 }
+
+// ============ CLERK AUTHENTICATION ============
+
+export async function getUserByClerkId(clerkId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user by clerkId: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}

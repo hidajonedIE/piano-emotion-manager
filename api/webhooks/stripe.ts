@@ -28,7 +28,7 @@ export const config = {
 };
 
 // Crear conexión a la base de datos
-import { getDb } from '../../server/_core/db.js';
+import { getDb } from '../../server/db.js';
 
 async function getRawBody(req: VercelRequest): Promise<Buffer> {
   return new Promise((resolve, reject) => {
