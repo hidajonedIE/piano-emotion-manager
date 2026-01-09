@@ -458,19 +458,37 @@ export const DEFAULT_PLANS: PlanInfo[] = [
  * Convierte los módulos estáticos al formato ModuleInfo para el frontend
  */
 export function getModulesForPlan(currentPlan: SubscriptionPlan = 'free'): ModuleInfo[] {
-  return DEFAULT_MODULES.map(module => ({
-    code: module.code,
-    name: module.name,
-    description: module.description,
-    icon: module.icon,
-    color: module.color,
-    type: module.type,
-    includedInPlans: module.includedInPlans,
-    isEnabled: module.type === 'core' || module.includedInPlans.includes(currentPlan),
-    isAvailable: true,
-    requiresUpgrade: !module.includedInPlans.includes(currentPlan) && module.type !== 'core',
-    includedInCurrentPlan: module.includedInPlans.includes(currentPlan),
-  }));
+  // Normalizar el plan actual para asegurar compatibilidad
+  const normalizedPlan = currentPlan?.toLowerCase() as SubscriptionPlan;
+  
+  return DEFAULT_MODULES.map(module => {
+    // Un módulo está incluido si:
+    // 1. Es un módulo core
+    // 2. El plan actual está explícitamente en includedInPlans
+    // 3. El usuario es Premium (tiene acceso a todo)
+    // 4. El usuario es Pro y el módulo es de tipo 'free' o 'pro'
+    let isIncluded = module.type === 'core' || module.includedInPlans.includes(normalizedPlan);
+    
+    if (normalizedPlan === 'premium') {
+      isIncluded = true; // Premium tiene todo
+    } else if (normalizedPlan === 'pro') {
+      isIncluded = module.type === 'core' || module.type === 'free' || module.type === 'pro';
+    }
+
+    return {
+      code: module.code,
+      name: module.name,
+      description: module.description,
+      icon: module.icon,
+      color: module.color,
+      type: module.type,
+      includedInPlans: module.includedInPlans,
+      isEnabled: isIncluded,
+      isAvailable: true,
+      requiresUpgrade: !isIncluded && module.type !== 'core',
+      includedInCurrentPlan: isIncluded,
+    };
+  });
 }
 
 /**
