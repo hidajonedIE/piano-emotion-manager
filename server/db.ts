@@ -10,6 +10,10 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
+      console.log("[Database] Attempting to connect...");
+      console.log("[Database] DATABASE_URL present:", !!process.env.DATABASE_URL);
+      console.log("[Database] DATABASE_URL length:", process.env.DATABASE_URL?.length);
+      
       // Create connection pool with SSL configuration for TiDB Cloud
       const pool = mysql.createPool({
         uri: process.env.DATABASE_URL,
@@ -18,10 +22,16 @@ export async function getDb() {
         },
       });
       _db = drizzle(pool, { casing: 'preserve' });
+      console.log("[Database] ✓ Connection pool created successfully");
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] ❌ Failed to connect:", error instanceof Error ? error.message : error);
+      if (error instanceof Error && error.stack) {
+        console.error("[Database] Stack:", error.stack);
+      }
       _db = null;
     }
+  } else if (!process.env.DATABASE_URL) {
+    console.warn("[Database] DATABASE_URL not configured");
   }
   return _db;
 }
