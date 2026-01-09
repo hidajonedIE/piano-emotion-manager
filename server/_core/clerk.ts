@@ -261,39 +261,52 @@ export async function getOrCreateUserFromClerk(
   usersTable: UsersTable,
   eq: EqFunction
 ): Promise<DatabaseUser> {
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Iniciando búsqueda de usuario", { clerkUserId: clerkUser.id, email: clerkUser.email });
+  
   // 1. Find user by openId (primary) - database uses openId, not clerkId
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Buscando usuario por openId:", clerkUser.id);
   let existingUser = await db
     .select()
     .from(usersTable)
     .where(eq(usersTable.openId, clerkUser.id))
     .limit(1) as DatabaseUser[];
 
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de búsqueda por openId:", { found: existingUser.length > 0, user: existingUser[0] });
+
   if (existingUser.length > 0) {
     // Update last sign in and return
+    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario encontrado, actualizando lastSignedIn");
     await db
       .update(usersTable)
       .set({ lastSignedIn: new Date() })
       .where(eq(usersTable.id, existingUser[0].id));
+    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario actualizado y devuelto");
     return existingUser[0];
   }
 
   // 2. Find user by email (fallback for migration)
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Buscando usuario por email:", clerkUser.email);
   existingUser = await db
     .select()
     .from(usersTable)
     .where(eq(usersTable.email, clerkUser.email))
     .limit(1) as DatabaseUser[];
 
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de búsqueda por email:", { found: existingUser.length > 0, user: existingUser[0] });
+
   if (existingUser.length > 0) {
     // User exists, but openId might be missing. Update it.
+    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario encontrado por email, actualizando openId");
     await db
       .update(usersTable)
       .set({ openId: clerkUser.id, lastSignedIn: new Date() })
       .where(eq(usersTable.id, existingUser[0].id));
+    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario actualizado con openId");
     return { ...existingUser[0], openId: clerkUser.id };
   }
 
   // 3. Create new user
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario no encontrado, creando nuevo usuario");
   const newUser = {
     openId: clerkUser.id, // Database uses openId, not clerkId
     email: clerkUser.email,
@@ -302,24 +315,31 @@ export async function getOrCreateUserFromClerk(
     lastSignedIn: new Date(),
   };
 
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Insertando nuevo usuario:", newUser);
   const result = await db.insert(usersTable).values(newUser) as unknown as Array<{ insertId?: number }>;
   const insertedId = result[0]?.insertId;
 
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de inserción:", { insertedId, result });
+
   if (insertedId) {
+    console.log("[DEBUG] [getOrCreateUserFromClerk] Recuperando usuario insertado por ID:", insertedId);
     const createdUsers = await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.id, insertedId))
       .limit(1) as DatabaseUser[];
+    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario recuperado:", createdUsers[0]);
     return createdUsers[0];
   }
 
   // If insert didn't return ID, fetch by openId
+  console.log("[DEBUG] [getOrCreateUserFromClerk] No insertedId, buscando por openId:", clerkUser.id);
   const createdUsers = await db
     .select()
     .from(usersTable)
     .where(eq(usersTable.openId, clerkUser.id))
     .limit(1) as DatabaseUser[];
 
+  console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario creado:", createdUsers[0]);
   return createdUsers[0];
 }
