@@ -12,6 +12,7 @@ import type { SubscriptionPlan } from "../../drizzle/modules-schema.js";
 
 /**
  * Obtiene el plan de suscripción actual del usuario
+ * @param userId - Clerk ID del usuario (string)
  */
 async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan> {
   if (!userId) {
@@ -21,12 +22,11 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
 
   try {
     const db = await getDb();
-    const userIdNum = parseInt(userId);
     
-    console.log('[getUserPlan] Looking for user with ID:', userIdNum);
+    console.log('[getUserPlan] Looking for user with Clerk ID:', userId);
     
-    // Buscar usuario y su suscripción
-    const result = await db.select().from(users).where(eq(users.id, userIdNum)).limit(1);
+    // Buscar usuario por openId (Clerk ID) en lugar de por id numérico
+    const result = await db.select().from(users).where(eq(users.openId, userId)).limit(1);
     const user = result.length > 0 ? result[0] : null;
 
     console.log('[getUserPlan] User found:', user ? { id: user.id, email: user.email, plan: user.subscriptionPlan, status: user.subscriptionStatus } : 'null');
@@ -106,6 +106,7 @@ export const modulesRouter = router({
   // Obtener módulos con estado
   getModulesWithStatus: publicProcedure.query(async ({ ctx }): Promise<ModuleInfo[]> => {
     const userId = ctx.user?.id;
+    // userId es el Clerk ID (string)
     const plan = await getUserPlan(userId);
     return getModulesForPlan(plan);
   }),
@@ -119,19 +120,16 @@ export const modulesRouter = router({
     }
 
     try {
-      const db = getDb();
+      const db = await getDb();
       const user = await db.query.users.findFirst({
-        where: eq(users.id, parseInt(userId)),
+        where: eq(users.openId, userId),
       });
 
       if (user) {
         // Mapear el plan de la tabla users al tipo SubscriptionPlan
         const planMap: Record<string, SubscriptionPlan> = {
           'free': 'free',
-          'starter': 'free',
-          'professional': 'professional',
-          'enterprise': 'premium',
-          'premium_ia': 'premium',
+          'pro': 'pro',
           'premium': 'premium',
         };
         
@@ -153,6 +151,7 @@ export const modulesRouter = router({
   // Obtener plan actual
   getCurrentPlan: publicProcedure.query(async ({ ctx }) => {
     const userId = ctx.user?.id;
+    // userId es el Clerk ID (string), se pasa directamente a getUserPlan
     return await getUserPlan(userId);
   }),
 
@@ -172,6 +171,7 @@ export const modulesRouter = router({
   // Obtener uso de recursos
   getResourceUsage: publicProcedure.query(async ({ ctx }) => {
     const userId = ctx.user?.id;
+    // userId es el Clerk ID (string)
     const plan = await getUserPlan(userId);
     return await calculateResourceUsage(userId, plan);
   }),
@@ -189,6 +189,7 @@ export const modulesRouter = router({
         throw new Error('Usuario no autenticado');
       }
 
+      // userId es el Clerk ID (string)
       // TODO: Guardar preferencia de módulo en la base de datos
       // Por ahora, solo devolver éxito
       return { success: true };
@@ -207,6 +208,7 @@ export const modulesRouter = router({
         throw new Error('Usuario no autenticado');
       }
 
+      // userId es el Clerk ID (string)
       // TODO: Implementar cambio de plan real
       // Por ahora, solo devolver éxito
       return { success: true };
@@ -224,6 +226,7 @@ export const modulesRouter = router({
         return { allowed: false };
       }
 
+      // userId es el Clerk ID (string)
       const plan = await getUserPlan(userId);
       const usage = await calculateResourceUsage(userId, plan);
       
