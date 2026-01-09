@@ -62,6 +62,9 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
   let user: User | null = null;
 
   // Try Clerk authentication first (new system)
+  // TEMPORARILY DISABLED: Clerk is failing with JOSEAlgNotAllowed error
+  // TODO: Fix Clerk JWT verification configuration
+  /*
   try {
     console.log('[Context] Attempting Clerk authentication...');
     const clerkUser = await verifyClerkSession(opts.req);
@@ -108,12 +111,18 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
     console.error('[Context] Clerk authentication error:', error);
     // Clerk authentication failed, continue to legacy auth
   }
+  */
 
   // Fall back to legacy SDK authentication (demo login, etc.)
   try {
+    console.log('[Context] Attempting SDK legacy authentication...');
     user = await sdk.authenticateRequest(opts.req);
-  } catch {
+    if (user) {
+      console.log('[Context] User authenticated via SDK legacy:', { id: user.id, email: user.email });
+    }
+  } catch (error) {
     // Authentication is optional for public procedures.
+    console.log('[Context] SDK legacy authentication failed:', error);
     user = null;
   }
 
