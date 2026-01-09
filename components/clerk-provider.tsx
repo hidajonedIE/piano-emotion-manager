@@ -49,7 +49,11 @@ export function ClerkProvider({ children }: ClerkProviderProps) {
       const { ClerkProvider: ClerkProviderWeb } = require("@clerk/clerk-react");
       console.log('[ClerkProvider] @clerk/clerk-react loaded successfully');
       return (
-        <ClerkProviderWeb publishableKey={publishableKey}>
+        <ClerkProviderWeb 
+          publishableKey={publishableKey}
+          afterSignInUrl="/"
+          afterSignUpUrl="/"
+        >
           {children}
         </ClerkProviderWeb>
       );
