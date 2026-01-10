@@ -182,9 +182,8 @@ export const clientsRouter = router({
       
       // DEBUG: Log the WHERE clause
       console.log('[clients.list] WHERE clauses count:', whereClauses.length);
-      console.log('[clients.list] Filter by partner:', filterByPartner(clients.partnerId, partnerId));
       console.log('[clients.list] Offset:', offset, 'Limit:', limit);
-      console.log('[clients.list] Filter by partner:', filterByPartner(clients.partnerId, partnerId));
+      console.log('[clients.list] Using partnerId:', partnerId, 'for filter');
       
       const items = await database
         .select()

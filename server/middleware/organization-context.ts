@@ -168,7 +168,7 @@ export const withOrganizationContext = async ({ ctx, next }: any) => {
     ctx: {
       ...ctx,
       orgContext,
-      partnerId: orgContext.partnerId,  // Preservar partnerId en el contexto
+      partnerId: orgContext.partnerId || ctx.partnerId,  // Usar orgContext.partnerId si existe, sino usar ctx.partnerId original
     },
   });
 };
