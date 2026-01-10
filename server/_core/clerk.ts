@@ -49,6 +49,7 @@ export async function verifyClerkSession(req: {
     
     let clerkUser: any = null;
     let clerkSuccess = false;
+    let clerkErrorMessage = "";
     try {
       clerkUser = await clerkClient.users.getUser(tokenUserId);
       console.log("8. EXITO: Usuario encontrado en Clerk");
@@ -57,8 +58,8 @@ export async function verifyClerkSession(req: {
       console.log("   - Nombre en Clerk:", `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim());
       clerkSuccess = true;
     } catch (clerkError) {
-      const errorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
-      console.log("8. ERROR al obtener usuario desde Clerk:", errorMessage);
+      clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
+      console.log("8. ERROR al obtener usuario desde Clerk:", clerkErrorMessage);
       console.log("   - ID que se intentó buscar:", tokenUserId);
       console.log("   - Tipo de error:", clerkError instanceof Error ? clerkError.constructor.name : typeof clerkError);
       
@@ -76,10 +77,16 @@ export async function verifyClerkSession(req: {
       };
     }
     
-    console.log("9.5. Preparando objeto de usuario para retornar");
-    console.log("   - clerkSuccess:", clerkSuccess);
-    console.log("   - Usuario ID:", clerkUser.id);
-    console.log("   - Usuario Email:", clerkUser.emailAddresses?.[0]?.emailAddress);
+    // Consolidar todos los logs en un objeto para asegurar que se capturen
+    const debugInfo = {
+      punto_9_5: "Preparando objeto de usuario para retornar",
+      clerkSuccess,
+      usuarioId: clerkUser.id,
+      usuarioEmail: clerkUser.emailAddresses?.[0]?.emailAddress,
+      clerkErrorMessage,
+      punto_9_6: "Objeto de usuario preparado para retornar"
+    };
+    console.log("9. DEBUG INFO:", JSON.stringify(debugInfo, null, 2));
     
     // Return the user object
     const returnUser = {
@@ -89,7 +96,7 @@ export async function verifyClerkSession(req: {
       clerkId: clerkUser.id
     };
     
-    console.log("9.6. Objeto de usuario preparado para retornar:", returnUser);
+    console.log("10. USUARIO FINAL RETORNADO:", JSON.stringify(returnUser, null, 2));
     
     return returnUser;
   } catch (error) {
