@@ -110,16 +110,18 @@ export const pianosRouter = router({
       console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
       console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
       
-      const baseFilter = filterByPartnerAndOrganization(
-        pianos,
-        ctx.partnerId,
-        ctx.orgContext,
-        "pianos"
-      );
-      const additionalFilters = [];
+      const partnerId = ctx.partnerId;
+      if (partnerId === undefined) {
+        return { items: [], total: 0 };
+      }
+
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(pianos.partnerId, partnerId));
+      }
       
       if (search) {
-        additionalFilters.push(
+        whereClauses.push(
           or(
             ilike(pianos.brand, `%${search}%`),
             ilike(pianos.model, `%${search}%`),
@@ -127,16 +129,14 @@ export const pianosRouter = router({
           )!
         );
       }
-      if (category) additionalFilters.push(eq(pianos.category, category));
-      if (brand) additionalFilters.push(ilike(pianos.brand, brand));
-      if (condition) additionalFilters.push(eq(pianos.condition, condition));
-      if (clientId) additionalFilters.push(eq(pianos.clientId, clientId));
-      if (yearFrom) additionalFilters.push(gte(pianos.year, yearFrom));
-      if (yearTo) additionalFilters.push(lte(pianos.year, yearTo));
+      if (category) whereClauses.push(eq(pianos.category, category));
+      if (brand) whereClauses.push(ilike(pianos.brand, brand));
+      if (condition) whereClauses.push(eq(pianos.condition, condition));
+      if (clientId) whereClauses.push(eq(pianos.clientId, clientId));
+      if (yearFrom) whereClauses.push(gte(pianos.year, yearFrom));
+      if (yearTo) whereClauses.push(lte(pianos.year, yearTo));
       
-      const whereClause = additionalFilters.length > 0
-        ? and(baseFilter, ...additionalFilters)
-        : baseFilter;
+      const whereClause = and(...whereClauses);
 
       const sortColumn = pianos[sortBy as keyof typeof pianos] || pianos.brand;
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);

@@ -124,28 +124,27 @@ export const servicesRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      // TEMPORAL: Filtro simplificado sin multi-tenant
-      const baseFilter = filterByPartnerAndOrganization(
-        services,
-        ctx.partnerId,
-        ctx.orgContext,
-        "services"
-      );
-      const additionalFilters = [];
+      const partnerId = ctx.partnerId;
+      if (partnerId === undefined) {
+        return { items: [], total: 0, stats: { total: 0, totalRevenue: 0 } };
+      }
+
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(services.partnerId, partnerId));
+      }
       
       if (search) {
-        additionalFilters.push(or(ilike(services.notes, `%${search}%`), ilike(services.technicianNotes, `%${search}%`))!);
+        whereClauses.push(or(ilike(services.notes, `%${search}%`), ilike(services.technicianNotes, `%${search}%`))!);
       }
-      if (serviceType) additionalFilters.push(eq(services.serviceType, serviceType));
-      if (status) additionalFilters.push(eq(services.status, status));
-      if (clientId) additionalFilters.push(eq(services.clientId, clientId));
-      if (pianoId) additionalFilters.push(eq(services.pianoId, pianoId));
-      if (dateFrom) additionalFilters.push(gte(services.date, new Date(dateFrom)));
-      if (dateTo) additionalFilters.push(lte(services.date, new Date(dateTo)));
+      if (serviceType) whereClauses.push(eq(services.serviceType, serviceType));
+      if (status) whereClauses.push(eq(services.status, status));
+      if (clientId) whereClauses.push(eq(services.clientId, clientId));
+      if (pianoId) whereClauses.push(eq(services.pianoId, pianoId));
+      if (dateFrom) whereClauses.push(gte(services.date, new Date(dateFrom)));
+      if (dateTo) whereClauses.push(lte(services.date, new Date(dateTo)));
       
-      const whereClause = additionalFilters.length > 0
-        ? and(baseFilter, ...additionalFilters)
-        : baseFilter;
+      const whereClause = and(...whereClauses);
 
       const sortColumn = services[sortBy as keyof typeof services] || services.date;
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
