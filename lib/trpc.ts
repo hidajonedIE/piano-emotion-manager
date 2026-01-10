@@ -19,19 +19,6 @@ export const trpc = createTRPCReact<AppRouter>();
  * Call this once in your app's root layout.
  */
 export function createTRPCClient() {
-  // Get Clerk token from client-side
-  let clerkToken: string | null = null;
-  
-  // Try to get token synchronously (it may be cached)
-  if (typeof window !== 'undefined') {
-    try {
-      
-      // This is async, but we'll handle it in the fetch function
-    } catch (e) {
-      console.error('[createTRPCClient] Error loading Clerk:', e);
-    }
-  }
-
   return trpc.createClient({
     links: [
       httpBatchLink({
@@ -41,10 +28,28 @@ export function createTRPCClient() {
         // Pass Clerk token in Authorization header
         async fetch(url, options) {
           try {
-            // Get the token from Clerk
+            // Get the token from Clerk using the correct method
+            let token: string | null = null;
             
+            // Check if Clerk is available and has a session
+            if (typeof window !== 'undefined' && window.Clerk) {
+              try {
+                // Use the correct method to get the token
+                token = await window.Clerk.session?.getToken();
+              } catch (clerkError) {
+                console.warn('[tRPC fetch] Could not get token from Clerk session:', clerkError);
+                
+                // Fallback: try to get token from Clerk user
+                try {
+                  if (window.Clerk.user) {
+                    token = await window.Clerk.user.getToken({ template: 'default' });
+                  }
+                } catch (userError) {
+                  console.warn('[tRPC fetch] Could not get token from Clerk user:', userError);
+                }
+              }
+            }
             
-            const token = await window.Clerk.session?.getToken();
             console.log('[tRPC fetch] Token obtained from Clerk:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
             
             return fetch(url, {
