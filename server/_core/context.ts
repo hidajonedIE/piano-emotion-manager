@@ -49,8 +49,8 @@ async function createSessionJWT(user: User): Promise<string> {
   const secret = process.env.JWT_SECRET || "your-secret-key";
   const expirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
-  // Para HS256, usamos importSecret en lugar de importSPKI
-  const secretKey = await jose.importSecret(secret, "HS256");
+  // Para HS256, convertir el secret a Uint8Array
+  const secretKey = new TextEncoder().encode(secret);
 
   return await new jose.SignJWT({
     sub: String(user.id),
