@@ -22,7 +22,7 @@ export type DashboardSectionId =
 
 // Módulos disponibles en accesos rápidos
 export type AccessShortcutModule =
-  | 'clients' | 'pianos' | 'suppliers' | 'dashboard' | 'inventory'
+  | 'clients' | 'pianos' | 'services' | 'suppliers' | 'dashboard' | 'inventory'
   | 'stats' | 'analytics' | 'quotes' | 'invoices' | 'billing_summary'
   | 'rates' | 'service_catalog' | 'clients_map' | 'business' | 'reminders'
   | 'contracts' | 'predictions' | 'import' | 'routes' | 'modules' | 'settings';
@@ -73,25 +73,26 @@ const DEFAULT_SECTIONS: DashboardSectionConfig[] = [
 const DEFAULT_ACCESS_SHORTCUTS: AccessShortcutConfig[] = [
   { id: 'clients', visible: true, order: 0 },
   { id: 'pianos', visible: true, order: 1 },
-  { id: 'suppliers', visible: true, order: 2 },
-  { id: 'dashboard', visible: true, order: 3 },
-  { id: 'inventory', visible: true, order: 4 },
-  { id: 'stats', visible: true, order: 5 },
-  { id: 'analytics', visible: true, order: 6 },
-  { id: 'quotes', visible: true, order: 7 },
-  { id: 'invoices', visible: true, order: 8 },
-  { id: 'billing_summary', visible: true, order: 9 },
-  { id: 'rates', visible: true, order: 10 },
-  { id: 'service_catalog', visible: true, order: 11 },
-  { id: 'clients_map', visible: true, order: 12 },
-  { id: 'business', visible: true, order: 13 },
-  { id: 'reminders', visible: true, order: 14 },
-  { id: 'contracts', visible: true, order: 15 },
-  { id: 'predictions', visible: true, order: 16 },
-  { id: 'import', visible: true, order: 17 },
-  { id: 'routes', visible: true, order: 18 },
-  { id: 'modules', visible: true, order: 19 },
-  { id: 'settings', visible: true, order: 20 },
+  { id: 'services', visible: true, order: 2 },
+  { id: 'suppliers', visible: true, order: 3 },
+  { id: 'dashboard', visible: true, order: 4 },
+  { id: 'inventory', visible: true, order: 5 },
+  { id: 'stats', visible: true, order: 6 },
+  { id: 'analytics', visible: true, order: 7 },
+  { id: 'quotes', visible: true, order: 8 },
+  { id: 'invoices', visible: true, order: 9 },
+  { id: 'billing_summary', visible: true, order: 10 },
+  { id: 'rates', visible: true, order: 11 },
+  { id: 'service_catalog', visible: true, order: 12 },
+  { id: 'clients_map', visible: true, order: 13 },
+  { id: 'business', visible: true, order: 14 },
+  { id: 'reminders', visible: true, order: 15 },
+  { id: 'contracts', visible: true, order: 16 },
+  { id: 'predictions', visible: true, order: 17 },
+  { id: 'import', visible: true, order: 18 },
+  { id: 'routes', visible: true, order: 19 },
+  { id: 'modules', visible: true, order: 20 },
+  { id: 'settings', visible: true, order: 21 },
 ];
 
 // Posición por defecto: abajo derecha
