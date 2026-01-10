@@ -173,21 +173,26 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
       return null;
     }
     
-    console.log("[DEBUG] [Clerk] Token decodificado:", { sub: decoded.sub, email: decoded.email });
+    console.log("[DEBUG] [Clerk] Token decodificado completo:", JSON.stringify(decoded, null, 2));
+    console.log("[DEBUG] [Clerk] Token decodificado:", { sub: decoded.sub, email: decoded.email, aud: decoded.aud, iss: decoded.iss });
 
     const userId = decoded.sub;
     if (!userId) {
       console.error("[DEBUG] [Clerk] No se encontró 'sub' en el token");
+      console.error("[DEBUG] [Clerk] Token keys:", Object.keys(decoded));
       return null;
     }
+    
+    console.log("[DEBUG] [Clerk] User ID extraído del token:", userId, "(tipo:", typeof userId, ")");
 
     // Get user details from Clerk using the clerkClient
     console.log("[DEBUG] [Clerk] Obteniendo detalles del usuario desde Clerk con ID:", userId);
     
     try {
+      console.log("[DEBUG] [Clerk] Intentando obtener usuario con ID:", userId);
       const user = await clerkClient.users.getUser(userId);
       
-      console.log("[DEBUG] [Clerk] Usuario obtenido:", {
+      console.log("[DEBUG] [Clerk] Usuario obtenido exitosamente:", {
         id: user.id,
         email: user.emailAddresses[0]?.emailAddress,
         name: `${user.firstName || ""} ${user.lastName || ""}`.trim()
@@ -200,7 +205,11 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
         imageUrl: user.imageUrl,
       };
     } catch (clerkError) {
-      console.error("[DEBUG] [Clerk] Error obteniendo usuario desde Clerk:", clerkError instanceof Error ? clerkError.message : clerkError);
+      console.error("[DEBUG] [Clerk] Error obteniendo usuario desde Clerk con ID:", userId);
+      console.error("[DEBUG] [Clerk] Error:", clerkError instanceof Error ? clerkError.message : clerkError);
+      if (clerkError instanceof Error && clerkError.stack) {
+        console.error("[DEBUG] [Clerk] Stack:", clerkError.stack);
+      }
       
       // Fallback: return user info from decoded token
       console.log("[DEBUG] [Clerk] Usando información del token como fallback");
