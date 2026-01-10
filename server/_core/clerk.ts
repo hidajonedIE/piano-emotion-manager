@@ -48,12 +48,14 @@ export async function verifyClerkSession(req: {
     console.log("7. Intentando obtener usuario desde Clerk con ID:", tokenUserId);
     
     let clerkUser: any = null;
+    let clerkSuccess = false;
     try {
       clerkUser = await clerkClient.users.getUser(tokenUserId);
       console.log("8. EXITO: Usuario encontrado en Clerk");
       console.log("   - ID en Clerk:", clerkUser.id);
       console.log("   - Email en Clerk:", clerkUser.emailAddresses[0]?.emailAddress);
       console.log("   - Nombre en Clerk:", `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim());
+      clerkSuccess = true;
     } catch (clerkError) {
       const errorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
       console.log("8. ERROR al obtener usuario desde Clerk:", errorMessage);
@@ -74,13 +76,22 @@ export async function verifyClerkSession(req: {
       };
     }
     
+    console.log("9.5. Preparando objeto de usuario para retornar");
+    console.log("   - clerkSuccess:", clerkSuccess);
+    console.log("   - Usuario ID:", clerkUser.id);
+    console.log("   - Usuario Email:", clerkUser.emailAddresses?.[0]?.emailAddress);
+    
     // Return the user object
-    return {
+    const returnUser = {
       id: clerkUser.id,
       email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
       name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
       clerkId: clerkUser.id
     };
+    
+    console.log("9.6. Objeto de usuario preparado para retornar:", returnUser);
+    
+    return returnUser;
   } catch (error) {
     console.log("ERROR GENERAL:", error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.stack) {
