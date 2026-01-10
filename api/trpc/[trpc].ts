@@ -73,11 +73,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Create a normalized request object that works with the SDK
   const normalizedReq = {
+    url: req.url,
+    method: req.method,
     headers: {
       cookie: req.headers.cookie,
       authorization: req.headers.authorization || req.headers.Authorization,
       Authorization: req.headers.authorization || req.headers.Authorization,
     },
+    cookies: req.cookies || {},
   };
 
   // Handle tRPC request using fetch adapter
