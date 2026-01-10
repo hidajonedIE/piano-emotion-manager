@@ -772,7 +772,7 @@ export const appointmentsRouter = router({
         })
         .from(appointments)
         .where(
-filterByPartner(appointments.partnerId, ctx.partnerId)
+          filterByPartner(appointments.partnerId, ctx.partnerId)
         );
 
       const conflicts = detectConflicts(existingAppointments, {
