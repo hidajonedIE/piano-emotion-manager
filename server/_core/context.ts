@@ -1,9 +1,9 @@
 import type { HttpRequest, HttpResponse } from "@vercel/node";
-import type { User } from "../drizzle/schema.js";
+import type { User } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
-import { getDb } from "./db.js";
-import { users } from "../drizzle/schema.js";
+import { getDb } from "../../server/db.js";
+import { users } from "../../drizzle/schema.js";
 import * as jose from "jose";
 
 const COOKIE_NAME = "session";
