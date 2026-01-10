@@ -158,17 +158,19 @@ export const clientsRouter = router({
         
         console.log('[clients.list] After database connection, partnerId:', partnerId);
 
-      // Si no hay partnerId, devolver lista vacía (usuario no autenticado)
-      if (!partnerId) {
+      // Si no hay partnerId y el usuario no es owner, devolver lista vacía
+      if (partnerId === undefined) {
         console.log('[clients.list] NO partnerId available, returning empty list');
         return { items: [], total: 0 };
       }
       console.log('[clients.list] partnerId disponible:', partnerId);
       
-      // Usar solo filterByPartner para filtrar por partnerId
-      const whereClauses = [
-        filterByPartner(clients.partnerId, partnerId)
-      ];
+      // Usar solo filterByPartner para filtrar por partnerId (null = sin filtro para owners)
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(clients.partnerId, partnerId));
+      }
+      // If partnerId is null (owner), no filter is applied - they see all clients
       
       if (search) {
         whereClauses.push(
