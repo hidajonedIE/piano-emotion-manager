@@ -61,10 +61,8 @@ export async function verifyClerkSession(req: {
     } catch (clerkError) {
       const clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
       console.log('[Clerk] Error al obtener usuario:', clerkErrorMessage);
-      console.log('[Clerk] Error completo:', clerkError);
+      console.log('[Clerk] ACTIVANDO FALLBACK: Usando datos del token como usuario');
       debugLog.point8 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
-      
-      // Fallback: use the decoded token data
       debugLog.point9 = `FALLBACK: Usando datos del token como usuario`;
       
       clerkUser = {
@@ -73,6 +71,7 @@ export async function verifyClerkSession(req: {
         firstName: decoded.name?.split(' ')[0] || "",
         lastName: decoded.name?.split(' ').slice(1).join(' ') || ""
       };
+      console.log('[Clerk] FALLBACK clerkUser creado:', clerkUser);
     }
     
     // Return the user object
