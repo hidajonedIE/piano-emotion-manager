@@ -62,4 +62,26 @@ export const adminRouter = router({
         throw error;
       }
     }),
+
+  diagnoseData: protectedProcedure
+    .query(async () => {
+      try {
+        const database = await db.getDb();
+        if (!database) throw new Error("Database not available");
+
+        // Obtener una muestra de cada tabla sin filtros
+        const allClients = await database.select().from(clients).limit(5).execute();
+        const allPianos = await database.select().from(pianos).limit(5).execute();
+        const allServices = await database.select().from(services).limit(5).execute();
+
+        return {
+          clients: allClients,
+          pianos: allPianos,
+          services: allServices,
+        };
+      } catch (error) {
+        console.error("❌ Error en diagnoseData:", error);
+        throw error;
+      }
+    }),
 });
