@@ -87,51 +87,80 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       console.log("[DEBUG] [Context] Getting database connection...");
       const db = await getDb();
       if (db) {
-        console.log("[DEBUG] [Context] Database connected, calling getOrCreateUserFromClerk...");
-        console.log("[DEBUG] [Context] clerkUser:", clerkUser);
-        const dbResult = await getOrCreateUserFromClerk(clerkUser, db, users, eq, debugLog);
-        const { user: dbUser, debugLog: dbDebugLog } = dbResult;
-        debugLog = { ...debugLog, ...dbDebugLog };
-        console.log("[DEBUG] [Context] getOrCreateUserFromClerk returned:", dbUser);
-        console.log("[DEBUG] [Context] debugLog:", JSON.stringify(debugLog));
-        user = dbUser as User;
-        console.log("[DEBUG] [Context] dbUser object:", JSON.stringify(dbUser));
-        console.log("[DEBUG] [Context] dbUser.partnerId value:", dbUser.partnerId, "type:", typeof dbUser.partnerId);
-        const partnerId = dbUser.partnerId || null;
-        console.log("[DEBUG] [Context] User set with partnerId:", partnerId, "type:", typeof partnerId);
+        console.log("[DEBUG] [Context] Database connected");
         
-        // Create a session JWT compatible with SDK legacy
+        // FIRST: Try to find user by openId directly (most reliable)
+        console.log("[DEBUG] [Context] Attempting direct openId lookup with ID:", clerkUser.id);
         try {
-          const sessionJWT = await createSessionJWT(user);
-          // Set the cookie so SDK legacy can also authenticate
-          opts.res.setHeader('Set-Cookie', `${COOKIE_NAME}=${sessionJWT}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`);
-          console.log("[DEBUG] [Context] Session JWT cookie set for SDK legacy compatibility");
-        } catch (error) {
-          console.error("[DEBUG] [Context] Failed to create session JWT:", error);
-        }
-        
-        // Detect language: user preference > partner default > browser > default
-        let language = 'es'; // Default fallback
-        try {
-          // Try to get user's preferred language
-          const userLanguage = (user as any).preferredLanguage;
-          if (userLanguage) {
-            language = userLanguage;
-          } else if (partnerId) {
-            // Try to get partner's default language
-            const { partners } = await import('../../drizzle/schema.js');
-            const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
-            if (partner?.defaultLanguage) {
-              language = partner.defaultLanguage;
-            }
+          const [directUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.openId, clerkUser.id))
+            .limit(1);
+          
+          if (directUser) {
+            console.log("[DEBUG] [Context] User found via direct openId lookup");
+            user = directUser as User;
+          } else {
+            console.log("[DEBUG] [Context] User NOT found via direct openId lookup, attempting getOrCreateUserFromClerk...");
+            // SECOND: If not found, try to get or create
+            const dbResult = await getOrCreateUserFromClerk(clerkUser, db, users, eq, debugLog);
+            const { user: dbUser, debugLog: dbDebugLog } = dbResult;
+            debugLog = { ...debugLog, ...dbDebugLog };
+            user = dbUser as User;
           }
-        } catch (error) {
-          // Fields might not exist yet if migration hasn't run
-          console.log("[DEBUG] [Context] Language detection failed (fields may not exist yet), using default:", error);
+        } catch (directLookupError) {
+          console.error("[DEBUG] [Context] Error in direct openId lookup:", directLookupError);
+          // Fall back to getOrCreateUserFromClerk
+          try {
+            const dbResult = await getOrCreateUserFromClerk(clerkUser, db, users, eq, debugLog);
+            const { user: dbUser, debugLog: dbDebugLog } = dbResult;
+            debugLog = { ...debugLog, ...dbDebugLog };
+            user = dbUser as User;
+          } catch (fallbackError) {
+            console.error("[DEBUG] [Context] Error in getOrCreateUserFromClerk fallback:", fallbackError);
+          }
         }
         
-        console.log("[DEBUG] [Context] User authenticated successfully via Clerk:", { id: user.id, email: user.email, partnerId, language });
-        return { req: opts.req, res: opts.res, user, partnerId, language, debugLog };
+        if (user) {
+          console.log("[DEBUG] [Context] User authenticated successfully:", { id: user.id, email: user.email });
+          const partnerId = user.partnerId || null;
+          
+          // Create a session JWT compatible with SDK legacy
+          try {
+            const sessionJWT = await createSessionJWT(user);
+            // Set the cookie so SDK legacy can also authenticate
+            opts.res.setHeader('Set-Cookie', `${COOKIE_NAME}=${sessionJWT}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`);
+            console.log("[DEBUG] [Context] Session JWT cookie set for SDK legacy compatibility");
+          } catch (error) {
+            console.error("[DEBUG] [Context] Failed to create session JWT:", error);
+          }
+          
+          // Detect language: user preference > partner default > browser > default
+          let language = 'es'; // Default fallback
+          try {
+            // Try to get user's preferred language
+            const userLanguage = (user as any).preferredLanguage;
+            if (userLanguage) {
+              language = userLanguage;
+            } else if (partnerId) {
+              // Try to get partner's default language
+              const { partners } = await import('../../drizzle/schema.js');
+              const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
+              if (partner?.defaultLanguage) {
+                language = partner.defaultLanguage;
+              }
+            }
+          } catch (error) {
+            // Fields might not exist yet if migration hasn't run
+            console.log("[DEBUG] [Context] Language detection failed (fields may not exist yet), using default:", error);
+          }
+          
+          console.log("[DEBUG] [Context] User authenticated successfully via Clerk:", { id: user.id, email: user.email, partnerId, language });
+          return { req: opts.req, res: opts.res, user, partnerId, language, debugLog };
+        } else {
+          console.error("[DEBUG] [Context] User could not be found or created");
+        }
       } else {
         console.error("[DEBUG] [Context] Database connection failed");
       }
