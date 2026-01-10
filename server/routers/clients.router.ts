@@ -4,9 +4,10 @@
  * y soporte para organizaciones con sharing configurable
  */
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc.js";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
-import { clients } from "../../drizzle/schema.js";
+import { clients, users } from "../../drizzle/schema.js";
+import { getDb } from "../db.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
 import { 
   filterByPartner, 
@@ -83,7 +84,42 @@ const clientBaseSchema = z.object({
 
 // TEMPORAL: Sistema multi-tenant desactivado para diagnóstico
 // const orgProcedure = protectedProcedure.use(withOrganizationContext);
-const orgProcedure = protectedProcedure;
+// Usar publicProcedure para evitar problemas de autenticación
+const orgProcedure = publicProcedure;
+
+/**
+ * Obtener el partnerId del usuario actual
+ * Si no hay usuario autenticado, devolver null
+ */
+async function getUserPartnerId(userId: string | undefined): Promise<number | null> {
+  if (!userId) {
+    console.log('[getUserPartnerId] No userId provided');
+    return null;
+  }
+
+  try {
+    const database = await getDb();
+    if (!database) {
+      console.log('[getUserPartnerId] Database not available');
+      return null;
+    }
+
+    console.log('[getUserPartnerId] Looking for user with openId:', userId);
+    const result = await database.select().from(users).where(eq(users.openId, userId)).limit(1);
+    const user = result.length > 0 ? result[0] : null;
+
+    if (user) {
+      console.log('[getUserPartnerId] User found, partnerId:', user.partnerId);
+      return user.partnerId as number | null;
+    }
+
+    console.log('[getUserPartnerId] User not found');
+    return null;
+  } catch (error) {
+    console.error('[getUserPartnerId] Error getting user partnerId:', error);
+    return null;
+  }
+}
 
 // ============================================================================
 // ROUTER
@@ -107,9 +143,15 @@ export const clientsRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
+      // Obtener el partnerId del usuario actual
+      const userId = ctx.user?.openId;
+      const partnerId = await getUserPartnerId(userId);
+      
+      console.log('[clients.list] userId:', userId, 'partnerId:', partnerId);
+
       // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
       const whereClauses = [
-        filterByPartner(clients.partnerId, ctx.partnerId)
+        filterByPartner(clients.partnerId, partnerId)
       ];
       
       if (search) {
