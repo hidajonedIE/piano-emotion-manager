@@ -1,9 +1,5 @@
-import { createClerkClient } from "@clerk/backend";
+import { clerkClient } from "@clerk/nextjs/server";
 import { jwtDecode } from "jwt-decode";
-
-const clerkClient = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY,
-});
 
 export async function verifyClerkSession(req: {
   headers?: Record<string, string>;
