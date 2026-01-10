@@ -35,14 +35,18 @@ export function createTRPCClient() {
             if (typeof window !== 'undefined' && window.Clerk) {
               try {
                 // Use the correct method to get the token
-                token = await window.Clerk.session?.getToken();
+                if (window.Clerk.session) {
+                  token = await window.Clerk.session.getToken();
+                }
               } catch (clerkError) {
                 console.warn('[tRPC fetch] Could not get token from Clerk session:', clerkError);
-                
-                // Fallback: try to get token from Clerk user
+              }
+              
+              // Fallback: try to get token from Clerk user
+              if (!token) {
                 try {
                   if (window.Clerk.user) {
-                    token = await window.Clerk.user.getToken({ template: 'default' });
+                    token = await window.Clerk.user.getToken();
                   }
                 } catch (userError) {
                   console.warn('[tRPC fetch] Could not get token from Clerk user:', userError);
