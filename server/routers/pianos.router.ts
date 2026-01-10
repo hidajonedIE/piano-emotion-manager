@@ -110,6 +110,7 @@ export const pianosRouter = router({
       console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
       console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
       
+      console.log('[PIANOS DEBUG] Full ctx:', JSON.stringify(ctx, null, 2));
       const partnerId = ctx.partnerId;
       if (partnerId === undefined) {
         return { items: [], total: 0 };
@@ -137,6 +138,7 @@ export const pianosRouter = router({
       if (yearTo) whereClauses.push(lte(pianos.year, yearTo));
       
       const whereClause = and(...whereClauses);
+      console.log('[PIANOS DEBUG] Final where clause:', JSON.stringify(whereClause, null, 2));
 
       const sortColumn = pianos[sortBy as keyof typeof pianos] || pianos.brand;
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);

@@ -193,7 +193,9 @@ export function filterByOrganization(
   resource: SharableResource,
   options?: { includeOwn?: boolean }
 ): SQL {
-  return SmartFilterService.buildWhereCondition(
+  console.log('[SMARTFILTER DEBUG] orgContext:', JSON.stringify(orgContext, null, 2));
+    console.log('[SMARTFILTER DEBUG] resource:', resource);
+    return SmartFilterService.buildWhereCondition(
     orgContext,
     {
       resource,
