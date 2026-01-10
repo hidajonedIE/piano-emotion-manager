@@ -177,6 +177,11 @@ export const clientsRouter = router({
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       const offset = cursor || 0;
+      
+      // DEBUG: Log the WHERE clause
+      console.log('[clients.list] WHERE clauses:', whereClauses.length);
+      console.log('[clients.list] Filter by partner:', filterByPartner(clients.partnerId, partnerId));
+      
       const items = await database
         .select()
         .from(clients)
@@ -185,10 +190,14 @@ export const clientsRouter = router({
         .limit(limit)
         .offset(offset);
 
+      console.log('[clients.list] Query returned:', items.length, 'items');
+      
       const [{ total }] = await database
         .select({ total: count() })
         .from(clients)
         .where(and(...whereClauses));
+      
+      console.log('[clients.list] Total count:', total);
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {
