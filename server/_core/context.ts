@@ -44,6 +44,7 @@ export type CreateContextOptions = {
 
 /**
  * Crea un JWT de sesión compatible con el SDK legacy
+ * NOTA: Usando jose.SignJWT para crear el JWT con HS256
  */
 async function createSessionJWT(user: User): Promise<string> {
   const secret = process.env.JWT_SECRET || "your-secret-key";
