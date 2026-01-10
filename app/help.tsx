@@ -198,9 +198,10 @@ export default function HelpScreen() {
                     <Accordion
                       key={item.id || index}
                       title={item.question}
-                      content={item.answer}
-                    />
-                  ))}
+                    >
+                      <ThemedText>{item.answer}</ThemedText>
+                    </Accordion>
+                  ))
                 </View>
               )}
             </View>
