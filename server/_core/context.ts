@@ -1,37 +1,12 @@
-import type { User } from "../../drizzle/schema.js";
-import type { IncomingMessage, ServerResponse } from "http";
-import { sdk } from "./sdk.js";
-import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
-import { getDb } from "../db.js";
-import { users } from "../../drizzle/schema.js";
+import type { HttpRequest, HttpResponse } from "@vercel/node";
+import type { User } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import { COOKIE_NAME } from "../../shared/const.js";
-import { SignJWT } from "jose";
+import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
+import { getDb } from "./db.js";
+import { users } from "../drizzle/schema.js";
+import * as jose from "jose";
 
-// ============================================================================
-// Tipos de Request/Response
-// ============================================================================
-
-/**
- * Tipo genérico para request HTTP que funciona con Express, Vercel y otros frameworks
- */
-export interface HttpRequest extends IncomingMessage {
-  headers: Record<string, string | string[] | undefined>;
-  cookies?: Record<string, string>;
-  query?: Record<string, string | string[]>;
-  body?: unknown;
-}
-
-/**
- * Tipo genérico para response HTTP
- */
-export interface HttpResponse extends ServerResponse {
-  setHeader(name: string, value: string | number | readonly string[]): this;
-}
-
-// ============================================================================
-// Contexto de tRPC
-// ============================================================================
+const COOKIE_NAME = "session";
 
 /**
  * Contexto disponible en todos los procedimientos de tRPC
@@ -42,6 +17,21 @@ export type TrpcContext = {
   user: User | null;
   partnerId: number | null; // Partner ID for multi-tenant filtering
   language: string; // User's preferred language for AI and content generation
+  debugLog?: {
+    point1?: string;
+    point2?: string;
+    point3?: string;
+    point4?: string;
+    point5?: string;
+    point6?: string;
+    point7?: string;
+    point8?: string;
+    point9?: string;
+    point10?: string;
+    point11?: string;
+    point12?: string;
+    point13?: string;
+  };
 };
 
 /**
@@ -50,24 +40,20 @@ export type TrpcContext = {
 export type CreateContextOptions = {
   req: HttpRequest;
   res: HttpResponse;
-  info?: {
-    isBatchCall?: boolean;
-    calls?: unknown[];
-  };
 };
 
 /**
- * Crea un JWT compatible con el SDK legacy para que pueda verificar la sesión
+ * Crea un JWT de sesión compatible con el SDK legacy
  */
 async function createSessionJWT(user: User): Promise<string> {
-  const secretKey = new TextEncoder().encode(
-    process.env.SESSION_SECRET || "default-secret-key-change-in-production"
-  );
-  
-  const now = Math.floor(Date.now() / 1000);
-  const expirationSeconds = now + (365 * 24 * 60 * 60); // 1 year
-  
-  return new SignJWT({
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key");
+  const expirationSeconds = 60 * 60 * 24 * 365; // 1 year
+
+  const secretKey = await jose.importSPKI(secret as any, "HS256");
+
+  return await new jose.SignJWT({
+    sub: String(user.id),
+    email: user.email,
     openId: user.openId || user.clerkId || String(user.id),
     appId: process.env.NEXT_PUBLIC_APP_ID || "piano-emotion-manager",
     name: user.name || user.email || "User",
@@ -83,13 +69,16 @@ async function createSessionJWT(user: User): Promise<string> {
  */
 export async function createContext(opts: CreateContextOptions): Promise<TrpcContext> {
   let user: User | null = null;
+  let debugLog: Record<string, string> = {};
 
   // Try Clerk authentication first (new system)
   try {
     console.log("[DEBUG] [Context] Attempting Clerk authentication...");
-    const clerkUser = await verifyClerkSession(opts.req);
+    const clerkResult = await verifyClerkSession(opts.req);
     
-    if (clerkUser) {
+    if (clerkResult) {
+      const { user: clerkUser, debugLog: clerkDebugLog } = clerkResult;
+      debugLog = { ...debugLog, ...clerkDebugLog };
       console.log("[DEBUG] [Context] Clerk user verified:", { id: clerkUser.id, email: clerkUser.email });
       
       // Get or create user in database
@@ -98,8 +87,11 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       if (db) {
         console.log("[DEBUG] [Context] Database connected, calling getOrCreateUserFromClerk...");
         console.log("[DEBUG] [Context] clerkUser:", clerkUser);
-        const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
+        const dbResult = await getOrCreateUserFromClerk(clerkUser, db, users, eq, debugLog);
+        const { user: dbUser, debugLog: dbDebugLog } = dbResult;
+        debugLog = { ...debugLog, ...dbDebugLog };
         console.log("[DEBUG] [Context] getOrCreateUserFromClerk returned:", dbUser);
+        console.log("[DEBUG] [Context] debugLog:", JSON.stringify(debugLog));
         user = dbUser as User;
         const partnerId = user.partnerId || null;
         console.log("[DEBUG] [Context] User set with partnerId:", partnerId);
@@ -135,7 +127,7 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
         }
         
         console.log("[DEBUG] [Context] User authenticated successfully via Clerk:", { id: user.id, email: user.email, partnerId, language });
-        return { req: opts.req, res: opts.res, user, partnerId, language };
+        return { req: opts.req, res: opts.res, user, partnerId, language, debugLog };
       } else {
         console.error("[DEBUG] [Context] Database connection failed");
       }
@@ -143,53 +135,10 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       console.log("[DEBUG] [Context] Clerk session verification returned null (user not signed in)");
     }
   } catch (error) {
-    console.error("[DEBUG] [Context] Clerk authentication error:", error);
-    // Clerk authentication failed, continue to legacy auth
+    console.error("[DEBUG] [Context] Error during Clerk authentication:", error);
   }
 
-  // Fall back to legacy SDK authentication (demo login, etc.)
-  try {
-    console.log("[DEBUG] [Context] Attempting SDK legacy authentication...");
-    user = await sdk.authenticateRequest(opts.req);
-    if (user) {
-      console.log("[DEBUG] [Context] User authenticated via SDK legacy:", { id: user.id, email: user.email });
-    }
-  } catch (error) {
-    // Authentication is optional for public procedures.
-    console.log("[DEBUG] [Context] SDK legacy authentication failed:", error);
-    user = null;
-  }
-
-  // Get partnerId from user if available
-  const partnerId = user?.partnerId || null;
-  
-  // Detect language for legacy auth
-  let language = 'es'; // Default fallback
-  if (user) {
-    try {
-      const userLanguage = (user as any).preferredLanguage;
-      if (userLanguage) {
-        language = userLanguage;
-      } else if (partnerId) {
-        const db = await getDb();
-        if (db) {
-          const { partners } = await import('../../drizzle/schema.js');
-          const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
-          if (partner?.defaultLanguage) {
-            language = partner.defaultLanguage;
-          }
-        }
-      }
-    } catch (error) {
-      console.log("[DEBUG] [Context] Language detection failed for legacy auth, using default:", error);
-    }
-  }
-
-  return {
-    req: opts.req,
-    res: opts.res,
-    user,
-    partnerId,
-    language,
-  };
+  // If no user authenticated, return unauthenticated context
+  console.log("[DEBUG] [Context] No user authenticated, returning unauthenticated context");
+  return { req: opts.req, res: opts.res, user: null, partnerId: null, language: 'es', debugLog };
 }

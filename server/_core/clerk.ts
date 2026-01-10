@@ -10,72 +10,56 @@ export async function verifyClerkSession(req: {
   cookies?: Record<string, string>;
   url?: string;
   method?: string;
-}) {
-  const logs: string[] = [];
-  logs.push("\n=== INICIO VERIFICACION CLERK ===");
+}): Promise<{ user: any; debugLog: Record<string, string> } | null> {
+  const debugLog: Record<string, string> = {};
   
   try {
     // Get the token from the Authorization header
     const authHeader = req.headers?.["authorization"];
-    logs.push(`1. Authorization header presente: ${!!authHeader}`);
+    debugLog.point1 = `Authorization header presente: ${!!authHeader}`;
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      logs.push("2. ERROR: No se encontró token en Authorization header");
-      console.log(logs.join("\n"));
+      debugLog.point2 = "ERROR: No se encontró token en Authorization header";
       return null;
     }
 
     const token = authHeader.substring(7);
-    logs.push(`2. Token extraído del header (primeros 50 caracteres): ${token.substring(0, 50)}...`);
+    debugLog.point2 = `Token extraído del header (primeros 50 caracteres): ${token.substring(0, 50)}...`;
 
     // Decode the token to get the user ID
     let decoded: any;
     try {
       decoded = jwtDecode(token);
-      logs.push("3. Token decodificado exitosamente");
+      debugLog.point3 = "Token decodificado exitosamente";
     } catch (error) {
-      logs.push(`3. ERROR al decodificar token: ${error instanceof Error ? error.message : String(error)}`);
-      console.log(logs.join("\n"));
+      debugLog.point3 = `ERROR al decodificar token: ${error instanceof Error ? error.message : String(error)}`;
       return null;
     }
 
     // Extract the user ID from the token
     const tokenUserId = decoded.sub;
-    logs.push(`4. ID extraído del token (sub): ${tokenUserId}`);
-    logs.push(`5. Email en token: ${decoded.email}`);
-    logs.push(`6. Nombre en token: ${decoded.name}`);
+    debugLog.point4 = `ID extraído del token (sub): ${tokenUserId}`;
+    debugLog.point5 = `Email en token: ${decoded.email || "undefined"}`;
+    debugLog.point6 = `Nombre en token: ${decoded.name || "undefined"}`;
 
     if (!tokenUserId) {
-      logs.push("7. ERROR: No se encontró 'sub' en el token");
-      logs.push(`   Claves disponibles en token: ${Object.keys(decoded).join(", ")}`);
-      console.log(logs.join("\n"));
+      debugLog.point7 = `ERROR: No se encontró 'sub' en el token. Claves disponibles: ${Object.keys(decoded).join(", ")}`;
       return null;
     }
 
     // Try to get user details from Clerk
-    logs.push(`7. Intentando obtener usuario desde Clerk con ID: ${tokenUserId}`);
+    debugLog.point7 = `Intentando obtener usuario desde Clerk con ID: ${tokenUserId}`;
     
     let clerkUser: any = null;
-    let clerkSuccess = false;
-    let clerkErrorMessage = "";
     try {
       clerkUser = await clerkClient.users.getUser(tokenUserId);
-      logs.push("8. EXITO: Usuario encontrado en Clerk");
-      logs.push(`   - ID en Clerk: ${clerkUser.id}`);
-      logs.push(`   - Email en Clerk: ${clerkUser.emailAddresses[0]?.emailAddress}`);
-      logs.push(`   - Nombre en Clerk: ${`${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim()}`);
-      clerkSuccess = true;
+      debugLog.point8 = `EXITO: Usuario encontrado en Clerk. Email: ${clerkUser.emailAddresses[0]?.emailAddress}`;
     } catch (clerkError) {
-      clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
-      logs.push(`8. ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`);
-      logs.push(`   - ID que se intentó buscar: ${tokenUserId}`);
-      logs.push(`   - Tipo de error: ${clerkError instanceof Error ? clerkError.constructor.name : typeof clerkError}`);
+      const clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
+      debugLog.point8 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
       
       // Fallback: use the decoded token data
-      logs.push("9. FALLBACK: Usando datos del token como usuario");
-      logs.push(`   - ID (del token): ${tokenUserId}`);
-      logs.push(`   - Email (del token): ${decoded.email}`);
-      logs.push(`   - Nombre (del token): ${decoded.name}`);
+      debugLog.point9 = `FALLBACK: Usando datos del token como usuario`;
       
       clerkUser = {
         id: tokenUserId,
@@ -93,16 +77,11 @@ export async function verifyClerkSession(req: {
       clerkId: clerkUser.id
     };
     
-    logs.push(`9. USUARIO FINAL RETORNADO: ${JSON.stringify(returnUser)}`);
-    logs.push("=== FIN VERIFICACION CLERK ===");
-    console.log(logs.join("\n"));
+    debugLog.point9 = `USUARIO FINAL RETORNADO: ID=${returnUser.id}, Email=${returnUser.email}`;
     
-    return returnUser;
+    return { user: returnUser, debugLog };
   } catch (error) {
-    console.log("ERROR GENERAL:", error instanceof Error ? error.message : String(error));
-    if (error instanceof Error && error.stack) {
-      console.log("Stack trace:", error.stack);
-    }
+    debugLog.error = `ERROR GENERAL: ${error instanceof Error ? error.message : String(error)}`;
     return null;
   }
 }
@@ -112,14 +91,10 @@ export async function getOrCreateUserFromClerk(
   clerkUser: any,
   db: any,
   usersTable: any,
-  eq: any
+  eq: any,
+  debugLog: Record<string, string> = {}
 ) {
-  const debugLog = {
-    step10: "Buscando usuario en base de datos",
-    clerkUserId: clerkUser.id,
-    timestamp: new Date().toISOString(),
-  };
-  console.log(JSON.stringify(debugLog));
+  debugLog.point10 = `Buscando usuario en base de datos con openId: ${clerkUser.id}`;
   
   try {
     // Try to find existing user
@@ -130,15 +105,11 @@ export async function getOrCreateUserFromClerk(
       .limit(1);
 
     if (existingUser) {
-      debugLog.step11 = "Usuario encontrado en BD";
-      debugLog.existingUserId = existingUser.id;
-      debugLog.existingUserEmail = existingUser.email;
-      console.log(JSON.stringify(debugLog));
-      return existingUser;
+      debugLog.point11 = `Usuario encontrado en BD: ID=${existingUser.id}, Email=${existingUser.email}`;
+      return { user: existingUser, debugLog };
     }
 
-    debugLog.step12 = "Usuario NO encontrado en BD, creando nuevo usuario";
-    console.log(JSON.stringify(debugLog));
+    debugLog.point12 = "Usuario NO encontrado en BD, creando nuevo usuario";
     
     // Create new user
     const [newUser] = await db
@@ -153,13 +124,10 @@ export async function getOrCreateUserFromClerk(
       })
       .returning();
 
-    debugLog.step13 = "Usuario creado exitosamente en BD";
-    debugLog.newUserId = newUser.id;
-    debugLog.newUserEmail = newUser.email;
-    console.log(JSON.stringify(debugLog));
-    return newUser;
+    debugLog.point13 = `Usuario creado exitosamente en BD: ID=${newUser.id}, Email=${newUser.email}`;
+    return { user: newUser, debugLog };
   } catch (error) {
-    console.error("ERROR en getOrCreateUserFromClerk:", error instanceof Error ? error.message : String(error));
+    debugLog.error = `ERROR en getOrCreateUserFromClerk: ${error instanceof Error ? error.message : String(error)}`;
     throw error;
   }
 }
