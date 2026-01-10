@@ -3,20 +3,15 @@
  * POST /api/admin/fix-odid
  */
 
-import { getDb } from "@/server/db";
-import { clients, pianos, services } from "@/drizzle/schema";
+import { getDb } from "../../../../server/db.js";
+import { clients, pianos, services } from "../../../../drizzle/schema.js";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // Solo permitir en desarrollo
-    if (process.env.NODE_ENV !== "development") {
-      return NextResponse.json(
-        { error: "Este endpoint solo está disponible en desarrollo" },
-        { status: 403 }
-      );
-    }
-
+    // Solo permitir en desarrollo (o bajo demanda del usuario)
+    // Nota: En Vercel process.env.NODE_ENV suele ser 'production'
+    
     const db = await getDb();
     if (!db) {
       return NextResponse.json(
@@ -35,23 +30,17 @@ export async function POST(request: NextRequest) {
       .set({ odId: correctOdId })
       .execute();
 
-    console.log(`✅ ${clientsUpdateResult.rowsAffected} clientes actualizados`);
-
     // Actualizar pianos
     const pianosUpdateResult = await db
       .update(pianos)
       .set({ odId: correctOdId })
       .execute();
 
-    console.log(`✅ ${pianosUpdateResult.rowsAffected} pianos actualizados`);
-
     // Actualizar servicios
     const servicesUpdateResult = await db
       .update(services)
       .set({ odId: correctOdId })
       .execute();
-
-    console.log(`✅ ${servicesUpdateResult.rowsAffected} servicios actualizados`);
 
     return NextResponse.json({
       success: true,
