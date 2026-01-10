@@ -3,6 +3,7 @@ import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import type { AppRouter } from "@/server/routers";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { useAuth } from "@clerk/clerk-react";
 
 /**
  * tRPC React client for type-safe API calls.
@@ -12,16 +13,6 @@ import { getApiBaseUrl } from "@/constants/oauth";
  * use the same serialization format (superjson).
  */
 export const trpc = createTRPCReact<AppRouter>();
-
-/**
- * Store for the Clerk token getter function
- * This will be set by the TRPCProvider component
- */
-let getClerkToken: (() => Promise<string | null>) | null = null;
-
-export function setClerkTokenGetter(getter: () => Promise<string | null>) {
-  getClerkToken = getter;
-}
 
 /**
  * Creates the tRPC client with proper configuration.
@@ -37,18 +28,33 @@ export function createTRPCClient() {
         // Pass Clerk token in Authorization header
         async fetch(url, options) {
           try {
+            // Get the token from Clerk using the correct method
             let token: string | null = null;
             
-            // Use the token getter function set by TRPCProvider
-            if (getClerkToken) {
+            // Check if Clerk is available and has a session
+            if (typeof window !== 'undefined' && window.Clerk) {
               try {
-                token = await getClerkToken();
-              } catch (error) {
-                console.warn('[tRPC fetch] Error getting token from Clerk:', error);
+                // Use the correct method to get the token
+                if (window.Clerk.session) {
+                  token = await window.Clerk.session.getToken();
+                }
+              } catch (clerkError) {
+                console.warn('[tRPC fetch] Could not get token from Clerk session:', clerkError);
+              }
+              
+              // Fallback: try to get token from Clerk user
+              if (!token) {
+                try {
+                  if (window.Clerk.user) {
+                    token = await window.Clerk.user.getToken();
+                  }
+                } catch (userError) {
+                  console.warn('[tRPC fetch] Could not get token from Clerk user:', userError);
+                }
               }
             }
             
-            console.log('[tRPC fetch] Token obtained:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
+            console.log('[tRPC fetch] Token obtained from Clerk:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
             
             return fetch(url, {
               ...options,
@@ -59,7 +65,7 @@ export function createTRPCClient() {
               },
             });
           } catch (e) {
-            console.error('[tRPC fetch] Error in fetch wrapper:', e);
+            console.error('[tRPC fetch] Error getting Clerk token:', e);
             // Fall back to sending without token
             return fetch(url, {
               ...options,
