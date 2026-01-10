@@ -165,15 +165,10 @@ export const clientsRouter = router({
       }
       console.log('[clients.list] partnerId disponible:', partnerId);
       
-      // Usar filterByPartnerAndOrganization para filtrar por partnerId Y organización
-      const whereCondition = filterByPartnerAndOrganization(
-        clients,
-        partnerId,
-        ctx.orgContext,
-        'clients'
-      );
-      
-      const whereClauses = [whereCondition];
+      // Usar solo filterByPartner para filtrar por partnerId
+      const whereClauses = [
+        filterByPartner(clients.partnerId, partnerId)
+      ];
       
       if (search) {
         whereClauses.push(
