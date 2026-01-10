@@ -1,6 +1,9 @@
 import { createClerkClient } from "@clerk/backend";
 import { jwtDecode } from "jwt-decode";
 
+console.log('[Clerk] CLERK_SECRET_KEY presente:', !!process.env.CLERK_SECRET_KEY);
+console.log('[Clerk] CLERK_SECRET_KEY length:', process.env.CLERK_SECRET_KEY?.length || 0);
+
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
@@ -52,10 +55,13 @@ export async function verifyClerkSession(req: {
     
     let clerkUser: any = null;
     try {
+      console.log('[Clerk] Intentando obtener usuario con ID:', tokenUserId);
       clerkUser = await clerkClient.users.getUser(tokenUserId);
       debugLog.point8 = `EXITO: Usuario encontrado en Clerk. Email: ${clerkUser.emailAddresses[0]?.emailAddress}`;
     } catch (clerkError) {
       const clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
+      console.log('[Clerk] Error al obtener usuario:', clerkErrorMessage);
+      console.log('[Clerk] Error completo:', clerkError);
       debugLog.point8 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
       
       // Fallback: use the decoded token data
