@@ -734,15 +734,17 @@ export const appointmentsRouter = router({
           duration: appointments.duration,
         })
         .from(appointments)
-        .where(and(
-         filterByPartnerAnd(
-	          appointments.partnerId,
-	          ctx.partnerId,
-	          and(
-	            gte(appointments.date, dayStart),
-	            lte(appointments.date, dayEnd)
-	          )
-	        );
+        .where(
+          filterByPartnerAnd(
+            appointments.partnerId,
+            ctx.partnerId,
+            and(
+              gte(appointments.date, dayStart),
+              lte(appointments.date, dayEnd)
+            )
+          )
+        );
+
       const conflicts = detectConflicts(existingAppointments, {
         id: input.id,
         date: input.date,
