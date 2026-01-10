@@ -116,10 +116,13 @@ export const pianosRouter = router({
         return { items: [], total: 0 };
       }
 
-      const whereClauses: any[] = [];
-      if (partnerId !== null) {
-        whereClauses.push(filterByPartner(pianos.partnerId, partnerId));
-      }
+      const baseFilter = filterByPartnerAndOrganization(
+        pianos,
+        ctx.partnerId,
+        ctx.orgContext,
+        "pianos"
+      );
+      const whereClauses: any[] = [baseFilter];
       
       if (search) {
         whereClauses.push(
