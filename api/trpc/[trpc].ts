@@ -72,14 +72,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   });
 
   // Create a normalized request object that works with the SDK
+  // Normalize headers to lowercase to ensure consistency
+  const normalizedHeaders: Record<string, string> = {};
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value) {
+      normalizedHeaders[key.toLowerCase()] = Array.isArray(value) ? value.join(', ') : value;
+    }
+  }
+  
   const normalizedReq = {
     url: req.url,
     method: req.method,
-    headers: {
-      cookie: req.headers.cookie,
-      authorization: req.headers.authorization || req.headers.Authorization,
-      Authorization: req.headers.authorization || req.headers.Authorization,
-    },
+    headers: normalizedHeaders,
     cookies: req.cookies || {},
   };
 
