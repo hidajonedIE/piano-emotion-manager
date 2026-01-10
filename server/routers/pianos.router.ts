@@ -130,28 +130,7 @@ export const pianosRouter = router({
         
         // Build query with proper where clause handling
         let query = database
-          .select({
-            id: pianos.id,
-            odId: pianos.odId,
-            clientId: pianos.clientId,
-            brand: pianos.brand,
-            model: pianos.model,
-            serialNumber: pianos.serialNumber,
-            year: pianos.year,
-            category: pianos.category,
-            pianoType: pianos.pianoType,
-            condition: pianos.condition,
-            location: pianos.location,
-            notes: pianos.notes,
-            photos: pianos.photos,
-            createdAt: pianos.createdAt,
-            updatedAt: pianos.updatedAt,
-            partnerId: pianos.partnerId,
-            tuningIntervalDays: pianos.tuningIntervalDays,
-            regulationIntervalDays: pianos.regulationIntervalDays,
-            alertsEnabled: pianos.alertsEnabled,
-            customThresholdsEnabled: pianos.customThresholdsEnabled,
-          })
+          .select()
           .from(pianos);
         if (whereClauses.length > 0) {
           query = query.where(and(...whereClauses));
@@ -191,7 +170,7 @@ export const pianosRouter = router({
     if (!database) return [];
     
     return database
-      .select(pianos)
+      .select()
       .from(pianos)
       .where(filterByPartner(pianos.partnerId, ctx.partnerId));
   }),
@@ -203,7 +182,7 @@ export const pianosRouter = router({
       if (!database) return null;
       
       const [piano] = await database
-        .select(pianos)
+        .select()
         .from(pianos)
         .where(
           and(

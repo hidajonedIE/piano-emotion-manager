@@ -730,10 +730,10 @@ export const pianos = mysqlTable("pianos", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	tuningIntervalDays: int().default(180),
-	regulationIntervalDays: int().default(730),
-	alertsEnabled: tinyint().default(1),
-	customThresholdsEnabled: tinyint().default(0),
+	tuningIntervalDays: int('tuning_interval_days').default(180),
+	regulationIntervalDays: int('regulation_interval_days').default(730),
+	alertsEnabled: tinyint('alerts_enabled').default(1),
+	customThresholdsEnabled: tinyint('custom_thresholds_enabled').default(0),
 });
 
 export const platformAdmins = mysqlTable("platform_admins", {
