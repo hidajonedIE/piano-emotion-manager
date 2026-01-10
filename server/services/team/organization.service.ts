@@ -182,6 +182,41 @@ export class OrganizationService {
     
     return memberOrgs.map(m => m.organization);
   }
+
+  /**
+   * Elevar a un usuario a Owner de una organización
+   */
+  async makeUserOwner(organizationId: number, userId: number): Promise<OrganizationMember> {
+    // 1. Actualizar la organización para que este usuario sea el ownerId
+    await db
+      .update(organizations)
+      .set({ ownerId: userId })
+      .where(eq(organizations.id, organizationId));
+
+    // 2. Actualizar el rol del miembro a 'owner'
+    const [updatedMember] = await db
+      .update(organizationMembers)
+      .set({ role: 'owner', status: 'active' })
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.userId, userId)
+        )
+      )
+      .returning();
+
+    // 3. Registrar actividad
+    await this.logActivity({
+      organizationId,
+      userId,
+      activityType: 'member_role_changed',
+      description: `Usuario elevado a Owner de la organización`,
+      entityType: 'member',
+      entityId: updatedMember.id,
+    });
+
+    return updatedMember;
+  }
   
   /**
    * Actualizar organización

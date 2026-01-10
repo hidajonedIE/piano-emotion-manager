@@ -115,6 +115,17 @@ export const organizationsRouter = router({
     }),
 
   /**
+   * Elevar al usuario actual a Owner de su organización (Solo para pruebas/onboarding)
+   */
+  makeMeOwner: protectedProcedure
+    .input(z.object({ organizationId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // Esta es una función de utilidad para asegurar que el usuario principal
+      // tenga el control total para probar las funciones de admin.
+      return organizationService.makeUserOwner(input.organizationId, ctx.user.id);
+    }),
+
+  /**
    * Crear nueva organización
    */
   create: protectedProcedure
