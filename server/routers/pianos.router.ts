@@ -138,10 +138,17 @@ export const pianosRouter = router({
       if (yearFrom) whereClauses.push(gte(pianos.year, yearFrom));
       if (yearTo) whereClauses.push(lte(pianos.year, yearTo));
       
-      // Handle empty whereClauses - if no filters, use sql`1=1` to get all records
-      const whereClause = whereClauses.length > 0 ? and(...whereClauses) : sql`1=1`;
+      // Handle whereClauses properly
+      let whereClause: any;
+      if (whereClauses.length === 0) {
+        whereClause = sql`1=1`;
+      } else if (whereClauses.length === 1) {
+        whereClause = whereClauses[0];
+      } else {
+        whereClause = and(...whereClauses)!;
+      }
       console.log('[PIANOS DEBUG] whereClauses.length:', whereClauses.length);
-      console.log('[PIANOS DEBUG] whereClause:', whereClause);
+      console.log('[PIANOS DEBUG] whereClause type:', typeof whereClause);
 
       const sortColumn = pianos[sortBy as keyof typeof pianos] || pianos.brand;
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
