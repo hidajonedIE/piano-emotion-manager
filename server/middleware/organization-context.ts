@@ -101,19 +101,7 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
       }
 
       // 4. Obtener la configuración de sharing de la organización
-      // NOTA: La tabla organization_sharing_settings no existe aún, así que comentamos esto por ahora
-      // const settings = await db
-      //   .select({
-      //     resource: organizationSharingSettings.resource,
-      //     model: organizationSharingSettings.sharingModel,
-      //   })
-      //   .from(organizationSharingSettings)
-      //   .where(eq(organizationSharingSettings.organizationId, organizationId));
-
-      // // Convertir a Map para acceso rápido
-      // settings.forEach((setting) => {
-      //   sharingSettings.set(setting.resource, setting.model);
-      // });
+      // NOTA: La tabla organization_sharing_settings no existe, así que se omite
 
       // Si no hay configuración para un recurso, asumir 'private' por defecto
       const defaultResources = [
