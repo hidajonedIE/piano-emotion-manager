@@ -8,12 +8,7 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { serviceRates } from "../../drizzle/schema.js";
 import { eq, and, asc, desc, count } from "drizzle-orm";
-import { 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
-} from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+import { filterByPartner, filterByPartnerAnd, addPartnerToInsert, validateWritePermission } from "../utils/multi-tenant.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN

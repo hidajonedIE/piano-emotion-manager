@@ -742,7 +742,8 @@ export const appointmentsRouter = router({
 	            gte(appointments.date, dayStart),
 	            lte(appointments.date, dayEnd)
 	          )
-	        )flicts = detectConflicts(existingAppointments, {
+	        );
+      const conflicts = detectConflicts(existingAppointments, {
         id: input.id,
         date: input.date,
         duration: input.duration,
