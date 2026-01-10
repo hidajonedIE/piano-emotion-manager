@@ -65,11 +65,24 @@ export async function verifyClerkSession(req: {
       debugLog.point8 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
       debugLog.point9 = `FALLBACK: Usando datos del token como usuario`;
       
+      // Get email from token or use a default
+      let email = decoded.email;
+      if (!email && decoded.email_verified) {
+        // If email is not in token but email_verified is true, try to extract from other fields
+        email = decoded.email_address || decoded.primary_email_address || null;
+      }
+      
+      // If still no email, generate one from the user ID
+      if (!email) {
+        email = `user_${tokenUserId}@clerk.local`;
+        console.log('[Clerk] Email not found in token, using generated email:', email);
+      }
+      
       clerkUser = {
         id: tokenUserId,
-        emailAddresses: [{ emailAddress: decoded.email }],
-        firstName: decoded.name?.split(' ')[0] || "",
-        lastName: decoded.name?.split(' ').slice(1).join(' ') || ""
+        emailAddresses: [{ emailAddress: email }],
+        firstName: decoded.name?.split(' ')[0] || decoded.given_name || "",
+        lastName: decoded.name?.split(' ').slice(1).join(' ') || decoded.family_name || ""
       };
       console.log('[Clerk] FALLBACK clerkUser creado:', clerkUser);
     }
@@ -116,13 +129,17 @@ export async function getOrCreateUserFromClerk(
 
     debugLog.point12 = "Usuario NO encontrado en BD, creando nuevo usuario";
     
+    // Ensure email is not empty
+    const email = clerkUser.email || `user_${clerkUser.id}@clerk.local`;
+    const name = clerkUser.name || clerkUser.email || clerkUser.id;
+    
     // Create new user
     const [newUser] = await db
       .insert(usersTable)
       .values({
         openId: clerkUser.id,
-        email: clerkUser.email,
-        name: clerkUser.name,
+        email: email,
+        name: name,
         partnerId: 1, // Default to partner 1
         createdAt: new Date(),
         updatedAt: new Date(),
