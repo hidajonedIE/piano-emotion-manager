@@ -201,7 +201,7 @@ export default function HelpScreen() {
                     >
                       <ThemedText>{item.answer}</ThemedText>
                     </Accordion>
-                  ))
+                  ))}
                 </View>
               )}
             </View>
