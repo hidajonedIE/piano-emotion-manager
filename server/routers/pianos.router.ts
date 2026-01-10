@@ -191,11 +191,9 @@ export const pianosRouter = router({
     if (!database) return [];
     
     return database
-      .select()
+      .select(pianos)
       .from(pianos)
-      .where(
-filterByPartner(pianos.partnerId, ctx.partnerId)
-      );
+      .where(filterByPartner(pianos.partnerId, ctx.partnerId));
   }),
   
   getById: orgProcedure
@@ -205,12 +203,12 @@ filterByPartner(pianos.partnerId, ctx.partnerId)
       if (!database) return null;
       
       const [piano] = await database
-        .select()
+        .select(pianos)
         .from(pianos)
         .where(
           and(
             eq(pianos.id, input.id),
-filterByPartner(pianos.partnerId, ctx.partnerId)
+            filterByPartner(pianos.partnerId, ctx.partnerId)
           )
         )
         .limit(1);
