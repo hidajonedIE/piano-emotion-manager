@@ -313,15 +313,21 @@ export const ModulesSettings: React.FC = () => {
           </View>
           <Text style={styles.sectionSubtitle}>Funcionalidades avanzadas para profesionales</Text>
           <View style={styles.paidModulesContainer}>
-            {professionalModules.map((module) => (
-              <ModuleCard
-                key={module.code}
-                module={module}
-                onToggle={(enabled) => handleToggle(module.code, enabled)}
-                isToggling={isToggling}
-                onUpgrade={handleUpgrade}
-              />
-            ))}
+            {professionalModules.map((module) => {
+              // Para usuarios PREMIUM, mostrar los módulos PRO sin requiresUpgrade
+              const moduleToShow = currentPlan === 'premium' 
+                ? { ...module, requiresUpgrade: false }
+                : module;
+              return (
+                <ModuleCard
+                  key={module.code}
+                  module={moduleToShow}
+                  onToggle={(enabled) => handleToggle(module.code, enabled)}
+                  isToggling={isToggling}
+                  onUpgrade={handleUpgrade}
+                />
+              );
+            })}
           </View>
         </View>
       )}
