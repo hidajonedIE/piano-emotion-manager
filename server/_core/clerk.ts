@@ -7,48 +7,52 @@ export async function verifyClerkSession(req: {
   url?: string;
   method?: string;
 }) {
-  console.log("========== INICIANDO VERIFICACION DE SESION ==========");
+  console.log("\n\n=== INICIO VERIFICACION CLERK ===\n");
   
   try {
     // Get the token from the Authorization header
     const authHeader = req.headers?.["authorization"];
-    console.log("[DEBUG] [Clerk] Authorization header presente:", !!authHeader);
+    console.log("1. Authorization header presente:", !!authHeader);
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("[DEBUG] [Clerk] No se encontró token en Authorization header");
+      console.log("2. ERROR: No se encontró token en Authorization header");
       return null;
     }
 
-    const token = authHeader.substring(7); // Remove "Bearer " prefix
-    console.log("[DEBUG] [Clerk] Token extraído del header");
+    const token = authHeader.substring(7);
+    console.log("2. Token extraído del header (primeros 50 caracteres):", token.substring(0, 50) + "...");
 
     // Decode the token to get the user ID
     let decoded: any;
     try {
       decoded = jwtDecode(token);
-      console.log("[DEBUG] [Clerk] Token decodificado exitosamente");
+      console.log("3. Token decodificado exitosamente");
     } catch (error) {
-      console.error("[DEBUG] [Clerk] Error decodificando token:", error instanceof Error ? error.message : String(error));
+      console.log("3. ERROR al decodificar token:", error instanceof Error ? error.message : String(error));
       return null;
     }
 
     // Extract the user ID from the token
-    const userId = decoded.sub;
-    
-    if (!userId) {
-      console.error("[DEBUG] [Clerk] No se encontró 'sub' en el token");
-      console.error("[DEBUG] [Clerk] Token keys:", Object.keys(decoded));
+    const tokenUserId = decoded.sub;
+    console.log("4. ID extraído del token (sub):", tokenUserId);
+    console.log("5. Email en token:", decoded.email);
+    console.log("6. Nombre en token:", decoded.name);
+
+    if (!tokenUserId) {
+      console.log("7. ERROR: No se encontró 'sub' en el token");
+      console.log("   Claves disponibles en token:", Object.keys(decoded).join(", "));
       return null;
     }
-    
-    console.log("[DEBUG] [Clerk] User ID extraído del token:", userId);
 
     // Try to get user details from Clerk
+    console.log("7. Intentando obtener usuario desde Clerk con ID:", tokenUserId);
+    
     try {
-      console.log("[DEBUG] [Clerk] Intentando obtener usuario desde Clerk con ID:", userId);
-      const user = await clerkClient.users.getUser(userId);
-      
-      console.log("[DEBUG] [Clerk] Usuario obtenido exitosamente desde Clerk");
+      const user = await clerkClient.users.getUser(tokenUserId);
+      console.log("8. EXITO: Usuario encontrado en Clerk");
+      console.log("   - ID en Clerk:", user.id);
+      console.log("   - Email en Clerk:", user.emailAddresses[0]?.emailAddress);
+      console.log("   - Nombre en Clerk:", `${user.firstName || ""} ${user.lastName || ""}`.trim());
       
       return {
         id: user.id,
@@ -57,31 +61,32 @@ export async function verifyClerkSession(req: {
         clerkId: user.id
       };
     } catch (clerkError) {
-      console.error("[DEBUG] [Clerk] Error obteniendo usuario desde Clerk:", clerkError instanceof Error ? clerkError.message : String(clerkError));
+      const errorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
+      console.log("8. ERROR al obtener usuario desde Clerk:", errorMessage);
+      console.log("   - ID que se intentó buscar:", tokenUserId);
+      console.log("   - Tipo de error:", clerkError instanceof Error ? clerkError.constructor.name : typeof clerkError);
       
       // Fallback: use the decoded token data
-      console.log("[DEBUG] [Clerk] Usando fallback con datos del token");
-      console.log("[DEBUG] [Clerk] Token data:", {
-        email: decoded.email,
-        name: decoded.name,
-        sub: decoded.sub
-      });
+      console.log("9. FALLBACK: Usando datos del token como usuario");
+      console.log("   - ID (del token):", tokenUserId);
+      console.log("   - Email (del token):", decoded.email);
+      console.log("   - Nombre (del token):", decoded.name);
       
       return {
-        id: userId,
+        id: tokenUserId,
         email: decoded.email || "",
         name: decoded.name || "",
-        clerkId: userId
+        clerkId: tokenUserId
       };
     }
   } catch (error) {
-    console.error("[DEBUG] [Clerk] ERROR VERIFICANDO SESION:", error instanceof Error ? error.message : String(error));
+    console.log("ERROR GENERAL:", error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.stack) {
-      console.error("[DEBUG] [Clerk] Stack trace:", error.stack);
+      console.log("Stack trace:", error.stack);
     }
     return null;
   }
   finally {
-    console.log("========== VERIFICACION DE SESION FINALIZADA ==========");
+    console.log("\n=== FIN VERIFICACION CLERK ===\n");
   }
 }
