@@ -194,15 +194,15 @@ export const invoicesRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
-      // Construir condiciones WHERE con filtrado por organización
-      const whereClauses = [
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
-      ];
+      const partnerId = ctx.partnerId;
+      if (partnerId === undefined) {
+        return { items: [], total: 0, stats: null };
+      }
+
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(invoices.partnerId, partnerId));
+      }
       
       if (search) {
         whereClauses.push(
@@ -253,17 +253,15 @@ export const invoicesRouter = router({
         .where(and(...whereClauses));
 
       // Calcular estadísticas
+      const statsWhereClauses: any[] = [];
+      if (partnerId !== null) {
+        statsWhereClauses.push(filterByPartner(invoices.partnerId, partnerId));
+      }
+
       const allInvoices = await database
         .select()
         .from(invoices)
-        .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices"
-          )
-        );
+        .where(and(...statsWhereClauses));
 
       const markedInvoices = markOverdueInvoices(allInvoices);
       const stats = calculateInvoiceStats(markedInvoices);
@@ -283,17 +281,16 @@ export const invoicesRouter = router({
     const database = await db.getDb();
     if (!database) return [];
     
+    const partnerId = ctx.partnerId;
+    const whereClauses: any[] = [];
+    if (partnerId !== null && partnerId !== undefined) {
+      whereClauses.push(filterByPartner(invoices.partnerId, partnerId));
+    }
+
     const items = await database
       .select()
       .from(invoices)
-      .where(
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
-      )
+      .where(and(...whereClauses))
       .orderBy(desc(invoices.date));
 
     return markOverdueInvoices(items);

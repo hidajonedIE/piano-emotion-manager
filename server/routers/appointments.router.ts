@@ -338,15 +338,15 @@ export const appointmentsRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null, nextCursor: undefined };
 
-      // Construir condiciones WHERE con filtrado por organización
-      const whereClauses = [
-        filterByPartnerAndOrganization(
-          appointments,
-          ctx.partnerId,
-          ctx.orgContext,
-          "appointments"
-        )
-      ];
+      const partnerId = ctx.partnerId;
+      if (partnerId === undefined) {
+        return { items: [], total: 0, stats: null, nextCursor: undefined };
+      }
+
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(appointments.partnerId, partnerId));
+      }
       
       if (dateFrom) {
         whereClauses.push(gte(appointments.date, new Date(dateFrom)));
@@ -415,17 +415,15 @@ export const appointmentsRouter = router({
         .where(and(...whereClauses));
 
       // Calcular estadísticas
+      const statsWhereClauses: any[] = [];
+      if (partnerId !== null) {
+        statsWhereClauses.push(filterByPartner(appointments.partnerId, partnerId));
+      }
+
       const allAppointments = await database
         .select()
         .from(appointments)
-        .where(
-          filterByPartnerAndOrganization(
-            appointments,
-            ctx.partnerId,
-            ctx.orgContext,
-            "appointments"
-          )
-        );
+        .where(and(...statsWhereClauses));
 
       const stats = calculateAppointmentStats(allAppointments);
 

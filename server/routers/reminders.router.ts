@@ -158,15 +158,15 @@ export const remindersRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
-      // Construir condiciones WHERE con filtrado por organización
-      const whereClauses = [
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders"
-        )
-      ];
+      const partnerId = ctx.partnerId;
+      if (partnerId === undefined) {
+        return { items: [], total: 0, stats: null };
+      }
+
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(reminders.partnerId, partnerId));
+      }
       
       if (clientId !== undefined) {
         whereClauses.push(eq(reminders.clientId, clientId));
@@ -219,17 +219,15 @@ export const remindersRouter = router({
         .where(and(...whereClauses));
 
       // Calcular estadísticas
+      const statsWhereClauses: any[] = [];
+      if (partnerId !== null) {
+        statsWhereClauses.push(filterByPartner(reminders.partnerId, partnerId));
+      }
+
       const allReminders = await database
         .select()
         .from(reminders)
-        .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders"
-          )
-        );
+        .where(and(...statsWhereClauses));
 
       const stats = calculateReminderStats(allReminders);
 
@@ -248,17 +246,16 @@ export const remindersRouter = router({
     const database = await db.getDb();
     if (!database) return [];
     
+    const partnerId = ctx.partnerId;
+    const whereClauses: any[] = [];
+    if (partnerId !== null && partnerId !== undefined) {
+      whereClauses.push(filterByPartner(reminders.partnerId, partnerId));
+    }
+
     const items = await database
       .select()
       .from(reminders)
-      .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders"
-        )
-      )
+      .where(and(...whereClauses))
       .orderBy(asc(reminders.dueDate));
 
     return markOverdueReminders(items);

@@ -365,15 +365,15 @@ export const quotesRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
-      // Construir condiciones WHERE con filtrado por organización
-      const whereClauses = [
-        filterByPartnerAndOrganization(
-          quotes,
-          ctx.partnerId,
-          ctx.orgContext,
-          "quotes"
-        )
-      ];
+      const partnerId = ctx.partnerId;
+      if (partnerId === undefined) {
+        return { items: [], total: 0, stats: null };
+      }
+
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(quotes.partnerId, partnerId));
+      }
       
       if (search) {
         whereClauses.push(
@@ -434,17 +434,15 @@ export const quotesRouter = router({
         .where(and(...whereClauses));
 
       // Calcular estadísticas
+      const statsWhereClauses: any[] = [];
+      if (partnerId !== null) {
+        statsWhereClauses.push(filterByPartner(quotes.partnerId, partnerId));
+      }
+
       const allQuotes = await database
         .select()
         .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes"
-          )
-        );
+        .where(and(...statsWhereClauses));
 
       const stats = calculateQuoteStats(allQuotes);
 

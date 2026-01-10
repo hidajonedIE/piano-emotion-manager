@@ -207,15 +207,15 @@ export const inventoryRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
-      // Construir condiciones WHERE con filtrado por organización
-      const whereClauses = [
-        filterByPartnerAndOrganization(
-          inventory,
-          ctx.partnerId,
-          ctx.orgContext,
-          "inventory"
-        )
-      ];
+      const partnerId = ctx.partnerId;
+      if (partnerId === undefined) {
+        return { items: [], total: 0, stats: null };
+      }
+
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(inventory.partnerId, partnerId));
+      }
       
       if (search) {
         whereClauses.push(
@@ -268,17 +268,15 @@ export const inventoryRouter = router({
         .where(and(...whereClauses));
 
       // Calcular estadísticas
+      const statsWhereClauses: any[] = [];
+      if (partnerId !== null) {
+        statsWhereClauses.push(filterByPartner(inventory.partnerId, partnerId));
+      }
+
       const allItems = await database
         .select()
         .from(inventory)
-        .where(
-          filterByPartnerAndOrganization(
-            inventory,
-            ctx.partnerId,
-            ctx.orgContext,
-            "inventory"
-          )
-        );
+        .where(and(...statsWhereClauses));
 
       const stats = {
         totalItems: allItems.length,
