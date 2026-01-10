@@ -82,10 +82,8 @@ const clientBaseSchema = z.object({
 // PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
 // ============================================================================
 
-// TEMPORAL: Sistema multi-tenant desactivado para diagnóstico
-// const orgProcedure = protectedProcedure.use(withOrganizationContext);
-// Usar publicProcedure para evitar problemas de autenticación
-const orgProcedure = publicProcedure;
+// Usar protectedProcedure para asegurar que el contexto se completa correctamente
+const orgProcedure = protectedProcedure.use(withOrganizationContext);
 
 /**
  * Obtener el partnerId del usuario actual
