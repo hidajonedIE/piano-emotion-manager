@@ -116,13 +116,11 @@ export const pianosRouter = router({
         return { items: [], total: 0 };
       }
 
-      const baseFilter = filterByPartnerAndOrganization(
-        pianos,
-        ctx.partnerId,
-        ctx.orgContext,
-        "pianos"
-      );
-      const whereClauses: any[] = [baseFilter];
+      // Use the same simple logic as clients router
+      const whereClauses: any[] = [];
+      if (partnerId !== null) {
+        whereClauses.push(filterByPartner(pianos.partnerId, partnerId));
+      }
       
       if (search) {
         whereClauses.push(
