@@ -67,7 +67,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onToggle, isToggling, o
         </View>
       );
     }
-    if (module.type === 'professional') {
+    if (module.type === 'pro') {
       return (
         <View style={[styles.professionalBadge, isMobile && styles.badgeMobile]}>
           <Ionicons name="briefcase" size={10} color="#fff" />
