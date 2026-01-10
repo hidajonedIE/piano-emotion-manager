@@ -11,67 +11,71 @@ export async function verifyClerkSession(req: {
   url?: string;
   method?: string;
 }) {
-  console.log("\n\n=== INICIO VERIFICACION CLERK ===\n");
+  const logs: string[] = [];
+  logs.push("\n=== INICIO VERIFICACION CLERK ===");
   
   try {
     // Get the token from the Authorization header
     const authHeader = req.headers?.["authorization"];
-    console.log("1. Authorization header presente:", !!authHeader);
+    logs.push(`1. Authorization header presente: ${!!authHeader}`);
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("2. ERROR: No se encontró token en Authorization header");
+      logs.push("2. ERROR: No se encontró token en Authorization header");
+      console.log(logs.join("\n"));
       return null;
     }
 
     const token = authHeader.substring(7);
-    console.log("2. Token extraído del header (primeros 50 caracteres):", token.substring(0, 50) + "...");
+    logs.push(`2. Token extraído del header (primeros 50 caracteres): ${token.substring(0, 50)}...`);
 
     // Decode the token to get the user ID
     let decoded: any;
     try {
       decoded = jwtDecode(token);
-      console.log("3. Token decodificado exitosamente");
+      logs.push("3. Token decodificado exitosamente");
     } catch (error) {
-      console.log("3. ERROR al decodificar token:", error instanceof Error ? error.message : String(error));
+      logs.push(`3. ERROR al decodificar token: ${error instanceof Error ? error.message : String(error)}`);
+      console.log(logs.join("\n"));
       return null;
     }
 
     // Extract the user ID from the token
     const tokenUserId = decoded.sub;
-    console.log("4. ID extraído del token (sub):", tokenUserId);
-    console.log("5. Email en token:", decoded.email);
-    console.log("6. Nombre en token:", decoded.name);
+    logs.push(`4. ID extraído del token (sub): ${tokenUserId}`);
+    logs.push(`5. Email en token: ${decoded.email}`);
+    logs.push(`6. Nombre en token: ${decoded.name}`);
 
     if (!tokenUserId) {
-      console.log("7. ERROR: No se encontró 'sub' en el token");
-      console.log("   Claves disponibles en token:", Object.keys(decoded).join(", "));
+      logs.push("7. ERROR: No se encontró 'sub' en el token");
+      logs.push(`   Claves disponibles en token: ${Object.keys(decoded).join(", ")}`);
+      console.log(logs.join("\n"));
       return null;
     }
 
     // Try to get user details from Clerk
-    console.log("7. Intentando obtener usuario desde Clerk con ID:", tokenUserId);
+    logs.push(`7. Intentando obtener usuario desde Clerk con ID: ${tokenUserId}`);
     
     let clerkUser: any = null;
     let clerkSuccess = false;
     let clerkErrorMessage = "";
     try {
       clerkUser = await clerkClient.users.getUser(tokenUserId);
-      console.log("8. EXITO: Usuario encontrado en Clerk");
-      console.log("   - ID en Clerk:", clerkUser.id);
-      console.log("   - Email en Clerk:", clerkUser.emailAddresses[0]?.emailAddress);
-      console.log("   - Nombre en Clerk:", `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim());
+      logs.push("8. EXITO: Usuario encontrado en Clerk");
+      logs.push(`   - ID en Clerk: ${clerkUser.id}`);
+      logs.push(`   - Email en Clerk: ${clerkUser.emailAddresses[0]?.emailAddress}`);
+      logs.push(`   - Nombre en Clerk: ${`${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim()}`);
       clerkSuccess = true;
     } catch (clerkError) {
       clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
-      console.log("8. ERROR al obtener usuario desde Clerk:", clerkErrorMessage);
-      console.log("   - ID que se intentó buscar:", tokenUserId);
-      console.log("   - Tipo de error:", clerkError instanceof Error ? clerkError.constructor.name : typeof clerkError);
+      logs.push(`8. ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`);
+      logs.push(`   - ID que se intentó buscar: ${tokenUserId}`);
+      logs.push(`   - Tipo de error: ${clerkError instanceof Error ? clerkError.constructor.name : typeof clerkError}`);
       
       // Fallback: use the decoded token data
-      console.log("9. FALLBACK: Usando datos del token como usuario");
-      console.log("   - ID (del token):", tokenUserId);
-      console.log("   - Email (del token):", decoded.email);
-      console.log("   - Nombre (del token):", decoded.name);
+      logs.push("9. FALLBACK: Usando datos del token como usuario");
+      logs.push(`   - ID (del token): ${tokenUserId}`);
+      logs.push(`   - Email (del token): ${decoded.email}`);
+      logs.push(`   - Nombre (del token): ${decoded.name}`);
       
       clerkUser = {
         id: tokenUserId,
@@ -81,17 +85,6 @@ export async function verifyClerkSession(req: {
       };
     }
     
-    // Consolidar todos los logs en un objeto para asegurar que se capturen
-    const debugInfo = {
-      punto_9_5: "Preparando objeto de usuario para retornar",
-      clerkSuccess,
-      usuarioId: clerkUser.id,
-      usuarioEmail: clerkUser.emailAddresses?.[0]?.emailAddress,
-      clerkErrorMessage,
-      punto_9_6: "Objeto de usuario preparado para retornar"
-    };
-    console.log("9. DEBUG INFO:", JSON.stringify(debugInfo, null, 2));
-    
     // Return the user object
     const returnUser = {
       id: clerkUser.id,
@@ -100,7 +93,9 @@ export async function verifyClerkSession(req: {
       clerkId: clerkUser.id
     };
     
-    console.log("10. USUARIO FINAL RETORNADO:", JSON.stringify(returnUser, null, 2));
+    logs.push(`9. USUARIO FINAL RETORNADO: ${JSON.stringify(returnUser)}`);
+    logs.push("=== FIN VERIFICACION CLERK ===");
+    console.log(logs.join("\n"));
     
     return returnUser;
   } catch (error) {
@@ -109,9 +104,6 @@ export async function verifyClerkSession(req: {
       console.log("Stack trace:", error.stack);
     }
     return null;
-  }
-  finally {
-    console.log("\n=== FIN VERIFICACION CLERK ===\n");
   }
 }
 

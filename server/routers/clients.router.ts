@@ -143,12 +143,17 @@ export const clientsRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
-      // Obtener el partnerId del usuario actual
-      const userId = ctx.user?.openId;
-      const partnerId = await getUserPartnerId(userId);
+      // Usar el partnerId del contexto (ya está disponible desde la autenticación)
+      const partnerId = ctx.partnerId;
       
-      console.log('[clients.list] userId:', userId, 'partnerId:', partnerId);
+      console.log('[clients.list] userId:', ctx.user?.id, 'partnerId:', partnerId);
 
+      // Si no hay partnerId, devolver lista vacía (usuario no autenticado)
+      if (!partnerId) {
+        console.log('[clients.list] No partnerId available, returning empty list');
+        return { items: [], total: 0 };
+      }
+      
       // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
       const whereClauses = [
         filterByPartner(clients.partnerId, partnerId)

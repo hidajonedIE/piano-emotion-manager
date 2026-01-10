@@ -93,11 +93,20 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       console.log("[DEBUG] [Context] Clerk user verified:", { id: clerkUser.id, email: clerkUser.email });
       
       // Get or create user in database
+      console.log("[DEBUG] [Context] Getting database connection...");
       const db = await getDb();
       if (db) {
+        console.log("[DEBUG] [Context] Database connected, calling getOrCreateUserFromClerk...");
+        console.log("[DEBUG] [Context] clerkUser:", clerkUser);
         const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
+        console.log("[DEBUG] [Context] getOrCreateUserFromClerk returned:", dbUser);
         user = dbUser as User;
         const partnerId = user.partnerId || null;
+        console.log("[DEBUG] [Context] User set with partnerId:", partnerId);
+      } else {
+        console.log("[DEBUG] [Context] Database connection failed");
+      }
+      if (!db) {
         
         // Create a session JWT compatible with SDK legacy
         try {
