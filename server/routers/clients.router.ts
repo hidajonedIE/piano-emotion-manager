@@ -288,12 +288,15 @@ export const clientsRouter = router({
         address = parts.join(", ");
       }
       
-      // TEMPORAL: Solo asignar partnerId (sistema multi-tenant desactivado)
-      const clientData = {
-        ...input,
-        address,
-        partnerId: ctx.partnerId,
-      };
+      // Asignar odId, organizationId y partnerId correctamente
+      const clientData = addOrganizationToInsert(
+        {
+          ...input,
+          address,
+        },
+        ctx.orgContext,
+        "clients"
+      );
       
       return db.createClient(clientData);
     }),
