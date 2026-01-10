@@ -8,11 +8,7 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { appointments, clients, pianos } from "../../drizzle/schema.js";
 import { eq, and, gte, lte, asc, desc, count } from "drizzle-orm";
-import { 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
-} from "../utils/multi-tenant.js";
+import { filterByPartner, filterByPartnerAnd, addPartnerToInsert, validateWritePermission } from "../utils/multi-tenant.js";
 
 
 // ============================================================================
@@ -655,7 +651,7 @@ export const appointmentsRouter = router({
         .leftJoin(clients, eq(appointments.clientId, clients.id))
         .leftJoin(pianos, eq(appointments.pianoId, pianos.id))
         .where(and(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             appointments,
             ctx.partnerId,
             ctx.orgContext,
@@ -865,7 +861,7 @@ filterByPartner(appointments.partnerId, ctx.partnerId)
           })
           .from(appointments)
           .where(
-            filterByPartnerAndOrganization(
+            filterByPartnerAnd(
               appointments,
               ctx.partnerId,
               ctx.orgContext,

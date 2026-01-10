@@ -552,7 +552,7 @@ filterByPartnerAnd(quotes.partnerId, ctx.partnerId, eq(quotes.clientId, input.cl
       }
 
       const [{ count: invoiceCount }] = await db.select({ count: count() }).from(invoices).where(
-        filterByPartnerAndOrganization(
+        filterByPartnerAnd(
           invoices,
           ctx.partnerId,
           ctx.orgContext,
@@ -641,7 +641,7 @@ filterByPartnerAnd(quotes.partnerId, ctx.partnerId, eq(quotes.clientId, input.cl
   getTemplates: orgProcedure
     .query(async ({ ctx }) => {
       const customTemplates = await db.query.quote_templates.findMany({
-        where: filterByPartnerAndOrganization(
+        where: filterByPartnerAnd(
           db.quote_templates,
           ctx.partnerId,
           ctx.orgContext,

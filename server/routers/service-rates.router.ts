@@ -132,7 +132,7 @@ export const serviceRatesRouter = router({
 
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
-        filterByPartnerAndOrganization(
+        filterByPartnerAnd(
           serviceRates,
           ctx.partnerId,
           ctx.orgContext,
@@ -179,7 +179,7 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             serviceRates,
             ctx.partnerId,
             ctx.orgContext,
@@ -208,7 +208,7 @@ export const serviceRatesRouter = router({
       .select()
       .from(serviceRates)
       .where(
-        filterByPartnerAndOrganization(
+        filterByPartnerAnd(
           serviceRates,
           ctx.partnerId,
           ctx.orgContext,
@@ -234,7 +234,7 @@ export const serviceRatesRouter = router({
       .select()
       .from(serviceRates)
       .where(
-        filterByPartnerAndOrganization(
+        filterByPartnerAnd(
           serviceRates,
           ctx.partnerId,
           ctx.orgContext,
@@ -263,7 +263,7 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             serviceRates,
             ctx.partnerId,
             ctx.orgContext,
@@ -293,7 +293,7 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             serviceRates,
             ctx.partnerId,
             ctx.orgContext,
@@ -319,7 +319,7 @@ export const serviceRatesRouter = router({
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
-      const rateData = addOrganizationToInsert(
+      const rateData = addPartnerToInsert(
         {
           name: input.name,
           description: input.description,
@@ -353,7 +353,7 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             serviceRates,
             ctx.partnerId,
             ctx.orgContext,
@@ -406,7 +406,7 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             serviceRates,
             ctx.partnerId,
             ctx.orgContext,
@@ -444,7 +444,7 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             serviceRates,
             ctx.partnerId,
             ctx.orgContext,
@@ -476,7 +476,7 @@ export const serviceRatesRouter = router({
       .select()
       .from(serviceRates)
       .where(
-        filterByPartnerAndOrganization(
+        filterByPartnerAnd(
           serviceRates,
           ctx.partnerId,
           ctx.orgContext,
@@ -501,7 +501,7 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             serviceRates,
             ctx.partnerId,
             ctx.orgContext,
@@ -515,7 +515,7 @@ export const serviceRatesRouter = router({
       }
 
       // Preparar datos de la nueva tarifa
-      const newRateData = addOrganizationToInsert(
+      const newRateData = addPartnerToInsert(
         {
           name: `${original.name} (Copia)`,
           description: original.description,

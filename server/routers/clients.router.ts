@@ -371,7 +371,7 @@ export const clientsRouter = router({
       .from(clients)
       .where(
         and(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             clients,
             ctx.partnerId,
             ctx.orgContext,
@@ -393,7 +393,7 @@ export const clientsRouter = router({
       .from(clients)
       .where(
         and(
-          filterByPartnerAndOrganization(
+          filterByPartnerAnd(
             clients,
             ctx.partnerId,
             ctx.orgContext,
