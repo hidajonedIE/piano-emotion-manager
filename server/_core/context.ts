@@ -46,10 +46,11 @@ export type CreateContextOptions = {
  * Crea un JWT de sesión compatible con el SDK legacy
  */
 async function createSessionJWT(user: User): Promise<string> {
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key");
+  const secret = process.env.JWT_SECRET || "your-secret-key";
   const expirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
-  const secretKey = await jose.importSPKI(secret as any, "HS256");
+  // Para HS256, usamos importSecret en lugar de importSPKI
+  const secretKey = await jose.importSecret(secret, "HS256");
 
   return await new jose.SignJWT({
     sub: String(user.id),
