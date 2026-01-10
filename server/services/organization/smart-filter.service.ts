@@ -147,26 +147,33 @@ export class SmartFilterService {
       sharingModel: orgContext.sharingSettings.get(options.resource)
     });
 
+    // SOLUCIÓN JERÁRQUICA EMPRESARIAL:
+    // 1. La base es siempre el partnerId (la empresa).
+    const partnerCondition = eq(table.partnerId, orgContext.partnerId);
+
+    // 2. Si el usuario es ADMIN o OWNER de la organización, ve TODO lo de la empresa.
+    if (orgContext.isOrganizationOwner || orgContext.organizationRole === 'admin') {
+      return partnerCondition;
+    }
+
+    // 3. Si es un TÉCNICO (u otro rol), aplicamos el aislamiento:
+    // Solo ve sus propios datos (odId) dentro de su empresa (partnerId).
+    // Esto evita que un técnico vea los clientes o pianos de otro técnico.
     if (strategy.shouldFilterByOdId) {
-      // Filtrar solo por odId (datos privados)
-      return eq(table.odId, userOdId);
+      return and(partnerCondition, eq(table.odId, userOdId))!;
     }
 
+    // 4. Si en el futuro se activa el sharing organizacional:
     if (strategy.shouldFilterByOrganization && strategy.organizationId) {
-      if (options.includeOwn) {
-        // Filtrar por organizationId O por odId (incluir datos propios)
-        return or(
-          eq(table.organizationId, strategy.organizationId),
-          eq(table.odId, userOdId)
-        )!;
-      } else {
-        // Filtrar solo por organizationId
-        return eq(table.organizationId, strategy.organizationId);
-      }
+      const orgOrOwnerCondition = options.includeOwn 
+        ? or(eq(table.organizationId, strategy.organizationId), eq(table.odId, userOdId))!
+        : eq(table.organizationId, strategy.organizationId);
+        
+      return and(partnerCondition, orgOrOwnerCondition)!;
     }
 
-    // Fallback: filtrar por odId
-    return eq(table.odId, userOdId);
+    // Fallback de seguridad: Aislamiento por defecto para no-admins.
+    return and(partnerCondition, eq(table.odId, userOdId))!;
   }
 
   /**
