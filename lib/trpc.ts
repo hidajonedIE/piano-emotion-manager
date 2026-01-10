@@ -3,7 +3,6 @@ import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import type { AppRouter } from "@/server/routers";
 import { getApiBaseUrl } from "@/constants/oauth";
-import { useAuth } from "@clerk/clerk-react";
 
 /**
  * tRPC React client for type-safe API calls.
@@ -39,7 +38,11 @@ export function createTRPCClient() {
                 const session = window.Clerk?.session;
                 if (session) {
                   token = await session.getToken();
-                  console.log('[tRPC fetch] Token obtained from Clerk.session:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
+                  if (token) {
+                    console.log('[tRPC fetch] Token obtained from Clerk.session:', `${token.substring(0, 50)}...`);
+                  } else {
+                    console.warn('[tRPC fetch] Clerk.session.getToken() returned null');
+                  }
                 } else {
                   console.warn('[tRPC fetch] No Clerk session available');
                 }
@@ -48,6 +51,13 @@ export function createTRPCClient() {
               }
             } else {
               console.warn('[tRPC fetch] Clerk not available in window');
+            }
+            
+            // Log the final request
+            if (token) {
+              console.log('[tRPC fetch] Sending request with Authorization header');
+            } else {
+              console.warn('[tRPC fetch] Sending request WITHOUT Authorization header');
             }
             
             return fetch(url, {
