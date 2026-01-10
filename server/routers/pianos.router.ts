@@ -162,7 +162,7 @@ export const pianosRouter = router({
         nextCursor = offset + limit;
       }
 
-      return { items, nextCursor, total };
+      return { items, nextCursor, total, debug: { ctx, whereClause } };
     }),
   
   listAll: orgProcedure.query(async ({ ctx }) => {
