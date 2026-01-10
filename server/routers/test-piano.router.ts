@@ -1,6 +1,6 @@
 import { protectedProcedure, router } from "../trpc";
 import { z } from "zod";
-import { pianos } from "@/server/db/schema";
+import { pianos } from "../db/schema";
 
 export const testPianoRouter = router({
   createTestPiano: protectedProcedure
