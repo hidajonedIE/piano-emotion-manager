@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/backend";
+import { clerkClient } from "@clerk/nextjs/server";
 import { jwtDecode } from "jwt-decode";
 
 export async function verifyClerkSession(req: {
