@@ -142,7 +142,7 @@ export const clientsRouter = router({
       if (!database) return { items: [], total: 0 };
 
       // Usar el partnerId del contexto (ya está disponible desde la autenticación)
-      const partnerId = ctx.orgContext?.partnerId;
+      const partnerId = ctx.partnerId;
       
       console.log('[clients.list] ===== INICIO CONSULTA =====');
       console.log('[clients.list] ctx.user:', ctx.user);

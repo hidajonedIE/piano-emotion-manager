@@ -4,7 +4,7 @@ import mysql from 'mysql2/promise';
 const pool = mysql.createPool({
   host: process.env.TIDB_HOST || 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
   user: process.env.TIDB_USER || '2GeAqAcm5LrcHRv.root',
-  password: process.env.TIDB_PASSWORD || 'XLi3ZOYRPsk4KNbC',
+  password: process.env.TIDB_PASSWORD || 'PianoEmotion2026',
   database: process.env.TIDB_DATABASE || 'piano_emotion_db',
   port: 4000,
   ssl: { rejectUnauthorized: true },

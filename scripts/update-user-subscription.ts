@@ -10,7 +10,7 @@ async function updateUserSubscription() {
   const userEmail = 'jnavarrete@inboundemotion.com';
   
   // Conectar usando DATABASE_URL
-  const databaseUrl = process.env.DATABASE_URL || 'mysql://2GeAqAcm5LrcHRv.root:XLi3ZOYRPsk4KNbC@gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/piano_emotion_db';
+  const databaseUrl = process.env.DATABASE_URL || 'mysql://2GeAqAcm5LrcHRv.root:PianoEmotion2026@gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/piano_emotion_db';
   
   const connection = await mysql.createConnection({
     uri: databaseUrl,
