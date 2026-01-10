@@ -65,11 +65,22 @@ export async function verifyClerkSession(req: {
       debugLog.point8 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
       debugLog.point9 = `FALLBACK: Usando datos del token como usuario`;
       
-      // Get email from token or use a default
-      let email = decoded.email;
-      if (!email && decoded.email_verified) {
-        // If email is not in token but email_verified is true, try to extract from other fields
-        email = decoded.email_address || decoded.primary_email_address || null;
+      // Get email from token
+      let email = decoded.email || decoded.email_address || decoded.primary_email_address || null;
+      
+      // If still no email, try to get it from Clerk using a different approach
+      // This is a fallback to ensure we always have a valid email
+      if (!email) {
+        try {
+          console.log('[Clerk] Intentando obtener usuario desde Clerk (segundo intento)...');
+          const clerkUserRetry = await clerkClient.users.getUser(tokenUserId);
+          email = clerkUserRetry.emailAddresses?.[0]?.emailAddress || null;
+          if (email) {
+            console.log('[Clerk] Email obtenido en segundo intento:', email);
+          }
+        } catch (retryError) {
+          console.log('[Clerk] Segundo intento también falló');
+        }
       }
       
       // If still no email, generate one from the user ID
