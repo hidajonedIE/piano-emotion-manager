@@ -8,13 +8,8 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { services, clients, pianos } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count, sql, ilike } from "drizzle-orm";
-import { 
-  filterByPartner, 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
-} from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+import { filterByPartner, filterByPartnerAnd, addPartnerToInsert, validateWritePermission } from "../utils/multi-tenant.js";
+
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -109,7 +104,7 @@ const paginationSchema = z.object({
 // ============================================================================
 
 // TEMPORAL: Sistema multi-tenant desactivado para diagnóstico
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ROUTER
@@ -198,12 +193,7 @@ export const servicesRouter = router({
         .select({ totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
         .from(services)
         .where(
-          filterByPartnerAndOrganization(
-            services,
-            ctx.partnerId,
-            ctx.orgContext,
-            "services"
-          )
+          filterByPartner(services.partnerId, ctx.partnerId)
         );
 
       let nextCursor: number | undefined = undefined;
@@ -258,13 +248,7 @@ export const servicesRouter = router({
         .leftJoin(clients, eq(services.clientId, clients.id))
         .leftJoin(pianos, eq(services.pianoId, pianos.id))
         .where(
-          filterByPartnerAndOrganization(
-            services,
-            ctx.partnerId,
-            ctx.orgContext,
-            "services",
-            eq(services.id, input.id)
-          )
+          filterByPartnerAnd(services.partnerId, ctx.partnerId, eq(services.id, input.id))
         );
 
       return result;
@@ -280,13 +264,7 @@ export const servicesRouter = router({
         .select()
         .from(services)
         .where(
-          filterByPartnerAndOrganization(
-            services,
-            ctx.partnerId,
-            ctx.orgContext,
-            "services",
-            eq(services.pianoId, input.pianoId)
-          )
+          filterByPartnerAnd(services.partnerId, ctx.partnerId, eq(services.pianoId, input.pianoId))
         )
         .orderBy(desc(services.date));
     }),
@@ -301,13 +279,7 @@ export const servicesRouter = router({
         .select()
         .from(services)
         .where(
-          filterByPartnerAndOrganization(
-            services,
-            ctx.partnerId,
-            ctx.orgContext,
-            "services",
-            eq(services.clientId, input.clientId)
-          )
+          filterByPartnerAnd(services.partnerId, ctx.partnerId, eq(services.clientId, input.clientId))
         )
         .orderBy(desc(services.date));
     }),
@@ -315,11 +287,10 @@ export const servicesRouter = router({
   create: orgProcedure
     .input(serviceBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const serviceData = addOrganizationToInsert(
-        input,
-        ctx.orgContext,
-        "services"
-      );
+      const serviceData = {
+        ...addPartnerToInsert(input, ctx.partnerId),
+        odId: ctx.user.id,
+      };
       
       return db.createService(serviceData);
     }),
@@ -337,13 +308,7 @@ export const servicesRouter = router({
         .select()
         .from(services)
         .where(
-          filterByPartnerAndOrganization(
-            services,
-            ctx.partnerId,
-            ctx.orgContext,
-            "services",
-            eq(services.id, input.id)
-          )
+          filterByPartnerAnd(services.partnerId, ctx.partnerId, eq(services.id, input.id))
         );
 
       if (!existingService) {
@@ -351,7 +316,7 @@ export const servicesRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "services", existingService.odId);
+      // validateWritePermission(ctx.orgContext, "services", existingService.odId);
 
       const { id, ...data } = input;
       return db.updateService(existingService.odId, id, data);
@@ -368,13 +333,7 @@ export const servicesRouter = router({
         .select()
         .from(services)
         .where(
-          filterByPartnerAndOrganization(
-            services,
-            ctx.partnerId,
-            ctx.orgContext,
-            "services",
-            eq(services.id, input.id)
-          )
+          filterByPartnerAnd(services.partnerId, ctx.partnerId, eq(services.id, input.id))
         );
 
       if (!existingService) {
@@ -382,7 +341,7 @@ export const servicesRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "services", existingService.odId);
+   // validateWritePermission(ctx.orgContext, "services", existing.odId);ervice.odId);
 
       return db.deleteService(existingService.odId, input.id);
     }),

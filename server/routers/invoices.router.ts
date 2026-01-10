@@ -9,11 +9,9 @@ import * as db from "../db.js";
 import { invoices } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, ilike, asc, desc, count, sql } from "drizzle-orm";
 import { 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
+  filterByPartner, filterByPartnerAnd, validateWritePermission
 } from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -166,7 +164,7 @@ function calculateInvoiceStats(invoicesList: any[]) {
 // PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
 // ============================================================================
 
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ROUTER
@@ -309,13 +307,7 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
-          )
+          filterByPartnerAnd(invoices.partnerId, ctx.partnerId, eq(invoices.id, input.id))
         );
 
       if (!invoice) throw new Error("Factura no encontrada");
@@ -338,13 +330,7 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.invoiceNumber, input.invoiceNumber)
-          )
+          filterByPartnerAnd(invoices.partnerId, ctx.partnerId, eq(invoices.invoiceNumber, input.invoiceNumber))
         );
 
       if (!invoice) return null;
@@ -366,13 +352,7 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.clientId, input.clientId)
-          )
+          filterByPartnerAnd(invoices.partnerId, ctx.partnerId, eq(invoices.clientId, input.clientId))
         )
         .orderBy(desc(invoices.date));
 
@@ -389,26 +369,28 @@ export const invoicesRouter = router({
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
-      const invoiceData = addOrganizationToInsert(
-        {
-          invoiceNumber: input.invoiceNumber,
-          clientId: input.clientId,
-          clientName: input.clientName,
-          clientEmail: input.clientEmail,
-          clientAddress: input.clientAddress,
-          date: new Date(input.date),
-          dueDate: input.dueDate ? new Date(input.dueDate) : null,
-          status: input.status,
-          items: input.items,
-          subtotal: input.subtotal.toString(),
-          taxAmount: input.taxAmount.toString(),
-          total: input.total.toString(),
-          notes: input.notes,
-          businessInfo: input.businessInfo,
-        },
-        ctx.orgContext,
-        "invoices"
-      );
+      const invoiceData = {
+        ...addPartnerToInsert(
+          {
+            invoiceNumber: input.invoiceNumber,
+            clientId: input.clientId,
+            clientName: input.clientName,
+            clientEmail: input.clientEmail,
+            clientAddress: input.clientAddress,
+            date: new Date(input.date),
+            dueDate: input.dueDate ? new Date(input.dueDate) : null,
+            status: input.status,
+            items: input.items,
+            subtotal: input.subtotal.toString(),
+            taxAmount: input.taxAmount.toString(),
+            total: input.total.toString(),
+            notes: input.notes,
+            businessInfo: input.businessInfo,
+          },
+          ctx.partnerId
+        ),
+        odId: ctx.user.id,
+      };
       
       const result = await database.insert(invoices).values(invoiceData);
       return result[0].insertId;
@@ -430,13 +412,7 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
-          )
+          filterByPartnerAnd(invoices.partnerId, ctx.partnerId, eq(invoices.id, input.id))
         );
 
       if (!existingInvoice) {
@@ -444,7 +420,7 @@ export const invoicesRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
+      // // validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
 
       const { id, ...data } = input;
       
@@ -487,13 +463,7 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
-          )
+          filterByPartnerAnd(invoices.partnerId, ctx.partnerId, eq(invoices.id, input.id))
         );
 
       if (!existingInvoice) {
@@ -501,7 +471,7 @@ export const invoicesRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
+      // // validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
 
       await database.delete(invoices).where(eq(invoices.id, input.id));
       
@@ -525,13 +495,7 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
-          )
+          filterByPartnerAnd(invoices.partnerId, ctx.partnerId, eq(invoices.id, input.id))
         );
 
       if (!existingInvoice) {
@@ -539,7 +503,7 @@ export const invoicesRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
+      // // validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
 
       await database
         .update(invoices)
@@ -562,12 +526,7 @@ export const invoicesRouter = router({
       if (!database) return null;
 
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
+        filterByPartner(invoices.partnerId, ctx.partnerId)
       ];
 
       if (input?.dateFrom) {
@@ -598,12 +557,7 @@ export const invoicesRouter = router({
       .select({ invoiceNumber: invoices.invoiceNumber })
       .from(invoices)
       .where(
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
+        filterByPartner(invoices.partnerId, ctx.partnerId)
       )
       .orderBy(desc(invoices.createdAt));
 

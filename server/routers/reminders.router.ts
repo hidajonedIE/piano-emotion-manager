@@ -8,12 +8,10 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { reminders } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count } from "drizzle-orm";
-import { 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
-} from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+import { filterByPartner, filterByPartnerAnd, addPartnerToInsert, validateWritePermission } from "../utils/multi-tenant.js";
+
+
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -123,12 +121,6 @@ function calculateReminderStats(remindersList: any[]) {
     byType,
   };
 }
-
-// ============================================================================
-// PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
-// ============================================================================
-
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
 
 // ============================================================================
 // ROUTER
@@ -274,13 +266,7 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
-          )
+          filterByPartnerAnd(reminders.partnerId, ctx.partnerId, eq(reminders.id, input.id))
         );
 
       if (!reminder) throw new Error("Recordatorio no encontrado");
@@ -302,13 +288,7 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.clientId, input.clientId)
-          )
+          filterByPartnerAnd(reminders.partnerId, ctx.partnerId, eq(reminders.clientId, input.clientId))
         )
         .orderBy(asc(reminders.dueDate));
 
@@ -328,13 +308,7 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.pianoId, input.pianoId)
-          )
+          filterByPartnerAnd(reminders.partnerId, ctx.partnerId, eq(reminders.pianoId, input.pianoId))
         )
         .orderBy(asc(reminders.dueDate));
 
@@ -352,118 +326,15 @@ export const remindersRouter = router({
       .select()
       .from(reminders)
       .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders",
-          eq(reminders.isCompleted, false)
-        )
+        filterByPartnerAnd(reminders.partnerId, ctx.partnerId, eq(reminders.isCompleted, false))
       )
       .orderBy(asc(reminders.dueDate));
 
     return markOverdueReminders(items);
   }),
-  
+
   /**
-   * Obtener recordatorios vencidos
-   */
-  getOverdue: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
-    if (!database) return [];
-
-    const now = new Date();
-    const items = await database
-      .select()
-      .from(reminders)
-      .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders",
-          and(
-            eq(reminders.isCompleted, false),
-            lte(reminders.dueDate, now)
-          )
-        )
-      )
-      .orderBy(asc(reminders.dueDate));
-
-    return markOverdueReminders(items);
-  }),
-  
-  /**
-   * Obtener recordatorios próximos (siguientes N días)
-   */
-  getUpcoming: orgProcedure
-    .input(z.object({
-      daysAhead: z.number().int().min(1).max(30).default(7),
-    }).optional())
-    .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) return [];
-
-      const daysAhead = input?.daysAhead || 7;
-      const now = new Date();
-      const cutoff = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
-
-      const items = await database
-        .select()
-        .from(reminders)
-        .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            and(
-              eq(reminders.isCompleted, false),
-              gte(reminders.dueDate, now),
-              lte(reminders.dueDate, cutoff)
-            )
-          )
-        )
-        .orderBy(asc(reminders.dueDate));
-
-      return markOverdueReminders(items);
-    }),
-  
-  /**
-   * Obtener recordatorios de hoy
-   */
-  getToday: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
-    if (!database) return [];
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const items = await database
-      .select()
-      .from(reminders)
-      .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders",
-          and(
-            eq(reminders.isCompleted, false),
-            gte(reminders.dueDate, today),
-            lte(reminders.dueDate, tomorrow)
-          )
-        )
-      )
-      .orderBy(asc(reminders.dueDate));
-
-    return markOverdueReminders(items);
-  }),
-  
-  /**
-   * Crear nuevo recordatorio
+   * Crear un nuevo recordatorio
    */
   create: orgProcedure
     .input(reminderBaseSchema)
@@ -471,163 +342,97 @@ export const remindersRouter = router({
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      // Preparar datos con partnerId, odId y organizationId
-      const reminderData = addOrganizationToInsert(
-        {
-          clientId: input.clientId,
-          pianoId: input.pianoId,
-          reminderType: input.reminderType,
-          dueDate: new Date(input.dueDate),
-          title: input.title,
-          notes: input.notes,
-          isCompleted: input.isCompleted,
-          completedAt: input.completedAt ? new Date(input.completedAt) : null,
-        },
-        ctx.orgContext,
-        "reminders"
-      );
-      
-      const result = await database.insert(reminders).values(reminderData);
-      return result[0].insertId;
+      const data = {
+        ...addPartnerToInsert(
+          {
+            ...input,
+            dueDate: new Date(input.dueDate),
+          },
+          ctx.partnerId
+        ),
+        odId: ctx.user.id,
+      };
+
+      const [newReminder] = await database.insert(reminders).values(data).returning();
+      return newReminder;
     }),
-  
+
   /**
-   * Actualizar recordatorio
+   * Actualizar un recordatorio
    */
   update: orgProcedure
-    .input(z.object({
-      id: z.number(),
-    }).merge(reminderBaseSchema.partial()))
+    .input(reminderBaseSchema.extend({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
-
-      // Obtener el recordatorio para verificar permisos
-      const [existingReminder] = await database
-        .select()
-        .from(reminders)
-        .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
-          )
-        );
-
-      if (!existingReminder) {
-        throw new Error("Recordatorio no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "reminders", existingReminder.odId);
 
       const { id, ...data } = input;
-      
-      // Preparar datos para actualización
-      const updateData: any = {};
-      if (data.clientId !== undefined) updateData.clientId = data.clientId;
-      if (data.pianoId !== undefined) updateData.pianoId = data.pianoId;
-      if (data.reminderType !== undefined) updateData.reminderType = data.reminderType;
-      if (data.dueDate !== undefined) updateData.dueDate = new Date(data.dueDate);
-      if (data.title !== undefined) updateData.title = data.title;
-      if (data.notes !== undefined) updateData.notes = data.notes;
-      if (data.isCompleted !== undefined) updateData.isCompleted = data.isCompleted;
-      if (data.completedAt !== undefined) updateData.completedAt = data.completedAt ? new Date(data.completedAt) : null;
 
-      await database
+      const [existing] = await database.select().from(reminders).where(eq(reminders.id, id));
+      if (!existing) throw new Error("Recordatorio no encontrado");
+
+      // validateWritePermission(ctx.orgContext, "reminders", existing.odId);
+
+      const [updatedReminder] = await database
         .update(reminders)
-        .set(updateData)
-        .where(eq(reminders.id, id));
-      
-      return { success: true };
+        .set({ ...data, dueDate: new Date(data.dueDate), updatedAt: new Date() })
+        .where(eq(reminders.id, id))
+        .returning();
+
+      return updatedReminder;
     }),
-  
+
   /**
-   * Marcar recordatorio como completado
+   * Marcar un recordatorio como completado
    */
-  markAsCompleted: orgProcedure
+  complete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      // Obtener el recordatorio para verificar permisos
-      const [existingReminder] = await database
-        .select()
-        .from(reminders)
-        .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
-          )
-        );
+      const [existing] = await database.select().from(reminders).where(eq(reminders.id, input.id));
+      if (!existing) throw new Error("Recordatorio no encontrado");
 
-      if (!existingReminder) {
-        throw new Error("Recordatorio no encontrado");
-      }
+      // validateWritePermission(ctx.orgContext, "reminders", existing.odId);
 
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "reminders", existingReminder.odId);
-
-      await database
+      const [completedReminder] = await database
         .update(reminders)
-        .set({
-          isCompleted: true,
-          completedAt: new Date(),
-        })
-        .where(eq(reminders.id, input.id));
-      
-      return { success: true };
+        .set({ isCompleted: true, completedAt: new Date() })
+        .where(eq(reminders.id, input.id))
+        .returning();
+
+      return completedReminder;
     }),
-  
+
   /**
-   * Marcar recordatorio como pendiente
+   * Posponer un recordatorio
    */
-  markAsPending: orgProcedure
-    .input(z.object({ id: z.number() }))
+  snooze: orgProcedure
+    .input(z.object({ id: z.number(), days: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      // Obtener el recordatorio para verificar permisos
-      const [existingReminder] = await database
-        .select()
-        .from(reminders)
-        .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
-          )
-        );
+      const [existing] = await database.select().from(reminders).where(eq(reminders.id, input.id));
+      if (!existing) throw new Error("Recordatorio no encontrado");
 
-      if (!existingReminder) {
-        throw new Error("Recordatorio no encontrado");
-      }
+      // validateWritePermission(ctx.orgContext, "reminders", existing.odId);
 
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "reminders", existingReminder.odId);
+      const newDueDate = new Date(existing.dueDate);
+      newDueDate.setDate(newDueDate.getDate() + input.days);
 
-      await database
+      const [snoozedReminder] = await database
         .update(reminders)
-        .set({
-          isCompleted: false,
-          completedAt: null,
-        })
-        .where(eq(reminders.id, input.id));
-      
-      return { success: true };
+        .set({ dueDate: newDueDate })
+        .where(eq(reminders.id, input.id))
+        .returning();
+
+      return snoozedReminder;
     }),
-  
+
   /**
-   * Eliminar recordatorio
+   * Eliminar un recordatorio
    */
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
@@ -635,66 +440,12 @@ export const remindersRouter = router({
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      // Obtener el recordatorio para verificar permisos
-      const [existingReminder] = await database
-        .select()
-        .from(reminders)
-        .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
-          )
-        );
+      const [existing] = await database.select().from(reminders).where(eq(reminders.id, input.id));
+      if (!existing) throw new Error("Recordatorio no encontrado");
 
-      if (!existingReminder) {
-        throw new Error("Recordatorio no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "reminders", existingReminder.odId);
+      // validateWritePermission(ctx.orgContext, "reminders", existing.odId);
 
       await database.delete(reminders).where(eq(reminders.id, input.id));
-      
       return { success: true };
-    }),
-  
-  /**
-   * Obtener estadísticas de recordatorios
-   */
-  getStats: orgProcedure
-    .input(z.object({
-      dateFrom: z.string().optional(),
-      dateTo: z.string().optional(),
-    }).optional())
-    .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) return null;
-
-      const whereClauses = [
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders"
-        )
-      ];
-
-      if (input?.dateFrom) {
-        whereClauses.push(gte(reminders.dueDate, new Date(input.dateFrom)));
-      }
-
-      if (input?.dateTo) {
-        whereClauses.push(lte(reminders.dueDate, new Date(input.dateTo)));
-      }
-
-      const items = await database
-        .select()
-        .from(reminders)
-        .where(and(...whereClauses));
-
-      return calculateReminderStats(items);
     }),
 });

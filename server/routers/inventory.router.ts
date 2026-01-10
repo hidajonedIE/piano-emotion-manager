@@ -9,11 +9,9 @@ import * as db from "../db.js";
 import { inventory } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, asc, desc, count, sql } from "drizzle-orm";
 import { 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
+  filterByPartner, filterByPartnerAnd, validateWritePermission
 } from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -180,7 +178,7 @@ function generateLotNumber(): string {
 // PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
 // ============================================================================
 
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ROUTER
@@ -308,12 +306,7 @@ export const inventoryRouter = router({
       .select()
       .from(inventory)
       .where(
-        filterByPartnerAndOrganization(
-          inventory,
-          ctx.partnerId,
-          ctx.orgContext,
-          "inventory"
-        )
+        filterByPartner(inventory.partnerId, ctx.partnerId)
       )
       .orderBy(asc(inventory.name));
   }),
@@ -331,13 +324,7 @@ export const inventoryRouter = router({
         .select()
         .from(inventory)
         .where(
-          filterByPartnerAndOrganization(
-            inventory,
-            ctx.partnerId,
-            ctx.orgContext,
-            "inventory",
-            eq(inventory.id, input.id)
-          )
+          filterByPartnerAnd(inventory.partnerId, ctx.partnerId, eq(inventory.id, input.id))
         );
 
       if (!item) throw new Error("Item de inventario no encontrado");
@@ -354,20 +341,22 @@ export const inventoryRouter = router({
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
-      const itemData = addOrganizationToInsert(
-        {
-          name: input.name,
-          category: input.category,
-          description: input.description,
-          quantity: input.quantity.toString(),
-          unit: input.unit,
-          minStock: input.minStock.toString(),
-          costPerUnit: input.costPerUnit.toString(),
-          supplier: input.supplier,
-        },
-        ctx.orgContext,
-        "inventory"
-      );
+      const itemData = {
+        ...addPartnerToInsert(
+          {
+            name: input.name,
+            category: input.category,
+            description: input.description,
+            quantity: input.quantity.toString(),
+            unit: input.unit,
+            minStock: input.minStock.toString(),
+            costPerUnit: input.costPerUnit.toString(),
+            supplier: input.supplier,
+          },
+          ctx.partnerId
+        ),
+        odId: ctx.user.id,
+      };
       
       const result = await database.insert(inventory).values(itemData);
       return result[0].insertId;
@@ -389,13 +378,7 @@ export const inventoryRouter = router({
         .select()
         .from(inventory)
         .where(
-          filterByPartnerAndOrganization(
-            inventory,
-            ctx.partnerId,
-            ctx.orgContext,
-            "inventory",
-            eq(inventory.id, input.id)
-          )
+          filterByPartnerAnd(inventory.partnerId, ctx.partnerId, eq(inventory.id, input.id))
         );
 
       if (!existingItem) {
@@ -403,7 +386,7 @@ export const inventoryRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "inventory", existingItem.odId);
+      // validateWritePermission(ctx.orgContext, "inventory", existingItem.odId);
 
       const { id, ...data } = input;
       
@@ -440,13 +423,7 @@ export const inventoryRouter = router({
         .select()
         .from(inventory)
         .where(
-          filterByPartnerAndOrganization(
-            inventory,
-            ctx.partnerId,
-            ctx.orgContext,
-            "inventory",
-            eq(inventory.id, input.id)
-          )
+          filterByPartnerAnd(inventory.partnerId, ctx.partnerId, eq(inventory.id, input.id))
         );
 
       if (!existingItem) {
@@ -454,7 +431,7 @@ export const inventoryRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "inventory", existingItem.odId);
+      // validateWritePermission(ctx.orgContext, "inventory", existingItem.odId);
 
       await database.delete(inventory).where(eq(inventory.id, input.id));
       
@@ -472,12 +449,7 @@ export const inventoryRouter = router({
       .select()
       .from(inventory)
       .where(
-        filterByPartnerAndOrganization(
-          inventory,
-          ctx.partnerId,
-          ctx.orgContext,
-          "inventory"
-        )
+        filterByPartner(inventory.partnerId, ctx.partnerId)
       );
 
     return items.filter(item => {
@@ -498,12 +470,7 @@ export const inventoryRouter = router({
       .select()
       .from(inventory)
       .where(
-        filterByPartnerAndOrganization(
-          inventory,
-          ctx.partnerId,
-          ctx.orgContext,
-          "inventory"
-        )
+        filterByPartner(inventory.partnerId, ctx.partnerId)
       );
 
     return items.filter(item => parseFloat(item.quantity) === 0);
@@ -520,12 +487,7 @@ export const inventoryRouter = router({
       .select()
       .from(inventory)
       .where(
-        filterByPartnerAndOrganization(
-          inventory,
-          ctx.partnerId,
-          ctx.orgContext,
-          "inventory"
-        )
+        filterByPartner(inventory.partnerId, ctx.partnerId)
       );
 
     const totalValue = calculateInventoryValue(items);

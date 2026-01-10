@@ -8,12 +8,10 @@ import { protectedProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { quotes, invoices } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, ilike, asc, desc, count, sql } from "drizzle-orm";
-import { 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
-} from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+import { filterByPartner, filterByPartnerAnd, addPartnerToInsert, validateWritePermission } from "../utils/multi-tenant.js";
+
+
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -333,825 +331,382 @@ function calculateQuoteStats(quotesList: any[]) {
 }
 
 // ============================================================================
-// PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
-// ============================================================================
-
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
-
-// ============================================================================
 // ROUTER
 // ============================================================================
 
 export const quotesRouter = router({
   /**
-   * Lista de presupuestos con paginación y filtros
+   * Listar presupuestos con paginación y filtros
    */
   list: orgProcedure
-    .input(paginationSchema.optional())
+    .input(paginationSchema)
     .query(async ({ ctx, input }) => {
-      const { 
-        limit = 30, 
-        cursor, 
-        sortBy = "date", 
-        sortOrder = "desc", 
-        search, 
-        status, 
-        clientId, 
-        dateFrom, 
-        dateTo,
-        isExpired
-      } = input || {};
-      
-      const database = await db.getDb();
-      if (!database) return { items: [], total: 0, stats: null };
+      const { limit, cursor, sortBy, sortOrder, search, status, clientId, dateFrom, dateTo, isExpired } = input;
 
-      const partnerId = ctx.partnerId;
-      if (partnerId === undefined) {
-        return { items: [], total: 0, stats: null };
-      }
+      const whereClauses: any[] = [
+        filterByPartner(quotes.partnerId, ctx.partnerId),
+      ];
 
-      const whereClauses: any[] = [];
-      if (partnerId !== null) {
-        whereClauses.push(filterByPartner(quotes.partnerId, partnerId));
-      }
-      
       if (search) {
         whereClauses.push(
           or(
             ilike(quotes.quoteNumber, `%${search}%`),
             ilike(quotes.clientName, `%${search}%`),
             ilike(quotes.title, `%${search}%`)
-          )!
+          )
         );
       }
-      
+
       if (status) {
         whereClauses.push(eq(quotes.status, status));
       }
-      
+
       if (clientId) {
         whereClauses.push(eq(quotes.clientId, clientId));
       }
-      
+
       if (dateFrom) {
-        whereClauses.push(gte(quotes.date, new Date(dateFrom)));
+        whereClauses.push(gte(quotes.date, dateFrom));
       }
-      
+
       if (dateTo) {
-        whereClauses.push(lte(quotes.date, new Date(dateTo)));
+        whereClauses.push(lte(quotes.date, dateTo));
       }
 
-      // Construir ORDER BY
-      const sortColumn = quotes[sortBy as keyof typeof quotes] || quotes.date;
-      const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
-
-      // Consulta principal con paginación
-      const offset = cursor || 0;
-      let items = await database
-        .select()
-        .from(quotes)
-        .where(and(...whereClauses))
-        .orderBy(orderByClause)
-        .limit(limit)
-        .offset(offset);
-
-      // Marcar presupuestos expirados
-      items = markExpiredQuotes(items);
-
-      // Aplicar filtro de expirados si se especificó
-      if (isExpired !== undefined) {
-        const today = new Date();
-        items = items.filter(q => {
-          const expired = q.validUntil && new Date(q.validUntil) < today;
-          return isExpired ? expired : !expired;
-        });
+      if (isExpired) {
+        whereClauses.push(and(eq(quotes.status, 'sent'), lte(quotes.validUntil, new Date().toISOString())));
       }
 
-      // Contar total
-      const [{ total }] = await database
-        .select({ total: count() })
-        .from(quotes)
-        .where(and(...whereClauses));
-
-      // Calcular estadísticas
-      const statsWhereClauses: any[] = [];
-      if (partnerId !== null) {
-        statsWhereClauses.push(filterByPartner(quotes.partnerId, partnerId));
-      }
-
-      const allQuotes = await database
-        .select()
-        .from(quotes)
-        .where(and(...statsWhereClauses));
-
-      const stats = calculateQuoteStats(allQuotes);
+      const items = await db.query.quotes.findMany({
+        where: and(...whereClauses),
+        orderBy: [sortOrder === "asc" ? asc(quotes[sortBy]) : desc(quotes[sortBy])],
+        limit: limit + 1,
+        offset: cursor ? cursor * limit : 0,
+      });
 
       let nextCursor: number | undefined = undefined;
-      if (items.length === limit) {
-        nextCursor = offset + limit;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = cursor ? cursor + 1 : 1;
       }
-
-      return { items, nextCursor, total, stats };
-    }),
-  
-  /**
-   * Lista completa sin paginación (para selects)
-   */
-  listAll: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
-    if (!database) return [];
-    
-    const items = await database
-      .select()
-      .from(quotes)
-      .where(
-        filterByPartnerAndOrganization(
-          quotes,
-          ctx.partnerId,
-          ctx.orgContext,
-          "quotes"
-        )
-      )
-      .orderBy(desc(quotes.date));
-
-    return markExpiredQuotes(items);
-  }),
-  
-  /**
-   * Obtener presupuesto por ID
-   */
-  get: orgProcedure
-    .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      const [quote] = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            eq(quotes.id, input.id)
-          )
-        );
-
-      if (!quote) throw new Error("Presupuesto no encontrado");
-      
-      // Marcar como expirado si corresponde
-      const [markedQuote] = markExpiredQuotes([quote]);
-      return markedQuote;
-    }),
-  
-  /**
-   * Obtener presupuestos de un cliente
-   */
-  byClient: orgProcedure
-    .input(z.object({ clientId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) return [];
-
-      const items = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            eq(quotes.clientId, input.clientId)
-          )
-        )
-        .orderBy(desc(quotes.date));
-
-      return markExpiredQuotes(items);
-    }),
-  
-  /**
-   * Obtener siguiente número de presupuesto
-   */
-  getNextNumber: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
-    if (!database) return "PRES-2025-0001";
-
-    const year = new Date().getFullYear();
-    
-    const allQuotes = await database
-      .select({ quoteNumber: quotes.quoteNumber })
-      .from(quotes)
-      .where(
-        filterByPartnerAndOrganization(
-          quotes,
-          ctx.partnerId,
-          ctx.orgContext,
-          "quotes"
-        )
-      )
-      .orderBy(desc(quotes.createdAt));
-
-    const lastNumber = allQuotes
-      .filter(q => q.quoteNumber.startsWith(`PRES-${year}`))
-      .map(q => {
-        const match = q.quoteNumber.match(/(\d+)$/);
-        return match ? parseInt(match[1], 10) : 0;
-      })
-      .reduce((max, num) => Math.max(max, num), 0);
-
-    return `PRES-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-  }),
-  
-  /**
-   * Crear nuevo presupuesto
-   */
-  create: orgProcedure
-    .input(quoteBaseSchema)
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Preparar datos con partnerId, odId y organizationId
-      const quoteData = addOrganizationToInsert(
-        {
-          quoteNumber: input.quoteNumber,
-          clientId: input.clientId,
-          clientName: input.clientName,
-          clientEmail: input.clientEmail,
-          clientAddress: input.clientAddress,
-          pianoId: input.pianoId,
-          pianoDescription: input.pianoDescription,
-          title: input.title,
-          description: input.description,
-          date: new Date(input.date),
-          validUntil: new Date(input.validUntil),
-          status: input.status,
-          items: input.items,
-          subtotal: input.subtotal.toString(),
-          totalDiscount: input.totalDiscount.toString(),
-          taxAmount: input.taxAmount.toString(),
-          total: input.total.toString(),
-          currency: input.currency,
-          notes: input.notes,
-          termsAndConditions: input.termsAndConditions,
-          businessInfo: input.businessInfo,
-        },
-        ctx.orgContext,
-        "quotes"
-      );
-      
-      const result = await database.insert(quotes).values(quoteData);
-      return result[0].insertId;
-    }),
-  
-  /**
-   * Actualizar presupuesto existente
-   */
-  update: orgProcedure
-    .input(z.object({
-      id: z.number(),
-    }).merge(quoteBaseSchema.partial()))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Obtener el presupuesto para verificar permisos
-      const [existingQuote] = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            eq(quotes.id, input.id)
-          )
-        );
-
-      if (!existingQuote) {
-        throw new Error("Presupuesto no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
-
-      const { id, ...data } = input;
-      
-      // Preparar datos para actualización
-      const updateData: any = {};
-      if (data.quoteNumber !== undefined) updateData.quoteNumber = data.quoteNumber;
-      if (data.clientId !== undefined) updateData.clientId = data.clientId;
-      if (data.clientName !== undefined) updateData.clientName = data.clientName;
-      if (data.clientEmail !== undefined) updateData.clientEmail = data.clientEmail;
-      if (data.clientAddress !== undefined) updateData.clientAddress = data.clientAddress;
-      if (data.pianoId !== undefined) updateData.pianoId = data.pianoId;
-      if (data.pianoDescription !== undefined) updateData.pianoDescription = data.pianoDescription;
-      if (data.title !== undefined) updateData.title = data.title;
-      if (data.description !== undefined) updateData.description = data.description;
-      if (data.date !== undefined) updateData.date = new Date(data.date);
-      if (data.validUntil !== undefined) updateData.validUntil = new Date(data.validUntil);
-      if (data.status !== undefined) updateData.status = data.status;
-      if (data.items !== undefined) updateData.items = data.items;
-      if (data.subtotal !== undefined) updateData.subtotal = data.subtotal.toString();
-      if (data.totalDiscount !== undefined) updateData.totalDiscount = data.totalDiscount.toString();
-      if (data.taxAmount !== undefined) updateData.taxAmount = data.taxAmount.toString();
-      if (data.total !== undefined) updateData.total = data.total.toString();
-      if (data.currency !== undefined) updateData.currency = data.currency;
-      if (data.notes !== undefined) updateData.notes = data.notes;
-      if (data.termsAndConditions !== undefined) updateData.termsAndConditions = data.termsAndConditions;
-      if (data.businessInfo !== undefined) updateData.businessInfo = data.businessInfo;
-      if (data.sentAt !== undefined) updateData.sentAt = data.sentAt ? new Date(data.sentAt) : null;
-      if (data.viewedAt !== undefined) updateData.viewedAt = data.viewedAt ? new Date(data.viewedAt) : null;
-      if (data.acceptedAt !== undefined) updateData.acceptedAt = data.acceptedAt ? new Date(data.acceptedAt) : null;
-      if (data.rejectedAt !== undefined) updateData.rejectedAt = data.rejectedAt ? new Date(data.rejectedAt) : null;
-      if (data.rejectionReason !== undefined) updateData.rejectionReason = data.rejectionReason;
-      if (data.convertedToInvoiceId !== undefined) updateData.convertedToInvoiceId = data.convertedToInvoiceId;
-
-      await database
-        .update(quotes)
-        .set(updateData)
-        .where(eq(quotes.id, id));
-      
-      return { success: true };
-    }),
-  
-  /**
-   * Eliminar presupuesto
-   */
-  delete: orgProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Obtener el presupuesto para verificar permisos
-      const [existingQuote] = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            eq(quotes.id, input.id)
-          )
-        );
-
-      if (!existingQuote) {
-        throw new Error("Presupuesto no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
-
-      await database.delete(quotes).where(eq(quotes.id, input.id));
-      
-      return { success: true };
-    }),
-  
-  /**
-   * Cambiar estado de presupuesto
-   */
-  updateStatus: orgProcedure
-    .input(z.object({
-      id: z.number(),
-      status: quoteStatusSchema,
-      rejectionReason: z.string().optional(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Obtener el presupuesto para verificar permisos
-      const [existingQuote] = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            eq(quotes.id, input.id)
-          )
-        );
-
-      if (!existingQuote) {
-        throw new Error("Presupuesto no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
-
-      const updateData: any = { status: input.status };
-      const now = new Date();
-      
-      // Actualizar timestamps según el estado
-      switch (input.status) {
-        case "sent":
-          updateData.sentAt = now;
-          break;
-        case "viewed":
-          updateData.viewedAt = now;
-          break;
-        case "accepted":
-          updateData.acceptedAt = now;
-          break;
-        case "rejected":
-          updateData.rejectedAt = now;
-          if (input.rejectionReason) {
-            updateData.rejectionReason = input.rejectionReason;
-          }
-          break;
-      }
-
-      await database
-        .update(quotes)
-        .set(updateData)
-        .where(eq(quotes.id, input.id));
-      
-      return { success: true };
-    }),
-  
-  /**
-   * Convertir presupuesto a factura
-   */
-  convertToInvoice: orgProcedure
-    .input(z.object({
-      id: z.number(),
-      includeOptionalItems: z.boolean().default(false),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Obtener el presupuesto
-      const [quote] = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            eq(quotes.id, input.id)
-          )
-        );
-
-      if (!quote) {
-        throw new Error("Presupuesto no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "quotes", quote.odId);
-
-      if (quote.status === "converted") {
-        throw new Error("Este presupuesto ya ha sido convertido a factura");
-      }
-
-      // Filtrar items según opción
-      const quoteItems = (quote.items as z.infer<typeof quoteItemSchema>[]) || [];
-      const items = quoteItems.filter(item => 
-        !item.optional || input.includeOptionalItems
-      );
-
-      // Recalcular totales
-      const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-      const taxAmount = items.reduce((sum, item) => sum + (item.subtotal * item.taxRate / 100), 0);
-      const total = subtotal + taxAmount;
-
-      // Generar número de factura
-      const allInvoices = await database
-        .select({ invoiceNumber: invoices.invoiceNumber })
-        .from(invoices)
-        .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices"
-          )
-        )
-        .orderBy(desc(invoices.createdAt));
-
-      const year = new Date().getFullYear();
-      const lastNumber = allInvoices
-        .filter(inv => inv.invoiceNumber.startsWith(`INV-${year}`))
-        .map(inv => {
-          const match = inv.invoiceNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1], 10) : 0;
-        })
-        .reduce((max, num) => Math.max(max, num), 0);
-
-      const invoiceNumber = `INV-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-
-      // Preparar datos de factura
-      const invoiceData = addOrganizationToInsert(
-        {
-          invoiceNumber,
-          clientId: quote.clientId,
-          clientName: quote.clientName,
-          clientEmail: quote.clientEmail,
-          clientAddress: quote.clientAddress,
-          date: new Date(),
-          status: "draft",
-          items: items.map(item => ({
-            description: item.name + (item.description ? ` - ${item.description}` : ""),
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            taxRate: item.taxRate,
-            total: item.total,
-          })),
-          subtotal: subtotal.toString(),
-          taxAmount: taxAmount.toString(),
-          total: total.toString(),
-          notes: quote.notes,
-          businessInfo: quote.businessInfo,
-        },
-        ctx.orgContext,
-        "invoices"
-      );
-
-      // Crear factura
-      const invoiceResult = await database.insert(invoices).values(invoiceData);
-      const invoiceId = invoiceResult[0].insertId;
-
-      // Actualizar presupuesto
-      await database
-        .update(quotes)
-        .set({
-          status: "converted",
-          convertedToInvoiceId: invoiceId,
-        })
-        .where(eq(quotes.id, input.id));
 
       return {
-        invoiceId,
-        invoiceNumber,
+        items: markExpiredQuotes(items),
+        nextCursor,
       };
     }),
-  
+
   /**
-   * Duplicar presupuesto
+   * Listar todos los presupuestos (para estadísticas, etc.)
    */
-  duplicate: orgProcedure
+  listAll: orgProcedure
+    .query(async ({ ctx }) => {
+      return db.query.quotes.findMany({
+        where: filterByPartner(quotes.partnerId, ctx.partnerId),
+      });
+    }),
+
+  /**
+   * Obtener un presupuesto por ID
+   */
+  byId: orgProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Obtener el presupuesto original
-      const [original] = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            eq(quotes.id, input.id)
-          )
-        );
-
-      if (!original) {
-        throw new Error("Presupuesto no encontrado");
-      }
-
-      // Generar nuevo número
-      const year = new Date().getFullYear();
-      const allQuotes = await database
-        .select({ quoteNumber: quotes.quoteNumber })
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes"
-          )
-        )
-        .orderBy(desc(quotes.createdAt));
-
-      const lastNumber = allQuotes
-        .filter(q => q.quoteNumber.startsWith(`PRES-${year}`))
-        .map(q => {
-          const match = q.quoteNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1], 10) : 0;
-        })
-        .reduce((max, num) => Math.max(max, num), 0);
-
-      const newNumber = `PRES-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-
-      // Calcular nueva fecha de validez (30 días desde hoy)
-      const validUntil = new Date();
-      validUntil.setDate(validUntil.getDate() + 30);
-
-      // Preparar datos del nuevo presupuesto
-      const newQuoteData = addOrganizationToInsert(
-        {
-          quoteNumber: newNumber,
-          clientId: original.clientId,
-          clientName: original.clientName,
-          clientEmail: original.clientEmail,
-          clientAddress: original.clientAddress,
-          pianoId: original.pianoId,
-          pianoDescription: original.pianoDescription,
-          title: original.title,
-          description: original.description,
-          date: new Date(),
-          validUntil,
-          status: "draft",
-          items: original.items,
-          subtotal: original.subtotal,
-          totalDiscount: original.totalDiscount,
-          taxAmount: original.taxAmount,
-          total: original.total,
-          currency: original.currency,
-          notes: original.notes,
-          termsAndConditions: original.termsAndConditions,
-          businessInfo: original.businessInfo,
-        },
-        ctx.orgContext,
-        "quotes"
-      );
-
-      const result = await database.insert(quotes).values(newQuoteData);
-      return result[0].insertId;
-    }),
-  
-  /**
-   * Obtener plantillas de presupuesto
-   */
-  getTemplates: orgProcedure.query(async ({ ctx }) => {
-    // Por ahora devolver plantillas predefinidas
-    // TODO: Permitir plantillas personalizadas por usuario/organización
-    return DEFAULT_TEMPLATES;
-  }),
-  
-  /**
-   * Crear presupuesto desde plantilla
-   */
-  createFromTemplate: orgProcedure
-    .input(z.object({
-      templateId: z.string(),
-      clientId: z.number(),
-      clientName: z.string(),
-      clientEmail: z.string().optional(),
-      clientAddress: z.string().optional(),
-      pianoId: z.number().optional(),
-      pianoDescription: z.string().optional(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      const template = DEFAULT_TEMPLATES.find(t => t.id === input.templateId);
-      if (!template) {
-        throw new Error("Plantilla no encontrada");
-      }
-
-      // Generar número
-      const year = new Date().getFullYear();
-      const allQuotes = await database
-        .select({ quoteNumber: quotes.quoteNumber })
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes"
-          )
-        )
-        .orderBy(desc(quotes.createdAt));
-
-      const lastNumber = allQuotes
-        .filter(q => q.quoteNumber.startsWith(`PRES-${year}`))
-        .map(q => {
-          const match = q.quoteNumber.match(/(\d+)$/);
-          return match ? parseInt(match[1], 10) : 0;
-        })
-        .reduce((max, num) => Math.max(max, num), 0);
-
-      const quoteNumber = `PRES-${year}-${String(lastNumber + 1).padStart(4, "0")}`;
-
-      // Calcular totales
-      const subtotal = template.items.reduce((sum, item) => sum + item.subtotal, 0);
-      const taxAmount = template.items.reduce((sum, item) => sum + (item.subtotal * item.taxRate / 100), 0);
-      const total = subtotal + taxAmount;
-
-      // Calcular fecha de validez
-      const validUntil = new Date();
-      validUntil.setDate(validUntil.getDate() + template.validityDays);
-
-      // Preparar datos del presupuesto
-      const quoteData = addOrganizationToInsert(
-        {
-          quoteNumber,
-          clientId: input.clientId,
-          clientName: input.clientName,
-          clientEmail: input.clientEmail,
-          clientAddress: input.clientAddress,
-          pianoId: input.pianoId,
-          pianoDescription: input.pianoDescription,
-          title: template.title,
-          date: new Date(),
-          validUntil,
-          status: "draft",
-          items: template.items,
-          subtotal: subtotal.toString(),
-          totalDiscount: "0",
-          taxAmount: taxAmount.toString(),
-          total: total.toString(),
-          currency: "EUR",
-          notes: template.notes,
-          termsAndConditions: template.termsAndConditions,
-        },
-        ctx.orgContext,
-        "quotes"
-      );
-
-      const result = await database.insert(quotes).values(quoteData);
-      return result[0].insertId;
-    }),
-  
-  /**
-   * Obtener presupuestos que expiran pronto
-   */
-  getExpiringSoon: orgProcedure
-    .input(z.object({
-      daysAhead: z.number().int().min(1).max(30).default(7),
-    }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) return [];
-
-      const daysAhead = input?.daysAhead || 7;
-      const today = new Date();
-      const cutoff = new Date(today.getTime() + daysAhead * 24 * 60 * 60 * 1000);
-
-      const items = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartnerAndOrganization(
-            quotes,
-            ctx.partnerId,
-            ctx.orgContext,
-            "quotes",
-            and(
-              eq(quotes.status, "sent"),
-              gte(quotes.validUntil, today),
-              lte(quotes.validUntil, cutoff)
-            )
-          )
-        )
-        .orderBy(asc(quotes.validUntil));
-
-      return items;
+      const [quote] = await db.select().from(quotes).where(
+        filterByPartnerAnd(quotes.partnerId, ctx.partnerId, eq(quotes.id, input.id))
+      );
+      return quote ? markExpiredQuotes([quote])[0] : null;
     }),
-  
+
+  /**
+   * Obtener presupuestos por cliente
+   */
+  byClientId: orgProcedure
+    .input(z.object({ clientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const clientQuotes = await db.select().from(quotes).where(
+filterByPartnerAnd(quotes.partnerId, ctx.partnerId, eq(quotes.clientId, input.clientId))
+      );
+      return markExpiredQuotes(clientQuotes);
+    }),
+
   /**
    * Obtener estadísticas de presupuestos
    */
   getStats: orgProcedure
-    .input(z.object({
-      dateFrom: z.string().optional(),
-      dateTo: z.string().optional(),
-    }).optional())
-    .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) return null;
+    .query(async ({ ctx }) => {
+      const allQuotes = await db.query.quotes.findMany({
+        where: filterByPartner(quotes.partnerId, ctx.partnerId),
+        columns: { total: true, status: true, validUntil: true },
+      });
+      return calculateQuoteStats(allQuotes);
+    }),
 
-      const whereClauses = [
+  /**
+   * Obtener el siguiente número de presupuesto
+   */
+  getNextNumber: orgProcedure
+    .query(async ({ ctx }) => {
+      const [lastQuote] = await db.select({ quoteNumber: quotes.quoteNumber }).from(quotes).where(
+        filterByPartner(quotes.partnerId, ctx.partnerId)
+      ).orderBy(desc(quotes.createdAt)).limit(1);
+
+      if (!lastQuote || !lastQuote.quoteNumber) {
+        return `PRE-${new Date().getFullYear()}-0001`;
+      }
+
+      const match = lastQuote.quoteNumber.match(/(\d+)$/);
+      if (match) {
+        const nextNum = parseInt(match[1], 10) + 1;
+        return `PRE-${new Date().getFullYear()}-${String(nextNum).padStart(4, "0")}`;
+      }
+
+      return `PRE-${new Date().getFullYear()}-0001`;
+    }),
+
+  /**
+   * Crear un nuevo presupuesto
+   */
+  create: orgProcedure
+    .input(quoteBaseSchema)
+    .mutation(async ({ ctx, input }) => {
+      const quoteData = {
+        ...addPartnerToInsert(
+          {
+            ...input,
+            date: new Date(input.date),
+            validUntil: new Date(input.validUntil),
+            subtotal: input.subtotal.toString(),
+            totalDiscount: input.totalDiscount.toString(),
+            taxAmount: input.taxAmount.toString(),
+            total: input.total.toString(),
+          },
+          ctx.partnerId
+        ),
+        odId: ctx.user.id,
+      };
+
+      const [newQuote] = await db.insert(quotes).values(quoteData).returning();
+      return newQuote;
+    }),
+
+  /**
+   * Actualizar un presupuesto
+   */
+  update: orgProcedure
+    .input(quoteBaseSchema.extend({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+
+      const [existingQuote] = await db.select().from(quotes).where(eq(quotes.id, id));
+      if (!existingQuote) {
+        throw new Error("Presupuesto no encontrado");
+      }
+
+      // validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
+
+      const [updatedQuote] = await db.update(quotes).set({
+        ...data,
+        date: new Date(data.date),
+        validUntil: new Date(data.validUntil),
+        subtotal: data.subtotal.toString(),
+        totalDiscount: data.totalDiscount.toString(),
+        taxAmount: data.taxAmount.toString(),
+        total: data.total.toString(),
+        updatedAt: new Date(),
+      }).where(eq(quotes.id, id)).returning();
+
+      return updatedQuote;
+    }),
+
+  /**
+   * Eliminar un presupuesto
+   */
+  delete: orgProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const [existingQuote] = await db.select().from(quotes).where(eq(quotes.id, input.id));
+      if (!existingQuote) {
+        throw new Error("Presupuesto no encontrado");
+      }
+
+      // validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
+
+      await db.delete(quotes).where(eq(quotes.id, input.id));
+      return { success: true };
+    }),
+
+  /**
+   * Convertir un presupuesto a factura
+   */
+  convertToInvoice: orgProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const [quote] = await db.select().from(quotes).where(eq(quotes.id, input.id));
+      if (!quote) {
+        throw new Error("Presupuesto no encontrado");
+      }
+
+      if (quote.status === 'converted') {
+        throw new Error("Este presupuesto ya ha sido convertido a factura.");
+      }
+
+      const [{ count: invoiceCount }] = await db.select({ count: count() }).from(invoices).where(
         filterByPartnerAndOrganization(
-          quotes,
+          invoices,
           ctx.partnerId,
           ctx.orgContext,
-          "quotes"
+          "invoices"
         )
-      ];
+      );
 
-      if (input?.dateFrom) {
-        whereClauses.push(gte(quotes.date, new Date(input.dateFrom)));
+      const invoiceData = {
+          ...addPartnerToInsert(
+            {
+              invoiceNumber: `FACT-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(4, "0")}`,
+              clientId: quote.clientId,
+              clientName: quote.clientName,
+              clientEmail: quote.clientEmail,
+              clientAddress: quote.clientAddress,
+              clientTaxId: quote.clientTaxId,
+              date: new Date(),
+              dueDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+              status: "draft",
+              items: quote.items.map(item => ({
+                description: item.description || item.name,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                taxRate: item.taxRate,
+                discount: item.discount,
+                total: item.total,
+              })),
+              subtotal: quote.subtotal,
+              taxAmount: quote.taxAmount,
+              total: quote.total,
+              discount: quote.totalDiscount,
+              discountType: "fixed",
+              notes: `Factura generada desde el presupuesto ${quote.quoteNumber}`,
+              quoteId: quote.id,
+            },
+            ctx.partnerId
+          ),
+          odId: ctx.user.id,
+        };
+
+      const [newInvoice] = await db.insert(invoices).values(invoiceData).returning();
+
+      await db.update(quotes).set({ status: "converted", convertedToInvoiceId: newInvoice.id }).where(eq(quotes.id, quote.id));
+
+      return newInvoice;
+    }),
+
+  /**
+   * Duplicar un presupuesto
+   */
+  duplicate: orgProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const [originalQuote] = await db.select().from(quotes).where(eq(quotes.id, input.id));
+      if (!originalQuote) {
+        throw new Error("Presupuesto original no encontrado");
       }
 
-      if (input?.dateTo) {
-        whereClauses.push(lte(quotes.date, new Date(input.dateTo)));
+      const { id, createdAt, updatedAt, ...rest } = originalQuote;
+
+      const duplicatedQuoteData = {
+        ...addPartnerToInsert(
+          {
+            ...rest,
+            quoteNumber: `COPIA-${originalQuote.quoteNumber}`,
+            status: "draft",
+            date: new Date(),
+            validUntil: new Date(new Date().setDate(new Date().getDate() + 30)),
+          },
+          ctx.partnerId
+        ),
+        odId: ctx.user.id,
+      };
+
+      const [newQuote] = await db.insert(quotes).values(duplicatedQuoteData).returning();
+      return newQuote;
+    }),
+
+  // ============================================================================
+  // GESTIÓN DE PLANTILLAS
+  // ============================================================================
+
+  /**
+   * Obtener todas las plantillas de presupuesto
+   */
+  getTemplates: orgProcedure
+    .query(async ({ ctx }) => {
+      const customTemplates = await db.query.quote_templates.findMany({
+        where: filterByPartnerAndOrganization(
+          db.quote_templates,
+          ctx.partnerId,
+          ctx.orgContext,
+          "quote_templates"
+        ),
+      });
+      return [...DEFAULT_TEMPLATES, ...customTemplates];
+    }),
+
+  /**
+   * Crear una nueva plantilla de presupuesto
+   */
+  createTemplate: orgProcedure
+    .input(quoteTemplateSchema.omit({ id: true, isDefault: true }))
+    .mutation(async ({ ctx, input }) => {
+      const templateData = {
+        ...addPartnerToInsert(
+          {
+            ...input,
+            isDefault: false,
+          },
+          ctx.partnerId
+        ),
+        odId: ctx.user.id,
+      };
+      const [newTemplate] = await db.insert(db.quote_templates).values(templateData).returning();
+      return newTemplate;
+    }),
+
+  /**
+   * Actualizar una plantilla de presupuesto
+   */
+  updateTemplate: orgProcedure
+    .input(quoteTemplateSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      const [existingTemplate] = await db.select().from(db.quote_templates).where(eq(db.quote_templates.id, id));
+      if (!existingTemplate) {
+        throw new Error("Plantilla no encontrada");
       }
 
-      const items = await database
-        .select()
-        .from(quotes)
-        .where(and(...whereClauses));
+      // validateWritePermission(ctx.orgContext, "quote_templates", existingTemplate.odId);
 
-      return calculateQuoteStats(items);
+      const [updatedTemplate] = await db.update(db.quote_templates).set(data).where(eq(db.quote_templates.id, id)).returning();
+      return updatedTemplate;
+    }),
+
+  /**
+   * Eliminar una plantilla de presupuesto
+   */
+  deleteTemplate: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [existingTemplate] = await db.select().from(db.quote_templates).where(eq(db.quote_templates.id, input.id));
+      if (!existingTemplate) {
+        throw new Error("Plantilla no encontrada");
+      }
+
+      if (existingTemplate.isDefault) {
+        throw new Error("No se pueden eliminar las plantillas por defecto");
+      }
+
+      // validateWritePermission(ctx.orgContext, "quote_templates", existingTemplate.odId);
+
+      await db.delete(db.quote_templates).where(eq(db.quote_templates.id, input.id));
+      return { success: true };
     }),
 });

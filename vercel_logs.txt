@@ -1,0 +1,4 @@
+Vercel CLI 50.1.6
+The "--since" option was ignored because it is now deprecated. Please remove it.
+Fetching deployment "piano-emotion-manager" in jordi-navarretes-projects
+Error: Can't find the deployment "piano-emotion-manager" under the context "jordi-navarretes-projects"

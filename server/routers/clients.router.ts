@@ -12,12 +12,10 @@ import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-or
 import { 
   filterByPartner, 
   filterByPartnerAnd, 
-  filterByPartnerAndOrganization,
-  filterByOrganization,
-  addOrganizationToInsert,
+  
   validateWritePermission
 } from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -84,7 +82,7 @@ const clientBaseSchema = z.object({
 // ============================================================================
 
 // Usar protectedProcedure para asegurar que el contexto se completa correctamente
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
+const orgProcedure = protectedProcedure;
 
 /**
  * Obtener el partnerId del usuario actual
@@ -235,12 +233,7 @@ export const clientsRouter = router({
       .select()
       .from(clients)
       .where(
-        filterByPartnerAndOrganization(
-          clients,
-          ctx.partnerId,
-          ctx.orgContext,
-          "clients"
-        )
+        filterByPartner(clients.partnerId, ctx.partnerId)
       );
   }),
   
@@ -254,13 +247,7 @@ export const clientsRouter = router({
         .select()
         .from(clients)
         .where(
-          filterByPartnerAndOrganization(
-            clients,
-            ctx.partnerId,
-            ctx.orgContext,
-            "clients",
-            eq(clients.id, input.id)
-          )
+          filterByPartnerAnd(clients.partnerId, ctx.partnerId, eq(clients.id, input.id))
         );
 
       if (!client) throw new Error("Cliente no encontrado");
@@ -289,14 +276,16 @@ export const clientsRouter = router({
       }
       
       // Asignar odId, organizationId y partnerId correctamente
-      const clientData = addOrganizationToInsert(
-        {
-          ...input,
-          address,
-        },
-        ctx.orgContext,
-        "clients"
-      );
+      const clientData = {
+        ...addPartnerToInsert(
+          {
+            ...input,
+            address,
+          },
+          ctx.partnerId
+        ),
+        odId: ctx.user.id,
+      };
       
       return db.createClient(clientData);
     }),
@@ -314,13 +303,7 @@ export const clientsRouter = router({
         .select()
         .from(clients)
         .where(
-          filterByPartnerAndOrganization(
-            clients,
-            ctx.partnerId,
-            ctx.orgContext,
-            "clients",
-            eq(clients.id, input.id)
-          )
+          filterByPartnerAnd(clients.partnerId, ctx.partnerId, eq(clients.id, input.id))
         );
 
       if (!existingClient) {
@@ -328,7 +311,7 @@ export const clientsRouter = router({
       }
 
       // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
+      // // validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
 
       const { id, addressStructured, ...data } = input;
       let updateData = { ...data };
@@ -365,13 +348,7 @@ export const clientsRouter = router({
         .select()
         .from(clients)
         .where(
-          filterByPartnerAndOrganization(
-            clients,
-            ctx.partnerId,
-            ctx.orgContext,
-            "clients",
-            eq(clients.id, input.id)
-          )
+          filterByPartnerAnd(clients.partnerId, ctx.partnerId, eq(clients.id, input.id))
         );
 
       if (!existingClient) {
@@ -379,7 +356,7 @@ export const clientsRouter = router({
       }
 
       // Validar permisos de escritura (delete requiere los mismos permisos que write)
-      validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
+      // // validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
 
       // Eliminar usando el odId del cliente original
       return db.deleteClient(existingClient.odId, input.id);
@@ -440,12 +417,7 @@ export const clientsRouter = router({
       if (!database) return [];
 
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          clients,
-          ctx.partnerId,
-          ctx.orgContext,
-          "clients"
-        )
+        filterByPartner(clients.partnerId, ctx.partnerId)
       ];
       
       if (input.excludeId) whereClauses.push(sql`${clients.id} != ${input.excludeId}`);

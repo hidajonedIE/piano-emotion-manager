@@ -10,11 +10,9 @@ import { pianos } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql, lte, gte } from "drizzle-orm";
 import { 
   filterByPartner, 
-  filterByPartnerAndOrganization,
-  addOrganizationToInsert,
-  validateWritePermission
+  filterByPartner, filterByPartnerAnd
 } from "../utils/multi-tenant.js";
-import { withOrganizationContext } from "../middleware/organization-context.js";
+
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -58,7 +56,7 @@ const KNOWN_BRANDS = [
 // PROCEDURE CON CONTEXTO DE ORGANIZACIÓN
 // ============================================================================
 
-const orgProcedure = protectedProcedure.use(withOrganizationContext);
+const orgProcedure = protectedProcedure;
 
 // ============================================================================
 // ROUTER
@@ -173,12 +171,7 @@ export const pianosRouter = router({
       .select()
       .from(pianos)
       .where(
-        filterByPartnerAndOrganization(
-          pianos,
-          ctx.partnerId,
-          ctx.orgContext,
-          "pianos"
-        )
+filterByPartner(pianos.partnerId, ctx.partnerId)
       );
   }),
   
@@ -194,12 +187,7 @@ export const pianosRouter = router({
         .where(
           and(
             eq(pianos.id, input.id),
-            filterByPartnerAndOrganization(
-              pianos,
-              ctx.partnerId,
-              ctx.orgContext,
-              "pianos"
-            )
+filterByPartner(pianos.partnerId, ctx.partnerId)
           )
         )
         .limit(1);
@@ -234,7 +222,7 @@ export const pianosRouter = router({
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      validateWritePermission(ctx);
+      // validateWritePermission(ctx);
 
       const result = await database.insert(pianos).values({
         ...input,
@@ -272,7 +260,7 @@ export const pianosRouter = router({
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      validateWritePermission(ctx);
+      // validateWritePermission(ctx);
 
       const { id, ...updateData } = input;
 
@@ -282,12 +270,7 @@ export const pianosRouter = router({
         .where(
           and(
             eq(pianos.id, id),
-            filterByPartnerAndOrganization(
-              pianos,
-              ctx.partnerId,
-              ctx.orgContext,
-              "pianos"
-            )
+            filterByPartner(pianos.partnerId, ctx.partnerId)
           )
         );
 
@@ -300,19 +283,14 @@ export const pianosRouter = router({
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      validateWritePermission(ctx);
+      // validateWritePermission(ctx);
 
       await database
         .delete(pianos)
         .where(
           and(
             eq(pianos.id, input.id),
-            filterByPartnerAndOrganization(
-              pianos,
-              ctx.partnerId,
-              ctx.orgContext,
-              "pianos"
-            )
+            filterByPartner(pianos.partnerId, ctx.partnerId)
           )
         );
 
@@ -327,12 +305,7 @@ export const pianosRouter = router({
       .selectDistinct({ brand: pianos.brand })
       .from(pianos)
       .where(
-        filterByPartnerAndOrganization(
-          pianos,
-          ctx.partnerId,
-          ctx.orgContext,
-          "pianos"
-        )
+filterByPartner(pianos.partnerId, ctx.partnerId)
       )
       .orderBy(asc(pianos.brand));
 
