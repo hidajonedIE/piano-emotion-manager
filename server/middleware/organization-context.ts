@@ -42,7 +42,16 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
   try {
     const db = await getDb();
     
+    if (!db) {
+      console.error('[getOrganizationContext] Database connection failed');
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Error de conexión a la base de datos",
+      });
+    }
+    
     // 1. Obtener información básica del usuario
+    console.log('[getOrganizationContext] Getting user info for userId:', userId);
     const user = await db
       .select({
         id: users.id,
@@ -54,6 +63,7 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
       .limit(1);
 
     if (!user || user.length === 0) {
+      console.error('[getOrganizationContext] User not found for userId:', userId);
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Usuario no encontrado",
@@ -61,22 +71,32 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
     }
 
     const { odId, partnerId } = user[0];
+    console.log('[getOrganizationContext] User found:', { odId, partnerId });
 
     // 2. Verificar si el usuario pertenece a una organización
-    const membership = await db
-      .select({
-        organizationId: organizationMembers.organizationId,
-        role: organizationMembers.organizationRole,
-        status: organizationMembers.membershipStatus,
-      })
-      .from(organizationMembers)
-      .where(
-        and(
-          eq(organizationMembers.userId, userId),
-          eq(organizationMembers.membershipStatus, "active")
+    console.log('[getOrganizationContext] Looking for organization membership for userId:', userId);
+    let membership = [];
+    try {
+      membership = await db
+        .select({
+          organizationId: organizationMembers.organizationId,
+          role: organizationMembers.organizationRole,
+          status: organizationMembers.membershipStatus,
+        })
+        .from(organizationMembers)
+        .where(
+          and(
+            eq(organizationMembers.userId, userId),
+            eq(organizationMembers.membershipStatus, "active")
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
+      console.log('[getOrganizationContext] Organization membership query completed, found:', membership.length);
+    } catch (membershipError) {
+      console.error('[getOrganizationContext] Error querying organization membership:', membershipError);
+      // Continue without organization membership - it's optional
+      membership = [];
+    }
 
     let organizationId: number | null = null;
     let organizationRole: string | null = null;
