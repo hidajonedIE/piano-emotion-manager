@@ -81,6 +81,7 @@
     "jose": "6.1.0",
     "jsonwebtoken": "^9.0.3",
     "jstoxml": "^7.0.1",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.562.0",
     "mysql2": "^3.16.0",
     "nanoid": "^5.1.6",
