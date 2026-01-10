@@ -90,3 +90,48 @@ export async function verifyClerkSession(req: {
     console.log("\n=== FIN VERIFICACION CLERK ===\n");
   }
 }
+
+
+export async function getOrCreateUserFromClerk(
+  clerkUser: any,
+  db: any,
+  usersTable: any,
+  eq: any
+) {
+  console.log("10. Buscando usuario en base de datos con openId:", clerkUser.id);
+  
+  try {
+    // Try to find existing user
+    const [existingUser] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.openId, clerkUser.id))
+      .limit(1);
+
+    if (existingUser) {
+      console.log("11. Usuario encontrado en BD:", { id: existingUser.id, email: existingUser.email });
+      return existingUser;
+    }
+
+    console.log("12. Usuario NO encontrado en BD, creando nuevo usuario");
+    
+    // Create new user
+    const [newUser] = await db
+      .insert(usersTable)
+      .values({
+        openId: clerkUser.id,
+        email: clerkUser.email,
+        name: clerkUser.name,
+        partnerId: 1, // Default to partner 1
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    console.log("13. Usuario creado exitosamente en BD:", { id: newUser.id, email: newUser.email });
+    return newUser;
+  } catch (error) {
+    console.error("ERROR en getOrCreateUserFromClerk:", error instanceof Error ? error.message : String(error));
+    throw error;
+  }
+}
