@@ -103,10 +103,6 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
         user = dbUser as User;
         const partnerId = user.partnerId || null;
         console.log("[DEBUG] [Context] User set with partnerId:", partnerId);
-      } else {
-        console.log("[DEBUG] [Context] Database connection failed");
-      }
-      if (!db) {
         
         // Create a session JWT compatible with SDK legacy
         try {
