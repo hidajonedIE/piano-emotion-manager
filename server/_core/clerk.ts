@@ -51,19 +51,13 @@ export async function verifyClerkSession(req: {
     // Try to get user details from Clerk
     console.log("7. Intentando obtener usuario desde Clerk con ID:", tokenUserId);
     
+    let clerkUser: any = null;
     try {
-      const user = await clerkClient.users.getUser(tokenUserId);
+      clerkUser = await clerkClient.users.getUser(tokenUserId);
       console.log("8. EXITO: Usuario encontrado en Clerk");
-      console.log("   - ID en Clerk:", user.id);
-      console.log("   - Email en Clerk:", user.emailAddresses[0]?.emailAddress);
-      console.log("   - Nombre en Clerk:", `${user.firstName || ""} ${user.lastName || ""}`.trim());
-      
-      return {
-        id: user.id,
-        email: user.emailAddresses[0]?.emailAddress || "",
-        name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-        clerkId: user.id
-      };
+      console.log("   - ID en Clerk:", clerkUser.id);
+      console.log("   - Email en Clerk:", clerkUser.emailAddresses[0]?.emailAddress);
+      console.log("   - Nombre en Clerk:", `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim());
     } catch (clerkError) {
       const errorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
       console.log("8. ERROR al obtener usuario desde Clerk:", errorMessage);
@@ -76,13 +70,21 @@ export async function verifyClerkSession(req: {
       console.log("   - Email (del token):", decoded.email);
       console.log("   - Nombre (del token):", decoded.name);
       
-      return {
+      clerkUser = {
         id: tokenUserId,
-        email: decoded.email || "",
-        name: decoded.name || "",
-        clerkId: tokenUserId
+        emailAddresses: [{ emailAddress: decoded.email }],
+        firstName: decoded.name?.split(' ')[0] || "",
+        lastName: decoded.name?.split(' ').slice(1).join(' ') || ""
       };
     }
+    
+    // Return the user object
+    return {
+      id: clerkUser.id,
+      email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+      name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
+      clerkId: clerkUser.id
+    };
   } catch (error) {
     console.log("ERROR GENERAL:", error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.stack) {
