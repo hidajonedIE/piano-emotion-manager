@@ -10,7 +10,6 @@ import { services, clients, pianos } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count, sql, ilike } from "drizzle-orm";
 import { 
   filterByPartner, 
-  filterByPartnerAnd,
   filterByPartnerAndOrganization,
   addOrganizationToInsert,
   validateWritePermission
