@@ -237,7 +237,13 @@ export function filterByPartnerAndOrganization(
   resource: SharableResource,
   ...additionalConditions: SQL[]
 ): SQL {
-  const partnerFilter = filterByPartner(table.partnerId, partnerId);
+  // Ensure partnerId is valid
+  if (!partnerId) {
+    throw new Error("partnerId is required for filterByPartnerAndOrganization");
+  }
+  
+  // Create partner filter using the partnerId column from the table
+  const partnerFilter = eq(table.partnerId, partnerId);
   const orgFilter = filterByOrganization(table, orgContext, resource);
   
   if (additionalConditions.length > 0) {
