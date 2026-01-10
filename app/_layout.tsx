@@ -17,7 +17,6 @@ import {
 import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/manus-runtime";
 import { SnackbarProvider } from "@/components/snackbar";
 import { LanguageProvider } from "@/contexts/language-context";
@@ -27,6 +26,7 @@ import { AIAssistant } from "@/components/ai/AIAssistant";
 import { AuthGuard } from "@/components/auth-guard";
 import { OnboardingGuard } from "@/components/onboarding-guard";
 import { ClerkProvider } from "@/components/clerk-provider";
+import { TRPCProviderWeb, trpc } from "@/components/trpc-provider-web";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -96,7 +96,6 @@ export default function RootLayout() {
         },
       }),
   );
-  const [trpcClient] = useState(() => createTRPCClient());
 
   const providerInitialMetrics = useMemo(
     () => initialWindowMetrics ?? { insets: initialInsets, frame: initialFrame },
@@ -120,15 +119,14 @@ export default function RootLayout() {
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ClerkProvider>
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-              <DistributorProvider>
-                <SubscriptionProvider>
-                  <LanguageProvider>
-                    <SnackbarProvider>
-                    <AuthGuard>
-                    <OnboardingGuard>
+        <TRPCProviderWeb queryClient={queryClient}>
+          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+            <DistributorProvider>
+              <SubscriptionProvider>
+                <LanguageProvider>
+                  <SnackbarProvider>
+                  <AuthGuard>
+                  <OnboardingGuard>
                     <Stack>
                       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                       <Stack.Screen name="(app)" options={{ headerShown: false }} />
@@ -166,16 +164,15 @@ export default function RootLayout() {
                       <Stack.Screen name="admin" options={{ title: 'Administración', headerShown: false }} />
                     </Stack>
                     <AIAssistant />
-                    </OnboardingGuard>
-                    </AuthGuard>
-                    <StatusBar style="auto" />
-                    </SnackbarProvider>
-                  </LanguageProvider>
-                </SubscriptionProvider>
-              </DistributorProvider>
-            </ThemeProvider>
-          </QueryClientProvider>
-        </trpc.Provider>
+                  </OnboardingGuard>
+                  </AuthGuard>
+                  <StatusBar style="auto" />
+                  </SnackbarProvider>
+                </LanguageProvider>
+              </SubscriptionProvider>
+            </DistributorProvider>
+          </ThemeProvider>
+        </TRPCProviderWeb>
       </ClerkProvider>
     </GestureHandlerRootView>
   );
