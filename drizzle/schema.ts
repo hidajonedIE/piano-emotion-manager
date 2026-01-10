@@ -741,7 +741,6 @@ export const pianos = mysqlTable("pianos", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 	tuningIntervalDays: int().default(180),
 	regulationIntervalDays: int().default(730),
 	alertsEnabled: tinyint().default(1),
