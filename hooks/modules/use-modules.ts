@@ -112,7 +112,7 @@ export function useModules() {
   );
 
   const professionalModules = useMemo(
-    () => modules?.filter((m) => m.type === 'professional') || [],
+    () => modules?.filter((m) => m.type === 'pro') || [],
     [modules]
   );
 
