@@ -16,7 +16,7 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db.js";
 import { users } from "../../drizzle/schema.js";
 import { organizations, organizationMembers } from "../../drizzle/schema.js";
-import { organizationSharingSettings } from "../../drizzle/schema.js";
+// import { organizationSharingSettings } from "../../drizzle/schema.js"; // Tabla no existe aún
 import { eq, and } from "drizzle-orm";
 
 /**
@@ -101,18 +101,19 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
       }
 
       // 4. Obtener la configuración de sharing de la organización
-      const settings = await db
-        .select({
-          resource: organizationSharingSettings.resource,
-          model: organizationSharingSettings.sharingModel,
-        })
-        .from(organizationSharingSettings)
-        .where(eq(organizationSharingSettings.organizationId, organizationId));
+      // NOTA: La tabla organization_sharing_settings no existe aún, así que comentamos esto por ahora
+      // const settings = await db
+      //   .select({
+      //     resource: organizationSharingSettings.resource,
+      //     model: organizationSharingSettings.sharingModel,
+      //   })
+      //   .from(organizationSharingSettings)
+      //   .where(eq(organizationSharingSettings.organizationId, organizationId));
 
-      // Convertir a Map para acceso rápido
-      settings.forEach((setting) => {
-        sharingSettings.set(setting.resource, setting.model);
-      });
+      // // Convertir a Map para acceso rápido
+      // settings.forEach((setting) => {
+      //   sharingSettings.set(setting.resource, setting.model);
+      // });
 
       // Si no hay configuración para un recurso, asumir 'private' por defecto
       const defaultResources = [
