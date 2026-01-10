@@ -131,17 +131,21 @@ export const servicesRouter = router({
         ctx.orgContext,
         "services"
       );
-      const whereClauses = [baseFilter];
+      const additionalFilters = [];
       
       if (search) {
-        whereClauses.push(or(ilike(services.notes, `%${search}%`), ilike(services.technicianNotes, `%${search}%`))!);
+        additionalFilters.push(or(ilike(services.notes, `%${search}%`), ilike(services.technicianNotes, `%${search}%`))!);
       }
-      if (serviceType) whereClauses.push(eq(services.serviceType, serviceType));
-      if (status) whereClauses.push(eq(services.status, status));
-      if (clientId) whereClauses.push(eq(services.clientId, clientId));
-      if (pianoId) whereClauses.push(eq(services.pianoId, pianoId));
-      if (dateFrom) whereClauses.push(gte(services.date, new Date(dateFrom)));
-      if (dateTo) whereClauses.push(lte(services.date, new Date(dateTo)));
+      if (serviceType) additionalFilters.push(eq(services.serviceType, serviceType));
+      if (status) additionalFilters.push(eq(services.status, status));
+      if (clientId) additionalFilters.push(eq(services.clientId, clientId));
+      if (pianoId) additionalFilters.push(eq(services.pianoId, pianoId));
+      if (dateFrom) additionalFilters.push(gte(services.date, new Date(dateFrom)));
+      if (dateTo) additionalFilters.push(lte(services.date, new Date(dateTo)));
+      
+      const whereClause = additionalFilters.length > 0
+        ? and(baseFilter, ...additionalFilters)
+        : baseFilter;
 
       const sortColumn = services[sortBy as keyof typeof services] || services.date;
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
@@ -180,7 +184,7 @@ export const servicesRouter = router({
         .from(services)
         .leftJoin(clients, eq(services.clientId, clients.id))
         .leftJoin(pianos, eq(services.pianoId, pianos.id))
-        .where(and(...whereClauses))
+        .where(whereClause)
         .orderBy(orderByClause)
         .limit(limit)
         .offset(offset);
@@ -190,7 +194,7 @@ export const servicesRouter = router({
         .from(services)
         .leftJoin(clients, eq(services.clientId, clients.id))
         .leftJoin(pianos, eq(services.pianoId, pianos.id))
-        .where(and(...whereClauses));
+        .where(whereClause);
 
       const [{ totalRevenue }] = await database
         .select({ totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)` })

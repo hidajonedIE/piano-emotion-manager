@@ -110,19 +110,16 @@ export const pianosRouter = router({
       console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
       console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
       
-      const whereClauses = [
-        filterByPartnerAndOrganization(
-          pianos,
-          ctx.partnerId,
-          ctx.orgContext,
-          "pianos"
-        )
-      ];
-      
-      console.log('[PIANOS DEBUG] whereClauses length:', whereClauses.length);
+      const baseFilter = filterByPartnerAndOrganization(
+        pianos,
+        ctx.partnerId,
+        ctx.orgContext,
+        "pianos"
+      );
+      const additionalFilters = [];
       
       if (search) {
-        whereClauses.push(
+        additionalFilters.push(
           or(
             ilike(pianos.brand, `%${search}%`),
             ilike(pianos.model, `%${search}%`),
@@ -130,12 +127,16 @@ export const pianosRouter = router({
           )!
         );
       }
-      if (category) whereClauses.push(eq(pianos.category, category));
-      if (brand) whereClauses.push(ilike(pianos.brand, brand));
-      if (condition) whereClauses.push(eq(pianos.condition, condition));
-      if (clientId) whereClauses.push(eq(pianos.clientId, clientId));
-      if (yearFrom) whereClauses.push(gte(pianos.year, yearFrom));
-      if (yearTo) whereClauses.push(lte(pianos.year, yearTo));
+      if (category) additionalFilters.push(eq(pianos.category, category));
+      if (brand) additionalFilters.push(ilike(pianos.brand, brand));
+      if (condition) additionalFilters.push(eq(pianos.condition, condition));
+      if (clientId) additionalFilters.push(eq(pianos.clientId, clientId));
+      if (yearFrom) additionalFilters.push(gte(pianos.year, yearFrom));
+      if (yearTo) additionalFilters.push(lte(pianos.year, yearTo));
+      
+      const whereClause = additionalFilters.length > 0
+        ? and(baseFilter, ...additionalFilters)
+        : baseFilter;
 
       const sortColumn = pianos[sortBy as keyof typeof pianos] || pianos.brand;
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
@@ -144,7 +145,7 @@ export const pianosRouter = router({
       const items = await database
         .select()
         .from(pianos)
-        .where(and(...whereClauses))
+        .where(whereClause)
         .orderBy(orderByClause)
         .limit(limit)
         .offset(offset);
@@ -152,7 +153,7 @@ export const pianosRouter = router({
       const [{ total }] = await database
         .select({ total: count() })
         .from(pianos)
-        .where(and(...whereClauses));
+        .where(whereClause);
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {
