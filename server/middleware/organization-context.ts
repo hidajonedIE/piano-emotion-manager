@@ -171,24 +171,34 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
  * ```
  */
 export const withOrganizationContext = async ({ ctx, next }: any) => {
-  console.log('[OrganizationContext] Middleware iniciado, ctx.user:', ctx.user);
-  
-  if (!ctx.user || !ctx.user.id) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Usuario no autenticado",
+  try {
+    console.log('[OrganizationContext] ===== MIDDLEWARE INICIADO =====');
+    console.log('[OrganizationContext] ctx.user:', ctx.user);
+    console.log('[OrganizationContext] ctx.partnerId:', ctx.partnerId);
+    
+    if (!ctx.user || !ctx.user.id) {
+      console.error('[OrganizationContext] ERROR: Usuario no autenticado');
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Usuario no autenticado",
+      });
+    }
+
+    console.log('[OrganizationContext] Llamando a getOrganizationContext');
+    const orgContext = await getOrganizationContext(ctx.user.id);
+    
+    console.log('[OrganizationContext] Contexto obtenido:', orgContext);
+    console.log('[OrganizationContext] ===== RETORNANDO CONTEXTO =====');
+
+    return next({
+      ctx: {
+        ...ctx,
+        orgContext,
+        partnerId: orgContext.partnerId || ctx.partnerId,
+      },
     });
+  } catch (error) {
+    console.error('[OrganizationContext] ERROR:', error);
+    throw error;
   }
-
-  const orgContext = await getOrganizationContext(ctx.user.id);
-  
-  console.log('[OrganizationContext] Contexto obtenido:', orgContext);
-
-  return next({
-    ctx: {
-      ...ctx,
-      orgContext,
-      partnerId: orgContext.partnerId || ctx.partnerId,  // Usar orgContext.partnerId si existe, sino usar ctx.partnerId original
-    },
-  });
 };
