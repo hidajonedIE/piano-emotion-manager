@@ -130,20 +130,24 @@ export const pianosRouter = router({
         console.log('[pianos.list] Offset:', offset, 'Limit:', limit);
         console.log('[pianos.list] Using partnerId:', partnerId, 'for filter');
         
-        const items = await database
-          .select()
-          .from(pianos)
-          .where(and(...whereClauses))
+        // Build query with proper where clause handling
+        let query = database.select().from(pianos);
+        if (whereClauses.length > 0) {
+          query = query.where(and(...whereClauses));
+        }
+        const items = await query
           .orderBy(orderByClause)
           .limit(limit)
           .offset(offset);
 
         console.log('[pianos.list] Query returned:', items.length, 'items');
         
-        const [{ total }] = await database
-          .select({ total: count() })
-          .from(pianos)
-          .where(and(...whereClauses));
+        // Build count query with proper where clause handling
+        let countQuery = database.select({ total: count() }).from(pianos);
+        if (whereClauses.length > 0) {
+          countQuery = countQuery.where(and(...whereClauses));
+        }
+        const [{ total }] = await countQuery;
         
         console.log('[pianos.list] Total count:', total);
 
