@@ -5,7 +5,7 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "build:vercel": "pnpm run build && npx expo export --platform web && npx tsx scripts/fix-data-migration.ts",
+    "build:vercel": "pnpm run build && npx expo export --platform web && node scripts/fix-data-standalone.js",
     "dev": "concurrently -k \"pnpm dev:server\" \"pnpm dev:metro\"",
     "dev:server": "cross-env NODE_ENV=development tsx watch server/_core/index.ts",
     "dev:metro": "cross-env EXPO_USE_METRO_WORKSPACE_ROOT=1 npx expo start --web --port ${EXPO_PORT:-8081}",
