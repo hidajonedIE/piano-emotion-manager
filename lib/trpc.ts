@@ -28,33 +28,27 @@ export function createTRPCClient() {
         // Pass Clerk token in Authorization header
         async fetch(url, options) {
           try {
-            // Get the token from Clerk using the correct method
+            // Get the token from Clerk
             let token: string | null = null;
             
-            // Check if Clerk is available and has a session
+            // Check if Clerk is available
             if (typeof window !== 'undefined' && window.Clerk) {
               try {
-                // Use the correct method to get the token
-                if (window.Clerk.session) {
-                  token = await window.Clerk.session.getToken();
+                // Use Clerk.session.getToken() to get the JWT token
+                // This is the correct way to get the token for API calls
+                const session = window.Clerk?.session;
+                if (session) {
+                  token = await session.getToken();
+                  console.log('[tRPC fetch] Token obtained from Clerk.session:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
+                } else {
+                  console.warn('[tRPC fetch] No Clerk session available');
                 }
               } catch (clerkError) {
-                console.warn('[tRPC fetch] Could not get token from Clerk session:', clerkError);
+                console.error('[tRPC fetch] Error getting token from Clerk:', clerkError);
               }
-              
-              // Fallback: try to get token from Clerk user
-              if (!token) {
-                try {
-                  if (window.Clerk.user) {
-                    token = await window.Clerk.user.getToken();
-                  }
-                } catch (userError) {
-                  console.warn('[tRPC fetch] Could not get token from Clerk user:', userError);
-                }
-              }
+            } else {
+              console.warn('[tRPC fetch] Clerk not available in window');
             }
-            
-            console.log('[tRPC fetch] Token obtained from Clerk:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
             
             return fetch(url, {
               ...options,
@@ -65,7 +59,7 @@ export function createTRPCClient() {
               },
             });
           } catch (e) {
-            console.error('[tRPC fetch] Error getting Clerk token:', e);
+            console.error('[tRPC fetch] Error in fetch wrapper:', e);
             // Fall back to sending without token
             return fetch(url, {
               ...options,
