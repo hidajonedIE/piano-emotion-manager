@@ -42,41 +42,6 @@ const accessoriesSchema = z.object({
   other: z.array(z.string()).optional(),
 }).optional().nullable();
 
-const paginationSchema = z.object({
-  limit: z.number().int().min(1).max(100).default(30),
-  cursor: z.number().optional(),
-  sortBy: z.enum(["brand", "model", "year", "createdAt", "updatedAt"]).default("brand"),
-  sortOrder: z.enum(["asc", "desc"]).default("asc"),
-  search: z.string().optional(),
-  category: pianoCategorySchema.optional(),
-  brand: z.string().optional(),
-  condition: pianoConditionSchema.optional(),
-  clientId: z.number().optional(),
-  yearFrom: z.number().optional(),
-  yearTo: z.number().optional(),
-});
-
-const pianoBaseSchema = z.object({
-  clientId: z.number().int().positive(),
-  brand: z.string().min(1, "La marca es obligatoria").max(100),
-  model: z.string().max(100).optional().nullable(),
-  serialNumber: z.string().max(100).optional().nullable(),
-  year: z.number().int().min(1700).max(new Date().getFullYear() + 1).optional().nullable(),
-  category: pianoCategorySchema,
-  pianoType: z.string().min(1).max(50),
-  condition: pianoConditionSchema.default("unknown"),
-  location: z.string().max(500).optional().nullable(),
-  notes: z.string().max(5000).optional().nullable(),
-  photos: z.array(z.string().url()).max(20).optional(),
-  color: z.string().max(50).optional().nullable(),
-  finish: z.enum(["polished", "satin", "matte", "other"]).optional().nullable(),
-  size: z.number().positive().optional().nullable(),
-  keys: z.number().int().min(44).max(97).default(88).optional(),
-  pedals: z.number().int().min(1).max(4).default(3).optional(),
-  environment: environmentSchema,
-  accessories: accessoriesSchema,
-});
-
 const KNOWN_BRANDS = [
   "Steinway & Sons", "Bösendorfer", "Fazioli", "Bechstein", "Blüthner",
   "Yamaha", "Kawai", "Schimmel", "Grotrian", "Steingraeber",
@@ -101,78 +66,99 @@ const orgProcedure = protectedProcedure.use(withOrganizationContext);
 
 export const pianosRouter = router({
   list: orgProcedure
-    .input(paginationSchema.optional())
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(30),
+        cursor: z.number().optional(),
+        search: z.string().optional(),
+        sortBy: z.string().default("brand"),
+        sortOrder: z.enum(["asc", "desc"]).default("asc"),
+      })
+    )
     .query(async ({ ctx, input }) => {
-      const { limit = 30, cursor, sortBy = "brand", sortOrder = "asc", search, category, brand, condition, clientId, yearFrom, yearTo } = input || {};
-      const database = await db.getDb();
-      if (!database) return { items: [], total: 0 };
+      try {
+        const { limit, cursor, search, sortBy, sortOrder } = input;
+        console.log('[pianos.list] ===== INICIO CONSULTA =====' );
+        console.log('[pianos.list] Input:', { limit, cursor, search, sortBy, sortOrder });
+        console.log('[pianos.list] ctx.user:', ctx.user);
+        console.log('[pianos.list] ctx.partnerId:', ctx.partnerId, 'type:', typeof ctx.partnerId);
+        console.log('[pianos.list] ctx.orgContext:', ctx.orgContext);
+        console.log('[pianos.list] userId:', ctx.user?.id, 'partnerId:', ctx.partnerId);
+        
+        const database = await db.getDb();
+        if (!database) {
+          console.log('[pianos.list] Database not available');
+          return { items: [], total: 0 };
+        }
 
-      console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
-      console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
-      
-      console.log('[PIANOS DEBUG] Full ctx:', JSON.stringify(ctx, null, 2));
-      const partnerId = ctx.partnerId;
-      if (partnerId === undefined) {
-        return { items: [], total: 0 };
+        // Usar el partnerId del contexto (ya está disponible desde la autenticación)
+        const partnerId = ctx.partnerId;
+        
+        console.log('[pianos.list] After database connection, partnerId:', partnerId);
+
+        // Si no hay partnerId y el usuario no es owner, devolver lista vacía
+        if (partnerId === undefined) {
+          console.log('[pianos.list] NO partnerId available, returning empty list');
+          return { items: [], total: 0 };
+        }
+        console.log('[pianos.list] partnerId disponible:', partnerId);
+        
+        // Usar solo filterByPartner para filtrar por partnerId (null = sin filtro para owners)
+        const whereClauses: any[] = [];
+        if (partnerId !== null) {
+          whereClauses.push(filterByPartner(pianos.partnerId, partnerId));
+        }
+        // If partnerId is null (owner), no filter is applied - they see all pianos
+        
+        if (search) {
+          whereClauses.push(
+            or(
+              ilike(pianos.brand, `%${search}%`),
+              ilike(pianos.model, `%${search}%`),
+              ilike(pianos.serialNumber, `%${search}%`)
+            )!
+          );
+        }
+
+        const sortColumn = pianos[sortBy as keyof typeof pianos] || pianos.brand;
+        const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
+
+        const offset = cursor || 0;
+        
+        // DEBUG: Log the WHERE clause
+        console.log('[pianos.list] WHERE clauses count:', whereClauses.length);
+        console.log('[pianos.list] Offset:', offset, 'Limit:', limit);
+        console.log('[pianos.list] Using partnerId:', partnerId, 'for filter');
+        
+        const items = await database
+          .select()
+          .from(pianos)
+          .where(and(...whereClauses))
+          .orderBy(orderByClause)
+          .limit(limit)
+          .offset(offset);
+
+        console.log('[pianos.list] Query returned:', items.length, 'items');
+        
+        const [{ total }] = await database
+          .select({ total: count() })
+          .from(pianos)
+          .where(and(...whereClauses));
+        
+        console.log('[pianos.list] Total count:', total);
+
+        let nextCursor: number | undefined = undefined;
+        if (items.length === limit) {
+          nextCursor = offset + limit;
+        }
+
+        console.log('[pianos.list] ===== RETORNANDO RESULTADO =====' );
+        console.log('[pianos.list] Result:', { itemsCount: items.length, total, nextCursor });
+        return { items, nextCursor, total };
+      } catch (error) {
+        console.error('[pianos.list] ERROR:', error);
+        throw error;
       }
-
-      // Use the same simple logic as clients router
-      const whereClauses: any[] = [];
-      if (partnerId !== null) {
-        whereClauses.push(filterByPartner(pianos.partnerId, partnerId));
-      }
-      
-      if (search) {
-        whereClauses.push(
-          or(
-            ilike(pianos.brand, `%${search}%`),
-            ilike(pianos.model, `%${search}%`),
-            ilike(pianos.serialNumber, `%${search}%`)
-          )!
-        );
-      }
-      if (category) whereClauses.push(eq(pianos.category, category));
-      if (brand) whereClauses.push(ilike(pianos.brand, brand));
-      if (condition) whereClauses.push(eq(pianos.condition, condition));
-      if (clientId) whereClauses.push(eq(pianos.clientId, clientId));
-      if (yearFrom) whereClauses.push(gte(pianos.year, yearFrom));
-      if (yearTo) whereClauses.push(lte(pianos.year, yearTo));
-      
-      // Handle whereClauses properly
-      let whereClause: any;
-      if (whereClauses.length === 0) {
-        whereClause = sql`1=1`;
-      } else if (whereClauses.length === 1) {
-        whereClause = whereClauses[0];
-      } else {
-        whereClause = and(...whereClauses)!;
-      }
-      console.log('[PIANOS DEBUG] whereClauses.length:', whereClauses.length);
-      console.log('[PIANOS DEBUG] whereClause type:', typeof whereClause);
-
-      const sortColumn = pianos[sortBy as keyof typeof pianos] || pianos.brand;
-      const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
-
-      const offset = cursor || 0;
-      const items = await database
-        .select()
-        .from(pianos)
-        .where(whereClause)
-        .orderBy(orderByClause)
-        .limit(limit)
-        .offset(offset);
-
-      const [{ total }] = await database
-        .select({ total: count() })
-        .from(pianos)
-        .where(whereClause);
-
-      let nextCursor: number | undefined = undefined;
-      if (items.length === limit) {
-        nextCursor = offset + limit;
-      }
-
-      return { items, nextCursor, total };
     }),
   
   listAll: orgProcedure.query(async ({ ctx }) => {
@@ -192,129 +178,148 @@ export const pianosRouter = router({
       );
   }),
   
-  get: orgProcedure
+  getById: orgProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
+      if (!database) return null;
+      
       const [piano] = await database
         .select()
         .from(pianos)
         .where(
-          filterByPartnerAndOrganization(
-            pianos,
-            ctx.partnerId,
-            ctx.orgContext,
-            "pianos",
-            eq(pianos.id, input.id)
+          and(
+            eq(pianos.id, input.id),
+            filterByPartnerAndOrganization(
+              pianos,
+              ctx.partnerId,
+              ctx.orgContext,
+              "pianos"
+            )
           )
-        );
-
-      if (!piano) throw new Error("Piano no encontrado");
-      return piano;
-    }),
-  
-  byClient: orgProcedure
-    .input(z.object({ clientId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) return [];
-
-      return database
-        .select()
-        .from(pianos)
-        .where(
-          filterByPartnerAndOrganization(
-            pianos,
-            ctx.partnerId,
-            ctx.orgContext,
-            "pianos",
-            eq(pianos.clientId, input.clientId)
-          )
-        );
-    }),
-  
-  create: orgProcedure
-    .input(pianoBaseSchema)
-    .mutation(async ({ ctx, input }) => {
-      const pianoData = addOrganizationToInsert(
-        input,
-        ctx.orgContext,
-        "pianos"
-      );
+        )
+        .limit(1);
       
-      return db.createPiano(pianoData);
+      return piano || null;
     }),
-  
-  update: orgProcedure
-    .input(z.object({
-      id: z.number(),
-    }).merge(pianoBaseSchema.partial()))
+
+  create: orgProcedure
+    .input(
+      z.object({
+        clientId: z.number().int().positive(),
+        brand: z.string().min(1, "La marca es obligatoria").max(100),
+        model: z.string().max(100).optional().nullable(),
+        serialNumber: z.string().max(100).optional().nullable(),
+        year: z.number().int().min(1700).max(new Date().getFullYear() + 1).optional().nullable(),
+        category: pianoCategorySchema,
+        pianoType: z.string().min(1).max(50),
+        condition: pianoConditionSchema.default("unknown"),
+        location: z.string().max(500).optional().nullable(),
+        notes: z.string().max(5000).optional().nullable(),
+        photos: z.array(z.string().url()).max(20).optional(),
+        color: z.string().max(50).optional().nullable(),
+        finish: z.enum(["polished", "satin", "matte", "other"]).optional().nullable(),
+        size: z.number().positive().optional().nullable(),
+        keys: z.number().int().min(44).max(97).default(88).optional(),
+        pedals: z.number().int().min(1).max(4).default(3).optional(),
+        environment: environmentSchema,
+        accessories: accessoriesSchema,
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      // Obtener el piano para verificar permisos
-      const [existingPiano] = await database
-        .select()
-        .from(pianos)
+      validateWritePermission(ctx);
+
+      const result = await database.insert(pianos).values({
+        ...input,
+        odId: ctx.user!.openId || String(ctx.user!.id),
+        partnerId: ctx.partnerId || 1,
+      });
+
+      return { id: result.insertId };
+    }),
+
+  update: orgProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        brand: z.string().min(1).max(100).optional(),
+        model: z.string().max(100).optional().nullable(),
+        serialNumber: z.string().max(100).optional().nullable(),
+        year: z.number().int().min(1700).max(new Date().getFullYear() + 1).optional().nullable(),
+        category: pianoCategorySchema.optional(),
+        pianoType: z.string().min(1).max(50).optional(),
+        condition: pianoConditionSchema.optional(),
+        location: z.string().max(500).optional().nullable(),
+        notes: z.string().max(5000).optional().nullable(),
+        photos: z.array(z.string().url()).max(20).optional(),
+        color: z.string().max(50).optional().nullable(),
+        finish: z.enum(["polished", "satin", "matte", "other"]).optional().nullable(),
+        size: z.number().positive().optional().nullable(),
+        keys: z.number().int().min(44).max(97).optional(),
+        pedals: z.number().int().min(1).max(4).optional(),
+        environment: environmentSchema,
+        accessories: accessoriesSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new Error("Database not available");
+
+      validateWritePermission(ctx);
+
+      const { id, ...updateData } = input;
+
+      await database
+        .update(pianos)
+        .set(updateData)
         .where(
-          filterByPartnerAndOrganization(
-            pianos,
-            ctx.partnerId,
-            ctx.orgContext,
-            "pianos",
-            eq(pianos.id, input.id)
+          and(
+            eq(pianos.id, id),
+            filterByPartnerAndOrganization(
+              pianos,
+              ctx.partnerId,
+              ctx.orgContext,
+              "pianos"
+            )
           )
         );
 
-      if (!existingPiano) {
-        throw new Error("Piano no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
-
-      const { id, ...data } = input;
-      return db.updatePiano(existingPiano.odId, id, data);
+      return { success: true };
     }),
-  
+
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
-      // Obtener el piano para verificar permisos
-      const [existingPiano] = await database
-        .select()
-        .from(pianos)
+      validateWritePermission(ctx);
+
+      await database
+        .delete(pianos)
         .where(
-          filterByPartnerAndOrganization(
-            pianos,
-            ctx.partnerId,
-            ctx.orgContext,
-            "pianos",
-            eq(pianos.id, input.id)
+          and(
+            eq(pianos.id, input.id),
+            filterByPartnerAndOrganization(
+              pianos,
+              ctx.partnerId,
+              ctx.orgContext,
+              "pianos"
+            )
           )
         );
 
-      if (!existingPiano) {
-        throw new Error("Piano no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
-
-      return db.deletePiano(existingPiano.odId, input.id);
+      return { success: true };
     }),
-  
+
   getBrands: orgProcedure.query(async ({ ctx }) => {
     const database = await db.getDb();
-    if (!database) return KNOWN_BRANDS.sort();
+    if (!database) return [];
 
-    const brandsQuery = await database
+    const result = await database
       .selectDistinct({ brand: pianos.brand })
       .from(pianos)
       .where(
@@ -324,129 +329,9 @@ export const pianosRouter = router({
           ctx.orgContext,
           "pianos"
         )
-      );
-    
-    const userBrands = brandsQuery.map(b => b.brand);
-    return [...new Set([...userBrands, ...KNOWN_BRANDS])].sort();
+      )
+      .orderBy(asc(pianos.brand));
+
+    return result.map(r => r.brand).filter(Boolean);
   }),
-  
-  getNeedingService: orgProcedure
-    .input(z.object({
-      daysAhead: z.number().int().min(0).max(365).default(30),
-    }).optional())
-    .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) return [];
-
-      const daysAhead = input?.daysAhead || 30;
-      
-      const allPianos = await database
-        .select()
-        .from(pianos)
-        .where(
-          filterByPartnerAndOrganization(
-            pianos,
-            ctx.partnerId,
-            ctx.orgContext,
-            "pianos"
-          )
-        );
-      
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() + daysAhead);
-      
-      return allPianos
-        .filter(p => {
-          if (!p.nextServiceDate) return false;
-          return new Date(p.nextServiceDate) <= cutoffDate;
-        })
-        .sort((a, b) => {
-          const aDate = a.nextServiceDate ? new Date(a.nextServiceDate) : new Date(0);
-          const bDate = b.nextServiceDate ? new Date(b.nextServiceDate) : new Date(0);
-          return aDate.getTime() - bDate.getTime();
-        });
-    }),
-  
-  getServiceHistory: orgProcedure
-    .input(z.object({ pianoId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      // Esta función necesita actualización en db.ts también
-      // Por ahora, mantener la funcionalidad básica
-      const services = await db.getServicesByPiano(ctx.user.openId, input.pianoId);
-      return services.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    }),
-  
-  updateEnvironment: orgProcedure
-    .input(z.object({
-      id: z.number(),
-      environment: environmentSchema,
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Obtener el piano para verificar permisos
-      const [existingPiano] = await database
-        .select()
-        .from(pianos)
-        .where(
-          filterByPartnerAndOrganization(
-            pianos,
-            ctx.partnerId,
-            ctx.orgContext,
-            "pianos",
-            eq(pianos.id, input.id)
-          )
-        );
-
-      if (!existingPiano) {
-        throw new Error("Piano no encontrado");
-      }
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
-
-      return db.updatePiano(existingPiano.odId, input.id, { environment: input.environment });
-    }),
-  
-  logEnvironmentReading: orgProcedure
-    .input(z.object({
-      pianoId: z.number(),
-      humidity: z.number().min(0).max(100),
-      temperature: z.number().min(-20).max(50),
-      notes: z.string().optional(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
-      if (!database) throw new Error("Database not available");
-
-      // Obtener el piano para verificar permisos
-      const [piano] = await database
-        .select()
-        .from(pianos)
-        .where(
-          filterByPartnerAndOrganization(
-            pianos,
-            ctx.partnerId,
-            ctx.orgContext,
-            "pianos",
-            eq(pianos.id, input.pianoId)
-          )
-        );
-
-      if (!piano) throw new Error("Piano no encontrado");
-
-      // Validar permisos de escritura
-      validateWritePermission(ctx.orgContext, "pianos", piano.odId);
-      
-      const environment = {
-        ...(piano.environment || {}),
-        humidity: input.humidity,
-        temperature: input.temperature,
-        lastReading: new Date().toISOString(),
-      };
-      
-      return db.updatePiano(piano.odId, input.pianoId, { environment });
-    }),
 });
-// Force redeploy - Sat Jan 10 13:20:32 EST 2026
