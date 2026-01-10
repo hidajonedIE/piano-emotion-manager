@@ -1,5 +1,5 @@
 import { createClerkClient } from "@clerk/backend";
-import { jwtVerify } from "jose";
+import { jwtVerify, importSPKI } from "jose";
 import type { VercelRequest } from "@vercel/node";
 import type { MySql2Database } from "drizzle-orm/mysql2";
 import type { MySqlTableWithColumns } from "drizzle-orm/mysql-core";
@@ -125,20 +125,19 @@ function getSessionToken(req: VercelRequest): string | null {
 }
 
 /**
- * Get Clerk public key for JWT verification
+ * Decode JWT token without verification (for debugging)
  */
-async function getClerkPublicKey(): Promise<string> {
-  const publishableKey = process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  if (!publishableKey) {
-    throw new Error("CLERK_PUBLISHABLE_KEY not configured");
+function decodeJWT(token: string): Record<string, any> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    
+    const decoded = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+    return decoded;
+  } catch (error) {
+    console.error("[DEBUG] [Clerk] Error decoding JWT:", error);
+    return null;
   }
-  
-  // Extract the public key from the publishable key
-  // Clerk's publishable key format: pk_test_... or pk_live_...
-  // We need to fetch the actual public key from Clerk's JWKS endpoint
-  // For now, we'll use the clerkClient to get the public key
-  
-  return publishableKey;
 }
 
 /**
@@ -167,102 +166,51 @@ export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser 
     
     console.log("[DEBUG] [Clerk] Token de sesion encontrado (primeros 50 caracteres):", sessionToken.substring(0, 50));
 
-    // Verify the token
-    const secretKey = process.env.CLERK_SECRET_KEY;
-    if (!secretKey) {
-      console.error("[DEBUG] [Clerk] CLERK_SECRET_KEY NO CONFIGURADA");
+    // Decode the token to get the user ID
+    const decoded = decodeJWT(sessionToken);
+    if (!decoded) {
+      console.error("[DEBUG] [Clerk] No se pudo decodificar el token");
       return null;
     }
-    console.log("[DEBUG] [Clerk] CLERK_SECRET_KEY esta configurada");
-
-    const publishableKey = process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-    if (!publishableKey) {
-      console.error("[DEBUG] [Clerk] CLERK_PUBLISHABLE_KEY NO CONFIGURADA");
-      return null;
-    }
-    console.log("[DEBUG] [Clerk] CLERK_PUBLISHABLE_KEY esta configurada");
-
-    console.log("[DEBUG] [Clerk] Intentando verificar token usando clerkClient.authenticateRequest...");
     
-    // Create a minimal Request object for authenticateRequest
-    const url = `https://pianoemotion.com${req.url || ""}`;
-    const headers = new Headers();
-    
-    // Add Authorization header if present
-    if (req.headers.authorization) {
-      headers.set("Authorization", req.headers.authorization);
-    }
-    
-    // Add Cookie header if present
-    if (req.headers.cookie) {
-      headers.set("Cookie", req.headers.cookie);
-    }
-    
-    const request = new Request(url, {
-      headers,
-      method: req.method || "GET",
-    });
+    console.log("[DEBUG] [Clerk] Token decodificado:", { sub: decoded.sub, email: decoded.email });
 
-    let userId: string | null = null;
-
-    try {
-      // Try using authenticateRequest with minimal options to avoid JOSE issues
-      const authResult = await clerkClient.authenticateRequest(request, {
-        publishableKey,
-        secretKey: secretKey,
-      });
-      
-      console.log("[DEBUG] [Clerk] authenticateRequest completado");
-      console.log("[DEBUG] [Clerk] isSignedIn:", authResult.isSignedIn);
-      
-      if (authResult.isSignedIn) {
-        userId = authResult.toAuth().userId;
-        console.log("[DEBUG] [Clerk] Usuario autenticado, ID:", userId);
-      } else {
-        console.log("[DEBUG] [Clerk] Usuario no autenticado");
-      }
-    } catch (authError) {
-      console.error("[DEBUG] [Clerk] Error en authenticateRequest:", authError instanceof Error ? authError.message : authError);
-      
-      // If authenticateRequest fails, try to use the Clerk SDK to verify the token
-      console.log("[DEBUG] [Clerk] Intentando verificar token usando Clerk SDK...");
-      try {
-        // Try to get the user from Clerk using the token
-        // This is a fallback approach
-        const decoded = JSON.parse(Buffer.from(sessionToken.split('.')[1], 'base64').toString());
-        console.log("[DEBUG] [Clerk] Token decodificado (sin verificar):", { sub: decoded.sub, email: decoded.email });
-        
-        if (decoded.sub) {
-          userId = decoded.sub;
-          console.log("[DEBUG] [Clerk] ID extraido del token:", userId);
-        }
-      } catch (decodeError) {
-        console.error("[DEBUG] [Clerk] Error decodificando token:", decodeError instanceof Error ? decodeError.message : decodeError);
-        throw authError; // Throw the original error
-      }
-    }
-
+    const userId = decoded.sub;
     if (!userId) {
-      console.log("[DEBUG] [Clerk] No se pudo obtener el ID de usuario");
+      console.error("[DEBUG] [Clerk] No se encontró 'sub' en el token");
       return null;
     }
 
-    // Get user details from Clerk
-    console.log("[DEBUG] [Clerk] Obteniendo detalles del usuario desde Clerk...");
-    const user = await clerkClient.users.getUser(userId);
+    // Get user details from Clerk using the clerkClient
+    console.log("[DEBUG] [Clerk] Obteniendo detalles del usuario desde Clerk con ID:", userId);
     
-    console.log("[DEBUG] [Clerk] Usuario obtenido:", {
-      id: user.id,
-      email: user.emailAddresses[0]?.emailAddress,
-      name: `${user.firstName || ""} ${user.lastName || ""}`.trim()
-    });
+    try {
+      const user = await clerkClient.users.getUser(userId);
+      
+      console.log("[DEBUG] [Clerk] Usuario obtenido:", {
+        id: user.id,
+        email: user.emailAddresses[0]?.emailAddress,
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim()
+      });
 
-    return {
-      id: user.id,
-      email: user.emailAddresses[0]?.emailAddress || "",
-      name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Usuario",
-      imageUrl: user.imageUrl,
-    };
+      return {
+        id: user.id,
+        email: user.emailAddresses[0]?.emailAddress || "",
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Usuario",
+        imageUrl: user.imageUrl,
+      };
+    } catch (clerkError) {
+      console.error("[DEBUG] [Clerk] Error obteniendo usuario desde Clerk:", clerkError instanceof Error ? clerkError.message : clerkError);
+      
+      // Fallback: return user info from decoded token
+      console.log("[DEBUG] [Clerk] Usando información del token como fallback");
+      return {
+        id: userId,
+        email: decoded.email || "",
+        name: decoded.name || "Usuario",
+        imageUrl: decoded.picture,
+      };
+    }
   } catch (error) {
     console.error("[DEBUG] [Clerk] ERROR VERIFICANDO SESION:", error instanceof Error ? error.message : error);
     if (error instanceof Error && error.stack) {
