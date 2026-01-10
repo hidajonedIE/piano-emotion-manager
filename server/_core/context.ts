@@ -94,8 +94,10 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
         console.log("[DEBUG] [Context] getOrCreateUserFromClerk returned:", dbUser);
         console.log("[DEBUG] [Context] debugLog:", JSON.stringify(debugLog));
         user = dbUser as User;
-        const partnerId = user.partnerId || null;
-        console.log("[DEBUG] [Context] User set with partnerId:", partnerId);
+        console.log("[DEBUG] [Context] dbUser object:", JSON.stringify(dbUser));
+        console.log("[DEBUG] [Context] dbUser.partnerId value:", dbUser.partnerId, "type:", typeof dbUser.partnerId);
+        const partnerId = dbUser.partnerId || null;
+        console.log("[DEBUG] [Context] User set with partnerId:", partnerId, "type:", typeof partnerId);
         
         // Create a session JWT compatible with SDK legacy
         try {

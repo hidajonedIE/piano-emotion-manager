@@ -146,13 +146,17 @@ export const clientsRouter = router({
       // Usar el partnerId del contexto (ya está disponible desde la autenticación)
       const partnerId = ctx.partnerId;
       
+      console.log('[clients.list] ===== INICIO CONSULTA =====');
+      console.log('[clients.list] ctx.user:', ctx.user);
+      console.log('[clients.list] ctx.partnerId:', ctx.partnerId, 'type:', typeof ctx.partnerId);
       console.log('[clients.list] userId:', ctx.user?.id, 'partnerId:', partnerId);
 
       // Si no hay partnerId, devolver lista vacía (usuario no autenticado)
       if (!partnerId) {
-        console.log('[clients.list] No partnerId available, returning empty list');
+        console.log('[clients.list] NO partnerId available, returning empty list');
         return { items: [], total: 0 };
       }
+      console.log('[clients.list] partnerId disponible:', partnerId);
       
       // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
       const whereClauses = [
@@ -179,7 +183,9 @@ export const clientsRouter = router({
       const offset = cursor || 0;
       
       // DEBUG: Log the WHERE clause
-      console.log('[clients.list] WHERE clauses:', whereClauses.length);
+      console.log('[clients.list] WHERE clauses count:', whereClauses.length);
+      console.log('[clients.list] Filter by partner:', filterByPartner(clients.partnerId, partnerId));
+      console.log('[clients.list] Offset:', offset, 'Limit:', limit);
       console.log('[clients.list] Filter by partner:', filterByPartner(clients.partnerId, partnerId));
       
       const items = await database
