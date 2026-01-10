@@ -100,7 +100,7 @@ const orgProcedure = protectedProcedure.use(withOrganizationContext);
 // ============================================================================
 
 export const pianosRouter = router({
-  list: protectedProcedure
+  list: orgProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "brand", sortOrder = "asc", search, category, brand, condition, clientId, yearFrom, yearTo } = input || {};
@@ -111,8 +111,12 @@ export const pianosRouter = router({
       console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
       
       const whereClauses = [
-        filterByPartner(pianos.partnerId, ctx.partnerId),
-        eq(pianos.odId, ctx.user.openId)
+        filterByPartnerAndOrganization(
+          pianos,
+          ctx.partnerId,
+          ctx.orgContext,
+          "pianos"
+        )
       ];
       
       console.log('[PIANOS DEBUG] whereClauses length:', whereClauses.length);

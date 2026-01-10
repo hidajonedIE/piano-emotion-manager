@@ -110,8 +110,7 @@ const paginationSchema = z.object({
 // ============================================================================
 
 // TEMPORAL: Sistema multi-tenant desactivado para diagnóstico
-// const orgProcedure = protectedProcedure.use(withOrganizationContext);
-const orgProcedure = protectedProcedure;
+const orgProcedure = protectedProcedure.use(withOrganizationContext);
 
 // ============================================================================
 // ROUTER
@@ -126,10 +125,13 @@ export const servicesRouter = router({
       if (!database) return { items: [], total: 0 };
 
       // TEMPORAL: Filtro simplificado sin multi-tenant
-      const whereClauses = [
-        filterByPartner(services.partnerId, ctx.partnerId),
-        eq(services.odId, ctx.user.openId)
-      ];
+      const baseFilter = filterByPartnerAndOrganization(
+        services,
+        ctx.partnerId,
+        ctx.orgContext,
+        "services"
+      );
+      const whereClauses = [baseFilter];
       
       if (search) {
         whereClauses.push(or(ilike(services.notes, `%${search}%`), ilike(services.technicianNotes, `%${search}%`))!);
@@ -186,6 +188,8 @@ export const servicesRouter = router({
       const [{ total }] = await database
         .select({ total: count() })
         .from(services)
+        .leftJoin(clients, eq(services.clientId, clients.id))
+        .leftJoin(pianos, eq(services.pianoId, pianos.id))
         .where(and(...whereClauses));
 
       const [{ totalRevenue }] = await database
