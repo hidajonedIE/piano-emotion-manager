@@ -1,325 +1,87 @@
-import { createClerkClient } from "@clerk/backend";
-import { jwtVerify, importSPKI } from "jose";
-import type { VercelRequest } from "@vercel/node";
-import type { MySql2Database } from "drizzle-orm/mysql2";
-import type { MySqlTableWithColumns } from "drizzle-orm/mysql-core";
-import type { SQL } from "drizzle-orm";
+import { clerkClient } from "@clerk/backend";
+import { jwtDecode } from "jwt-decode";
 
-// ============================================================================
-// Tipos
-// ============================================================================
-
-/**
- * Tipo para usuario autenticado desde Clerk
- */
-export type ClerkUser = {
-  id: string;
-  email: string;
-  name: string;
-  imageUrl?: string;
-};
-
-/**
- * Tipo para la tabla de usuarios de Drizzle
- */
-type UsersTable = MySqlTableWithColumns<{
-  name: "users";
-  schema: undefined;
-  columns: {
-    id: unknown;
-    clerkId: unknown;
-    openId: unknown;
-    email: unknown;
-    name: unknown;
-    loginMethod: unknown;
-    lastSignedIn: unknown;
-  };
-  dialect: "mysql";
-}>;
-
-/**
- * Tipo para la función eq de Drizzle
- */
-type EqFunction = (column: unknown, value: unknown) => SQL;
-
-/**
- * Tipo para el usuario de la base de datos
- */
-interface DatabaseUser {
-  id: string | number;
-  email: string;
-  name: string;
-  clerkId?: string;
-  openId?: string;
-}
-
-// ============================================================================
-// Cliente de Clerk
-// ============================================================================
-
-// Initialize Clerk client
-const clerkClient = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY,
-});
-
-export { clerkClient };
-
-// ============================================================================
-// Funciones de autenticación
-// ============================================================================
-
-/**
- * Parse cookies from Cookie header
- */
-function parseCookies(cookieHeader: string | undefined): Record<string, string> {
-  if (!cookieHeader) return {};
+export async function verifyClerkSession(req: {
+  headers?: Record<string, string>;
+  cookies?: Record<string, string>;
+  url?: string;
+  method?: string;
+}) {
+  console.log("========== INICIANDO VERIFICACION DE SESION ==========");
   
-  const cookies: Record<string, string> = {};
-  cookieHeader.split(";").forEach(cookie => {
-    const [name, ...rest] = cookie.trim().split("=");
-    if (name && rest.length > 0) {
-      cookies[name] = decodeURIComponent(rest.join("="));
-    }
-  });
-  return cookies;
-}
-
-/**
- * Get session token from request (supports both Bearer token and cookies)
- */
-function getSessionToken(req: VercelRequest): string | null {
-  // 1. Try Authorization header (used by native apps)
-  const authHeader = req.headers.authorization;
-  if (authHeader?.startsWith("Bearer ")) {
-    return authHeader.substring(7);
-  }
-
-  // 2. Try cookies (used by web apps)
-  const cookieHeader = req.headers.cookie;
-  if (cookieHeader) {
-    const cookies = parseCookies(cookieHeader);
-    
-    // Clerk uses __session cookie for session token in web
-    // Try different possible cookie names (including with suffixes like __session_A82HkYdo)
-    let sessionToken: string | undefined;
-    
-    // First try exact matches
-    sessionToken = cookies["__session"] || 
-                   cookies["__clerk_session"] ||
-                   cookies["clerk-session"];
-    
-    // If not found, try to find any cookie starting with __session
-    if (!sessionToken) {
-      const sessionCookieName = Object.keys(cookies).find(name => name.startsWith("__session"));
-      if (sessionCookieName) {
-        sessionToken = cookies[sessionCookieName];
-      }
-    }
-    
-    if (sessionToken) {
-      return sessionToken;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Decode JWT token without verification (for debugging)
- */
-function decodeJWT(token: string): Record<string, any> | null {
   try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
+    // Get the token from the Authorization header
+    const authHeader = req.headers?.["authorization"];
+    console.log("[DEBUG] [Clerk] Authorization header presente:", !!authHeader);
     
-    const decoded = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-    return decoded;
-  } catch (error) {
-    console.error("[DEBUG] [Clerk] Error decoding JWT:", error);
-    return null;
-  }
-}
-
-/**
- * Verify the Clerk session token from the request
- * Supports both Bearer token (native) and cookie-based auth (web)
- */
-export async function verifyClerkSession(req: VercelRequest): Promise<ClerkUser | null> {
-  try {
-    console.log("[DEBUG] [Clerk] ========== VERIFICACION DE SESION INICIADA ==========");
-    console.log("[DEBUG] [Clerk] URL:", req.url);
-    console.log("[DEBUG] [Clerk] Metodo:", req.method);
-    
-    // DEBUG: Log all cookies to identify the correct cookie name
-    console.log("[DEBUG] [Clerk] Cookies recibidos:", JSON.stringify(req.cookies || {}));
-    console.log("[DEBUG] [Clerk] Header Cookie:", req.headers?.cookie ? req.headers.cookie.substring(0, 100) + '...' : 'NO PRESENTE');
-    console.log("[DEBUG] [Clerk] Authorization header:", req.headers?.authorization ? 'PRESENTE' : 'NO PRESENTE');
-    
-    // Get the session token from Authorization header or cookies
-    const sessionToken = getSessionToken(req);
-
-    if (!sessionToken) {
-      console.log("[DEBUG] [Clerk] NO SE ENCONTRO TOKEN DE SESION");
-      console.log("[DEBUG] [Clerk] Cookies disponibles:", Object.keys(req.cookies || {}));
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("[DEBUG] [Clerk] No se encontró token en Authorization header");
       return null;
     }
-    
-    console.log("[DEBUG] [Clerk] Token de sesion encontrado (primeros 50 caracteres):", sessionToken.substring(0, 50));
+
+    const token = authHeader.substring(7); // Remove "Bearer " prefix
+    console.log("[DEBUG] [Clerk] Token extraído del header");
 
     // Decode the token to get the user ID
-    const decoded = decodeJWT(sessionToken);
-    if (!decoded) {
-      console.error("[DEBUG] [Clerk] No se pudo decodificar el token");
+    let decoded: any;
+    try {
+      decoded = jwtDecode(token);
+      console.log("[DEBUG] [Clerk] Token decodificado exitosamente");
+    } catch (error) {
+      console.error("[DEBUG] [Clerk] Error decodificando token:", error instanceof Error ? error.message : String(error));
       return null;
     }
-    
-    console.log("[DEBUG] [Clerk] Token decodificado completo:", JSON.stringify(decoded, null, 2));
-    console.log("[DEBUG] [Clerk] Token decodificado:", { sub: decoded.sub, email: decoded.email, aud: decoded.aud, iss: decoded.iss });
 
+    // Extract the user ID from the token
     const userId = decoded.sub;
+    
     if (!userId) {
       console.error("[DEBUG] [Clerk] No se encontró 'sub' en el token");
       console.error("[DEBUG] [Clerk] Token keys:", Object.keys(decoded));
       return null;
     }
     
-    console.log("[DEBUG] [Clerk] User ID extraído del token:", userId, "(tipo:", typeof userId, ")");
+    console.log("[DEBUG] [Clerk] User ID extraído del token:", userId);
 
-    // Get user details from Clerk using the clerkClient
-    console.log("[DEBUG] [Clerk] Obteniendo detalles del usuario desde Clerk con ID:", userId);
-    
+    // Try to get user details from Clerk
     try {
-      console.log("[DEBUG] [Clerk] Intentando obtener usuario con ID:", userId);
+      console.log("[DEBUG] [Clerk] Intentando obtener usuario desde Clerk con ID:", userId);
       const user = await clerkClient.users.getUser(userId);
       
-      console.log("[DEBUG] [Clerk] Usuario obtenido exitosamente:", {
-        id: user.id,
-        email: user.emailAddresses[0]?.emailAddress,
-        name: `${user.firstName || ""} ${user.lastName || ""}`.trim()
-      });
-
+      console.log("[DEBUG] [Clerk] Usuario obtenido exitosamente desde Clerk");
+      
       return {
         id: user.id,
         email: user.emailAddresses[0]?.emailAddress || "",
-        name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Usuario",
-        imageUrl: user.imageUrl,
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+        clerkId: user.id
       };
     } catch (clerkError) {
-      console.error("[DEBUG] [Clerk] Error obteniendo usuario desde Clerk con ID:", userId);
-      console.error("[DEBUG] [Clerk] Error:", clerkError instanceof Error ? clerkError.message : clerkError);
-      if (clerkError instanceof Error && clerkError.stack) {
-        console.error("[DEBUG] [Clerk] Stack:", clerkError.stack);
-      }
+      console.error("[DEBUG] [Clerk] Error obteniendo usuario desde Clerk:", clerkError instanceof Error ? clerkError.message : String(clerkError));
       
-      // Fallback: return user info from decoded token
-      console.log("[DEBUG] [Clerk] Usando información del token como fallback");
+      // Fallback: use the decoded token data
+      console.log("[DEBUG] [Clerk] Usando fallback con datos del token");
+      console.log("[DEBUG] [Clerk] Token data:", {
+        email: decoded.email,
+        name: decoded.name,
+        sub: decoded.sub
+      });
+      
       return {
         id: userId,
         email: decoded.email || "",
-        name: decoded.name || "Usuario",
-        imageUrl: decoded.picture,
+        name: decoded.name || "",
+        clerkId: userId
       };
     }
   } catch (error) {
-    console.error("[DEBUG] [Clerk] ERROR VERIFICANDO SESION:", error instanceof Error ? error.message : error);
+    console.error("[DEBUG] [Clerk] ERROR VERIFICANDO SESION:", error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.stack) {
       console.error("[DEBUG] [Clerk] Stack trace:", error.stack);
     }
     return null;
   }
   finally {
-    console.log("[DEBUG] [Clerk] ========== VERIFICACION DE SESION FINALIZADA ==========");
+    console.log("========== VERIFICACION DE SESION FINALIZADA ==========");
   }
-}
-
-/**
- * Get or create a user in the database based on Clerk user
- */
-export async function getOrCreateUserFromClerk(
-  clerkUser: ClerkUser,
-  db: MySql2Database<Record<string, never>>,
-  usersTable: UsersTable,
-  eq: EqFunction
-): Promise<DatabaseUser> {
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Iniciando busqueda de usuario", { clerkUserId: clerkUser.id, email: clerkUser.email });
-  
-  // 1. Find user by openId (primary) - database uses openId, not clerkId
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Buscando usuario por openId:", clerkUser.id);
-  let existingUser = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.openId, clerkUser.id))
-    .limit(1) as DatabaseUser[];
-
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de busqueda por openId:", { found: existingUser.length > 0, user: existingUser[0] });
-
-  if (existingUser.length > 0) {
-    // Update last sign in and return
-    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario encontrado, actualizando lastSignedIn");
-    await db
-      .update(usersTable)
-      .set({ lastSignedIn: new Date() })
-      .where(eq(usersTable.id, existingUser[0].id));
-    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario actualizado y devuelto");
-    return existingUser[0];
-  }
-
-  // 2. Find user by email (fallback for migration)
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Buscando usuario por email:", clerkUser.email);
-  existingUser = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, clerkUser.email))
-    .limit(1) as DatabaseUser[];
-
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de busqueda por email:", { found: existingUser.length > 0, user: existingUser[0] });
-
-  if (existingUser.length > 0) {
-    // User exists, but openId might be missing. Update it.
-    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario encontrado por email, actualizando openId");
-    await db
-      .update(usersTable)
-      .set({ openId: clerkUser.id, lastSignedIn: new Date() })
-      .where(eq(usersTable.id, existingUser[0].id));
-    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario actualizado con openId");
-    return { ...existingUser[0], openId: clerkUser.id };
-  }
-
-  // 3. Create new user
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario no encontrado, creando nuevo usuario");
-  const newUser = {
-    openId: clerkUser.id, // Database uses openId, not clerkId
-    email: clerkUser.email,
-    name: clerkUser.name,
-    loginMethod: "clerk",
-    lastSignedIn: new Date(),
-  };
-
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Insertando nuevo usuario:", newUser);
-  const result = await db.insert(usersTable).values(newUser) as unknown as Array<{ insertId?: number }>;
-  const insertedId = result[0]?.insertId;
-
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Resultado de insercion:", { insertedId, result });
-
-  if (insertedId) {
-    console.log("[DEBUG] [getOrCreateUserFromClerk] Recuperando usuario insertado por ID:", insertedId);
-    const createdUsers = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.id, insertedId))
-      .limit(1) as DatabaseUser[];
-    console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario recuperado:", createdUsers[0]);
-    return createdUsers[0];
-  }
-
-  // If insert didn't return ID, fetch by openId
-  console.log("[DEBUG] [getOrCreateUserFromClerk] No insertedId, buscando por openId:", clerkUser.id);
-  const createdUsers = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.openId, clerkUser.id))
-    .limit(1) as DatabaseUser[];
-
-  console.log("[DEBUG] [getOrCreateUserFromClerk] Usuario creado:", createdUsers[0]);
-  return createdUsers[0];
 }
