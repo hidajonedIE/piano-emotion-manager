@@ -24,37 +24,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let userId: string | null = null;
 
     // Try Clerk authentication first (new system)
-    const clerkUser = await verifyClerkSession(req);
-    if (clerkUser) {
-      const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
-      userId = (dbUser as any).openId || clerkUser.id;
-    } else {
-      // Fall back to legacy SDK authentication
-      const cookieToken = req.cookies?.[COOKIE_NAME];
-      const authHeader = req.headers.authorization || req.headers.Authorization;
-      const bearerToken = typeof authHeader === "string" && authHeader.startsWith("Bearer ") 
-        ? authHeader.slice("Bearer ".length).trim() 
-        : null;
-
-      const token = cookieToken || bearerToken;
-
-      if (!token) {
-        return res.status(401).json({ error: "Not authenticated" });
+    try {
+      const clerkUser = await verifyClerkSession(req);
+      if (clerkUser) {
+        const dbUser = await getOrCreateUserFromClerk(clerkUser, db, users, eq);
+        userId = (dbUser as any).openId || clerkUser.id;
       }
+    } catch (clerkError) {
+      console.error("[Auth] Clerk authentication failed:", clerkError);
+      // Continue to try legacy authentication
+    }
 
-      // Authenticate using the token
-      const user = await sdk.authenticateRequest({
-        headers: { 
-          cookie: `${COOKIE_NAME}=${token}`,
-          authorization: bearerToken ? `Bearer ${bearerToken}` : undefined,
-        },
-      } as any);
+    // If Clerk failed, try legacy SDK authentication
+    if (!userId) {
+      try {
+        const cookieToken = req.cookies?.[COOKIE_NAME];
+        const authHeader = req.headers.authorization || req.headers.Authorization;
+        const bearerToken = typeof authHeader === "string" && authHeader.startsWith("Bearer ") 
+          ? authHeader.slice("Bearer ".length).trim() 
+          : null;
 
-      userId = user?.openId;
+        const token = cookieToken || bearerToken;
+
+        if (token) {
+          // Authenticate using the token
+          const user = await sdk.authenticateRequest({
+            headers: { 
+              cookie: `${COOKIE_NAME}=${token}`,
+              authorization: bearerToken ? `Bearer ${bearerToken}` : undefined,
+            },
+          } as any);
+
+          userId = user?.openId;
+        }
+      } catch (sdkError) {
+        console.error("[Auth] SDK authentication also failed:", sdkError);
+        // Both authentication methods failed
+      }
     }
 
     if (!userId) {
-      return res.status(401).json({ error: "User not found" });
+      return res.status(401).json({ error: "Not authenticated" });
     }
 
     // Query the database to get the user's role
@@ -70,10 +80,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const role = userRecord.role;
     const isAdmin = role === 'admin';
+    const isOwner = role === 'owner';
 
     return res.json({ 
       role,
-      isAdmin
+      isAdmin,
+      isOwner
     });
   } catch (error) {
     console.error("[Auth] /api/auth/role failed:", error);
