@@ -20,7 +20,6 @@ export const alertHistory = mysqlTable("alert_history", {
 	clientId: int().notNull().references(() => clients.id, { onDelete: "cascade" } ),
 	userId: int().notNull(),
 	partnerId: int().default(1).notNull().references(() => partners.id, { onDelete: "cascade" } ),
-	organizationId: int(),
 	alertType: mysqlEnum(['tuning','regulation','repair']).notNull(),
 	priority: mysqlEnum(['urgent','pending','ok']).notNull(),
 	message: text().notNull(),
@@ -63,7 +62,6 @@ export const alertSettings = mysqlTable("alert_settings", {
 	id: int().autoincrement().notNull(),
 	userId: int(),
 	partnerId: int().default(1).notNull().references(() => partners.id, { onDelete: "cascade" } ),
-	organizationId: int(),
 	tuningPendingDays: int().default(180),
 	tuningUrgentDays: int().default(270),
 	regulationPendingDays: int().default(730),
@@ -95,7 +93,6 @@ export const appointments = mysqlTable("appointments", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const businessInfo = mysqlTable("businessInfo", {
@@ -343,7 +340,6 @@ export const inventory = mysqlTable("inventory", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const invitations = mysqlTable("invitations", {
@@ -383,7 +379,6 @@ export const invoices = mysqlTable("invoices", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const licenseBatches = mysqlTable("license_batches", {
@@ -470,7 +465,6 @@ export const licenses = mysqlTable("licenses", {
 
 export const memberAbsences = mysqlTable("member_absences", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	memberId: int().notNull(),
 	absenceType: mysqlEnum(['vacation','sick_leave','personal','training','public_holiday','other']).notNull(),
 	startDate: timestamp({ mode: 'string' }).notNull(),
@@ -514,7 +508,6 @@ export const modules = mysqlTable("modules", {
 
 export const organizationActivityLog = mysqlTable("organization_activity_log", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	userId: int().notNull(),
 	activityType: mysqlEnum(['member_invited','member_joined','member_removed','member_role_changed','member_suspended','work_assigned','work_reassigned','work_completed','settings_changed','subscription_changed','invoice_created','client_created','service_completed']).notNull(),
 	description: text().notNull(),
@@ -534,7 +527,6 @@ export const organizationActivityLog = mysqlTable("organization_activity_log", {
 
 export const organizationInvitations = mysqlTable("organization_invitations", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	email: varchar({ length: 320 }).notNull(),
 	organizationRole: mysqlEnum(['owner','admin','manager','senior_tech','technician','apprentice','receptionist','accountant','viewer']).default('technician').notNull(),
 	token: varchar({ length: 64 }).notNull(),
@@ -554,7 +546,6 @@ export const organizationInvitations = mysqlTable("organization_invitations", {
 
 export const organizationMembers = mysqlTable("organization_members", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	userId: int().notNull(),
 	organizationRole: mysqlEnum(['owner','admin','manager','senior_tech','technician','apprentice','receptionist','accountant','viewer']).default('technician').notNull(),
 	membershipStatus: mysqlEnum(['active','pending_invitation','suspended','inactive']).default('pending_invitation').notNull(),
@@ -588,7 +579,6 @@ export const organizationMembers = mysqlTable("organization_members", {
 
 export const organizationModules = mysqlTable("organization_modules", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	moduleCode: varchar({ length: 50 }).notNull(),
 	isEnabled: tinyint().default(1),
 	accessType: varchar({ length: 20 }).default('plan').notNull(),
@@ -604,7 +594,6 @@ export const organizationModules = mysqlTable("organization_modules", {
 
 export const organizationSharingSettings = mysqlTable("organization_sharing_settings", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	resource: mysqlEnum(['clients','pianos','services','appointments','inventory','invoices','quotes','reminders']).notNull(),
 	sharingModel: mysqlEnum(['private','shared_read','shared_write']).default('private').notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
@@ -772,7 +761,6 @@ export const quoteTemplates = mysqlTable("quoteTemplates", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const quotes = mysqlTable("quotes", {
@@ -806,7 +794,6 @@ export const quotes = mysqlTable("quotes", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const reminders = mysqlTable("reminders", {
@@ -823,7 +810,6 @@ export const reminders = mysqlTable("reminders", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const serviceRates = mysqlTable("serviceRates", {
@@ -839,12 +825,10 @@ export const serviceRates = mysqlTable("serviceRates", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const serviceZones = mysqlTable("service_zones", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	name: varchar({ length: 100 }).notNull(),
 	description: text(),
 	color: varchar({ length: 7 }),
@@ -882,7 +866,6 @@ export const services = mysqlTable("services", {
 	humidity: decimal({ precision: 5, scale: 2 }),
 	temperature: decimal({ precision: 5, scale: 2 }),
 	partnerId: int().default(1).notNull(),
-	organizationId: int(),
 });
 
 export const subscriptionPlans = mysqlTable("subscription_plans", {
@@ -911,7 +894,6 @@ export const subscriptionPlans = mysqlTable("subscription_plans", {
 
 export const technicianMetrics = mysqlTable("technician_metrics", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	memberId: int().notNull(),
 	date: timestamp({ mode: 'string' }).notNull(),
 	appointmentsScheduled: int().default(0),
@@ -938,7 +920,6 @@ export const technicianMetrics = mysqlTable("technician_metrics", {
 
 export const technicianZones = mysqlTable("technician_zones", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	memberId: int().notNull(),
 	zoneId: int().notNull(),
 	isPrimary: tinyint().default(0),
@@ -975,7 +956,6 @@ export const users = mysqlTable("users", {
 
 export const workAssignments = mysqlTable("work_assignments", {
 	id: int().autoincrement().notNull(),
-	organizationId: int().notNull(),
 	appointmentId: int(),
 	serviceId: int(),
 	technicianId: int().notNull(),
