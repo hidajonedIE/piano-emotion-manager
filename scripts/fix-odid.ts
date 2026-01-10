@@ -1,11 +1,10 @@
 /**
  * Script para corregir los odId de clientes, pianos y servicios
- * Obtiene el odId correcto del usuario jnavarrete y actualiza todos los registros
+ * Usa el odId correcto del usuario jnavarrete
  */
 
 import { getDb } from "../server/db.js";
-import { users, clients, pianos, services } from "../drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { clients, pianos, services } from "../drizzle/schema.js";
 
 async function fixOdIds() {
   try {
@@ -16,27 +15,10 @@ async function fixOdIds() {
       throw new Error("No se pudo conectar a la BD");
     }
     
-    console.log("👤 Buscando usuario jnavarrete@inboundemotion.com...");
-    const userResult = await db
-      .select({
-        id: users.id,
-        email: users.email,
-        openId: users.openId,
-      })
-      .from(users)
-      .where(eq(users.email, "jnavarrete@inboundemotion.com"))
-      .limit(1);
+    // El odId correcto del usuario jnavarrete
+    const correctOdId = "user_37Nq41VhiCgFUQ1dUPyH8fn25j6";
     
-    if (!userResult || userResult.length === 0) {
-      throw new Error("Usuario jnavarrete no encontrado");
-    }
-    
-    const user = userResult[0];
-    console.log(`✅ Usuario encontrado: ${user.email}`);
-    console.log(`   ID: ${user.id}`);
-    console.log(`   OpenID (odId): ${user.openId}`);
-    
-    const correctOdId = user.openId;
+    console.log(`✅ Usando odId: ${correctOdId}`);
     
     // Actualizar clientes
     console.log("\n👥 Actualizando clientes...");

@@ -40,6 +40,7 @@ import { clientPortalRouter } from "./routers/client-portal.router.js";
 import { portalAdminRouter } from "./routers/portal-admin.router.js";
 import { timelineRouter } from "./routers/timeline.router.js";
 import { exportRouter } from "./routers/export.router.js";
+import { adminRouter } from "./routers/admin.router.js";
 
 export const appRouter = router({
   // Sistema
@@ -99,6 +100,9 @@ export const appRouter = router({
   
   // Sistema de alertas
   alerts: alertsRouter,
+  
+  // Admin
+  admin: adminRouter,
 
 });
 
