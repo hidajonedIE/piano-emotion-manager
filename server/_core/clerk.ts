@@ -114,7 +114,12 @@ export async function getOrCreateUserFromClerk(
   usersTable: any,
   eq: any
 ) {
-  console.log("10. Buscando usuario en base de datos con openId:", clerkUser.id);
+  const debugLog = {
+    step10: "Buscando usuario en base de datos",
+    clerkUserId: clerkUser.id,
+    timestamp: new Date().toISOString(),
+  };
+  console.log(JSON.stringify(debugLog));
   
   try {
     // Try to find existing user
@@ -125,11 +130,15 @@ export async function getOrCreateUserFromClerk(
       .limit(1);
 
     if (existingUser) {
-      console.log("11. Usuario encontrado en BD:", { id: existingUser.id, email: existingUser.email });
+      debugLog.step11 = "Usuario encontrado en BD";
+      debugLog.existingUserId = existingUser.id;
+      debugLog.existingUserEmail = existingUser.email;
+      console.log(JSON.stringify(debugLog));
       return existingUser;
     }
 
-    console.log("12. Usuario NO encontrado en BD, creando nuevo usuario");
+    debugLog.step12 = "Usuario NO encontrado en BD, creando nuevo usuario";
+    console.log(JSON.stringify(debugLog));
     
     // Create new user
     const [newUser] = await db
@@ -144,7 +153,10 @@ export async function getOrCreateUserFromClerk(
       })
       .returning();
 
-    console.log("13. Usuario creado exitosamente en BD:", { id: newUser.id, email: newUser.email });
+    debugLog.step13 = "Usuario creado exitosamente en BD";
+    debugLog.newUserId = newUser.id;
+    debugLog.newUserEmail = newUser.email;
+    console.log(JSON.stringify(debugLog));
     return newUser;
   } catch (error) {
     console.error("ERROR en getOrCreateUserFromClerk:", error instanceof Error ? error.message : String(error));
