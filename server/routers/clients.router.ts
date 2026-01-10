@@ -137,17 +137,25 @@ export const clientsRouter = router({
         })
       )
      .query(async ({ ctx, input }) => {
-      const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
-      const database = await db.getDb();
-      if (!database) return { items: [], total: 0 };
+      try {
+        const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
+        console.log('[clients.list] ===== INICIO CONSULTA =====' );
+        console.log('[clients.list] Input:', { limit, cursor, search, region, routeGroup, sortBy, sortOrder });
+        console.log('[clients.list] ctx.user:', ctx.user);
+        console.log('[clients.list] ctx.partnerId:', ctx.partnerId, 'type:', typeof ctx.partnerId);
+        console.log('[clients.list] ctx.orgContext:', ctx.orgContext);
+        console.log('[clients.list] userId:', ctx.user?.id, 'partnerId:', ctx.partnerId);
+        
+        const database = await db.getDb();
+        if (!database) {
+          console.log('[clients.list] Database not available');
+          return { items: [], total: 0 };
+        }
 
-      // Usar el partnerId del contexto (ya está disponible desde la autenticación)
-      const partnerId = ctx.partnerId;
-      
-      console.log('[clients.list] ===== INICIO CONSULTA =====');
-      console.log('[clients.list] ctx.user:', ctx.user);
-      console.log('[clients.list] ctx.partnerId:', ctx.partnerId, 'type:', typeof ctx.partnerId);
-      console.log('[clients.list] userId:', ctx.user?.id, 'partnerId:', partnerId);
+        // Usar el partnerId del contexto (ya está disponible desde la autenticación)
+        const partnerId = ctx.partnerId;
+        
+        console.log('[clients.list] After database connection, partnerId:', partnerId);
 
       // Si no hay partnerId, devolver lista vacía (usuario no autenticado)
       if (!partnerId) {
@@ -207,7 +215,13 @@ export const clientsRouter = router({
         nextCursor = offset + limit;
       }
 
+      console.log('[clients.list] ===== RETORNANDO RESULTADO =====' );
+      console.log('[clients.list] Result:', { itemsCount: items.length, total, nextCursor });
       return { items, nextCursor, total };
+      } catch (error) {
+        console.error('[clients.list] ERROR:', error);
+        throw error;
+      }
     }),
   
   listAll: orgProcedure.query(async ({ ctx }) => {
