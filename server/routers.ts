@@ -34,6 +34,7 @@ import {
   alertsRouter,
 } from "./routers/index.js";
 import { licenseRouter } from "./routers/license/index.js";
+import { testPianoRouter } from "./routers/test-piano.router.js";
 import { aiGenerationRouter } from "./routers/ai-generation.router.js";
 import { calendarRouter } from "./routers/calendar.router.js";
 import { clientPortalRouter } from "./routers/client-portal.router.js";
@@ -99,6 +100,7 @@ export const appRouter = router({
   
   // Sistema de alertas
   alerts: alertsRouter,
+  testPiano: testPianoRouter,
 });
 
 export type AppRouter = typeof appRouter;
