@@ -124,8 +124,8 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
         
         if (user) {
           console.log("[DEBUG] [Context] User authenticated successfully:", { id: user.id, email: user.email, role: (user as any).role });
-          // If user is owner, they can see all partners (partnerId = null means no filter)
-          const partnerId = (user as any).role === 'owner' ? null : (user.partnerId || null);
+          // If user is owner, assign them to Piano Emotion (partnerId = 1) but they can see all partners through the router logic
+          const partnerId = (user as any).role === 'owner' ? 1 : (user.partnerId || null);
           console.log("[DEBUG] [Context] Determined partnerId:", { partnerId, userRole: (user as any).role });
           
           // Create a session JWT compatible with SDK legacy
