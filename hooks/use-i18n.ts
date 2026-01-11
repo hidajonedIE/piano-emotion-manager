@@ -59,8 +59,16 @@ export function useI18n() {
       // Try to load from backend first (if user is authenticated)
       let languageFromBackend: SupportedLanguage | null = null;
       try {
+        console.log('[i18n] Attempting to fetch language from backend...');
+        console.log('[i18n] trpc object:', typeof trpc);
+        console.log('[i18n] trpc.language:', typeof trpc.language);
+        console.log('[i18n] trpc.language.getCurrentLanguage:', typeof trpc.language?.getCurrentLanguage);
         const result = await trpc.language.getCurrentLanguage.query();
+        console.log('[i18n] Backend language result:', result);
+        console.log('[i18n] Result type:', typeof result);
+        console.log('[i18n] Result.code:', result?.code);
         languageFromBackend = result.code as SupportedLanguage;
+        console.log('[i18n] Language from backend:', languageFromBackend);
       } catch (backendError) {
         // User not authenticated or backend error - continue with local storage
         console.log('[i18n] Could not load language from backend:', backendError);
