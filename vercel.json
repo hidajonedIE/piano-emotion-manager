@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm run build && npx expo export --platform web --output-dir web-build",
+  "buildCommand": "pnpm run build && npx expo export --platform web --output-dir web-build && pnpm run debug:vercel",
   "installCommand": "pnpm install",
   "outputDirectory": "web-build",
   "framework": null,
