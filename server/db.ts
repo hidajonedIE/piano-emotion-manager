@@ -88,12 +88,12 @@ export async function upsertUser(user: Omit<InsertUser, 'id'>): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    // Siempre establecer plan pro para nuevos usuarios
-    values.subscriptionPlan = 'pro';
+    // Siempre establecer plan premium para nuevos usuarios
+    values.subscriptionPlan = 'premium';
     values.subscriptionStatus = 'active';
     
-    // También actualizar usuarios existentes a pro si no tienen plan
-    updateSet.subscriptionPlan = 'pro';
+    // También actualizar usuarios existentes a premium si no tienen plan
+    updateSet.subscriptionPlan = 'premium';
     updateSet.subscriptionStatus = 'active';
 
     console.log("[Database] values object before insert:", JSON.stringify(values, null, 2));
