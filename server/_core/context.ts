@@ -47,9 +47,11 @@ export type CreateContextOptions = {
  * NOTA: Usando jose.SignJWT para crear el JWT con HS256
  */
 async function createSessionJWT(user: User): Promise<string> {
-  const secret = process.env.JWT_SECRET;
+  import { ENV } from './env.js';
+
+const secret = ENV.cookieSecret;
   if (!secret) {
-    throw new Error("JWT_SECRET is not defined in environment variables");
+    throw new Error("cookieSecret is not defined in environment variables via ENV object");
   }
   const expirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
@@ -59,7 +61,7 @@ async function createSessionJWT(user: User): Promise<string> {
   return await new jose.SignJWT({
     sub: String(user.id),
     email: user.email,
-    openId: user.openId || user.clerkId || String(user.id),
+    openId: user.clerkId || user.openId || String(user.id),
     appId: process.env.NEXT_PUBLIC_APP_ID || "piano-emotion-manager",
     name: user.name || user.email || "User",
   })
