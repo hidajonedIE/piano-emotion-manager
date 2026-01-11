@@ -36,7 +36,7 @@ export async function getDb() {
   return _db;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
+export async function upsertUser(user: Omit<InsertUser, 'id'>): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
@@ -48,7 +48,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
-    const values: InsertUser = {
+    const values: Omit<InsertUser, 'id'> = {
       openId: user.openId,
     };
     const updateSet: Record<string, unknown> = {};
