@@ -4,6 +4,7 @@ import * as Localization from 'expo-localization';
 import { I18n } from 'i18n-js';
 
 import { translations, SupportedLanguage, supportedLanguages, defaultLanguage } from '@/locales';
+import { trpc } from '@/lib/trpc';
 
 const LANGUAGE_STORAGE_KEY = '@piano_emotion_language';
 
@@ -58,7 +59,6 @@ export function useI18n() {
       // Try to load from backend first (if user is authenticated)
       let languageFromBackend: SupportedLanguage | null = null;
       try {
-        const { trpc } = await import('@/utils/trpc');
         const result = await trpc.language.getCurrentLanguage.query();
         languageFromBackend = result.code as SupportedLanguage;
       } catch (backendError) {
@@ -100,7 +100,6 @@ export function useI18n() {
       
       // Try to save to backend if user is authenticated
       try {
-        const { trpc } = await import('@/utils/trpc');
         await trpc.language.updateUserLanguage.mutate({ language: language });
       } catch (backendError) {
         // Backend save failed, but local save succeeded
