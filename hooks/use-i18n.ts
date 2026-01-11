@@ -59,8 +59,8 @@ export function useI18n() {
       let languageFromBackend: SupportedLanguage | null = null;
       try {
         const { trpc } = await import('@/utils/trpc');
-        const result = await trpc.language.getUserLanguage.query();
-        languageFromBackend = result.language as SupportedLanguage;
+        const result = await trpc.language.getCurrentLanguage.query();
+        languageFromBackend = result.code as SupportedLanguage;
       } catch (backendError) {
         // User not authenticated or backend error - continue with local storage
         console.log('[i18n] Could not load language from backend:', backendError);
@@ -101,7 +101,7 @@ export function useI18n() {
       // Try to save to backend if user is authenticated
       try {
         const { trpc } = await import('@/utils/trpc');
-        await trpc.language.updateUserLanguage.mutate({ language });
+        await trpc.language.updateUserLanguage.mutate({ language: language });
       } catch (backendError) {
         // Backend save failed, but local save succeeded
         // This is acceptable - language will sync next time user logs in
