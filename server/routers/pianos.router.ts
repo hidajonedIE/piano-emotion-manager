@@ -10,7 +10,7 @@ import { pianos } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql, lte, gte } from "drizzle-orm";
 import { 
   filterByPartner, 
-  filterByPartner, filterByPartnerAnd
+  filterByPartnerAnd
 } from "../utils/multi-tenant.js";
 
 
