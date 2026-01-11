@@ -47,7 +47,10 @@ export type CreateContextOptions = {
  * NOTA: Usando jose.SignJWT para crear el JWT con HS256
  */
 async function createSessionJWT(user: User): Promise<string> {
-  const secret = process.env.JWT_SECRET || "your-secret-key";
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is not defined in environment variables");
+  }
   const expirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
   // Para HS256, convertir el secret a Uint8Array
