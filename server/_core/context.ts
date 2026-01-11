@@ -61,7 +61,7 @@ async function createSessionJWT(user: User): Promise<string> {
     sub: String(user.id),
     email: user.email,
     openId: user.clerkId || user.openId || String(user.id),
-    appId: process.env.NEXT_PUBLIC_APP_ID || "piano-emotion-manager",
+    appId: process.env.VITE_APP_ID || "piano-emotion-manager",
     name: user.name || user.email || "User",
   })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
