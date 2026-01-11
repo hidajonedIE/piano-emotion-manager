@@ -442,9 +442,9 @@ export const onboardingRouter = router({
             loginMethod: "clerk",
             role: "admin",
             partnerId, // Este es su partner principal
-          });
+          }).returning();
 
-          adminUserId = userResult[0].insertId;
+          adminUserId = userResult[0]?.id || 0;
         }
 
         // 4. Crear relación en partner_users
