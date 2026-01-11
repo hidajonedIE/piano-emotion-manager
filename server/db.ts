@@ -48,6 +48,7 @@ export async function upsertUser(user: Omit<InsertUser, 'id'>): Promise<void> {
   }
 
   try {
+    console.log("[Database] upsertUser called with:", JSON.stringify(user, null, 2));
     const values: Omit<InsertUser, 'id'> = {
       openId: user.openId,
     };
@@ -93,6 +94,10 @@ export async function upsertUser(user: Omit<InsertUser, 'id'>): Promise<void> {
     // También actualizar usuarios existentes a professional si no tienen plan
     updateSet.subscriptionPlan = 'professional';
     updateSet.subscriptionStatus = 'active';
+
+    console.log("[Database] values object before insert:", JSON.stringify(values, null, 2));
+    console.log("[Database] values keys:", Object.keys(values));
+    console.log("[Database] values.id:", (values as any).id);
 
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
