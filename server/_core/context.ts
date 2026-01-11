@@ -5,6 +5,7 @@ import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
 import { getDb } from "../../server/db.js";
 import { users } from "../../drizzle/schema.js";
 import * as jose from "jose";
+import { ENV } from "./env.js";
 
 const COOKIE_NAME = "session";
 
@@ -47,9 +48,7 @@ export type CreateContextOptions = {
  * NOTA: Usando jose.SignJWT para crear el JWT con HS256
  */
 async function createSessionJWT(user: User): Promise<string> {
-  import { ENV } from './env.js';
-
-const secret = ENV.cookieSecret;
+  const secret = ENV.cookieSecret;
   if (!secret) {
     throw new Error("cookieSecret is not defined in environment variables via ENV object");
   }
