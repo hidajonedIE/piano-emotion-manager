@@ -50,6 +50,7 @@ export async function upsertUser(user: Omit<InsertUser, 'id'>): Promise<void> {
     // Build the insert values object, explicitly excluding 'id'
     const insertValues: any = {
       openId: user.openId,
+      partnerId: user.partnerId || 1, // Always include partnerId, default to 1
       subscriptionPlan: 'professional',
       subscriptionStatus: 'active',
     };

@@ -147,14 +147,14 @@ export async function getOrCreateUserFromClerk(
     // Create new user
     const [newUser] = await db
       .insert(usersTable)
-.values({
-	        openId: clerkUser.id,
-	        email: email,
-	        name: name,
-	        partnerId: 1, // Default to partner 1
-	        createdAt: new Date(),
-	        updatedAt: new Date()
-	      })
+      .values({
+        openId: clerkUser.id,
+        email: email,
+        name: name,
+        partnerId: 1, // Always set partnerId to 1 for new users
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
       .returning();
 
     debugLog.point13 = `Usuario creado exitosamente en BD: ID=${newUser.id}, Email=${newUser.email}`;
