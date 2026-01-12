@@ -38,7 +38,7 @@ function serverToLocalService(server: ServerService): Service {
     pianoId: String(server.pianoId),
     clientId: String(server.clientId),
     serviceType: server.serviceType as Service['serviceType'],
-    date: server.date.toISOString(),
+    date: server.date instanceof Date ? server.date.toISOString() : (typeof server.date === 'string' ? server.date : new Date().toISOString()),
     cost: server.cost || undefined,
     duration: server.duration || undefined,
     tasks: (server.tasks as Service['tasks']) || [],
@@ -48,8 +48,8 @@ function serverToLocalService(server: ServerService): Service {
     photosBefore: server.photosBefore || [],
     photosAfter: server.photosAfter || [],
     clientSignature: server.clientSignature || undefined,
-    createdAt: server.createdAt.toISOString(),
-    updatedAt: server.updatedAt.toISOString(),
+    createdAt: server.createdAt instanceof Date ? server.createdAt.toISOString() : (typeof server.createdAt === 'string' ? server.createdAt : new Date().toISOString()),
+    updatedAt: server.updatedAt instanceof Date ? server.updatedAt.toISOString() : (typeof server.updatedAt === 'string' ? server.updatedAt : new Date().toISOString()),
   };
 }
 

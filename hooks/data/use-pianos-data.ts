@@ -44,8 +44,8 @@ function serverToLocalPiano(server: ServerPiano): Piano {
     location: server.location || undefined,
     notes: server.notes || undefined,
     photos: server.photos || [],
-    createdAt: server.createdAt.toISOString(),
-    updatedAt: server.updatedAt.toISOString(),
+    createdAt: server.createdAt instanceof Date ? server.createdAt.toISOString() : (typeof server.createdAt === 'string' ? server.createdAt : new Date().toISOString()),
+    updatedAt: server.updatedAt instanceof Date ? server.updatedAt.toISOString() : (typeof server.updatedAt === 'string' ? server.updatedAt : new Date().toISOString()),
   };
 }
 

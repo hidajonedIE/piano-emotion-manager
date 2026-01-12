@@ -38,8 +38,8 @@ function serverToLocalMaterial(server: ServerInventoryItem): Material {
     minStock: server.minStock ? parseFloat(server.minStock) : undefined,
     costPerUnit: server.costPerUnit ? parseFloat(server.costPerUnit) : undefined,
     supplier: server.supplier || undefined,
-    createdAt: server.createdAt.toISOString(),
-    updatedAt: server.updatedAt.toISOString(),
+    createdAt: server.createdAt instanceof Date ? server.createdAt.toISOString() : (typeof server.createdAt === 'string' ? server.createdAt : new Date().toISOString()),
+    updatedAt: server.updatedAt instanceof Date ? server.updatedAt.toISOString() : (typeof server.updatedAt === 'string' ? server.updatedAt : new Date().toISOString()),
   };
 }
 
