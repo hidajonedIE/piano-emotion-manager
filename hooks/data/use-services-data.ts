@@ -39,7 +39,7 @@ function serverToLocalService(server: ServerService): Service {
     clientId: String(server.clientId),
     serviceType: server.serviceType as Service['serviceType'],
     date: server.date instanceof Date ? server.date.toISOString() : (typeof server.date === 'string' ? server.date : new Date().toISOString()),
-    cost: server.cost || undefined,
+    cost: server.cost ? parseFloat(server.cost) : undefined,
     duration: server.duration || undefined,
     tasks: (server.tasks as Service['tasks']) || [],
     notes: server.notes || undefined,
