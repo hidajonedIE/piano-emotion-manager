@@ -125,11 +125,17 @@ export const servicesRouter = router({
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
+      console.log('[services.list] ===== INICIO CONSULTA =====');
+      console.log('[services.list] ctx.partnerId:', ctx.partnerId, 'type:', typeof ctx.partnerId);
+      console.log('[services.list] ctx.user.openId:', ctx.user.openId);
+
       // TEMPORAL: Filtro simplificado sin multi-tenant
       const whereClauses = [
         filterByPartner(services.partnerId, ctx.partnerId),
         eq(services.odId, ctx.user.openId)
       ];
+      
+      console.log('[services.list] WHERE clauses count:', whereClauses.length);
       
       if (search) {
         whereClauses.push(or(ilike(services.notes, `%${search}%`), ilike(services.technicianNotes, `%${search}%`))!);
@@ -145,7 +151,11 @@ export const servicesRouter = router({
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       const offset = cursor || 0;
-      const items = await database
+      console.log('[services.list] About to execute query...');
+      
+      let items;
+      try {
+        items = await database
         .select({
           id: services.id,
           odId: services.odId,
@@ -182,6 +192,14 @@ export const servicesRouter = router({
         .orderBy(orderByClause)
         .limit(limit)
         .offset(offset);
+        
+        console.log('[services.list] Query successful, items count:', items.length);
+      } catch (error: any) {
+        console.error('[services.list] ERROR executing query:', error);
+        console.error('[services.list] Error message:', error.message);
+        console.error('[services.list] Error stack:', error.stack);
+        throw error;
+      }
 
       const [{ total }] = await database
         .select({ total: count() })
