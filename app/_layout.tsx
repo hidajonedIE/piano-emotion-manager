@@ -147,8 +147,7 @@ export default function RootLayout() {
                       <Stack.Screen name="teams" options={{ title: 'Equipos', headerShown: false }} />
                       <Stack.Screen name="quotes" options={{ title: 'Presupuestos', headerShown: false }} />
                       <Stack.Screen name="reminders/index" options={{ title: 'Recordatorios', headerShown: false }} />
-                      <Stack.Screen name="workflows" options={{ title: 'Flujos de Trabajo', headerShown: false }} />
-                      <Stack.Screen name="contracts" options={{ title: 'Contratos', headerShown: false }} />
+
                       <Stack.Screen name="whatsapp-settings" options={{ title: 'Configuración de WhatsApp', headerShown: false }} />
                       <Stack.Screen name="payment-settings" options={{ title: 'Configuración de Pagos', headerShown: false }} />
                       <Stack.Screen name="dashboard-editor" options={{ title: 'Editor de Panel', headerShown: false }} />
