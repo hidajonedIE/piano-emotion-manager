@@ -140,14 +140,10 @@ export default function RootLayout() {
                       <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
                       <Stack.Screen name="portal" options={{ title: 'Portal del Cliente', headerShown: false }} />
 
-                      <Stack.Screen name="appointment" options={{ title: 'Cita', headerShown: false }} />
-                      <Stack.Screen name="supplier" options={{ title: 'Proveedor', headerShown: false }} />
                       <Stack.Screen name="suppliers" options={{ title: 'Proveedores', headerShown: false }} />
-                      <Stack.Screen name="rate" options={{ title: 'Tarifa', headerShown: false }} />
-                      <Stack.Screen name="inventory" options={{ title: 'Inventario', headerShown: false }} />
                       <Stack.Screen name="analytics" options={{ title: 'Análisis', headerShown: false }} />
                       <Stack.Screen name="accounting" options={{ title: 'Contabilidad', headerShown: false }} />
-                      <Stack.Screen name="work-order" options={{ title: 'Orden de Trabajo', headerShown: false }} />
+
                       <Stack.Screen name="teams" options={{ title: 'Equipos', headerShown: false }} />
                       <Stack.Screen name="quotes" options={{ title: 'Presupuestos', headerShown: false }} />
                       <Stack.Screen name="reminders/index" options={{ title: 'Recordatorios', headerShown: false }} />
