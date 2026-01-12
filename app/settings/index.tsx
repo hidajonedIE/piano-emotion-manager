@@ -925,6 +925,22 @@ export default function SettingsIndexScreen() {
 
             <Pressable
               style={[styles.linkRow, { borderBottomColor: borderColor }]}
+              onPress={() => router.push('/settings/service-types' as any)}
+            >
+              <View style={[styles.settingIcon, { backgroundColor: `${accent}15` }]}>
+                <IconSymbol name="wrench.and.screwdriver.fill" size={20} color={accent} />
+              </View>
+              <View style={styles.settingContent}>
+                <ThemedText style={styles.settingLabel}>Tipos de Servicio</ThemedText>
+                <ThemedText style={[styles.settingSublabel, { color: textSecondary }]}>
+                  Gestionar tipos de servicio personalizados
+                </ThemedText>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+            </Pressable>
+
+            <Pressable
+              style={[styles.linkRow, { borderBottomColor: borderColor }]}
               onPress={() => router.push('/backup' as any)}
             >
               <View style={[styles.settingIcon, { backgroundColor: `${accent}15` }]}>

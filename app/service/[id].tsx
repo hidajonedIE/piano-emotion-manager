@@ -17,6 +17,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { ClientSelector } from '@/components/client-selector';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useInventoryData } from '@/hooks/data';
+import { trpc } from '@/utils/trpc';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import {
@@ -207,14 +208,27 @@ export default function ServiceDetailScreen() {
     setForm({ ...form, tasks: updatedTasks });
   };
 
-  const serviceTypes: ServiceType[] = ['tuning', 'repair', 'regulation', 'maintenance', 'inspection', 'other'];
+  // Cargar tipos de servicio desde la API
+  const { data: serviceTypesData = [] } = trpc.serviceTypes.list.useQuery();
+  
+  // Convertir tipos de servicio de la API al formato esperado
+  const serviceTypes: ServiceType[] = serviceTypesData
+    .filter(st => st.isActive)
+    .map(st => st.code as ServiceType);
+  
+  // Crear un mapa de etiquetas dinámicas
+  const dynamicServiceTypeLabels: Record<string, string> = {};
+  serviceTypesData.forEach(st => {
+    dynamicServiceTypeLabels[st.code] = st.label;
+  });
+  
   const maintenanceLevels: MaintenanceLevel[] = ['basic', 'complete', 'premium'];
 
   return (
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: isNew ? 'Nuevo Servicio' : SERVICE_TYPE_LABELS[form.type as ServiceType] || 'Servicio',
+          title: isNew ? 'Nuevo Servicio' : (dynamicServiceTypeLabels[form.type] || SERVICE_TYPE_LABELS[form.type as ServiceType] || 'Servicio'),
           headerLeft: () => (
             <Pressable onPress={() => router.back()} style={{ marginRight: 16 }}>
               <IconSymbol name="chevron.left" size={24} color={accent} />
@@ -341,14 +355,14 @@ export default function ServiceDetailScreen() {
                         { color: form.type === type ? '#FFFFFF' : textSecondary },
                       ]}
                     >
-                      {SERVICE_TYPE_LABELS[type]}
+                      {dynamicServiceTypeLabels[type] || SERVICE_TYPE_LABELS[type]}
                     </ThemedText>
                   </Pressable>
                 ))}
               </View>
             ) : (
               <ThemedText style={styles.value}>
-                {SERVICE_TYPE_LABELS[form.type as ServiceType]}
+                {dynamicServiceTypeLabels[form.type] || SERVICE_TYPE_LABELS[form.type as ServiceType]}
               </ThemedText>
             )}
           </View>
