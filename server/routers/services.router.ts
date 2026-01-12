@@ -251,7 +251,6 @@ export const servicesRouter = router({
           technicianSignature: services.technicianSignature,
           humidity: services.humidity,
           temperature: services.temperature,
-          status: services.status,
           invoiceId: services.invoiceId,
           appointmentId: services.appointmentId,
           createdAt: services.createdAt,
@@ -436,12 +435,11 @@ export const servicesRouter = router({
 
       const byStatus = await database
         .select({
-          status: services.status,
           count: count(),
         })
         .from(services)
         .where(and(...whereClauses))
-        .groupBy(services.status);
+        // .groupBy(services.status) - COMMENTED: status field does not exist;
 
       return {
         total,
