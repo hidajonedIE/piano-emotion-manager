@@ -1010,3 +1010,6 @@ export const workAssignments = mysqlTable("work_assignments", {
 	index("wa_date_idx").on(table.scheduledDate),
 	index("wa_status_idx").on(table.workAssignmentStatus),
 ]);
+
+// Alert Dismissals
+export * from './alerts-schema';
