@@ -185,29 +185,36 @@ export const clientsRouter = router({
       console.log('[clients.list] Offset:', offset, 'Limit:', limit);
       console.log('[clients.list] Using partnerId:', partnerId, 'for filter');
       
-      const items = await database
-        .select()
-        .from(clients)
-        .where(and(...whereClauses))
-        .orderBy(orderByClause)
-        .limit(limit)
-        .offset(offset);
+      try {
+        const items = await database
+          .select()
+          .from(clients)
+          .where(and(...whereClauses))
+          .orderBy(orderByClause)
+          .limit(limit)
+          .offset(offset);
 
-      console.log('[clients.list] Query returned:', items.length, 'items');
-      
-      const [{ total }] = await database
-        .select({ total: count() })
-        .from(clients)
-        .where(and(...whereClauses));
-      
-      console.log('[clients.list] Total count:', total);
+        console.log('[clients.list] Query returned:', items.length, 'items');
+        
+        const [{ total }] = await database
+          .select({ total: count() })
+          .from(clients)
+          .where(and(...whereClauses));
+        
+        console.log('[clients.list] Total count:', total);
 
-      let nextCursor: number | undefined = undefined;
-      if (items.length === limit) {
-        nextCursor = offset + limit;
+        let nextCursor: number | undefined = undefined;
+        if (items.length === limit) {
+          nextCursor = offset + limit;
+        }
+
+        return { items, nextCursor, total };
+      } catch (error) {
+        console.error('[clients.list] ERROR executing query:', error);
+        console.error('[clients.list] Error message:', error instanceof Error ? error.message : 'Unknown error');
+        console.error('[clients.list] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        throw error;
       }
-
-      return { items, nextCursor, total };
     }),
   
   listAll: orgProcedure.query(async ({ ctx }) => {
