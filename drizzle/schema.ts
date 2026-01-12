@@ -281,7 +281,7 @@ export const clients = mysqlTable("clients", {
 	longitude: decimal({ precision: 10, scale: 7 }),
 	routeGroup: varchar({ length: 50 }),
 	partnerId: int().default(1).notNull(),
-	organizationId: int("organization_id"),
+	// organizationId: int("organization_id"), // COMENTADO: Esta columna no existe en la BD
 });
 
 export const distributorModuleConfig = mysqlTable("distributor_module_config", {
