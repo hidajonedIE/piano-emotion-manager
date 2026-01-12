@@ -33,11 +33,18 @@ type ServerService = {
 
 // Convertir servicio del servidor al formato local
 function serverToLocalService(server: ServerService): Service {
+  // Normalizar serviceType: convertir maintenance_* a 'maintenance'
+  let normalizedType = server.serviceType;
+  if (normalizedType.startsWith('maintenance_')) {
+    normalizedType = 'maintenance';
+  }
+  
   return {
     id: String(server.id),
     pianoId: String(server.pianoId),
     clientId: String(server.clientId),
     serviceType: server.serviceType as Service['serviceType'],
+    type: normalizedType as Service['type'], // Agregar alias 'type' para compatibilidad
     date: server.date instanceof Date ? server.date.toISOString() : (typeof server.date === 'string' ? server.date : new Date().toISOString()),
     cost: server.cost ? parseFloat(server.cost) : undefined,
     duration: server.duration || undefined,
