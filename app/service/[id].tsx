@@ -229,6 +229,11 @@ export default function ServiceDetailScreen() {
       <Stack.Screen
         options={{
           title: isNew ? 'Nuevo Servicio' : (dynamicServiceTypeLabels[form.type] || SERVICE_TYPE_LABELS[form.type as ServiceType] || 'Servicio'),
+          headerTitleStyle: {
+            fontFamily: 'Arkhip',
+            fontSize: 22,
+            fontWeight: '700',
+          },
           headerLeft: () => (
             <Pressable onPress={() => router.back()} style={{ marginRight: 16 }}>
               <IconSymbol name="chevron.left" size={24} color={accent} />
@@ -880,8 +885,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   label: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '700',
   },
   input: {
     borderWidth: 1,
