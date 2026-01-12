@@ -33,8 +33,10 @@ import {
   DashboardHelp,
   DashboardDraggableWeb,
 } from '@/components/dashboard';
-import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
+import { DashboardAlertsV2 } from '@/components/dashboard/dashboard-alerts-v2';
+import { useClientsData, usePianosData, useServicesData, useAppointmentsData, useInvoicesData, useQuotesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
+import { useAllAlerts } from '@/hooks/use-all-alerts';
 import { useWhatsNew } from '@/hooks/use-whats-new';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useDashboardPreferences, DashboardSectionId } from '@/hooks/use-dashboard-preferences';
@@ -68,7 +70,13 @@ export default function DashboardScreen() {
   const { clients } = useClientsData();
   const { pianos } = usePianosData();
   const { services } = useServicesData();
+  const { appointments } = useAppointmentsData();
+  const { invoices } = useInvoicesData();
+  const { quotes } = useQuotesData();
   const { urgentCount, pendingCount } = useRecommendations(pianos, services);
+  
+  // Sistema de alertas consolidado
+  const allAlerts = useAllAlerts(pianos, services, appointments, invoices, quotes);
 
   // DEBUG: Loguear datos cargados
   useEffect(() => {
@@ -141,10 +149,12 @@ export default function DashboardScreen() {
     switch (sectionId) {
       case 'alerts':
         return (
-          <DashboardAlerts 
+          <DashboardAlertsV2 
             key={sectionId}
-            urgentCount={stats.urgentCount} 
-            pendingCount={stats.pendingCount} 
+            alerts={allAlerts.alerts}
+            totalUrgent={allAlerts.stats.urgent}
+            totalWarning={allAlerts.stats.warning}
+            totalInfo={allAlerts.stats.info}
           />
         );
       case 'quick_actions':
