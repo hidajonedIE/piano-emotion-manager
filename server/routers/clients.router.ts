@@ -157,10 +157,15 @@ export const clientsRouter = router({
       console.log('[clients.list] partnerId disponible:', partnerId);
       
       // Filtrar por partnerId y odId del usuario (igual que pianos)
+      console.log('[clients.list] ctx.user.openId:', ctx.user.openId, 'type:', typeof ctx.user.openId);
+      console.log('[clients.list] ctx.user object keys:', Object.keys(ctx.user));
+      
       const whereClauses = [
         filterByPartner(clients.partnerId, partnerId),
         eq(clients.odId, ctx.user.openId)
       ];
+      
+      console.log('[clients.list] whereClauses created, about to execute query...');
       
       if (search) {
         whereClauses.push(
