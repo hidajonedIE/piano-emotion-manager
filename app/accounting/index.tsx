@@ -655,54 +655,104 @@ export default function AccountingScreen() {
         <IconSymbol name="chevron.down" size={16} color={textSecondary} />
       </Pressable>
 
-      {/* Selector de período */}
-      <View style={styles.periodSelector}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {[2023, 2024, 2025, 2026].map((year) => (
-            <Pressable
-              key={year}
-              style={[
-                styles.periodButton,
-                { borderColor },
-                selectedYear === year && { backgroundColor: accent, borderColor: accent },
-              ]}
-              onPress={() => setSelectedYear(year)}
-            >
-              <ThemedText
-                style={[
-                  styles.periodButtonText,
-                  { color: selectedYear === year ? '#fff' : textSecondary },
-                ]}
-              >
-                {year}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: Spacing.xs }}>
-          {['1T', '2T', '3T', '4T'].map((quarter) => (
-            <Pressable
-              key={quarter}
-              style={[
-                styles.periodButton,
-                { borderColor },
-                selectedQuarter === quarter && { backgroundColor: accent, borderColor: accent },
-              ]}
-              onPress={() => setSelectedQuarter(quarter)}
-            >
-              <ThemedText
-                style={[
-                  styles.periodButtonText,
-                  { color: selectedQuarter === quarter ? '#fff' : textSecondary },
-                ]}
-              >
-                {quarter}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </ScrollView>
+      {/* Selector de tipo de período */}
+      <View style={styles.periodTypeSelector}>
+        <Pressable
+          style={[
+            styles.periodTypeButton,
+            { borderColor },
+            selectedPeriod === 'month' && { backgroundColor: accent, borderColor: accent },
+          ]}
+          onPress={() => {
+            setSelectedPeriod('month');
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+        >
+          <ThemedText
+            style={[
+              styles.periodTypeText,
+              { color: selectedPeriod === 'month' ? '#fff' : textSecondary },
+            ]}
+          >
+            Mensual
+          </ThemedText>
+        </Pressable>
+        
+        <Pressable
+          style={[
+            styles.periodTypeButton,
+            { borderColor },
+            selectedPeriod === 'quarter' && { backgroundColor: accent, borderColor: accent },
+          ]}
+          onPress={() => {
+            setSelectedPeriod('quarter');
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+        >
+          <ThemedText
+            style={[
+              styles.periodTypeText,
+              { color: selectedPeriod === 'quarter' ? '#fff' : textSecondary },
+            ]}
+          >
+            Trimestral
+          </ThemedText>
+        </Pressable>
+        
+        <Pressable
+          style={[
+            styles.periodTypeButton,
+            { borderColor },
+            selectedPeriod === 'year' && { backgroundColor: accent, borderColor: accent },
+          ]}
+          onPress={() => {
+            setSelectedPeriod('year');
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+        >
+          <ThemedText
+            style={[
+              styles.periodTypeText,
+              { color: selectedPeriod === 'year' ? '#fff' : textSecondary },
+            ]}
+          >
+            Anual
+          </ThemedText>
+        </Pressable>
       </View>
+
+      {/* Navegación de período */}
+      {selectedPeriod === 'month' && (
+        <View style={styles.periodNavigation}>
+          <Pressable
+            style={[styles.navButton, { borderColor }]}
+            onPress={() => {
+              const newMonth = new Date(selectedMonth);
+              newMonth.setMonth(newMonth.getMonth() - 1);
+              setSelectedMonth(newMonth);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+          >
+            <IconSymbol name="chevron.left" size={20} color={textSecondary} />
+          </Pressable>
+          
+          <ThemedText style={styles.periodLabel}>
+            {selectedMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())}
+          </ThemedText>
+          
+          <Pressable
+            style={[styles.navButton, { borderColor }]}
+            onPress={() => {
+              const newMonth = new Date(selectedMonth);
+              newMonth.setMonth(newMonth.getMonth() + 1);
+              setSelectedMonth(newMonth);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+          >
+            <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+          </Pressable>
+        </View>
+      )}
 
       {renderTabs()}
 
@@ -741,20 +791,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  periodSelector: {
-    paddingHorizontal: Spacing.md,
+  periodTypeSelector: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.md,
     marginTop: Spacing.sm,
+    gap: Spacing.xs,
   },
-  periodButton: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.sm,
+  periodTypeButton: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    marginRight: Spacing.xs,
+    alignItems: 'center',
   },
-  periodButtonText: {
+  periodTypeText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  periodNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  navButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  periodLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   tabsContainer: {
     marginTop: Spacing.sm,
