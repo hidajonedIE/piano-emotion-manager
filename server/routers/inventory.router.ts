@@ -190,7 +190,7 @@ export const inventoryRouter = router({
   /**
    * Lista de inventario con paginación y filtros
    */
-  list: orgProcedure
+  list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { 

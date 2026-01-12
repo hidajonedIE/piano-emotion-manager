@@ -120,7 +120,7 @@ export const serviceRatesRouter = router({
   /**
    * Lista de tarifas con paginación y filtros
    */
-  list: orgProcedure
+  list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { 

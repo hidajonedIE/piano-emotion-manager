@@ -346,7 +346,7 @@ export const quotesRouter = router({
   /**
    * Lista de presupuestos con paginación y filtros
    */
-  list: orgProcedure
+  list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { 

@@ -118,7 +118,7 @@ const orgProcedure = protectedProcedure;
 // ============================================================================
 
 export const servicesRouter = router({
-  list: orgProcedure
+  list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "date", sortOrder = "desc", search, serviceType, status, clientId, pianoId, dateFrom, dateTo } = input || {};

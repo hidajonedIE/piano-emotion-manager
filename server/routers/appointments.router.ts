@@ -319,7 +319,7 @@ export const appointmentsRouter = router({
   /**
    * Lista de citas con paginación y eager loading
    */
-  list: orgProcedure
+  list: protectedProcedure
     .input(paginationSchema.optional())
     .query(async ({ ctx, input }) => {
       const { 
