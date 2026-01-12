@@ -14,6 +14,7 @@ import { useDashboardPreferences, type AccessShortcutModule } from '@/hooks/use-
 const MODULE_ACTIONS = [
   { key: 'clients', icon: 'person.2.fill', label: 'Clientes', color: '#3B82F6' },
   { key: 'pianos', icon: 'pianokeys', label: 'Pianos', color: '#8B5CF6' },
+  { key: 'services', icon: 'wrench.and.screwdriver.fill', label: 'Servicios', color: '#10B981' },
   { key: 'suppliers', icon: 'building.2.fill', label: 'Proveedores', color: '#F97316' },
   { key: 'dashboard', icon: 'chart.pie.fill', label: 'Panel Control', color: '#2D5A27' },
   { key: 'inventory', icon: 'shippingbox.fill', label: 'Inventario', color: '#F59E0B' },
@@ -39,6 +40,7 @@ const MODULE_ACTIONS = [
 const ROUTE_MAP: Record<string, string> = {
   clients: '/(tabs)/clients',
   pianos: '/(tabs)/pianos',
+  services: '/(tabs)/services',
   inventory: '/(tabs)/inventory',
   stats: '/stats',
   settings: '/settings',
