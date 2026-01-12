@@ -124,7 +124,7 @@ async function getUserPartnerId(userId: string | undefined): Promise<number | nu
 // ============================================================================
 
 export const clientsRouter = router({
-  list: orgProcedure
+  list: protectedProcedure
      .input(
         z.object({
           limit: z.number().min(1).max(100).default(30),
@@ -156,9 +156,10 @@ export const clientsRouter = router({
       }
       console.log('[clients.list] partnerId disponible:', partnerId);
       
-      // TEMPORAL: Solo filtrar por partnerId (sistema multi-tenant desactivado)
+      // Filtrar por partnerId y odId del usuario (igual que pianos)
       const whereClauses = [
-        filterByPartner(clients.partnerId, partnerId)
+        filterByPartner(clients.partnerId, partnerId),
+        eq(clients.odId, ctx.user.openId)
       ];
       
       if (search) {
