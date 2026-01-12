@@ -147,11 +147,6 @@ export default function ServiceTypesScreen() {
   };
 
   const handleDelete = (type: ServiceType) => {
-    if (type.isDefault) {
-      Alert.alert('Error', 'No se pueden eliminar los tipos de servicio por defecto');
-      return;
-    }
-
     Alert.alert(
       'Eliminar tipo de servicio',
       `¿Estás seguro de que quieres eliminar "${type.label}"?`,
@@ -208,7 +203,7 @@ export default function ServiceTypesScreen() {
       </View>
 
       <View style={styles.actions}>
-        {/* Botón de edición (disponible para todos) */}
+        {/* Botón de edición */}
         <Pressable
           style={[styles.actionButton, { borderColor }]}
           onPress={() => handleOpenModal(type)}
@@ -216,15 +211,13 @@ export default function ServiceTypesScreen() {
           <IconSymbol name="pencil" size={18} color={accent} />
         </Pressable>
         
-        {/* Botón de eliminación (solo para tipos personalizados) */}
-        {!type.isDefault && (
-          <Pressable
-            style={[styles.actionButton, { borderColor }]}
-            onPress={() => handleDelete(type)}
-          >
-            <IconSymbol name="trash" size={18} color="#EF4444" />
-          </Pressable>
-        )}
+        {/* Botón de eliminación */}
+        <Pressable
+          style={[styles.actionButton, { borderColor }]}
+          onPress={() => handleDelete(type)}
+        >
+          <IconSymbol name="trash" size={18} color="#EF4444" />
+        </Pressable>
       </View>
     </View>
   );
@@ -312,36 +305,23 @@ export default function ServiceTypesScreen() {
 
             {/* Form */}
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-              {/* Código (solo para nuevos o mostrar para tipos por defecto) */}
-              {!editingType ? (
-                <View style={styles.formGroup}>
-                  <ThemedText style={[styles.label, { color: textSecondary }]}>
-                    Código *
-                  </ThemedText>
-                  <TextInput
-                    style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
-                    value={formData.code}
-                    onChangeText={(text) => setFormData({ ...formData, code: text })}
-                    placeholder="ej: entonacion"
-                    placeholderTextColor={textSecondary}
-                  />
-                  <ThemedText style={[styles.hint, { color: textSecondary }]}>
-                    Identificador único (sin espacios)
-                  </ThemedText>
-                </View>
-              ) : editingType.isDefault ? (
-                <View style={styles.formGroup}>
-                  <ThemedText style={[styles.label, { color: textSecondary }]}>
-                    Código
-                  </ThemedText>
-                  <ThemedText style={[styles.input, { backgroundColor: `${textSecondary}10`, borderColor, color: textSecondary, paddingVertical: 12 }]}>
-                    {formData.code}
-                  </ThemedText>
-                  <ThemedText style={[styles.hint, { color: textSecondary }]}>
-                    El código de tipos por defecto no se puede modificar
-                  </ThemedText>
-                </View>
-              ) : null}
+              {/* Código */}
+              <View style={styles.formGroup}>
+                <ThemedText style={[styles.label, { color: textSecondary }]}>
+                  Código {!editingType && '*'}
+                </ThemedText>
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                  value={formData.code}
+                  onChangeText={(text) => setFormData({ ...formData, code: text })}
+                  placeholder="ej: entonacion"
+                  placeholderTextColor={textSecondary}
+                  editable={!editingType}
+                />
+                <ThemedText style={[styles.hint, { color: textSecondary }]}>
+                  {editingType ? 'El código no se puede modificar una vez creado' : 'Identificador único (sin espacios)'}
+                </ThemedText>
+              </View>
 
               {/* Nombre */}
               <View style={styles.formGroup}>

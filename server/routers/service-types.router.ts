@@ -306,10 +306,7 @@ export const serviceTypesRouter = router({
         throw new Error('Tipo de servicio no encontrado');
       }
 
-      // No se pueden eliminar tipos por defecto
-      if (existing[0].isDefault === 1) {
-        throw new Error('No se pueden eliminar tipos de servicio por defecto');
-      }
+      // Permitir eliminación de cualquier tipo (incluidos por defecto)
 
       // Desactivar en lugar de eliminar
       await db
