@@ -174,7 +174,6 @@ export const servicesRouter = router({
           clientSignature: services.clientSignature,
           humidity: services.humidity,
           temperature: services.temperature,
-          status: services.status,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt,
           clientName: clients.name,
