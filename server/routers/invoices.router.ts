@@ -10,6 +10,7 @@ import { invoices } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, ilike, asc, desc, count, sql } from "drizzle-orm";
 import { 
   filterByPartnerAndOrganization,
+  filterByPartner,
   addOrganizationToInsert,
   validateWritePermission
 } from "../utils/multi-tenant.js";

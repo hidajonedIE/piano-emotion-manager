@@ -10,6 +10,7 @@ import { reminders } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count } from "drizzle-orm";
 import { 
   filterByPartnerAndOrganization,
+  filterByPartner,
   addOrganizationToInsert,
   validateWritePermission
 } from "../utils/multi-tenant.js";

@@ -10,6 +10,7 @@ import { inventory } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, asc, desc, count, sql } from "drizzle-orm";
 import { 
   filterByPartnerAndOrganization,
+  filterByPartner,
   addOrganizationToInsert,
   validateWritePermission
 } from "../utils/multi-tenant.js";
