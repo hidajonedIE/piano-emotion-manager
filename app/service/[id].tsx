@@ -85,6 +85,9 @@ export default function ServiceDetailScreen() {
   const error = useThemeColor({}, 'error');
   const textColor = useThemeColor({}, 'text');
 
+  // Cargar tipos de servicio desde la API
+  const { data: serviceTypesData = [], isLoading: isLoadingServiceTypes } = trpc.serviceTypes.list.useQuery();
+
   // Cargar datos del servicio existente
   useEffect(() => {
     if (!isNew && id) {
@@ -95,7 +98,7 @@ export default function ServiceDetailScreen() {
     }
   }, [id, isNew, services]);
 
-  // Actu  // Auto-cargar tareas cuando cambia el tipo de servicio
+  // Auto-cargar tareas cuando cambia el tipo de servicio
   useEffect(() => {
     if ((isNew || isEditing) && form.type) {
       // Buscar el tipo de servicio en el catálogo
@@ -225,9 +228,6 @@ export default function ServiceDetailScreen() {
     setForm({ ...form, tasks: updatedTasks });
   };
 
-  // Cargar tipos de servicio desde la API
-  const { data: serviceTypesData = [] } = trpc.serviceTypes.list.useQuery();
-  
   // Convertir tipos de servicio de la API al formato esperado
   const serviceTypes: ServiceType[] = serviceTypesData
     .filter(st => st.isActive)
