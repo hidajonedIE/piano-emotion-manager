@@ -139,7 +139,6 @@ export const serviceRatesRouter = router({
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
         filterByPartner(serviceRates.partnerId, ctx.partnerId),
-        eq(serviceRates.odId, ctx.user.openId)
       ];
       
       if (category !== undefined) {
@@ -182,7 +181,6 @@ export const serviceRatesRouter = router({
         .from(serviceRates)
         .where(
           filterByPartner(serviceRates.partnerId, ctx.partnerId),
-        eq(serviceRates.odId, ctx.user.openId)
         );
 
       const stats = calculateServiceRateStats(allRates);
@@ -207,7 +205,6 @@ export const serviceRatesRouter = router({
       .from(serviceRates)
       .where(
         filterByPartner(serviceRates.partnerId, ctx.partnerId),
-        eq(serviceRates.odId, ctx.user.openId)
       )
       .orderBy(asc(serviceRates.name));
 
@@ -230,7 +227,6 @@ export const serviceRatesRouter = router({
       .where(
         and(
             filterByPartner(serviceRates.partnerId, ctx.partnerId),
-            eq(serviceRates.odId, ctx.user.openId),
             eq(serviceRates.isActive, true
           )
         )
@@ -258,7 +254,6 @@ export const serviceRatesRouter = router({
         .where(
           and(
             filterByPartner(serviceRates.partnerId, ctx.partnerId),
-            eq(serviceRates.odId, ctx.user.openId),
             eq(serviceRates.id, input.id
           )
           )
@@ -287,7 +282,6 @@ export const serviceRatesRouter = router({
         .where(
           and(
             filterByPartner(serviceRates.partnerId, ctx.partnerId),
-            eq(serviceRates.odId, ctx.user.openId),
             eq(serviceRates.category, input.category
           )
           )
@@ -346,7 +340,6 @@ export const serviceRatesRouter = router({
         .where(
           and(
             filterByPartner(serviceRates.partnerId, ctx.partnerId),
-            eq(serviceRates.odId, ctx.user.openId),
             eq(serviceRates.id, input.id
           )
           )
@@ -398,7 +391,6 @@ export const serviceRatesRouter = router({
         .where(
           and(
             filterByPartner(serviceRates.partnerId, ctx.partnerId),
-            eq(serviceRates.odId, ctx.user.openId),
             eq(serviceRates.id, input.id
           )
           )
@@ -435,7 +427,6 @@ export const serviceRatesRouter = router({
         .where(
           and(
             filterByPartner(serviceRates.partnerId, ctx.partnerId),
-            eq(serviceRates.odId, ctx.user.openId),
             eq(serviceRates.id, input.id
           )
           )
@@ -465,7 +456,6 @@ export const serviceRatesRouter = router({
       .from(serviceRates)
       .where(
         filterByPartner(serviceRates.partnerId, ctx.partnerId),
-        eq(serviceRates.odId, ctx.user.openId)
       );
 
     return calculateServiceRateStats(items);
@@ -487,7 +477,6 @@ export const serviceRatesRouter = router({
         .where(
           and(
             filterByPartner(serviceRates.partnerId, ctx.partnerId),
-            eq(serviceRates.odId, ctx.user.openId),
             eq(serviceRates.id, input.id
           )
           )

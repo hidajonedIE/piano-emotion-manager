@@ -342,7 +342,6 @@ export const appointmentsRouter = router({
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
         filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId)
       ];
       
       if (dateFrom) {
@@ -417,7 +416,6 @@ export const appointmentsRouter = router({
         .from(appointments)
         .where(
           filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId)
         );
 
       const stats = calculateAppointmentStats(allAppointments);
@@ -442,7 +440,6 @@ export const appointmentsRouter = router({
       .from(appointments)
       .where(
         filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId)
       )
       .orderBy(asc(appointments.date));
 
@@ -473,7 +470,6 @@ export const appointmentsRouter = router({
       // Construir condiciones WHERE
       const whereClauses = [
         filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId),
         gte(appointments.date, start),
         lte(appointments.date, end),
       ];
@@ -575,7 +571,6 @@ export const appointmentsRouter = router({
         .where(
           and(
             filterByPartner(appointments.partnerId, ctx.partnerId),
-            eq(appointments.odId, ctx.user.openId),
             eq(appointments.id, input.id
           )
           )
@@ -601,7 +596,6 @@ export const appointmentsRouter = router({
         .where(
           and(
             filterByPartner(appointments.partnerId, ctx.partnerId),
-            eq(appointments.odId, ctx.user.openId),
             eq(appointments.clientId, input.clientId
           )
           )
@@ -626,7 +620,6 @@ export const appointmentsRouter = router({
         .where(
           and(
             filterByPartner(appointments.partnerId, ctx.partnerId),
-            eq(appointments.odId, ctx.user.openId),
             eq(appointments.pianoId, input.pianoId
           )
           )
@@ -668,7 +661,6 @@ export const appointmentsRouter = router({
         .leftJoin(pianos, eq(appointments.pianoId, pianos.id))
         .where(and(
           filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId),
           gte(appointments.date, now),
           lte(appointments.date, futureDate)
         ))
@@ -706,7 +698,6 @@ export const appointmentsRouter = router({
       .leftJoin(pianos, eq(appointments.pianoId, pianos.id))
       .where(and(
         filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId),
         gte(appointments.date, today),
         lte(appointments.date, tomorrow)
       ))
@@ -745,7 +736,6 @@ export const appointmentsRouter = router({
         .from(appointments)
         .where(and(
           filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId),
           gte(appointments.date, dayStart),
           lte(appointments.date, dayEnd)
         ));
@@ -782,7 +772,6 @@ export const appointmentsRouter = router({
         .from(appointments)
         .where(
           filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId)
         );
 
       const conflicts = detectConflicts(existingAppointments, {
@@ -848,7 +837,6 @@ export const appointmentsRouter = router({
         .where(
           and(
             filterByPartner(appointments.partnerId, ctx.partnerId),
-            eq(appointments.odId, ctx.user.openId),
             eq(appointments.id, input.id
           )
           )
@@ -875,7 +863,6 @@ export const appointmentsRouter = router({
           .from(appointments)
           .where(
             filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId)
           );
 
         conflicts = detectConflicts(existingAppointments, {
@@ -925,7 +912,6 @@ export const appointmentsRouter = router({
         .where(
           and(
             filterByPartner(appointments.partnerId, ctx.partnerId),
-            eq(appointments.odId, ctx.user.openId),
             eq(appointments.id, input.id
           )
           )
@@ -962,7 +948,6 @@ export const appointmentsRouter = router({
         .where(
           and(
             filterByPartner(appointments.partnerId, ctx.partnerId),
-            eq(appointments.odId, ctx.user.openId),
             eq(appointments.id, input.id
           )
           )
@@ -994,7 +979,6 @@ export const appointmentsRouter = router({
 
       const whereClauses = [
         filterByPartner(appointments.partnerId, ctx.partnerId),
-        eq(appointments.odId, ctx.user.openId)
       ];
 
       if (input?.dateFrom) {

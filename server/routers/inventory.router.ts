@@ -211,7 +211,6 @@ export const inventoryRouter = router({
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
         filterByPartner(inventory.partnerId, ctx.partnerId),
-        eq(inventory.odId, ctx.user.openId)
       ];
       
       if (search) {
@@ -270,7 +269,6 @@ export const inventoryRouter = router({
         .from(inventory)
         .where(
           filterByPartner(inventory.partnerId, ctx.partnerId),
-        eq(inventory.odId, ctx.user.openId)
         );
 
       const stats = {
@@ -304,7 +302,6 @@ export const inventoryRouter = router({
       .from(inventory)
       .where(
         filterByPartner(inventory.partnerId, ctx.partnerId),
-        eq(inventory.odId, ctx.user.openId)
       )
       .orderBy(asc(inventory.name));
   }),
@@ -324,7 +321,6 @@ export const inventoryRouter = router({
         .where(
           and(
             filterByPartner(inventory.partnerId, ctx.partnerId),
-            eq(inventory.odId, ctx.user.openId),
             eq(inventory.id, input.id
           )
           )
@@ -381,7 +377,6 @@ export const inventoryRouter = router({
         .where(
           and(
             filterByPartner(inventory.partnerId, ctx.partnerId),
-            eq(inventory.odId, ctx.user.openId),
             eq(inventory.id, input.id
           )
           )
@@ -431,7 +426,6 @@ export const inventoryRouter = router({
         .where(
           and(
             filterByPartner(inventory.partnerId, ctx.partnerId),
-            eq(inventory.odId, ctx.user.openId),
             eq(inventory.id, input.id
           )
           )
@@ -461,7 +455,6 @@ export const inventoryRouter = router({
       .from(inventory)
       .where(
         filterByPartner(inventory.partnerId, ctx.partnerId),
-        eq(inventory.odId, ctx.user.openId)
       );
 
     return items.filter(item => {
@@ -483,7 +476,6 @@ export const inventoryRouter = router({
       .from(inventory)
       .where(
         filterByPartner(inventory.partnerId, ctx.partnerId),
-        eq(inventory.odId, ctx.user.openId)
       );
 
     return items.filter(item => parseFloat(item.quantity) === 0);
@@ -501,7 +493,6 @@ export const inventoryRouter = router({
       .from(inventory)
       .where(
         filterByPartner(inventory.partnerId, ctx.partnerId),
-        eq(inventory.odId, ctx.user.openId)
       );
 
     const totalValue = calculateInventoryValue(items);

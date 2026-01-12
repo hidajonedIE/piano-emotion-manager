@@ -162,7 +162,6 @@ export const remindersRouter = router({
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
         filterByPartner(reminders.partnerId, ctx.partnerId),
-        eq(reminders.odId, ctx.user.openId)
       ];
       
       if (clientId !== undefined) {
@@ -221,7 +220,6 @@ export const remindersRouter = router({
         .from(reminders)
         .where(
           filterByPartner(reminders.partnerId, ctx.partnerId),
-        eq(reminders.odId, ctx.user.openId)
         );
 
       const stats = calculateReminderStats(allReminders);
@@ -246,7 +244,6 @@ export const remindersRouter = router({
       .from(reminders)
       .where(
         filterByPartner(reminders.partnerId, ctx.partnerId),
-        eq(reminders.odId, ctx.user.openId)
       )
       .orderBy(asc(reminders.dueDate));
 
@@ -268,7 +265,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.id, input.id
           )
           )
@@ -295,7 +291,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.clientId, input.clientId
           )
           )
@@ -320,7 +315,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.pianoId, input.pianoId
           )
           )
@@ -343,7 +337,6 @@ export const remindersRouter = router({
       .where(
         and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.isCompleted, false
           )
         )
@@ -367,7 +360,6 @@ export const remindersRouter = router({
       .where(
         and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             and(
             eq(reminders.isCompleted, false
           ),
@@ -401,7 +393,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             and(
               eq(reminders.isCompleted, false
           ),
@@ -433,7 +424,6 @@ export const remindersRouter = router({
       .where(
         and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             and(
             eq(reminders.isCompleted, false
           ),
@@ -494,7 +484,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.id, input.id
           )
           )
@@ -544,7 +533,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.id, input.id
           )
           )
@@ -584,7 +572,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.id, input.id
           )
           )
@@ -624,7 +611,6 @@ export const remindersRouter = router({
         .where(
           and(
             filterByPartner(reminders.partnerId, ctx.partnerId),
-            eq(reminders.odId, ctx.user.openId),
             eq(reminders.id, input.id
           )
           )
@@ -656,7 +642,6 @@ export const remindersRouter = router({
 
       const whereClauses = [
         filterByPartner(reminders.partnerId, ctx.partnerId),
-        eq(reminders.odId, ctx.user.openId)
       ];
 
       if (input?.dateFrom) {

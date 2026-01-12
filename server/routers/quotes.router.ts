@@ -368,8 +368,7 @@ export const quotesRouter = router({
 
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
-        filterByPartner(quotes.partnerId, ctx.partnerId),
-        eq(quotes.odId, ctx.user.openId)
+        filterByPartner(quotes.partnerId, ctx.partnerId)
       ];
       
       if (search) {
@@ -436,7 +435,6 @@ export const quotesRouter = router({
         .from(quotes)
         .where(
           filterByPartner(quotes.partnerId, ctx.partnerId),
-        eq(quotes.odId, ctx.user.openId)
         );
 
       const stats = calculateQuoteStats(allQuotes);
@@ -461,7 +459,6 @@ export const quotesRouter = router({
       .from(quotes)
       .where(
         filterByPartner(quotes.partnerId, ctx.partnerId),
-        eq(quotes.odId, ctx.user.openId)
       )
       .orderBy(desc(quotes.date));
 
@@ -483,7 +480,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             eq(quotes.id, input.id
           )
           )
@@ -511,7 +507,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             eq(quotes.clientId, input.clientId
           )
           )
@@ -535,7 +530,6 @@ export const quotesRouter = router({
       .from(quotes)
       .where(
         filterByPartner(quotes.partnerId, ctx.partnerId),
-        eq(quotes.odId, ctx.user.openId)
       )
       .orderBy(desc(quotes.createdAt));
 
@@ -610,7 +604,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             eq(quotes.id, input.id
           )
           )
@@ -679,7 +672,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             eq(quotes.id, input.id
           )
           )
@@ -717,7 +709,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             eq(quotes.id, input.id
           )
           )
@@ -779,7 +770,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             eq(quotes.id, input.id
           )
           )
@@ -894,7 +884,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             eq(quotes.id, input.id
           )
           )
@@ -911,7 +900,6 @@ export const quotesRouter = router({
         .from(quotes)
         .where(
           filterByPartner(quotes.partnerId, ctx.partnerId),
-        eq(quotes.odId, ctx.user.openId)
         )
         .orderBy(desc(quotes.createdAt));
 
@@ -1000,7 +988,6 @@ export const quotesRouter = router({
         .from(quotes)
         .where(
           filterByPartner(quotes.partnerId, ctx.partnerId),
-        eq(quotes.odId, ctx.user.openId)
         )
         .orderBy(desc(quotes.createdAt));
 
@@ -1075,7 +1062,6 @@ export const quotesRouter = router({
         .where(
           and(
             filterByPartner(quotes.partnerId, ctx.partnerId),
-            eq(quotes.odId, ctx.user.openId),
             and(
               eq(quotes.status, "sent"
           ),
@@ -1103,7 +1089,6 @@ export const quotesRouter = router({
 
       const whereClauses = [
         filterByPartner(quotes.partnerId, ctx.partnerId),
-        eq(quotes.odId, ctx.user.openId)
       ];
 
       if (input?.dateFrom) {
