@@ -134,7 +134,13 @@ export default function RootLayout() {
                     <SnackbarProvider>
                     <AuthGuard>
                     <OnboardingGuard>
-                    <Stack>
+                    <Stack
+                      screenOptions={{
+                        headerTitleStyle: {
+                          fontFamily: 'Arkhip',
+                        },
+                      }}
+                    >
                       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                       <Stack.Screen name="(app)" options={{ headerShown: false }} />
                       <Stack.Screen name="settings" options={{ title: 'Configuración', headerShown: false }} />

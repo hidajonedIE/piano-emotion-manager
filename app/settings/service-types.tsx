@@ -385,6 +385,54 @@ export default function ServiceTypesScreen() {
                   ))}
                 </View>
               </View>
+
+              {/* Tareas Predefinidas */}
+              <View style={styles.formGroup}>
+                <ThemedText style={[styles.label, { color: textSecondary }]}>
+                  Tareas Predefinidas
+                </ThemedText>
+                <ThemedText style={[styles.hint, { color: textSecondary, marginBottom: 8 }]}>
+                  Estas tareas aparecerán automáticamente al crear un servicio de este tipo
+                </ThemedText>
+                
+                {/* Lista de tareas */}
+                {formData.defaultTasks.map((task, index) => (
+                  <View key={index} style={[styles.taskItem, { backgroundColor: cardBg, borderColor }]}>
+                    <TextInput
+                      style={[styles.taskInput, { color: textColor, flex: 1 }]}
+                      value={task}
+                      onChangeText={(text) => {
+                        const newTasks = [...formData.defaultTasks];
+                        newTasks[index] = text;
+                        setFormData({ ...formData, defaultTasks: newTasks });
+                      }}
+                      placeholder="Nombre de la tarea"
+                      placeholderTextColor={textSecondary}
+                    />
+                    <Pressable
+                      onPress={() => {
+                        const newTasks = formData.defaultTasks.filter((_, i) => i !== index);
+                        setFormData({ ...formData, defaultTasks: newTasks });
+                      }}
+                    >
+                      <IconSymbol name="trash" size={20} color="#EF4444" />
+                    </Pressable>
+                  </View>
+                ))}
+                
+                {/* Botón agregar tarea */}
+                <Pressable
+                  style={[styles.addTaskButton, { borderColor, backgroundColor: `${accent}10` }]}
+                  onPress={() => {
+                    setFormData({ ...formData, defaultTasks: [...formData.defaultTasks, ''] });
+                  }}
+                >
+                  <IconSymbol name="plus.circle.fill" size={20} color={accent} />
+                  <ThemedText style={[styles.addTaskText, { color: accent }]}>
+                    Agregar Tarea
+                  </ThemedText>
+                </Pressable>
+              </View>
             </ScrollView>
 
             {/* Footer */}
@@ -631,6 +679,35 @@ const styles = StyleSheet.create({
   buttonPrimary: {},
   buttonText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Task editor
+  taskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+  },
+  taskInput: {
+    fontSize: 14,
+    paddingVertical: Spacing.xs,
+  },
+  addTaskButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  addTaskText: {
+    fontSize: 14,
     fontWeight: '600',
   },
 });

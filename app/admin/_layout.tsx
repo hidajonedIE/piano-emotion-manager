@@ -39,6 +39,7 @@ export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
+        headerTitleStyle: { fontFamily: 'Arkhip' },
         headerShown: false,
         contentStyle: { backgroundColor },
         animation: 'slide_from_right',

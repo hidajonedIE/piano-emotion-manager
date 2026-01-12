@@ -15,7 +15,7 @@ export default function SettingsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor },
         headerTintColor: textColor,
-        headerTitleStyle: { fontWeight: '600' },
+        headerTitleStyle: { fontWeight: '600', fontFamily: 'Arkhip' },
         headerBackTitle: 'Atrás',
       }}
     >

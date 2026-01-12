@@ -95,10 +95,27 @@ export default function ServiceDetailScreen() {
     }
   }, [id, isNew, services]);
 
-  // Actualizar tareas cuando cambia el tipo de servicio o nivel de mantenimiento
+  // Actu  // Auto-cargar tareas cuando cambia el tipo de servicio
   useEffect(() => {
-    if (isEditing && isNew) {
-      const taskNames = getTasksForService(form.type as ServiceType, form.maintenanceLevel);
+    if ((isNew || isEditing) && form.type) {
+      // Buscar el tipo de servicio en el catálogo
+      const serviceType = serviceTypesData.find(st => st.code === form.type);
+      
+      let taskNames: string[] = [];
+      
+      if (serviceType && serviceType.defaultTasks) {
+        // Usar tareas del catálogo si existen
+        try {
+          taskNames = JSON.parse(serviceType.defaultTasks);
+        } catch (e) {
+          // Si falla el parse, usar las tareas por defecto del sistema
+          taskNames = getTasksForService(form.type as ServiceType, form.maintenanceLevel);
+        }
+      } else {
+        // Fallback a tareas por defecto del sistema
+        taskNames = getTasksForService(form.type as ServiceType, form.maintenanceLevel);
+      }
+      
       const tasks: Task[] = taskNames.map((name) => ({
         id: generateId(),
         name,
@@ -106,7 +123,7 @@ export default function ServiceDetailScreen() {
       }));
       setForm((prev) => ({ ...prev, tasks }));
     }
-  }, [form.type, form.maintenanceLevel, isEditing, isNew]);
+  }, [form.type, form.maintenanceLevel, isEditing, isNew, serviceTypesData]);
 
   const selectedClient = form.clientId ? getClient(form.clientId) : null;
   const selectedPiano = form.pianoId ? getPiano(form.pianoId) : null;

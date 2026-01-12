@@ -10,6 +10,9 @@ export default function AppLayout() {
     <Stack
       screenOptions={{
         headerBackTitle: 'Atrás',
+        headerTitleStyle: {
+          fontFamily: 'Arkhip',
+        },
       }}
     >
       {/* Gestión de Equipos */}
