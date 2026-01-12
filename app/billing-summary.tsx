@@ -10,16 +10,17 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useInvoices } from '@/hooks/use-invoices';
+import { useInvoicesData } from '@/hooks/data';
 import { BorderRadius, Spacing } from '@/constants/theme';
 
-type ViewMode = 'monthly' | 'yearly';
+type ViewMode = 'monthly' | 'quarterly' | 'yearly';
 
 export default function BillingSummaryScreen() {
-  const { invoices } = useInvoices();
+  const { invoices = [] } = useInvoicesData();
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedQuarter, setSelectedQuarter] = useState(Math.floor(new Date().getMonth() / 3) + 1);
 
   const backgroundColor = useThemeColor({}, 'background');
   const cardBg = useThemeColor({}, 'cardBackground');
@@ -55,6 +56,12 @@ export default function BillingSummaryScreen() {
       filteredInvoices = invoices.filter(inv => {
         const date = new Date(inv.date);
         return date.getFullYear() === selectedYear && date.getMonth() === selectedMonth;
+      });
+    } else if (viewMode === 'quarterly') {
+      filteredInvoices = invoices.filter(inv => {
+        const date = new Date(inv.date);
+        const invoiceQuarter = Math.floor(date.getMonth() / 3) + 1;
+        return date.getFullYear() === selectedYear && invoiceQuarter === selectedQuarter;
       });
     } else {
       filteredInvoices = invoices.filter(inv => {
@@ -108,7 +115,7 @@ export default function BillingSummaryScreen() {
       pendingCount,
       monthlyBreakdown,
     };
-  }, [invoices, viewMode, selectedYear, selectedMonth]);
+  }, [invoices, viewMode, selectedYear, selectedMonth, selectedQuarter]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
@@ -118,6 +125,56 @@ export default function BillingSummaryScreen() {
   };
 
   const maxMonthlyTotal = Math.max(...stats.monthlyBreakdown.map(m => m.total), 1);
+
+  const getPeriodText = () => {
+    if (viewMode === 'monthly') {
+      return `${months[selectedMonth]} ${selectedYear}`;
+    } else if (viewMode === 'quarterly') {
+      return `T${selectedQuarter} ${selectedYear}`;
+    } else {
+      return `Año ${selectedYear}`;
+    }
+  };
+
+  const handlePreviousPeriod = () => {
+    if (viewMode === 'monthly') {
+      if (selectedMonth === 0) {
+        setSelectedMonth(11);
+        setSelectedYear(selectedYear - 1);
+      } else {
+        setSelectedMonth(selectedMonth - 1);
+      }
+    } else if (viewMode === 'quarterly') {
+      if (selectedQuarter === 1) {
+        setSelectedQuarter(4);
+        setSelectedYear(selectedYear - 1);
+      } else {
+        setSelectedQuarter(selectedQuarter - 1);
+      }
+    } else {
+      setSelectedYear(selectedYear - 1);
+    }
+  };
+
+  const handleNextPeriod = () => {
+    if (viewMode === 'monthly') {
+      if (selectedMonth === 11) {
+        setSelectedMonth(0);
+        setSelectedYear(selectedYear + 1);
+      } else {
+        setSelectedMonth(selectedMonth + 1);
+      }
+    } else if (viewMode === 'quarterly') {
+      if (selectedQuarter === 4) {
+        setSelectedQuarter(1);
+        setSelectedYear(selectedYear + 1);
+      } else {
+        setSelectedQuarter(selectedQuarter + 1);
+      }
+    } else {
+      setSelectedYear(selectedYear + 1);
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -149,6 +206,20 @@ export default function BillingSummaryScreen() {
           <Pressable
             style={[
               styles.viewOption,
+              viewMode === 'quarterly' && { backgroundColor: primary },
+            ]}
+            onPress={() => setViewMode('quarterly')}
+          >
+            <ThemedText style={[
+              styles.viewOptionText,
+              viewMode === 'quarterly' && { color: '#fff' },
+            ]}>
+              Trimestral
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.viewOption,
               viewMode === 'yearly' && { backgroundColor: primary },
             ]}
             onPress={() => setViewMode('yearly')}
@@ -166,43 +237,18 @@ export default function BillingSummaryScreen() {
         <View style={[styles.periodSelector, { backgroundColor: cardBg }]}>
           <Pressable
             style={styles.periodArrow}
-            onPress={() => {
-              if (viewMode === 'monthly') {
-                if (selectedMonth === 0) {
-                  setSelectedMonth(11);
-                  setSelectedYear(selectedYear - 1);
-                } else {
-                  setSelectedMonth(selectedMonth - 1);
-                }
-              } else {
-                setSelectedYear(selectedYear - 1);
-              }
-            }}
+            onPress={handlePreviousPeriod}
           >
             <IconSymbol name="chevron.left" size={20} color={primary} />
           </Pressable>
           
           <ThemedText style={styles.periodText}>
-            {viewMode === 'monthly' 
-              ? `${months[selectedMonth]} ${selectedYear}`
-              : `Año ${selectedYear}`
-            }
+            {getPeriodText()}
           </ThemedText>
           
           <Pressable
             style={styles.periodArrow}
-            onPress={() => {
-              if (viewMode === 'monthly') {
-                if (selectedMonth === 11) {
-                  setSelectedMonth(0);
-                  setSelectedYear(selectedYear + 1);
-                } else {
-                  setSelectedMonth(selectedMonth + 1);
-                }
-              } else {
-                setSelectedYear(selectedYear + 1);
-              }
-            }}
+            onPress={handleNextPeriod}
           >
             <IconSymbol name="chevron.right" size={20} color={primary} />
           </Pressable>
