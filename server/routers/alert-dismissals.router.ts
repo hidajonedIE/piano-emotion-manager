@@ -4,7 +4,7 @@
  */
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc';
-import { db } from '../db';
+import { getDb } from '../db.js';
 import { alertDismissals } from '../../drizzle/alerts-schema';
 import { eq, and, or, isNull, gt } from 'drizzle-orm';
 
@@ -25,9 +25,10 @@ export const alertDismissalsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { alertType, alertKey, reactivateAt } = input;
+      const database = await getDb();
 
       // Verificar si ya está desactivada
-      const existing = await db
+      const existing = await database
         .select()
         .from(alertDismissals)
         .where(
@@ -42,7 +43,7 @@ export const alertDismissalsRouter = router({
 
       if (existing.length > 0) {
         // Actualizar la fecha de reactivación
-        await db
+        await database
           .update(alertDismissals)
           .set({
             reactivateAt: reactivateAt ? new Date(reactivateAt) : null,
@@ -54,7 +55,7 @@ export const alertDismissalsRouter = router({
       }
 
       // Crear nueva desactivación
-      const result = await db.insert(alertDismissals).values({
+      const result = await database.insert(alertDismissals).values({
         alertType,
         alertKey,
         userId: ctx.user.openId,
@@ -77,8 +78,9 @@ export const alertDismissalsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { alertType, alertKey } = input;
+      const database = await getDb();
 
-      await db
+      await database
         .delete(alertDismissals)
         .where(
           and(
@@ -106,8 +108,9 @@ export const alertDismissalsRouter = router({
     .query(async ({ ctx, input }) => {
       const { alertType, alertKey } = input;
       const now = new Date();
+      const database = await getDb();
 
-      const dismissed = await db
+      const dismissed = await database
         .select()
         .from(alertDismissals)
         .where(
@@ -134,7 +137,8 @@ export const alertDismissalsRouter = router({
    * Obtener todas las alertas desactivadas del usuario
    */
   list: protectedProcedure.query(async ({ ctx }) => {
-    const dismissed = await db
+    const database = await getDb();
+    const dismissed = await database
       .select()
       .from(alertDismissals)
       .where(
@@ -154,8 +158,9 @@ export const alertDismissalsRouter = router({
    */
   cleanExpired: protectedProcedure.mutation(async ({ ctx }) => {
     const now = new Date();
+    const database = await getDb();
 
-    const result = await db
+    const result = await database
       .delete(alertDismissals)
       .where(
         and(
