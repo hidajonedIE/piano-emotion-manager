@@ -214,7 +214,7 @@ export function ClientSelector({
               ]}
               numberOfLines={1}
             >
-              {selectedClient ? getClientFullName(selectedClient) : 'Selecciona un cliente'}
+              {selectedClient ? getClientFullName(selectedClient) : 'Haz clic para seleccionar un cliente'}
             </ThemedText>
           </View>
         </View>
@@ -331,8 +331,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   triggerLabel: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
