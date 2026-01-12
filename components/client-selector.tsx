@@ -214,7 +214,7 @@ export function ClientSelector({
               ]}
               numberOfLines={1}
             >
-              {selectedClient ? getClientFullName(selectedClient) : 'Haz clic para seleccionar un cliente'}
+              {selectedClient ? getClientFullName(selectedClient) : 'Haz clic para seleccionar/crear un cliente'}
             </ThemedText>
           </View>
         </View>
