@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ClientSelector } from '@/components/client-selector';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
 import { useInventoryData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -236,35 +237,24 @@ export default function ServiceDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Selección de cliente */}
-        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
-          <ThemedText style={[styles.label, { color: textSecondary }]}>Cliente *</ThemedText>
-          {isEditing ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.horizontalList}>
-                {clients.map((c) => (
-                  <Pressable
-                    key={c.id}
-                    style={[
-                      styles.selectOption,
-                      { backgroundColor: cardBg, borderColor },
-                      form.clientId === c.id && { backgroundColor: accent, borderColor: accent },
-                    ]}
-                    onPress={() => setForm({ ...form, clientId: c.id, pianoId: '' })}
-                  >
-                    <ThemedText
-                      style={{ color: form.clientId === c.id ? '#FFFFFF' : textSecondary }}
-                      numberOfLines={1}
-                    >
-                      {getClientFullName(c)}
-                    </ThemedText>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
-          ) : (
+        {isEditing ? (
+          <View style={[styles.section, { paddingHorizontal: 0, paddingVertical: 0 }]}>
+            <ClientSelector
+              clients={clients}
+              selectedClientId={form.clientId}
+              onClientSelect={(clientId) => setForm({ ...form, clientId, pianoId: '' })}
+              onCreateClient={() => router.push('/client/new')}
+              showCreateOption={true}
+              label="Cliente"
+              required={true}
+            />
+          </View>
+        ) : (
+          <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>Cliente *</ThemedText>
             <ThemedText style={styles.value}>{selectedClient ? getClientFullName(selectedClient) : '-'}</ThemedText>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* Selección de piano */}
         {form.clientId && (
