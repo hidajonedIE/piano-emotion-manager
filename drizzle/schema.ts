@@ -1012,4 +1012,4 @@ export const workAssignments = mysqlTable("work_assignments", {
 ]);
 
 // Alert Dismissals
-export * from './alerts-schema';
+// export * from './alerts-schema'; // Removed: file no longer exists
