@@ -208,14 +208,7 @@ export const servicesRouter = router({
       const [{ totalRevenue }] = await database
         .select({ totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
         .from(services)
-        .where(
-          filterByPartnerAndOrganization(
-            services,
-            ctx.partnerId,
-            ctx.orgContext,
-            "services"
-          )
-        );
+        .where(and(...whereClauses));
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {
