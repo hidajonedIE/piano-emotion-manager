@@ -62,7 +62,8 @@ export default function AccountingScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('export');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedQuarter, setSelectedQuarter] = useState(getCurrentQuarter());
-  const [selectedPeriod, setSelectedPeriod] = useState<ExportPeriod>('quarter');
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedPeriod, setSelectedPeriod] = useState<ExportPeriod>('month');
   const [isExporting, setIsExporting] = useState(false);
 
   const backgroundColor = useThemeColor({}, 'background');
@@ -80,24 +81,32 @@ export default function AccountingScreen() {
 
   // Filtrar facturas por período seleccionado
   const filteredInvoices = useMemo(() => {
+    if (selectedPeriod === 'month') {
+      // Filtrar por mes seleccionado
+      return invoices.filter(inv => {
+        const invDate = new Date(inv.date);
+        return invDate.getMonth() === selectedMonth.getMonth() &&
+               invDate.getFullYear() === selectedMonth.getFullYear();
+      });
+    }
     return filterInvoicesByPeriod(
       invoices,
       selectedPeriod,
       selectedYear,
       selectedQuarter
     );
-  }, [invoices, selectedPeriod, selectedYear, selectedQuarter]);
+  }, [invoices, selectedPeriod, selectedYear, selectedQuarter, selectedMonth]);
 
   // Calcular totales
   const totals = useMemo(() => {
     const totalBase = filteredInvoices.reduce((sum, inv) => sum + (inv.subtotal || 0), 0);
-    const totalVAT = filteredInvoices.reduce((sum, inv) => sum + (inv.vatAmount || 0), 0);
+    const totalVAT = filteredInvoices.reduce((sum, inv) => sum + (inv.tax || 0), 0);
     const totalAmount = filteredInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
     const paidAmount = filteredInvoices
       .filter(inv => inv.status === 'paid')
       .reduce((sum, inv) => sum + (inv.total || 0), 0);
     const pendingAmount = filteredInvoices
-      .filter(inv => inv.status === 'pending')
+      .filter(inv => inv.status === 'sent' || inv.status === 'overdue')
       .reduce((sum, inv) => sum + (inv.total || 0), 0);
 
     return { totalBase, totalVAT, totalAmount, paidAmount, pendingAmount };
@@ -106,7 +115,7 @@ export default function AccountingScreen() {
   // Calcular datos fiscales según el país
   const fiscalData = useMemo(() => {
     const ingresos = filteredInvoices.reduce((sum, inv) => sum + (inv.subtotal || 0), 0);
-    const ivaTotal = filteredInvoices.reduce((sum, inv) => sum + (inv.vatAmount || 0), 0);
+    const ivaTotal = filteredInvoices.reduce((sum, inv) => sum + (inv.tax || 0), 0);
     
     // Agrupar por tipo de IVA
     const byVatRate: Record<number, { base: number; vat: number }> = {};
@@ -116,7 +125,7 @@ export default function AccountingScreen() {
         byVatRate[rate] = { base: 0, vat: 0 };
       }
       byVatRate[rate].base += inv.subtotal || 0;
-      byVatRate[rate].vat += inv.vatAmount || 0;
+      byVatRate[rate].vat += inv.tax || 0;
     });
 
     return {
@@ -184,7 +193,7 @@ export default function AccountingScreen() {
         clientTaxId: inv.clientTaxId || '',
         baseAmount: inv.subtotal || 0,
         vatRate: inv.vatRate || fiscalConfig.taxRates[0].rate,
-        vatAmount: inv.vatAmount || 0,
+        vatAmount: inv.tax || 0,
         totalAmount: inv.total || 0,
         type: 'issued' as const,
       }));
