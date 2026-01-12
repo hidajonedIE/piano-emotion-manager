@@ -55,7 +55,7 @@ export default function AccountingScreen() {
   // Verificar acceso premium
   const { hasAccountingAccess } = usePremiumAccess();
   
-  const { invoices = [] } = useInvoicesData?.() || { invoices: [] };
+  const { invoices = [] } = useInvoicesData() || { invoices: [] };
   
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>('ES');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
