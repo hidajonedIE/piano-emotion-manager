@@ -207,22 +207,25 @@ export default function ServiceTypesScreen() {
         </View>
       </View>
 
-      {!type.isDefault && (
-        <View style={styles.actions}>
-          <Pressable
-            style={[styles.actionButton, { borderColor }]}
-            onPress={() => handleOpenModal(type)}
-          >
-            <IconSymbol name="pencil" size={18} color={accent} />
-          </Pressable>
+      <View style={styles.actions}>
+        {/* Botón de edición (disponible para todos) */}
+        <Pressable
+          style={[styles.actionButton, { borderColor }]}
+          onPress={() => handleOpenModal(type)}
+        >
+          <IconSymbol name="pencil" size={18} color={accent} />
+        </Pressable>
+        
+        {/* Botón de eliminación (solo para tipos personalizados) */}
+        {!type.isDefault && (
           <Pressable
             style={[styles.actionButton, { borderColor }]}
             onPress={() => handleDelete(type)}
           >
             <IconSymbol name="trash" size={18} color="#EF4444" />
           </Pressable>
-        </View>
-      )}
+        )}
+      </View>
     </View>
   );
 
@@ -309,8 +312,8 @@ export default function ServiceTypesScreen() {
 
             {/* Form */}
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-              {/* Código (solo para nuevos) */}
-              {!editingType && (
+              {/* Código (solo para nuevos o mostrar para tipos por defecto) */}
+              {!editingType ? (
                 <View style={styles.formGroup}>
                   <ThemedText style={[styles.label, { color: textSecondary }]}>
                     Código *
@@ -326,7 +329,19 @@ export default function ServiceTypesScreen() {
                     Identificador único (sin espacios)
                   </ThemedText>
                 </View>
-              )}
+              ) : editingType.isDefault ? (
+                <View style={styles.formGroup}>
+                  <ThemedText style={[styles.label, { color: textSecondary }]}>
+                    Código
+                  </ThemedText>
+                  <ThemedText style={[styles.input, { backgroundColor: `${textSecondary}10`, borderColor, color: textSecondary, paddingVertical: 12 }]}>
+                    {formData.code}
+                  </ThemedText>
+                  <ThemedText style={[styles.hint, { color: textSecondary }]}>
+                    El código de tipos por defecto no se puede modificar
+                  </ThemedText>
+                </View>
+              ) : null}
 
               {/* Nombre */}
               <View style={styles.formGroup}>

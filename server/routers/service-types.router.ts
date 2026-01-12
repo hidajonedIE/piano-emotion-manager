@@ -251,10 +251,7 @@ export const serviceTypesRouter = router({
         throw new Error('Tipo de servicio no encontrado');
       }
 
-      // No se pueden editar tipos por defecto
-      if (existing[0].isDefault === 1) {
-        throw new Error('No se pueden editar tipos de servicio por defecto');
-      }
+      // Permitir edición de tipos por defecto (solo se protege contra eliminación)
 
       // Actualizar
       const updateData: any = {};
