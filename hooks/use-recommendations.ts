@@ -24,14 +24,31 @@ const REGULATION_THRESHOLDS = {
 };
 
 export function useRecommendations(pianos: Piano[], services: Service[]) {
+  // Pre-calcular mapa de servicios por piano (solo una vez)
+  const servicesByPiano = useMemo(() => {
+    const map = new Map<string, Service[]>();
+    
+    services.forEach((service) => {
+      if (!map.has(service.pianoId)) {
+        map.set(service.pianoId, []);
+      }
+      map.get(service.pianoId)!.push(service);
+    });
+    
+    // Ordenar servicios de cada piano por fecha (más reciente primero)
+    map.forEach((pianoServices) => {
+      pianoServices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
+    
+    return map;
+  }, [services]);
+
   const recommendations = useMemo(() => {
     const result: Recommendation[] = [];
 
     pianos.forEach((piano) => {
-      // Obtener servicios de este piano ordenados por fecha (más reciente primero)
-      const pianoServices = services
-        .filter((s) => s.pianoId === piano.id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      // Obtener servicios pre-ordenados del mapa
+      const pianoServices = servicesByPiano.get(piano.id) || [];
 
       // 1. VERIFICAR ESTADO DEL PIANO
       // Si el piano necesita reparación, esa es la prioridad máxima
@@ -146,9 +163,9 @@ export function useRecommendations(pianos: Piano[], services: Service[]) {
       }
       return b.daysSinceLastService - a.daysSinceLastService;
     });
-  }, [pianos, services]);
+  }, [pianos, servicesByPiano]);
 
-  // Contadores
+  // Contadores memoizados
   const urgentCount = useMemo(
     () => recommendations.filter((r) => r.priority === 'urgent').length,
     [recommendations]
@@ -164,27 +181,41 @@ export function useRecommendations(pianos: Piano[], services: Service[]) {
     [pianos]
   );
 
-  // Funciones de filtrado
-  const getRecommendationsForPiano = (pianoId: string) =>
-    recommendations.filter((r) => r.pianoId === pianoId);
+  // Funciones de filtrado memoizadas
+  const getRecommendationsForPiano = useMemo(
+    () => (pianoId: string) => recommendations.filter((r) => r.pianoId === pianoId),
+    [recommendations]
+  );
 
-  const getRecommendationsForClient = (clientId: string) =>
-    recommendations.filter((r) => r.clientId === clientId);
+  const getRecommendationsForClient = useMemo(
+    () => (clientId: string) => recommendations.filter((r) => r.clientId === clientId),
+    [recommendations]
+  );
 
-  const getUrgentRecommendations = () =>
-    recommendations.filter((r) => r.priority === 'urgent');
+  const getUrgentRecommendations = useMemo(
+    () => () => recommendations.filter((r) => r.priority === 'urgent'),
+    [recommendations]
+  );
 
-  const getPendingRecommendations = () =>
-    recommendations.filter((r) => r.priority === 'pending');
+  const getPendingRecommendations = useMemo(
+    () => () => recommendations.filter((r) => r.priority === 'pending'),
+    [recommendations]
+  );
 
-  const getTuningRecommendations = () =>
-    recommendations.filter((r) => r.type === 'tuning' && r.priority !== 'ok');
+  const getTuningRecommendations = useMemo(
+    () => () => recommendations.filter((r) => r.type === 'tuning' && r.priority !== 'ok'),
+    [recommendations]
+  );
 
-  const getRegulationRecommendations = () =>
-    recommendations.filter((r) => r.type === 'regulation');
+  const getRegulationRecommendations = useMemo(
+    () => () => recommendations.filter((r) => r.type === 'regulation'),
+    [recommendations]
+  );
 
-  const getRepairRecommendations = () =>
-    recommendations.filter((r) => r.type === 'repair');
+  const getRepairRecommendations = useMemo(
+    () => () => recommendations.filter((r) => r.type === 'repair'),
+    [recommendations]
+  );
 
   return {
     recommendations,

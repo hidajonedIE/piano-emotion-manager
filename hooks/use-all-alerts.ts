@@ -1,8 +1,9 @@
 /**
- * Hook Consolidado de Alertas
+ * Hook Consolidado de Alertas (Optimizado)
  * Piano Emotion Manager
  * 
  * Agrega alertas de múltiples fuentes: pianos, citas, facturas, presupuestos y recordatorios
+ * Optimizado para reducir cálculos repetidos y mejorar rendimiento
  */
 
 import { useMemo } from 'react';
@@ -65,23 +66,38 @@ export function useAllAlerts(
     }));
   }, [recommendations]);
 
-  // Alertas de citas
-  const appointmentAlerts: Alert[] = useMemo(() => {
-    if (!appointments || appointments.length === 0) return [];
-    
+  // Pre-calcular fechas una sola vez
+  const dateCalculations = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const nextWeek = new Date(today);
     nextWeek.setDate(nextWeek.getDate() + 7);
+    const sevenDaysFromNow = new Date(now);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    
+    return { now, today, tomorrow, nextWeek, sevenDaysFromNow };
+  }, []);
 
+  // Alertas de citas (optimizado)
+  const appointmentAlerts: Alert[] = useMemo(() => {
+    if (!appointments || appointments.length === 0) return [];
+    
+    const { today, tomorrow, nextWeek } = dateCalculations;
     const alerts: Alert[] = [];
 
-    // Citas de hoy
-    const todayAppointments = appointments.filter(apt => {
+    // Filtrar citas de hoy y de la semana en una sola pasada
+    const todayAppointments: any[] = [];
+    const weekAppointments: any[] = [];
+    
+    appointments.forEach(apt => {
       const aptDate = new Date(apt.date);
-      return aptDate >= today && aptDate < tomorrow;
+      if (aptDate >= today && aptDate < tomorrow) {
+        todayAppointments.push(apt);
+      } else if (aptDate >= tomorrow && aptDate < nextWeek) {
+        weekAppointments.push(apt);
+      }
     });
 
     if (todayAppointments.length > 0) {
@@ -96,12 +112,6 @@ export function useAllAlerts(
       });
     }
 
-    // Citas de esta semana
-    const weekAppointments = appointments.filter(apt => {
-      const aptDate = new Date(apt.date);
-      return aptDate >= tomorrow && aptDate < nextWeek;
-    });
-
     if (weekAppointments.length > 0) {
       alerts.push({
         id: 'appointments-week',
@@ -115,18 +125,37 @@ export function useAllAlerts(
     }
 
     return alerts;
-  }, [appointments]);
+  }, [appointments, dateCalculations]);
 
-  // Alertas de facturas
+  // Alertas de facturas (optimizado)
   const invoiceAlerts: Alert[] = useMemo(() => {
     if (!invoices || invoices.length === 0) return [];
     
+    const { now } = dateCalculations;
     const alerts: Alert[] = [];
 
-    // Facturas pendientes de pago
-    const pendingInvoices = invoices.filter(inv => inv.status === 'sent');
+    // Procesar facturas en una sola pasada
+    const pendingInvoices: any[] = [];
+    const overdueInvoices: any[] = [];
+    let totalPending = 0;
+    let totalOverdue = 0;
+
+    invoices.forEach(inv => {
+      if (inv.status === 'sent') {
+        pendingInvoices.push(inv);
+        totalPending += inv.total || 0;
+        
+        if (inv.dueDate) {
+          const dueDate = new Date(inv.dueDate);
+          if (dueDate < now) {
+            overdueInvoices.push(inv);
+            totalOverdue += inv.total || 0;
+          }
+        }
+      }
+    });
+
     if (pendingInvoices.length > 0) {
-      const totalPending = pendingInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
       alerts.push({
         id: 'invoices-pending',
         type: 'invoice',
@@ -138,16 +167,7 @@ export function useAllAlerts(
       });
     }
 
-    // Facturas vencidas
-    const now = new Date();
-    const overdueInvoices = invoices.filter(inv => {
-      if (inv.status !== 'sent' || !inv.dueDate) return false;
-      const dueDate = new Date(inv.dueDate);
-      return dueDate < now;
-    });
-
     if (overdueInvoices.length > 0) {
-      const totalOverdue = overdueInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
       alerts.push({
         id: 'invoices-overdue',
         type: 'invoice',
@@ -160,18 +180,35 @@ export function useAllAlerts(
     }
 
     return alerts;
-  }, [invoices]);
+  }, [invoices, dateCalculations]);
 
-  // Alertas de presupuestos
+  // Alertas de presupuestos (optimizado)
   const quoteAlerts: Alert[] = useMemo(() => {
     if (!quotes || quotes.length === 0) return [];
     
+    const { now, sevenDaysFromNow } = dateCalculations;
     const alerts: Alert[] = [];
 
-    // Presupuestos enviados esperando respuesta
-    const pendingQuotes = quotes.filter(q => q.status === 'sent');
+    // Procesar presupuestos en una sola pasada
+    const pendingQuotes: any[] = [];
+    const expiringQuotes: any[] = [];
+    let totalPending = 0;
+
+    quotes.forEach(q => {
+      if (q.status === 'sent') {
+        pendingQuotes.push(q);
+        totalPending += q.total || 0;
+        
+        if (q.validUntil) {
+          const validUntil = new Date(q.validUntil);
+          if (validUntil > now && validUntil <= sevenDaysFromNow) {
+            expiringQuotes.push(q);
+          }
+        }
+      }
+    });
+
     if (pendingQuotes.length > 0) {
-      const totalPending = pendingQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
       alerts.push({
         id: 'quotes-pending',
         type: 'quote',
@@ -182,17 +219,6 @@ export function useAllAlerts(
         data: { count: pendingQuotes.length, total: totalPending, quotes: pendingQuotes },
       });
     }
-
-    // Presupuestos próximos a expirar (menos de 7 días)
-    const now = new Date();
-    const sevenDaysFromNow = new Date(now);
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-
-    const expiringQuotes = quotes.filter(q => {
-      if (q.status !== 'sent' || !q.validUntil) return false;
-      const validUntil = new Date(q.validUntil);
-      return validUntil > now && validUntil <= sevenDaysFromNow;
-    });
 
     if (expiringQuotes.length > 0) {
       alerts.push({
@@ -207,7 +233,7 @@ export function useAllAlerts(
     }
 
     return alerts;
-  }, [quotes]);
+  }, [quotes, dateCalculations]);
 
   // Consolidar todas las alertas
   const allAlerts = useMemo(() => {
@@ -223,11 +249,17 @@ export function useAllAlerts(
     });
   }, [pianoAlerts, appointmentAlerts, invoiceAlerts, quoteAlerts]);
 
-  // Calcular estadísticas
+  // Calcular estadísticas (optimizado)
   const stats = useMemo(() => {
-    const urgent = allAlerts.filter(a => a.priority === 'urgent').length;
-    const warning = allAlerts.filter(a => a.priority === 'warning').length;
-    const info = allAlerts.filter(a => a.priority === 'info').length;
+    let urgent = 0;
+    let warning = 0;
+    let info = 0;
+
+    allAlerts.forEach(a => {
+      if (a.priority === 'urgent') urgent++;
+      else if (a.priority === 'warning') warning++;
+      else if (a.priority === 'info') info++;
+    });
 
     return {
       total: allAlerts.length,
