@@ -13,7 +13,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { FAB } from '@/components/fab';
-import { useQuotes } from '@/hooks/use-quotes';
+import { useQuotesData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 
@@ -43,7 +43,7 @@ interface Quote {
 export default function QuotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { quotes, loading } = useQuotes();
+  const { quotes, loading } = useQuotesData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all');

@@ -11,3 +11,5 @@ export { usePianosData } from './use-pianos-data';
 export { useServicesData } from './use-services-data';
 export { useInventoryData } from './use-inventory-data';
 export { useAppointmentsData } from './use-appointments-data';
+export { useInvoicesData } from './use-invoices-data';
+export { useQuotesData } from './use-quotes-data';

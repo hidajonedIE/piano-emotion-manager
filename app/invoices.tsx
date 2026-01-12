@@ -13,7 +13,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { FAB } from '@/components/fab';
-import { useInvoices } from '@/hooks/use-invoices';
+import { useInvoicesData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Invoice, INVOICE_STATUS_LABELS } from '@/types/invoice';
@@ -21,7 +21,7 @@ import { Invoice, INVOICE_STATUS_LABELS } from '@/types/invoice';
 export default function InvoicesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { invoices, loading } = useInvoices();
+  const { invoices, loading } = useInvoicesData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Invoice['status'] | 'all'>('all');
