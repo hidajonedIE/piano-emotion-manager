@@ -160,12 +160,8 @@ export const remindersRouter = router({
 
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders"
-        )
+        filterByPartner(reminders.partnerId, ctx.partnerId),
+        eq(reminders.odId, ctx.user.openId)
       ];
       
       if (clientId !== undefined) {
@@ -223,12 +219,8 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders"
-          )
+          filterByPartner(reminders.partnerId, ctx.partnerId),
+        eq(reminders.odId, ctx.user.openId)
         );
 
       const stats = calculateReminderStats(allReminders);
@@ -252,12 +244,8 @@ export const remindersRouter = router({
       .select()
       .from(reminders)
       .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders"
-        )
+        filterByPartner(reminders.partnerId, ctx.partnerId),
+        eq(reminders.odId, ctx.user.openId)
       )
       .orderBy(asc(reminders.dueDate));
 
@@ -277,12 +265,11 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.id, input.id
+          )
           )
         );
 
@@ -305,12 +292,11 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.clientId, input.clientId)
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.clientId, input.clientId
+          )
           )
         )
         .orderBy(asc(reminders.dueDate));
@@ -331,12 +317,11 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.pianoId, input.pianoId)
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.pianoId, input.pianoId
+          )
           )
         )
         .orderBy(asc(reminders.dueDate));
@@ -355,12 +340,11 @@ export const remindersRouter = router({
       .select()
       .from(reminders)
       .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders",
-          eq(reminders.isCompleted, false)
+        and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.isCompleted, false
+          )
         )
       )
       .orderBy(asc(reminders.dueDate));
@@ -380,13 +364,12 @@ export const remindersRouter = router({
       .select()
       .from(reminders)
       .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders",
-          and(
-            eq(reminders.isCompleted, false),
+        and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            and(
+            eq(reminders.isCompleted, false
+          ),
             lte(reminders.dueDate, now)
           )
         )
@@ -415,13 +398,12 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
             and(
-              eq(reminders.isCompleted, false),
+              eq(reminders.isCompleted, false
+          ),
               gte(reminders.dueDate, now),
               lte(reminders.dueDate, cutoff)
             )
@@ -448,13 +430,12 @@ export const remindersRouter = router({
       .select()
       .from(reminders)
       .where(
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders",
-          and(
-            eq(reminders.isCompleted, false),
+        and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            and(
+            eq(reminders.isCompleted, false
+          ),
             gte(reminders.dueDate, today),
             lte(reminders.dueDate, tomorrow)
           )
@@ -510,12 +491,11 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.id, input.id
+          )
           )
         );
 
@@ -561,12 +541,11 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.id, input.id
+          )
           )
         );
 
@@ -602,12 +581,11 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.id, input.id
+          )
           )
         );
 
@@ -643,12 +621,11 @@ export const remindersRouter = router({
         .select()
         .from(reminders)
         .where(
-          filterByPartnerAndOrganization(
-            reminders,
-            ctx.partnerId,
-            ctx.orgContext,
-            "reminders",
-            eq(reminders.id, input.id)
+          and(
+            filterByPartner(reminders.partnerId, ctx.partnerId),
+            eq(reminders.odId, ctx.user.openId),
+            eq(reminders.id, input.id
+          )
           )
         );
 
@@ -677,12 +654,8 @@ export const remindersRouter = router({
       if (!database) return null;
 
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          reminders,
-          ctx.partnerId,
-          ctx.orgContext,
-          "reminders"
-        )
+        filterByPartner(reminders.partnerId, ctx.partnerId),
+        eq(reminders.odId, ctx.user.openId)
       ];
 
       if (input?.dateFrom) {

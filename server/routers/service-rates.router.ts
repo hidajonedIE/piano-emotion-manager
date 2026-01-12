@@ -137,12 +137,8 @@ export const serviceRatesRouter = router({
 
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          serviceRates,
-          ctx.partnerId,
-          ctx.orgContext,
-          "serviceRates"
-        )
+        filterByPartner(serviceRates.partnerId, ctx.partnerId),
+        eq(serviceRates.odId, ctx.user.openId)
       ];
       
       if (category !== undefined) {
@@ -184,12 +180,8 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
-            serviceRates,
-            ctx.partnerId,
-            ctx.orgContext,
-            "serviceRates"
-          )
+          filterByPartner(serviceRates.partnerId, ctx.partnerId),
+        eq(serviceRates.odId, ctx.user.openId)
         );
 
       const stats = calculateServiceRateStats(allRates);
@@ -213,12 +205,8 @@ export const serviceRatesRouter = router({
       .select()
       .from(serviceRates)
       .where(
-        filterByPartnerAndOrganization(
-          serviceRates,
-          ctx.partnerId,
-          ctx.orgContext,
-          "serviceRates"
-        )
+        filterByPartner(serviceRates.partnerId, ctx.partnerId),
+        eq(serviceRates.odId, ctx.user.openId)
       )
       .orderBy(asc(serviceRates.name));
 
@@ -239,12 +227,11 @@ export const serviceRatesRouter = router({
       .select()
       .from(serviceRates)
       .where(
-        filterByPartnerAndOrganization(
-          serviceRates,
-          ctx.partnerId,
-          ctx.orgContext,
-          "serviceRates",
-          eq(serviceRates.isActive, true)
+        and(
+            filterByPartner(serviceRates.partnerId, ctx.partnerId),
+            eq(serviceRates.odId, ctx.user.openId),
+            eq(serviceRates.isActive, true
+          )
         )
       )
       .orderBy(asc(serviceRates.name));
@@ -268,12 +255,11 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
-            serviceRates,
-            ctx.partnerId,
-            ctx.orgContext,
-            "serviceRates",
-            eq(serviceRates.id, input.id)
+          and(
+            filterByPartner(serviceRates.partnerId, ctx.partnerId),
+            eq(serviceRates.odId, ctx.user.openId),
+            eq(serviceRates.id, input.id
+          )
           )
         );
 
@@ -298,12 +284,11 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
-            serviceRates,
-            ctx.partnerId,
-            ctx.orgContext,
-            "serviceRates",
-            eq(serviceRates.category, input.category)
+          and(
+            filterByPartner(serviceRates.partnerId, ctx.partnerId),
+            eq(serviceRates.odId, ctx.user.openId),
+            eq(serviceRates.category, input.category
+          )
           )
         )
         .orderBy(asc(serviceRates.name));
@@ -358,12 +343,11 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
-            serviceRates,
-            ctx.partnerId,
-            ctx.orgContext,
-            "serviceRates",
-            eq(serviceRates.id, input.id)
+          and(
+            filterByPartner(serviceRates.partnerId, ctx.partnerId),
+            eq(serviceRates.odId, ctx.user.openId),
+            eq(serviceRates.id, input.id
+          )
           )
         );
 
@@ -411,12 +395,11 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
-            serviceRates,
-            ctx.partnerId,
-            ctx.orgContext,
-            "serviceRates",
-            eq(serviceRates.id, input.id)
+          and(
+            filterByPartner(serviceRates.partnerId, ctx.partnerId),
+            eq(serviceRates.odId, ctx.user.openId),
+            eq(serviceRates.id, input.id
+          )
           )
         );
 
@@ -449,12 +432,11 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
-            serviceRates,
-            ctx.partnerId,
-            ctx.orgContext,
-            "serviceRates",
-            eq(serviceRates.id, input.id)
+          and(
+            filterByPartner(serviceRates.partnerId, ctx.partnerId),
+            eq(serviceRates.odId, ctx.user.openId),
+            eq(serviceRates.id, input.id
+          )
           )
         );
 
@@ -481,12 +463,8 @@ export const serviceRatesRouter = router({
       .select()
       .from(serviceRates)
       .where(
-        filterByPartnerAndOrganization(
-          serviceRates,
-          ctx.partnerId,
-          ctx.orgContext,
-          "serviceRates"
-        )
+        filterByPartner(serviceRates.partnerId, ctx.partnerId),
+        eq(serviceRates.odId, ctx.user.openId)
       );
 
     return calculateServiceRateStats(items);
@@ -506,12 +484,11 @@ export const serviceRatesRouter = router({
         .select()
         .from(serviceRates)
         .where(
-          filterByPartnerAndOrganization(
-            serviceRates,
-            ctx.partnerId,
-            ctx.orgContext,
-            "serviceRates",
-            eq(serviceRates.id, input.id)
+          and(
+            filterByPartner(serviceRates.partnerId, ctx.partnerId),
+            eq(serviceRates.odId, ctx.user.openId),
+            eq(serviceRates.id, input.id
+          )
           )
         );
 

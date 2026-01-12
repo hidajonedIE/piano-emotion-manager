@@ -196,12 +196,8 @@ export const invoicesRouter = router({
 
       // Construir condiciones WHERE con filtrado por organización
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
+        filterByPartner(invoices.partnerId, ctx.partnerId),
+        eq(invoices.odId, ctx.user.openId)
       ];
       
       if (search) {
@@ -257,12 +253,8 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices"
-          )
+          filterByPartner(invoices.partnerId, ctx.partnerId),
+        eq(invoices.odId, ctx.user.openId)
         );
 
       const markedInvoices = markOverdueInvoices(allInvoices);
@@ -287,12 +279,8 @@ export const invoicesRouter = router({
       .select()
       .from(invoices)
       .where(
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
+        filterByPartner(invoices.partnerId, ctx.partnerId),
+        eq(invoices.odId, ctx.user.openId)
       )
       .orderBy(desc(invoices.date));
 
@@ -312,12 +300,11 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
+          and(
+            filterByPartner(invoices.partnerId, ctx.partnerId),
+            eq(invoices.odId, ctx.user.openId),
+            eq(invoices.id, input.id
+          )
           )
         );
 
@@ -341,12 +328,11 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.invoiceNumber, input.invoiceNumber)
+          and(
+            filterByPartner(invoices.partnerId, ctx.partnerId),
+            eq(invoices.odId, ctx.user.openId),
+            eq(invoices.invoiceNumber, input.invoiceNumber
+          )
           )
         );
 
@@ -369,12 +355,11 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.clientId, input.clientId)
+          and(
+            filterByPartner(invoices.partnerId, ctx.partnerId),
+            eq(invoices.odId, ctx.user.openId),
+            eq(invoices.clientId, input.clientId
+          )
           )
         )
         .orderBy(desc(invoices.date));
@@ -433,12 +418,11 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
+          and(
+            filterByPartner(invoices.partnerId, ctx.partnerId),
+            eq(invoices.odId, ctx.user.openId),
+            eq(invoices.id, input.id
+          )
           )
         );
 
@@ -490,12 +474,11 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
+          and(
+            filterByPartner(invoices.partnerId, ctx.partnerId),
+            eq(invoices.odId, ctx.user.openId),
+            eq(invoices.id, input.id
+          )
           )
         );
 
@@ -528,12 +511,11 @@ export const invoicesRouter = router({
         .select()
         .from(invoices)
         .where(
-          filterByPartnerAndOrganization(
-            invoices,
-            ctx.partnerId,
-            ctx.orgContext,
-            "invoices",
-            eq(invoices.id, input.id)
+          and(
+            filterByPartner(invoices.partnerId, ctx.partnerId),
+            eq(invoices.odId, ctx.user.openId),
+            eq(invoices.id, input.id
+          )
           )
         );
 
@@ -565,12 +547,8 @@ export const invoicesRouter = router({
       if (!database) return null;
 
       const whereClauses = [
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
+        filterByPartner(invoices.partnerId, ctx.partnerId),
+        eq(invoices.odId, ctx.user.openId)
       ];
 
       if (input?.dateFrom) {
@@ -601,12 +579,8 @@ export const invoicesRouter = router({
       .select({ invoiceNumber: invoices.invoiceNumber })
       .from(invoices)
       .where(
-        filterByPartnerAndOrganization(
-          invoices,
-          ctx.partnerId,
-          ctx.orgContext,
-          "invoices"
-        )
+        filterByPartner(invoices.partnerId, ctx.partnerId),
+        eq(invoices.odId, ctx.user.openId)
       )
       .orderBy(desc(invoices.createdAt));
 
