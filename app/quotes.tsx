@@ -95,10 +95,15 @@ export default function QuotesScreen() {
   const renderQuote = ({ item }: { item: Quote }) => {
     const statusColor = getStatusColor(item.status);
     const expired = item.status === 'sent' && isExpired(item.validUntil);
+    const isPending = item.status === 'sent' && !expired;
     
     return (
       <Pressable
-        style={[styles.quoteCard, { backgroundColor: cardBg, borderColor }]}
+        style={[
+          styles.quoteCard, 
+          { backgroundColor: cardBg, borderColor },
+          isPending && { borderColor: accent, borderWidth: 2 }
+        ]}
         onPress={() => router.push({ pathname: '/quote/[id]' as any, params: { id: item.id } })}
       >
         <View style={styles.quoteHeader}>
@@ -121,6 +126,15 @@ export default function QuotesScreen() {
           <ThemedText style={[styles.pianoDescription, { color: textSecondary }]}>
             🎹 {item.pianoDescription}
           </ThemedText>
+        )}
+        
+        {isPending && (
+          <View style={[styles.pendingBadge, { backgroundColor: `${accent}15`, borderColor: accent }]}>
+            <IconSymbol name="clock.fill" size={14} color={accent} />
+            <ThemedText style={[styles.pendingText, { color: accent }]}>
+              Pendiente de respuesta
+            </ThemedText>
+          </View>
         )}
 
         <View style={styles.quoteFooter}>
@@ -392,5 +406,19 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
     textAlign: 'center',
+  },
+  pendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  pendingText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

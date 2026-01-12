@@ -61,7 +61,7 @@ export function useAllAlerts(
       title: rec.type === 'tuning' ? 'Afinación requerida' : 
              rec.type === 'regulation' ? 'Regulación requerida' : 'Reparación requerida',
       message: rec.message,
-      actionUrl: '/(tabs)/services',
+      actionUrl: `/piano/${rec.pianoId}`,
       data: rec,
     }));
   }, [recommendations]);
@@ -156,25 +156,29 @@ export function useAllAlerts(
     });
 
     if (pendingInvoices.length > 0) {
+      // Navegar directamente a la primera factura pendiente
+      const firstInvoiceId = pendingInvoices[0]?.id;
       alerts.push({
         id: 'invoices-pending',
         type: 'invoice',
         priority: 'warning',
         title: 'Facturas pendientes',
         message: `${pendingInvoices.length} ${pendingInvoices.length === 1 ? 'factura pendiente' : 'facturas pendientes'} de pago (€${totalPending.toFixed(2)})`,
-        actionUrl: '/invoices',
+        actionUrl: firstInvoiceId ? `/invoice/${firstInvoiceId}` : '/invoices',
         data: { count: pendingInvoices.length, total: totalPending, invoices: pendingInvoices },
       });
     }
 
     if (overdueInvoices.length > 0) {
+      // Navegar directamente a la primera factura vencida
+      const firstOverdueId = overdueInvoices[0]?.id;
       alerts.push({
         id: 'invoices-overdue',
         type: 'invoice',
         priority: 'urgent',
         title: 'Facturas vencidas',
         message: `${overdueInvoices.length} ${overdueInvoices.length === 1 ? 'factura vencida' : 'facturas vencidas'} (€${totalOverdue.toFixed(2)})`,
-        actionUrl: '/invoices',
+        actionUrl: firstOverdueId ? `/invoice/${firstOverdueId}` : '/invoices',
         data: { count: overdueInvoices.length, total: totalOverdue, invoices: overdueInvoices },
       });
     }
@@ -209,25 +213,29 @@ export function useAllAlerts(
     });
 
     if (pendingQuotes.length > 0) {
+      // Navegar directamente al primer presupuesto pendiente
+      const firstQuoteId = pendingQuotes[0]?.id;
       alerts.push({
         id: 'quotes-pending',
         type: 'quote',
         priority: 'info',
         title: 'Presupuestos pendientes',
         message: `${pendingQuotes.length} ${pendingQuotes.length === 1 ? 'presupuesto' : 'presupuestos'} esperando respuesta (€${totalPending.toFixed(2)})`,
-        actionUrl: '/quotes',
+        actionUrl: firstQuoteId ? `/quote/${firstQuoteId}` : '/quotes',
         data: { count: pendingQuotes.length, total: totalPending, quotes: pendingQuotes },
       });
     }
 
     if (expiringQuotes.length > 0) {
+      // Navegar directamente al primer presupuesto próximo a expirar
+      const firstExpiringId = expiringQuotes[0]?.id;
       alerts.push({
         id: 'quotes-expiring',
         type: 'quote',
         priority: 'warning',
         title: 'Presupuestos próximos a expirar',
         message: `${expiringQuotes.length} ${expiringQuotes.length === 1 ? 'presupuesto expira' : 'presupuestos expiran'} en menos de 7 días`,
-        actionUrl: '/quotes',
+        actionUrl: firstExpiringId ? `/quote/${firstExpiringId}` : '/quotes',
         data: { count: expiringQuotes.length, quotes: expiringQuotes },
       });
     }
