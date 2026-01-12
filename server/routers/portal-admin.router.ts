@@ -33,7 +33,7 @@ export const portalAdminRouter = router({
       const invitation = await portalDb.createInvitation({
         clientId: input.clientId,
         email: input.email,
-        createdBy: ctx.user.openId,
+        createdBy: ctx.user.email,
       });
       
       // TODO: Send invitation email
@@ -135,7 +135,7 @@ export const portalAdminRouter = router({
     .mutation(async ({ ctx, input }) => {
       const message = await portalDb.createMessage({
         clientId: input.clientId,
-        fromUserId: ctx.user.openId,
+        fromUserId: ctx.user.email,
         message: input.message,
       });
       

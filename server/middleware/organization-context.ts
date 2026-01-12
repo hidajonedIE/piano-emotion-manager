@@ -24,7 +24,7 @@ import { eq, and } from "drizzle-orm";
  */
 export interface OrganizationContext {
   userId: number;
-  odId: string; // Clerk user ID
+  odId: string; // User email (used as identifier)
   partnerId: number;
   organizationId: number | null;
   organizationRole: string | null;
@@ -46,7 +46,7 @@ export async function getOrganizationContext(userId: number): Promise<Organizati
     const user = await db
       .select({
         id: users.id,
-        odId: users.openId,
+        odId: users.email,
         partnerId: users.partnerId,
       })
       .from(users)

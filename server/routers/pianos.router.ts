@@ -108,11 +108,11 @@ export const pianosRouter = router({
       if (!database) return { items: [], total: 0 };
 
       console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
-      console.log('[PIANOS DEBUG] ctx.user.openId:', ctx.user.openId);
+      console.log('[PIANOS DEBUG] ctx.user.email:', ctx.user.email);
       
       const whereClauses = [
         filterByPartner(pianos.partnerId, ctx.partnerId),
-        eq(pianos.odId, ctx.user.openId)
+        eq(pianos.odId, ctx.user.email)
       ];
       
       console.log('[PIANOS DEBUG] whereClauses length:', whereClauses.length);
@@ -355,7 +355,7 @@ export const pianosRouter = router({
     .query(async ({ ctx, input }) => {
       // Esta función necesita actualización en db.ts también
       // Por ahora, mantener la funcionalidad básica
-      const services = await db.getServicesByPiano(ctx.user.openId, input.pianoId);
+      const services = await db.getServicesByPiano(ctx.user.email, input.pianoId);
       return services.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }),
   

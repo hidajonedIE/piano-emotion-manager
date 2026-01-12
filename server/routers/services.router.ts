@@ -127,12 +127,12 @@ export const servicesRouter = router({
 
       console.log('[services.list] ===== INICIO CONSULTA =====');
       console.log('[services.list] ctx.partnerId:', ctx.partnerId, 'type:', typeof ctx.partnerId);
-      console.log('[services.list] ctx.user.openId:', ctx.user.openId);
+      console.log('[services.list] ctx.user.email:', ctx.user.email);
 
       // TEMPORAL: Filtro simplificado sin multi-tenant
       const whereClauses = [
         filterByPartner(services.partnerId, ctx.partnerId),
-        eq(services.odId, ctx.user.openId)
+        eq(services.odId, ctx.user.email)
       ];
       
       console.log('[services.list] WHERE clauses count:', whereClauses.length);
@@ -402,7 +402,7 @@ export const servicesRouter = router({
       // TEMPORAL: Filtro simplificado sin multi-tenant
       const whereClauses = [
         filterByPartner(services.partnerId, ctx.partnerId),
-        eq(services.odId, ctx.user.openId)
+        eq(services.odId, ctx.user.email)
       ];
 
       if (input?.dateFrom) whereClauses.push(gte(services.date, new Date(input.dateFrom)));

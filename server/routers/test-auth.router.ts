@@ -9,7 +9,7 @@ export const testAuthRouter = router({
     return {
       success: true,
       user: {
-        openId: ctx.user.openId,
+        openId: ctx.user.email,
         email: ctx.user.email,
         name: ctx.user.name,
       },

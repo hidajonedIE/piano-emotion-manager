@@ -5,7 +5,7 @@ import { clients, pianos, services } from "../../drizzle/schema.js";
 export const seedRouter = router({
   seedTestData: protectedProcedure.mutation(async ({ ctx }) => {
     const db = await getDb();
-    const ownerId = ctx.user.openId;
+    const ownerId = ctx.user.email;
 
     // Insert test clients
     const [client1] = await db.insert(clients).values({

@@ -26,7 +26,7 @@ export const aiGenerationRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // ✅ VERIFICAR LÍMITES DE SUSCRIPCIÓN
-      const { usage, limit } = await requireAIFeature(ctx.user.openId, 'report');
+      const { usage, limit } = await requireAIFeature(ctx.user.email, 'report');
 
       try {
         // Generar informe con Gemini en el idioma del usuario
@@ -40,7 +40,7 @@ export const aiGenerationRouter = router({
         }, ctx.language);
 
         // ✅ REGISTRAR USO (estimamos ~1500 tokens)
-        await recordAIUsage(ctx.user.openId, 'report', 1500);
+        await recordAIUsage(ctx.user.email, 'report', 1500);
 
         return {
           success: true,
@@ -72,7 +72,7 @@ export const aiGenerationRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // ✅ VERIFICAR LÍMITES DE SUSCRIPCIÓN
-      const { usage, limit } = await requireAIFeature(ctx.user.openId, 'email');
+      const { usage, limit } = await requireAIFeature(ctx.user.email, 'email');
 
       try {
         // Generar email con Gemini en el idioma del usuario
@@ -85,7 +85,7 @@ export const aiGenerationRouter = router({
         }, ctx.language);
 
         // ✅ REGISTRAR USO (estimamos ~800 tokens)
-        await recordAIUsage(ctx.user.openId, 'email', 800);
+        await recordAIUsage(ctx.user.email, 'email', 800);
 
         return {
           success: true,

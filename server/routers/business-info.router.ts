@@ -8,7 +8,7 @@ import * as db from "../db.js";
 import { addPartnerToInsert } from "../utils/multi-tenant.js";
 
 export const businessInfoRouter = router({
-  get: protectedProcedure.query(({ ctx }) => db.getBusinessInfo(ctx.user.openId)),
+  get: protectedProcedure.query(({ ctx }) => db.getBusinessInfo(ctx.user.email)),
   
   save: protectedProcedure
     .input(z.object({
@@ -21,5 +21,5 @@ export const businessInfoRouter = router({
       email: z.string().optional().nullable(),
       bankAccount: z.string().optional().nullable(),
     }))
-    .mutation(({ ctx, input }) => db.saveBusinessInfo({ ...input, odId: ctx.user.openId, partnerId: ctx.partnerId })),
+    .mutation(({ ctx, input }) => db.saveBusinessInfo({ ...input, odId: ctx.user.email, partnerId: ctx.partnerId })),
 });

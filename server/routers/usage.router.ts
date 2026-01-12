@@ -14,8 +14,8 @@ export const usageRouter = router({
    * Obtiene el uso actual de IA del usuario
    */
   getAIUsage: protectedProcedure.query(async ({ ctx }) => {
-    const usage = await getAllMonthlyAIUsage(ctx.user.openId);
-    const { plan } = await getUserSubscriptionInfo(ctx.user.openId);
+    const usage = await getAllMonthlyAIUsage(ctx.user.email);
+    const { plan } = await getUserSubscriptionInfo(ctx.user.email);
     const limits = getAILimits(plan);
 
     return {
@@ -43,8 +43,8 @@ export const usageRouter = router({
    * Obtiene estadísticas detalladas de uso
    */
   getUsageStats: protectedProcedure.query(async ({ ctx }) => {
-    const stats = await getAIUsageStats(ctx.user.openId);
-    const { plan, status, hasAIAccess } = await getUserSubscriptionInfo(ctx.user.openId);
+    const stats = await getAIUsageStats(ctx.user.email);
+    const { plan, status, hasAIAccess } = await getUserSubscriptionInfo(ctx.user.email);
     const aiLimits = getAILimits(plan);
     const dataLimits = getDataLimits(plan);
 
@@ -64,15 +64,15 @@ export const usageRouter = router({
    * Obtiene información de la suscripción del usuario
    */
   getSubscriptionInfo: protectedProcedure.query(async ({ ctx }) => {
-    return getUserSubscriptionInfo(ctx.user.openId);
+    return getUserSubscriptionInfo(ctx.user.email);
   }),
 
   /**
    * Obtiene alertas de uso del usuario
    */
   getUsageAlerts: protectedProcedure.query(async ({ ctx }) => {
-    const { plan } = await getUserSubscriptionInfo(ctx.user.openId);
-    const alerts = await checkUsageAlerts(ctx.user.openId, plan);
+    const { plan } = await getUserSubscriptionInfo(ctx.user.email);
+    const alerts = await checkUsageAlerts(ctx.user.email, plan);
     const summary = getAlertsSummary(alerts);
 
     return {

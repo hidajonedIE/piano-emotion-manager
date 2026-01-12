@@ -8,11 +8,11 @@ import * as db from "../db.js";
 import { addPartnerToInsert } from "../utils/multi-tenant.js";
 
 export const quoteTemplatesRouter = router({
-  list: protectedProcedure.query(({ ctx }) => db.getQuoteTemplates(ctx.user.openId)),
+  list: protectedProcedure.query(({ ctx }) => db.getQuoteTemplates(ctx.user.email)),
   
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getQuoteTemplate(ctx.user.openId, input.id)),
+    .query(({ ctx, input }) => db.getQuoteTemplate(ctx.user.email, input.id)),
   
   create: protectedProcedure
     .input(z.object({
@@ -30,7 +30,7 @@ export const quoteTemplatesRouter = router({
       })).optional(),
       isDefault: z.boolean().optional(),
     }))
-    .mutation(({ ctx, input }) => db.createQuoteTemplate({ ...input, odId: ctx.user.openId, partnerId: ctx.partnerId })),
+    .mutation(({ ctx, input }) => db.createQuoteTemplate({ ...input, odId: ctx.user.email, partnerId: ctx.partnerId })),
   
   update: protectedProcedure
     .input(z.object({
@@ -51,10 +51,10 @@ export const quoteTemplatesRouter = router({
     }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
-      return db.updateQuoteTemplate(ctx.user.openId, id, data);
+      return db.updateQuoteTemplate(ctx.user.email, id, data);
     }),
   
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => db.deleteQuoteTemplate(ctx.user.openId, input.id)),
+    .mutation(({ ctx, input }) => db.deleteQuoteTemplate(ctx.user.email, input.id)),
 });

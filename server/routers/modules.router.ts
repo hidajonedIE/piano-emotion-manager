@@ -153,7 +153,7 @@ export const modulesRouter = router({
   getCurrentPlan: publicProcedure
     .input(z.object({ userId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      console.log('[getCurrentPlan] ctx.user:', ctx.user ? { id: ctx.user.id, email: ctx.user.email, openId: ctx.user.openId } : null);
+      console.log('[getCurrentPlan] ctx.user:', ctx.user ? { id: ctx.user.id, email: ctx.user.email, openId: ctx.user.email } : null);
       console.log('[getCurrentPlan] input:', input);
       
       // Try to get userId from input first (passed from client), then from context
