@@ -30,7 +30,7 @@ export { advancedRouter } from './advanced.router.js';
 export { seedRouter } from './seed.router.js';
 export { usageRouter } from './usage.router.js';
 export { alertsRouter } from './alerts.js';
-export { alertDismissalsRouter } from './alert-dismissals.router.js';
+
 
 
 // Routers de equipos (existentes)
