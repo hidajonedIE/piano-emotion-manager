@@ -1,8 +1,12 @@
 /**
  * Dashboard Alerts Component V2
- * Muestra alertas consolidadas de todo el sistema
+ * Muestra alertas y avisos consolidados de todo el sistema
+ * - Alertas: Urgentes (requieren atención inmediata)
+ * - Avisos: Informativos (para conocimiento)
+ * - Colapsable por defecto
  */
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -19,18 +23,25 @@ interface DashboardAlertsV2Props {
 
 export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo }: DashboardAlertsV2Props) {
   const router = useRouter();
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   const error = useThemeColor({}, 'error');
   const warning = useThemeColor({}, 'warning');
   const info = useThemeColor({}, 'info');
   const success = useThemeColor({}, 'success');
   const cardBackground = useThemeColor({}, 'cardBackground');
   const border = useThemeColor({}, 'border');
+  const textSecondary = useThemeColor({}, 'textSecondary');
 
+  // Separar alertas urgentes y avisos informativos
+  const urgentAlerts = alerts.filter(a => a.priority === 'urgent');
+  const infoAlerts = alerts.filter(a => a.priority === 'warning' || a.priority === 'info');
+  
   const hasAlerts = alerts.length > 0;
-  const hasUrgent = totalUrgent > 0;
+  const hasUrgent = urgentAlerts.length > 0;
   
   // Color principal basado en la prioridad más alta
-  const primaryColor = hasAlerts ? (hasUrgent ? error : totalWarning > 0 ? warning : info) : success;
+  const primaryColor = hasAlerts ? (hasUrgent ? error : warning) : success;
 
   // Iconos por tipo de alerta
   const getAlertIcon = (type: Alert['type']) => {
@@ -60,6 +71,10 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
     }
   };
 
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   if (!hasAlerts) {
     return (
       <View style={[styles.alertBanner, { backgroundColor: cardBackground, borderColor: border }]}>
@@ -69,75 +84,139 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
           color={success} 
         />
         <View style={styles.alertContent}>
-          <View style={styles.alertRow}>
-            <View style={[styles.alertDot, { backgroundColor: success }]} />
-            <ThemedText style={[styles.alertText, { color: success }]}>
-              No hay alertas
-            </ThemedText>
-          </View>
+          <ThemedText style={[styles.alertText, { color: success }]}>
+            No hay alertas ni avisos
+          </ThemedText>
         </View>
       </View>
     );
   }
 
-  // Mostrar solo las primeras 3 alertas
-  const displayedAlerts = alerts.slice(0, 3);
-  const hasMore = alerts.length > 3;
-
   return (
     <View style={[styles.container, { backgroundColor: cardBackground, borderColor: border }]}>
-      {/* Header */}
-      <View style={styles.header}>
+      {/* Header - Siempre visible */}
+      <Pressable 
+        style={styles.header}
+        onPress={toggleExpanded}
+      >
         <IconSymbol 
-          name={hasUrgent ? "exclamationmark.triangle.fill" : "clock.fill"} 
+          name={hasUrgent ? "exclamationmark.triangle.fill" : "info.circle.fill"} 
           size={22} 
           color={primaryColor} 
         />
-        <ThemedText style={styles.headerText}>
-          {alerts.length} {alerts.length === 1 ? 'Alerta' : 'Alertas'}
-        </ThemedText>
+        <View style={styles.headerContent}>
+          <ThemedText style={styles.headerText}>
+            {hasUrgent ? 'Alertas y Avisos' : 'Avisos'}
+          </ThemedText>
+          <ThemedText style={[styles.headerSubtext, { color: textSecondary }]}>
+            {urgentAlerts.length > 0 && `${urgentAlerts.length} alerta${urgentAlerts.length !== 1 ? 's' : ''}`}
+            {urgentAlerts.length > 0 && infoAlerts.length > 0 && ' • '}
+            {infoAlerts.length > 0 && `${infoAlerts.length} aviso${infoAlerts.length !== 1 ? 's' : ''}`}
+          </ThemedText>
+        </View>
         {hasUrgent && (
           <View style={[styles.badge, { backgroundColor: error }]}>
-            <ThemedText style={styles.badgeText}>{totalUrgent}</ThemedText>
+            <ThemedText style={styles.badgeText}>{urgentAlerts.length}</ThemedText>
           </View>
         )}
-      </View>
+        <IconSymbol 
+          name={isExpanded ? "chevron.up" : "chevron.down"} 
+          size={20} 
+          color={textSecondary} 
+        />
+      </Pressable>
 
-      {/* Lista de alertas */}
-      <View style={styles.alertsList}>
-        {displayedAlerts.map((alert) => (
-          <Pressable
-            key={alert.id}
-            style={styles.alertItem}
-            onPress={() => handleAlertPress(alert)}
-          >
-            <View style={[styles.alertIconContainer, { backgroundColor: getPriorityColor(alert.priority) + '20' }]}>
-              <IconSymbol 
-                name={getAlertIcon(alert.type)} 
-                size={16} 
-                color={getPriorityColor(alert.priority)} 
-              />
+      {/* Contenido expandible */}
+      {isExpanded && (
+        <View style={styles.expandedContent}>
+          {/* Sección de Alertas Urgentes */}
+          {urgentAlerts.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <IconSymbol 
+                  name="exclamationmark.triangle.fill" 
+                  size={16} 
+                  color={error} 
+                />
+                <ThemedText style={[styles.sectionTitle, { color: error }]}>
+                  Alertas ({urgentAlerts.length})
+                </ThemedText>
+              </View>
+              <View style={styles.alertsList}>
+                {urgentAlerts.map((alert) => (
+                  <Pressable
+                    key={alert.id}
+                    style={[styles.alertItem, { borderLeftColor: error }]}
+                    onPress={() => handleAlertPress(alert)}
+                  >
+                    <View style={[styles.alertIconContainer, { backgroundColor: error + '20' }]}>
+                      <IconSymbol 
+                        name={getAlertIcon(alert.type)} 
+                        size={16} 
+                        color={error} 
+                      />
+                    </View>
+                    <View style={styles.alertTextContainer}>
+                      <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
+                      <ThemedText style={[styles.alertMessage, { color: textSecondary }]}>
+                        {alert.message}
+                      </ThemedText>
+                    </View>
+                    <IconSymbol 
+                      name="chevron.right" 
+                      size={16} 
+                      color={textSecondary} 
+                    />
+                  </Pressable>
+                ))}
+              </View>
             </View>
-            <View style={styles.alertTextContainer}>
-              <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
-              <ThemedText style={styles.alertMessage}>{alert.message}</ThemedText>
-            </View>
-            <IconSymbol 
-              name="chevron.right" 
-              size={16} 
-              color={getPriorityColor(alert.priority)} 
-            />
-          </Pressable>
-        ))}
-      </View>
+          )}
 
-      {/* Ver todas */}
-      {hasMore && (
-        <Pressable style={styles.viewAllButton}>
-          <ThemedText style={[styles.viewAllText, { color: primaryColor }]}>
-            Ver todas las alertas ({alerts.length})
-          </ThemedText>
-        </Pressable>
+          {/* Sección de Avisos Informativos */}
+          {infoAlerts.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <IconSymbol 
+                  name="info.circle.fill" 
+                  size={16} 
+                  color={warning} 
+                />
+                <ThemedText style={[styles.sectionTitle, { color: warning }]}>
+                  Avisos ({infoAlerts.length})
+                </ThemedText>
+              </View>
+              <View style={styles.alertsList}>
+                {infoAlerts.map((alert) => (
+                  <Pressable
+                    key={alert.id}
+                    style={[styles.alertItem, { borderLeftColor: getPriorityColor(alert.priority) }]}
+                    onPress={() => handleAlertPress(alert)}
+                  >
+                    <View style={[styles.alertIconContainer, { backgroundColor: getPriorityColor(alert.priority) + '20' }]}>
+                      <IconSymbol 
+                        name={getAlertIcon(alert.type)} 
+                        size={16} 
+                        color={getPriorityColor(alert.priority)} 
+                      />
+                    </View>
+                    <View style={styles.alertTextContainer}>
+                      <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
+                      <ThemedText style={[styles.alertMessage, { color: textSecondary }]}>
+                        {alert.message}
+                      </ThemedText>
+                    </View>
+                    <IconSymbol 
+                      name="chevron.right" 
+                      size={16} 
+                      color={textSecondary} 
+                    />
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
       )}
     </View>
   );
@@ -160,17 +239,6 @@ const styles = StyleSheet.create({
   },
   alertContent: {
     flex: 1,
-    gap: 2,
-  },
-  alertRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  alertDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
   },
   alertText: {
     fontSize: 13,
@@ -181,34 +249,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.md,
     gap: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: '#00000010',
+  },
+  headerContent: {
+    flex: 1,
   },
   headerText: {
     fontSize: 15,
     fontWeight: '600',
-    flex: 1,
+  },
+  headerSubtext: {
+    fontSize: 12,
+    marginTop: 2,
   },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
+    minWidth: 24,
+    alignItems: 'center',
   },
   badgeText: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
   },
+  expandedContent: {
+    borderTopWidth: 1,
+    borderTopColor: '#00000010',
+  },
+  section: {
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#00000005',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginBottom: Spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   alertsList: {
-    gap: 1,
+    gap: Spacing.xs,
   },
   alertItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.md,
+    padding: Spacing.sm,
     gap: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: '#00000005',
+    borderRadius: BorderRadius.sm,
+    backgroundColor: '#00000005',
+    borderLeftWidth: 3,
   },
   alertIconContainer: {
     width: 32,
@@ -227,16 +323,5 @@ const styles = StyleSheet.create({
   },
   alertMessage: {
     fontSize: 12,
-    opacity: 0.7,
-  },
-  viewAllButton: {
-    padding: Spacing.sm,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#00000010',
-  },
-  viewAllText: {
-    fontSize: 13,
-    fontWeight: '600',
   },
 });
