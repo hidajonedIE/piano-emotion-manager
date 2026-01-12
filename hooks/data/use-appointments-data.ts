@@ -29,13 +29,29 @@ type ServerAppointment = {
 
 // Convertir cita del servidor al formato local
 function serverToLocalAppointment(server: ServerAppointment): Appointment {
+  // Convertir date a Date si es string
+  const appointmentDate = server.date instanceof Date ? server.date : new Date(server.date);
+  
+  // Extraer fecha en formato YYYY-MM-DD
+  const dateOnly = appointmentDate.toISOString().split('T')[0];
+  
+  // Extraer hora de inicio en formato HH:MM
+  const startTime = appointmentDate.toTimeString().substring(0, 5);
+  
+  // Calcular hora de fin sumando la duración
+  const duration = server.duration || 60;
+  const endDate = new Date(appointmentDate.getTime() + duration * 60000);
+  const endTime = endDate.toTimeString().substring(0, 5);
+  
   return {
     id: String(server.id),
     clientId: String(server.clientId),
     pianoId: server.pianoId ? String(server.pianoId) : undefined,
     title: server.title,
-    date: server.date.toISOString(),
-    duration: server.duration || 60,
+    date: dateOnly,
+    startTime: startTime,
+    endTime: endTime,
+    estimatedDuration: duration,
     serviceType: server.serviceType || undefined,
     status: server.status as Appointment['status'],
     notes: server.notes || undefined,
