@@ -10,6 +10,7 @@ import {
   Image,
   ActionSheetIOS,
   Platform,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -845,6 +846,91 @@ export default function PianoDetailScreen() {
                 <ThemedText style={styles.recommendationText}>{rec.message}</ThemedText>
               </View>
             ))}
+            
+            {/* Acciones recomendadas */}
+            {client && (
+              <View style={styles.actionsContainer}>
+                <ThemedText style={[styles.actionsTitle, { color: textColor }]}>Acciones recomendadas</ThemedText>
+                <View style={styles.actionsButtons}>
+                  <Pressable
+                    style={[styles.actionButton, { backgroundColor: accent, borderColor: accent }]}
+                    onPress={() => {
+                      const clientName = `${client.firstName} ${client.lastName}`;
+                      const phone = client.phone;
+                      const email = client.email;
+                      
+                      if (Platform.OS === 'ios') {
+                        const options = [];
+                        if (phone) {
+                          options.push('WhatsApp');
+                          options.push('Llamar');
+                        }
+                        if (email) options.push('Email');
+                        options.push('Cancelar');
+                        
+                        ActionSheetIOS.showActionSheetWithOptions(
+                          {
+                            title: `Contactar a ${clientName}`,
+                            options,
+                            cancelButtonIndex: options.length - 1,
+                          },
+                          (buttonIndex) => {
+                            if (phone && buttonIndex === 0) {
+                              const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+                              Linking.openURL(`whatsapp://send?phone=${phone}&text=${message}`);
+                            } else if (phone && buttonIndex === 1) {
+                              Linking.openURL(`tel:${phone}`);
+                            } else if (email && buttonIndex === (phone ? 2 : 0)) {
+                              const subject = encodeURIComponent('Mantenimiento de piano');
+                              const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+                              Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
+                            }
+                          }
+                        );
+                      } else {
+                        const buttons = [];
+                        if (phone) {
+                          buttons.push({ text: 'WhatsApp', onPress: () => {
+                            const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+                            Linking.openURL(`whatsapp://send?phone=${phone}&text=${message}`);
+                          }});
+                          buttons.push({ text: 'Llamar', onPress: () => Linking.openURL(`tel:${phone}`) });
+                        }
+                        if (email) {
+                          buttons.push({ text: 'Email', onPress: () => {
+                            const subject = encodeURIComponent('Mantenimiento de piano');
+                            const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+                            Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
+                          }});
+                        }
+                        buttons.push({ text: 'Cancelar', style: 'cancel' });
+                        
+                        Alert.alert(`Contactar a ${clientName}`, 'Selecciona una opción:', buttons);
+                      }
+                    }}
+                  >
+                    <IconSymbol name="phone.fill" size={18} color="#FFFFFF" />
+                    <ThemedText style={styles.actionButtonText}>Contactar cliente</ThemedText>
+                  </Pressable>
+                  
+                  <Pressable
+                    style={[styles.actionButton, { backgroundColor: cardBg, borderColor: accent }]}
+                    onPress={() => router.push({ pathname: '/appointment/[id]' as any, params: { id: 'new', pianoId: id, clientId: client.id } })}
+                  >
+                    <IconSymbol name="calendar" size={18} color={accent} />
+                    <ThemedText style={[styles.actionButtonTextOutline, { color: accent }]}>Programar cita</ThemedText>
+                  </Pressable>
+                  
+                  <Pressable
+                    style={[styles.actionButton, { backgroundColor: cardBg, borderColor: accent }]}
+                    onPress={handleAddService}
+                  >
+                    <IconSymbol name="wrench.fill" size={18} color={accent} />
+                    <ThemedText style={[styles.actionButtonTextOutline, { color: accent }]}>Crear servicio</ThemedText>
+                  </Pressable>
+                </View>
+              </View>
+            )}
           </View>
         )}
 
@@ -1061,6 +1147,39 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     lineHeight: 20,
+  },
+  actionsContainer: {
+    marginTop: Spacing.lg,
+    paddingTop: Spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: '#00000010',
+  },
+  actionsTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: Spacing.md,
+  },
+  actionsButtons: {
+    gap: Spacing.sm,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  actionButtonTextOutline: {
+    fontSize: 15,
+    fontWeight: '700',
   },
   servicesSection: {
     marginTop: Spacing.lg,

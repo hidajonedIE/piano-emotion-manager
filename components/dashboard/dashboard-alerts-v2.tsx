@@ -6,24 +6,29 @@
  * - Colapsable por defecto
  */
 import { useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Linking, Platform, ActionSheetIOS, Alert as RNAlert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { Alert } from '@/hooks/use-all-alerts';
+import type { Client } from '@/types';
 
 interface DashboardAlertsV2Props {
   alerts: Alert[];
   totalUrgent: number;
   totalWarning: number;
   totalInfo: number;
+  clients: Client[];
 }
 
-export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo }: DashboardAlertsV2Props) {
+export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients }: DashboardAlertsV2Props) {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Función para obtener cliente por ID
+  const getClient = (clientId: string) => clients.find(c => c.id === clientId);
   
   const error = useThemeColor({}, 'error');
   const warning = useThemeColor({}, 'warning');
@@ -73,6 +78,73 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
+  };
+  
+  // Función para contactar al cliente
+  const handleContactClient = (alert: Alert, event: any) => {
+    event.stopPropagation(); // Evitar que se navegue al piano
+    
+    if (alert.type !== 'piano' || !alert.data?.clientId) return;
+    
+    const client = getClient(alert.data.clientId);
+    if (!client) return;
+    
+    const clientName = `${client.firstName} ${client.lastName}`;
+    const phone = client.phone;
+    const email = client.email;
+    
+    if (Platform.OS === 'ios') {
+      const options = [];
+      if (phone) {
+        options.push('WhatsApp');
+        options.push('Llamar');
+      }
+      if (email) options.push('Email');
+      options.push('Cancelar');
+      
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          title: `Contactar a ${clientName}`,
+          options,
+          cancelButtonIndex: options.length - 1,
+        },
+        (buttonIndex) => {
+          if (phone && buttonIndex === 0) {
+            // WhatsApp
+            const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+            Linking.openURL(`whatsapp://send?phone=${phone}&text=${message}`);
+          } else if (phone && buttonIndex === 1) {
+            // Llamar
+            Linking.openURL(`tel:${phone}`);
+          } else if (email && buttonIndex === (phone ? 2 : 0)) {
+            // Email
+            const subject = encodeURIComponent('Mantenimiento de piano');
+            const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+            Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
+          }
+        }
+      );
+    } else {
+      // Android - Mostrar opciones con Alert
+      const buttons = [];
+      if (phone) {
+        buttons.push({ text: 'WhatsApp', onPress: () => {
+          const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+          Linking.openURL(`whatsapp://send?phone=${phone}&text=${message}`);
+        }});
+        buttons.push({ text: 'Llamar', onPress: () => Linking.openURL(`tel:${phone}`) });
+      }
+      if (email) {
+        buttons.push({ text: 'Email', onPress: () => {
+          const subject = encodeURIComponent('Mantenimiento de piano');
+          const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+          Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
+        }});
+      }
+      buttons.push({ text: 'Cancelar', style: 'cancel' });
+      
+      RNAlert.alert(`Contactar a ${clientName}`, 'Selecciona una opción:', buttons);
+    }
   };
 
   if (!hasAlerts) {
@@ -162,6 +234,15 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
                         {alert.message}
                       </ThemedText>
                     </View>
+                    {alert.type === 'piano' && alert.data?.clientId && (
+                      <Pressable
+                        style={[styles.contactButton, { backgroundColor: error + '15', borderColor: error }]}
+                        onPress={(e) => handleContactClient(alert, e)}
+                      >
+                        <IconSymbol name="phone.fill" size={14} color={error} />
+                        <ThemedText style={[styles.contactButtonText, { color: error }]}>Contactar</ThemedText>
+                      </Pressable>
+                    )}
                     <IconSymbol 
                       name="chevron.right" 
                       size={16} 
@@ -206,6 +287,15 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
                         {alert.message}
                       </ThemedText>
                     </View>
+                    {alert.type === 'piano' && alert.data?.clientId && (
+                      <Pressable
+                        style={[styles.contactButton, { backgroundColor: error + '15', borderColor: error }]}
+                        onPress={(e) => handleContactClient(alert, e)}
+                      >
+                        <IconSymbol name="phone.fill" size={14} color={error} />
+                        <ThemedText style={[styles.contactButtonText, { color: error }]}>Contactar</ThemedText>
+                      </Pressable>
+                    )}
                     <IconSymbol 
                       name="chevron.right" 
                       size={16} 
@@ -324,5 +414,18 @@ const styles = StyleSheet.create({
   },
   alertMessage: {
     fontSize: 12,
+  },
+  contactButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  contactButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

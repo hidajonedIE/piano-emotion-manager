@@ -155,6 +155,7 @@ export default function DashboardScreen() {
             totalUrgent={allAlerts.stats.urgent}
             totalWarning={allAlerts.stats.warning}
             totalInfo={allAlerts.stats.info}
+            clients={clients}
           />
         );
       case 'quick_actions':
