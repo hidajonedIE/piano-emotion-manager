@@ -139,11 +139,7 @@ export default function RootLayout() {
                       <Stack.Screen name="onboarding" options={{ headerShown: false }} />
                       <Stack.Screen name="oauth/callback" options={{ headerShown: false }} />
                       <Stack.Screen name="portal" options={{ title: 'Portal del Cliente', headerShown: false }} />
-                      <Stack.Screen name="quote" options={{ title: 'Presupuesto', headerShown: false }} />
-                      <Stack.Screen name="client" options={{ title: 'Cliente', headerShown: false }} />
-                      <Stack.Screen name="piano" options={{ title: 'Piano', headerShown: false }} />
-                      <Stack.Screen name="service" options={{ title: 'Servicio', headerShown: false }} />
-                      <Stack.Screen name="invoice" options={{ title: 'Factura', headerShown: false }} />
+
                       <Stack.Screen name="appointment" options={{ title: 'Cita', headerShown: false }} />
                       <Stack.Screen name="supplier" options={{ title: 'Proveedor', headerShown: false }} />
                       <Stack.Screen name="suppliers" options={{ title: 'Proveedores', headerShown: false }} />
