@@ -8,6 +8,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform, View, Text } from "react-native";
+
+// Importar estilos globales para web
+if (Platform.OS === 'web') {
+  require('../app.css');
+}
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,

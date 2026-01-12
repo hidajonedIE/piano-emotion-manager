@@ -20,8 +20,9 @@ export const ThemedText = memo(function ThemedText({
 
   return (
     <Text
+      selectable={false}
       style={[
-        { color },
+        { color, userSelect: 'none' },
         type === "default" ? styles.default : undefined,
         type === "title" ? styles.title : undefined,
         type === "defaultSemiBold" ? styles.defaultSemiBold : undefined,
