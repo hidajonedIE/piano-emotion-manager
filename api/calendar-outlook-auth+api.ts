@@ -3,7 +3,7 @@
  * Genera la URL de autorización de Microsoft y redirige al usuario
  */
 
-import { generateMicrosoftAuthUrl } from '@/server/_core/calendar/oauth-microsoft';
+import { generateMicrosoftAuthUrl } from '../server/_core/calendar/oauth-microsoft.js';
 
 export async function GET(request: Request) {
   try {
