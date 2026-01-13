@@ -1,6 +1,6 @@
 import { router, protectedProcedure } from "../_core/trpc.js";
 import * as db from "../db.js";
-import { pianos, services, appointments, invoices, quotes } from "../../drizzle/schema.js";
+import { pianos, services, appointments, invoices, quotes, alertSettings } from "../../drizzle/schema.js";
 import { eq, and, desc, type InferSelectModel } from "drizzle-orm";
 import { filterByPartner } from "../utils/multi-tenant.js";
 
@@ -12,17 +12,6 @@ type QuoteItem = InferSelectModel<typeof quotes>;
 // ============================================
 // FUNCIONES AUXILIARES PARA ALERTAS DE PIANOS
 // ============================================
-
-// Constantes de umbrales (copiadas de use-recommendations.ts)
-const TUNING_THRESHOLDS = {
-  urgent: 270,  // Más de 9 meses = urgente
-  pending: 180, // Entre 6 y 9 meses = pendiente
-};
-
-const REGULATION_THRESHOLDS = {
-  urgent: 1095,  // Más de 3 años = urgente
-  pending: 730,  // Entre 2 y 3 años = pendiente
-};
 
 // Función auxiliar para calcular días desde una fecha
 function daysSince(dateString: string): number {
@@ -78,8 +67,31 @@ export const alertsRouter = router({
         
         const userEmail = ctx.user.email;
         const partnerId = ctx.partnerId;
+        const userId = ctx.user.id;
         console.log('[ALERTS] userEmail:', userEmail);
         console.log('[ALERTS] partnerId:', partnerId);
+        console.log('[ALERTS] userId:', userId);
+        
+        // Cargar configuración de alertas del usuario
+        console.log('[ALERTS] Loading user alert settings...');
+        const userSettings = await database
+          .select()
+          .from(alertSettings)
+          .where(and(
+            eq(alertSettings.userId, userId),
+            eq(alertSettings.partnerId, partnerId)
+          ))
+          .limit(1);
+        
+        // Usar configuración del usuario o valores por defecto
+        const settings = userSettings[0] || {
+          tuningPendingDays: 180,
+          tuningUrgentDays: 270,
+          regulationPendingDays: 730,
+          regulationUrgentDays: 1095,
+        };
+        
+        console.log('[ALERTS] Alert settings loaded:', settings);
         
         // Fechas para cálculos
         const now = new Date();
@@ -207,10 +219,10 @@ export const alertsRouter = router({
             let priority: 'urgent' | 'warning' | 'info' = 'info';
             let message = '';
             
-            if (daysSinceCreation > TUNING_THRESHOLDS.urgent) {
+            if (daysSinceCreation > settings.tuningUrgentDays) {
               priority = 'urgent';
               message = `Piano sin registro de afinación. Registrado hace ${formatTimePeriod(daysSinceCreation)}.`;
-            } else if (daysSinceCreation > TUNING_THRESHOLDS.pending) {
+            } else if (daysSinceCreation > settings.tuningPendingDays) {
               priority = 'warning';
               message = `Piano sin registro de afinación. Registrado hace ${formatTimePeriod(daysSinceCreation)}.`;
             }
@@ -233,10 +245,10 @@ export const alertsRouter = router({
             let priority: 'urgent' | 'warning' | 'info' = 'info';
             let message = '';
             
-            if (daysSinceLastTuning > TUNING_THRESHOLDS.urgent) {
+            if (daysSinceLastTuning > settings.tuningUrgentDays) {
               priority = 'urgent';
               message = `Hace ${formatTimePeriod(daysSinceLastTuning)} desde la última afinación. Se recomienda afinar urgentemente.`;
-            } else if (daysSinceLastTuning > TUNING_THRESHOLDS.pending) {
+            } else if (daysSinceLastTuning > settings.tuningPendingDays) {
               priority = 'warning';
               message = `Hace ${formatTimePeriod(daysSinceLastTuning)} desde la última afinación. Es momento de programar la próxima.`;
             }
@@ -263,8 +275,8 @@ export const alertsRouter = router({
             // Verificar si el piano tiene suficiente antigüedad para necesitar regulación
             const daysSinceCreation = daysSince(piano.createdAt);
             
-            if (daysSinceCreation > REGULATION_THRESHOLDS.pending) {
-              const priority = daysSinceCreation > REGULATION_THRESHOLDS.urgent ? 'urgent' : 'warning';
+            if (daysSinceCreation > settings.regulationPendingDays) {
+              const priority = daysSinceCreation > settings.regulationUrgentDays ? 'urgent' : 'warning';
               alerts.push({
                 id: `piano-regulation-${piano.id}`,
                 type: 'piano',
@@ -279,7 +291,7 @@ export const alertsRouter = router({
           } else {
             const daysSinceLastRegulation = daysSince(lastRegulation.date);
             
-            if (daysSinceLastRegulation > REGULATION_THRESHOLDS.urgent) {
+            if (daysSinceLastRegulation > settings.regulationUrgentDays) {
               alerts.push({
                 id: `piano-regulation-${piano.id}`,
                 type: 'piano',
@@ -290,7 +302,7 @@ export const alertsRouter = router({
                 date: new Date(lastRegulation.date),
                 actionUrl: `/piano/${piano.id}`,
               });
-            } else if (daysSinceLastRegulation > REGULATION_THRESHOLDS.pending) {
+            } else if (daysSinceLastRegulation > settings.regulationPendingDays) {
               alerts.push({
                 id: `piano-regulation-${piano.id}`,
                 type: 'piano',
