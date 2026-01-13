@@ -154,6 +154,7 @@ export const alertsRouter = router({
           appointmentId?: number;
           invoiceId?: number;
           quoteId?: number;
+          actionUrl?: string;
         };
         const alerts: AlertItem[] = [];
 
@@ -191,6 +192,7 @@ export const alertsRouter = router({
               message: `El piano ${piano.brand} ${piano.model} requiere reparación antes de poder ser afinado`,
               pianoId: piano.id,
               date: now,
+              actionUrl: `/piano/${piano.id}`,
             });
             // No agregar recomendación de afinación si necesita reparación
             continue;
@@ -223,6 +225,7 @@ export const alertsRouter = router({
                 message,
                 pianoId: piano.id,
                 date: new Date(piano.createdAt),
+                actionUrl: `/piano/${piano.id}`,
               });
             }
           } else {
@@ -248,6 +251,7 @@ export const alertsRouter = router({
                 message,
                 pianoId: piano.id,
                 date: new Date(lastTuning.date),
+                actionUrl: `/piano/${piano.id}`,
               });
             }
           }
@@ -269,6 +273,7 @@ export const alertsRouter = router({
                 message: `El piano ${piano.brand} ${piano.model} no tiene registro de regulación. Se recomienda una regulación para optimizar el mecanismo.`,
                 pianoId: piano.id,
                 date: new Date(piano.createdAt),
+                actionUrl: `/piano/${piano.id}`,
               });
             }
           } else {
@@ -283,6 +288,7 @@ export const alertsRouter = router({
                 message: `El piano ${piano.brand} ${piano.model}: Hace ${formatTimePeriod(daysSinceLastRegulation)} desde la última regulación. Se recomienda programar una regulación.`,
                 pianoId: piano.id,
                 date: new Date(lastRegulation.date),
+                actionUrl: `/piano/${piano.id}`,
               });
             } else if (daysSinceLastRegulation > REGULATION_THRESHOLDS.pending) {
               alerts.push({
@@ -293,6 +299,7 @@ export const alertsRouter = router({
                 message: `El piano ${piano.brand} ${piano.model}: Hace ${formatTimePeriod(daysSinceLastRegulation)} desde la última regulación. Considerar programar una regulación próximamente.`,
                 pianoId: piano.id,
                 date: new Date(lastRegulation.date),
+                actionUrl: `/piano/${piano.id}`,
               });
             }
           }
@@ -332,6 +339,7 @@ export const alertsRouter = router({
             message: `Tienes ${todayAppointments.length} ${todayAppointments.length === 1 ? 'cita' : 'citas'} programada${todayAppointments.length === 1 ? '' : 's'} para hoy`,
             data: { count: todayAppointments.length },
             date: now,
+            actionUrl: '/(tabs)/agenda',
           });
         }
 
@@ -345,6 +353,7 @@ export const alertsRouter = router({
             message: `Tienes ${weekAppointments.length} ${weekAppointments.length === 1 ? 'cita' : 'citas'} esta semana`,
             data: { count: weekAppointments.length },
             date: now,
+            actionUrl: '/(tabs)/agenda',
           });
         }
         console.log('[ALERTS] Appointment alerts calculated:', alerts.length);
@@ -381,6 +390,7 @@ export const alertsRouter = router({
             message: `${pendingInvoices.length} ${pendingInvoices.length === 1 ? 'factura pendiente' : 'facturas pendientes'} de pago (€${totalPending.toFixed(2)})`,
             data: { count: pendingInvoices.length, total: totalPending },
             date: now,
+            actionUrl: '/invoices?filter=pending',
           });
         }
 
@@ -394,6 +404,7 @@ export const alertsRouter = router({
             message: `${overdueInvoices.length} ${overdueInvoices.length === 1 ? 'factura vencida' : 'facturas vencidas'} (€${totalOverdue.toFixed(2)})`,
             data: { count: overdueInvoices.length, total: totalOverdue },
             date: now,
+            actionUrl: '/invoices?filter=overdue',
           });
         }
         console.log('[ALERTS] Invoice alerts calculated:', alerts.length);
@@ -428,6 +439,7 @@ export const alertsRouter = router({
             message: `${pendingQuotes.length} ${pendingQuotes.length === 1 ? 'presupuesto' : 'presupuestos'} esperando respuesta (€${totalPendingQuotes.toFixed(2)})`,
             data: { count: pendingQuotes.length, total: totalPendingQuotes },
             date: now,
+            actionUrl: '/quotes?filter=pending',
           });
         }
 
@@ -441,6 +453,7 @@ export const alertsRouter = router({
             message: `${expiringQuotes.length} ${expiringQuotes.length === 1 ? 'presupuesto expira' : 'presupuestos expiran'} en menos de 7 días`,
             data: { count: expiringQuotes.length },
             date: now,
+            actionUrl: '/quotes?filter=expiring',
           });
         }
         console.log('[ALERTS] Quote alerts calculated:', alerts.length);
