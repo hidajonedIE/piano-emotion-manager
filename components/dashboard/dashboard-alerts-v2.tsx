@@ -82,11 +82,20 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
   
   // Función para contactar al cliente
   const handleContactClient = (alert: Alert) => {
+    window.alert('Botón contactar clickeado!');
+    console.log('🔵 handleContactClient called', alert);
     
-    if (alert.type !== 'piano' || !alert.data?.clientId) return;
+    if (alert.type !== 'piano' || !alert.data?.clientId) {
+      console.log('❌ Not a piano alert or no clientId');
+      return;
+    }
     
     const client = getClient(alert.data.clientId);
-    if (!client) return;
+    console.log('👤 Client found:', client);
+    if (!client) {
+      console.log('❌ Client not found');
+      return;
+    }
     
     const clientName = `${client.firstName} ${client.lastName}`;
     const phone = client.phone;
