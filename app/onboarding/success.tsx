@@ -112,7 +112,8 @@ export default function OnboardingSuccessScreen() {
               <StepItem number={1} text="Invita a tu equipo" />
               <StepItem number={2} text="Agrega tus primeros clientes" />
               <StepItem number={3} text="Configura tu catálogo de servicios" />
-              <StepItem number={4} text="Explora el panel de control" />
+              <StepItem number={4} text="Personaliza los umbrales de alertas (Configuración)" />
+              <StepItem number={5} text="Explora el panel de control" />
             </View>
           </ThemedView>
 

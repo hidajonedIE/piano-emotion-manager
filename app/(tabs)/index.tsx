@@ -34,11 +34,13 @@ import {
   DashboardDraggableWeb,
 } from '@/components/dashboard';
 import { DashboardAlertsV2 } from '@/components/dashboard/dashboard-alerts-v2';
+import { AlertConfigBanner } from '@/components/dashboard/alert-config-banner';
 import { useClientsData, usePianosData, useServicesData, useAppointmentsData, useInvoicesData, useQuotesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
 import { useAllAlerts } from '@/hooks/use-all-alerts';
 import { useAlertsOptimized } from '@/hooks/use-alerts-optimized';
 import { useWhatsNew } from '@/hooks/use-whats-new';
+import { trpc } from '@/utils/trpc';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useDashboardPreferences, DashboardSectionId } from '@/hooks/use-dashboard-preferences';
 import { useUser } from '../../lib/clerk-wrapper';
@@ -86,6 +88,16 @@ export default function DashboardScreen() {
     alerts: optimizedAlerts || [], 
     stats: optimizedStats || { total: 0, urgent: 0, warning: 0, info: 0 } 
   };
+  
+  // Configuración de alertas (para mostrar banner)
+  const { data: alertSettings } = trpc.alertSettings.getSettings.useQuery();
+  const [showBanner, setShowBanner] = useState(false);
+  
+  useEffect(() => {
+    if (alertSettings && alertSettings.hasSeenAdvancedConfigTip === 0) {
+      setShowBanner(true);
+    }
+  }, [alertSettings]);
 
   // DEBUG: Loguear datos cargados
   useEffect(() => {
@@ -158,14 +170,19 @@ export default function DashboardScreen() {
     switch (sectionId) {
       case 'alerts':
         return (
-          <DashboardAlertsV2 
-            key={sectionId}
-            alerts={allAlerts.alerts}
-            totalUrgent={allAlerts.stats.urgent}
-            totalWarning={allAlerts.stats.warning}
-            totalInfo={allAlerts.stats.info}
-            clients={clients}
-          />
+          <>
+            {showBanner && (
+              <AlertConfigBanner onDismiss={() => setShowBanner(false)} />
+            )}
+            <DashboardAlertsV2 
+              key={sectionId}
+              alerts={allAlerts.alerts}
+              totalUrgent={allAlerts.stats.urgent}
+              totalWarning={allAlerts.stats.warning}
+              totalInfo={allAlerts.stats.info}
+              clients={clients}
+            />
+          </>
         );
       case 'quick_actions':
         return <DashboardQuickActionsOnly key={sectionId} />;
