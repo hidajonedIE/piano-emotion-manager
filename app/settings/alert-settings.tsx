@@ -8,7 +8,6 @@
 import { useRouter, Stack } from 'expo-router';
 import { useState, useEffect } from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -298,23 +297,17 @@ export default function AlertSettingsScreen() {
 
   const applyPreset = (presetKey: keyof typeof PRESETS) => {
     const preset = PRESETS[presetKey];
-    Alert.alert(
-      `Aplicar preset: ${preset.name}`,
-      `${preset.description}\n\n¿Quieres aplicar esta configuración?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Aplicar',
-          onPress: () => {
-            setSettings(preset.settings);
-            setHasChanges(true);
-            setShowPresets(false);
-            setValidationErrors([]); // Los presets son válidos por defecto
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          },
-        },
-      ]
+    const confirmed = window.confirm(
+      `Aplicar preset: ${preset.name}\n${preset.description}\n\n¿Quieres aplicar esta configuración?`
     );
+    
+    if (confirmed) {
+      setSettings(preset.settings);
+      setHasChanges(true);
+      setShowPresets(false);
+      setValidationErrors([]); // Los presets son válidos por defecto
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
   };
 
   const handleExport = async () => {
@@ -345,10 +338,10 @@ export default function AlertSettingsScreen() {
       }
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Exportado', 'La configuración se ha exportado correctamente.');
+      window.alert('La configuración se ha exportado correctamente.');
     } catch (error) {
       console.error('Error exporting settings:', error);
-      Alert.alert('Error', 'No se pudo exportar la configuración.');
+      window.alert('Error: No se pudo exportar la configuración.');
     }
   };
 
@@ -360,24 +353,18 @@ export default function AlertSettingsScreen() {
         throw new Error('Formato de archivo inválido');
       }
 
-      Alert.alert(
-        'Importar configuración',
-        '¿Quieres reemplazar tu configuración actual con la importada?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Importar',
-            onPress: () => {
-              setSettings(importedData.settings);
-              setHasChanges(true);
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              Alert.alert('Importado', 'La configuración se ha importado correctamente. Recuerda guardar los cambios.');
-            },
-          },
-        ]
+      const confirmed = window.confirm(
+        'Importar configuración\n\n¿Quieres reemplazar tu configuración actual con la importada?'
       );
+      
+      if (confirmed) {
+        setSettings(importedData.settings);
+        setHasChanges(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        window.alert('La configuración se ha importado correctamente. Recuerda guardar los cambios.');
+      }
     } catch (error) {
-      Alert.alert('Error', 'El archivo no tiene un formato válido.');
+      window.alert('Error: El archivo no tiene un formato válido.');
     }
   };
 
@@ -599,7 +586,7 @@ export default function AlertSettingsScreen() {
       }
     } catch (error) {
       console.error('Error importing settings:', error);
-      Alert.alert('Error', 'No se pudo importar la configuración.');
+      window.alert('Error: No se pudo importar la configuración.');
     }
   };
 
@@ -607,10 +594,8 @@ export default function AlertSettingsScreen() {
     // Validar antes de guardar
     const errors = validateSettings(settings);
     if (errors.length > 0) {
-      Alert.alert(
-        'Errores de validación',
-        errors.map(e => `• ${e.message}`).join('\n'),
-        [{ text: 'OK' }]
+      window.alert(
+        'Errores de validación\n\n' + errors.map(e => `• ${e.message}`).join('\n')
       );
       return;
     }
@@ -618,40 +603,33 @@ export default function AlertSettingsScreen() {
     try {
       await updateMutation.mutateAsync(settings);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Guardado', 'La configuración se ha guardado correctamente.');
+      window.alert('La configuración se ha guardado correctamente.');
       setHasChanges(false);
       refetch();
     } catch (error) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Error', 'No se pudo guardar la configuración. Inténtalo de nuevo.');
+      window.alert('Error: No se pudo guardar la configuración. Inténtalo de nuevo.');
       console.error('Error saving settings:', error);
     }
   };
 
-  const handleReset = () => {
-    Alert.alert(
-      'Restaurar valores por defecto',
-      '¿Estás seguro de que quieres restaurar todos los valores a sus configuraciones por defecto?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Restaurar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await resetMutation.mutateAsync();
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              Alert.alert('Restaurado', 'La configuración se ha restaurado a los valores por defecto.');
-              refetch();
-            } catch (error) {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-              Alert.alert('Error', 'No se pudo restaurar la configuración. Inténtalo de nuevo.');
-              console.error('Error resetting settings:', error);
-            }
-          },
-        },
-      ]
+  const handleReset = async () => {
+    const confirmed = window.confirm(
+      'Restaurar valores por defecto\n\n¿Estás seguro de que quieres restaurar todos los valores a sus configuraciones por defecto?'
     );
+    
+    if (confirmed) {
+      try {
+        await resetMutation.mutateAsync();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        window.alert('La configuración se ha restaurado a los valores por defecto.');
+        refetch();
+      } catch (error) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        window.alert('Error: No se pudo restaurar la configuración. Inténtalo de nuevo.');
+        console.error('Error resetting settings:', error);
+      }
+    }
   };
 
   if (isLoading) {
