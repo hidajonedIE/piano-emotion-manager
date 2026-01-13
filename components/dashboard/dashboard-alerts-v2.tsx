@@ -82,7 +82,6 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
   
   // Función para contactar al cliente
   const handleContactClient = (alert: Alert) => {
-    window.alert('Botón contactar clickeado!');
     console.log('🔵 handleContactClient called', alert);
     
     if (alert.type !== 'piano' || !alert.data?.clientId) {
