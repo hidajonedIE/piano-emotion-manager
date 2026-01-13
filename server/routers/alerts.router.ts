@@ -163,8 +163,8 @@ export const alertsRouter = router({
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
 
-        const todayAppointments: (typeof userAppointments) = [];
-        const weekAppointments: (typeof userAppointments) = [];
+        const todayAppointments: AppointmentItem[] = [];
+        const weekAppointments: AppointmentItem[] = [];
 
         for (const appointment of userAppointments) {
           const appointmentDate = new Date(appointment.date);
@@ -205,8 +205,8 @@ export const alertsRouter = router({
 
         console.log('[ALERTS] Calculating invoice alerts...');
         // 3. Alertas de facturas
-        const pendingInvoices: (typeof userInvoices) = [];
-        const overdueInvoices: (typeof userInvoices) = [];
+        const pendingInvoices: InvoiceItem[] = [];
+        const overdueInvoices: InvoiceItem[] = [];
         let totalPending = 0;
         let totalOverdue = 0;
 
@@ -252,8 +252,8 @@ export const alertsRouter = router({
 
         console.log('[ALERTS] Calculating quote alerts...');
         // 4. Alertas de presupuestos
-        const pendingQuotes: (typeof userQuotes) = [];
-        const expiringQuotes: (typeof userQuotes) = [];
+        const pendingQuotes: QuoteItem[] = [];
+        const expiringQuotes: QuoteItem[] = [];
         let totalPendingQuotes = 0;
 
         for (const quote of userQuotes) {
