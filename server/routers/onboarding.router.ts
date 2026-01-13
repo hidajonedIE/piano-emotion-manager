@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc.js";
 import { getDb } from "../db.js";
-import { partners, partnerSettings, partnerUsers, users, serviceTypes as serviceTypesTable, serviceTasks as serviceTasksTable } from "../../drizzle/schema.js";
+import { partners, partnerSettings, partnerUsers, users, serviceTypes as serviceTypesTable, serviceTasks as serviceTasksTable, alertSettings } from "../../drizzle/schema.js";
 import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -682,6 +682,23 @@ export const onboardingRouter = router({
             }
           }
         }
+
+        // 6. Crear configuración de alertas con valores por defecto
+        await database.insert(alertSettings).values({
+          userId: adminUserId,
+          partnerId,
+          // Los valores por defecto se toman del schema
+          // tuningPendingDays: 180,
+          // tuningUrgentDays: 270,
+          // regulationPendingDays: 730,
+          // regulationUrgentDays: 1095,
+          // etc.
+          emailNotificationsEnabled: emailNotifications ? 1 : 0,
+          pushNotificationsEnabled: pushNotifications ? 1 : 0,
+          weeklyDigestEnabled: 1,
+          weeklyDigestDay: 1,
+          hasSeenAdvancedConfigTip: 0, // Se mostrará el banner en el dashboard
+        });
 
         return {
           success: true,
