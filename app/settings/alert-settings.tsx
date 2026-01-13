@@ -67,7 +67,91 @@ interface ValidationError {
   message: string;
 }
 
-const DEFAULT_SETTINGS: AlertSettingsForm = {
+// Presets de configuración
+const PRESETS = {
+  conservative: {
+    name: 'Conservador',
+    description: 'Umbrales más largos, menos alertas',
+    icon: 'tortoise.fill',
+    settings: {
+      tuningPendingDays: 240,
+      tuningUrgentDays: 360,
+      regulationPendingDays: 900,
+      regulationUrgentDays: 1200,
+      appointmentsNoticeDays: 14,
+      scheduledServicesNoticeDays: 14,
+      invoicesDueNoticeDays: 14,
+      quotesExpiryNoticeDays: 14,
+      contractsRenewalNoticeDays: 60,
+      overduePaymentsNoticeDays: 30,
+      inventoryMinStock: 3,
+      inventoryExpiryNoticeDays: 60,
+      toolsMaintenanceDays: 270,
+      clientFollowupDays: 120,
+      clientInactiveMonths: 18,
+      emailNotificationsEnabled: 1,
+      pushNotificationsEnabled: 0,
+      weeklyDigestEnabled: 1,
+      weeklyDigestDay: 1,
+    },
+  },
+  balanced: {
+    name: 'Balanceado',
+    description: 'Configuración recomendada',
+    icon: 'scale.3d',
+    settings: {
+      tuningPendingDays: 180,
+      tuningUrgentDays: 270,
+      regulationPendingDays: 730,
+      regulationUrgentDays: 1095,
+      appointmentsNoticeDays: 7,
+      scheduledServicesNoticeDays: 7,
+      invoicesDueNoticeDays: 7,
+      quotesExpiryNoticeDays: 7,
+      contractsRenewalNoticeDays: 30,
+      overduePaymentsNoticeDays: 15,
+      inventoryMinStock: 5,
+      inventoryExpiryNoticeDays: 30,
+      toolsMaintenanceDays: 180,
+      clientFollowupDays: 90,
+      clientInactiveMonths: 12,
+      emailNotificationsEnabled: 1,
+      pushNotificationsEnabled: 0,
+      weeklyDigestEnabled: 1,
+      weeklyDigestDay: 1,
+    },
+  },
+  aggressive: {
+    name: 'Agresivo',
+    description: 'Umbrales más cortos, más alertas',
+    icon: 'hare.fill',
+    settings: {
+      tuningPendingDays: 120,
+      tuningUrgentDays: 180,
+      regulationPendingDays: 540,
+      regulationUrgentDays: 730,
+      appointmentsNoticeDays: 3,
+      scheduledServicesNoticeDays: 3,
+      invoicesDueNoticeDays: 3,
+      quotesExpiryNoticeDays: 3,
+      contractsRenewalNoticeDays: 14,
+      overduePaymentsNoticeDays: 7,
+      inventoryMinStock: 10,
+      inventoryExpiryNoticeDays: 14,
+      toolsMaintenanceDays: 90,
+      clientFollowupDays: 45,
+      clientInactiveMonths: 6,
+      emailNotificationsEnabled: 1,
+      pushNotificationsEnabled: 1,
+      weeklyDigestEnabled: 1,
+      weeklyDigestDay: 1,
+    },
+  },
+};
+
+const DEFAULT_SETTINGS: AlertSettingsForm = PRESETS.balanced.settings;
+
+const ORIGINAL_DEFAULT_SETTINGS: AlertSettingsForm = {
   // Umbrales de Pianos
   tuningPendingDays: 180,
   tuningUrgentDays: 270,
@@ -109,6 +193,7 @@ export default function AlertSettingsScreen() {
   const [settings, setSettings] = useState<AlertSettingsForm>(DEFAULT_SETTINGS);
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [showPresets, setShowPresets] = useState(false);
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
@@ -204,6 +289,27 @@ export default function AlertSettingsScreen() {
     // Validar en tiempo real
     const errors = validateSettings(newSettings);
     setValidationErrors(errors);
+  };
+
+  const applyPreset = (presetKey: keyof typeof PRESETS) => {
+    const preset = PRESETS[presetKey];
+    Alert.alert(
+      `Aplicar preset: ${preset.name}`,
+      `${preset.description}\n\n¿Quieres aplicar esta configuración?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Aplicar',
+          onPress: () => {
+            setSettings(preset.settings);
+            setHasChanges(true);
+            setShowPresets(false);
+            setValidationErrors([]); // Los presets son válidos por defecto
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          },
+        },
+      ]
+    );
   };
 
   const handleSave = async () => {
@@ -330,6 +436,46 @@ export default function AlertSettingsScreen() {
             Personaliza los umbrales de alertas y avisos según tus necesidades. Los valores se miden en días excepto donde se indique lo contrario.
           </ThemedText>
         </View>
+
+        {/* Botón de presets */}
+        <Pressable
+          style={[styles.presetsButton, { backgroundColor: cardBg, borderColor }]}
+          onPress={() => setShowPresets(!showPresets)}
+        >
+          <IconSymbol name="list.bullet.rectangle" size={20} color={accent} />
+          <ThemedText style={[styles.presetsButtonText, { color: textColor }]}>
+            {showPresets ? 'Ocultar' : 'Mostrar'} configuraciones predefinidas
+          </ThemedText>
+          <IconSymbol 
+            name={showPresets ? 'chevron.up' : 'chevron.down'} 
+            size={16} 
+            color={textSecondary} 
+          />
+        </Pressable>
+
+        {/* Presets */}
+        {showPresets && (
+          <View style={[styles.presetsContainer, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={styles.presetsTitle}>Configuraciones predefinidas</ThemedText>
+            
+            {Object.entries(PRESETS).map(([key, preset]) => (
+              <Pressable
+                key={key}
+                style={[styles.presetCard, { borderColor }]}
+                onPress={() => applyPreset(key as keyof typeof PRESETS)}
+              >
+                <IconSymbol name={preset.icon as any} size={24} color={accent} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.presetName}>{preset.name}</ThemedText>
+                  <ThemedText style={[styles.presetDescription, { color: textSecondary }]}>
+                    {preset.description}
+                  </ThemedText>
+                </View>
+                <IconSymbol name="chevron.right" size={16} color={textSecondary} />
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         {/* Sección 1: Pianos */}
         <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
@@ -792,6 +938,46 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  presetsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  presetsButtonText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  presetsContainer: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  presetsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  presetCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  presetName: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  presetDescription: {
+    fontSize: 13,
+    marginTop: 2,
   },
   infoBox: {
     flexDirection: 'row',
