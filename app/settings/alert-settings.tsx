@@ -16,9 +16,13 @@ import {
   View,
   Switch,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -312,6 +316,102 @@ export default function AlertSettingsScreen() {
     );
   };
 
+  const handleExport = async () => {
+    try {
+      const exportData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        settings,
+      };
+
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const fileName = `piano-emotion-alert-settings-${new Date().toISOString().split('T')[0]}.json`;
+
+      if (Platform.OS === 'web') {
+        // Para web, descargar como archivo
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        // Para móvil, usar FileSystem y Sharing
+        const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+        await FileSystem.writeAsStringAsync(fileUri, jsonString);
+        await Sharing.shareAsync(fileUri);
+      }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Exportado', 'La configuración se ha exportado correctamente.');
+    } catch (error) {
+      console.error('Error exporting settings:', error);
+      Alert.alert('Error', 'No se pudo exportar la configuración.');
+    }
+  };
+
+  const processImportedData = (jsonString: string) => {
+    try {
+      const importedData = JSON.parse(jsonString);
+      
+      if (!importedData.settings) {
+        throw new Error('Formato de archivo inválido');
+      }
+
+      Alert.alert(
+        'Importar configuración',
+        '¿Quieres reemplazar tu configuración actual con la importada?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Importar',
+            onPress: () => {
+              setSettings(importedData.settings);
+              setHasChanges(true);
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              Alert.alert('Importado', 'La configuración se ha importado correctamente. Recuerda guardar los cambios.');
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'El archivo no tiene un formato válido.');
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      if (Platform.OS === 'web') {
+        // Para web, usar input file
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (e: any) => {
+          const file = e.target.files[0];
+          if (file) {
+            const text = await file.text();
+            processImportedData(text);
+          }
+        };
+        input.click();
+      } else {
+        // Para móvil, usar DocumentPicker
+        const result = await DocumentPicker.getDocumentAsync({
+          type: 'application/json',
+        });
+
+        if (result.type === 'success') {
+          const content = await FileSystem.readAsStringAsync(result.uri);
+          processImportedData(content);
+        }
+      }
+    } catch (error) {
+      console.error('Error importing settings:', error);
+      Alert.alert('Error', 'No se pudo importar la configuración.');
+    }
+  };
+
   const handleSave = async () => {
     // Validar antes de guardar
     const errors = validateSettings(settings);
@@ -452,6 +552,29 @@ export default function AlertSettingsScreen() {
             color={textSecondary} 
           />
         </Pressable>
+
+        {/* Botones de Export/Import */}
+        <View style={styles.quickActions}>
+          <Pressable
+            style={[styles.quickActionButton, { backgroundColor: cardBg, borderColor }]}
+            onPress={handleExport}
+          >
+            <IconSymbol name="square.and.arrow.up" size={20} color={accent} />
+            <ThemedText style={[styles.quickActionText, { color: textColor }]}>
+              Exportar
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[styles.quickActionButton, { backgroundColor: cardBg, borderColor }]}
+            onPress={handleImport}
+          >
+            <IconSymbol name="square.and.arrow.down" size={20} color={accent} />
+            <ThemedText style={[styles.quickActionText, { color: textColor }]}>
+              Importar
+            </ThemedText>
+          </Pressable>
+        </View>
 
         {/* Presets */}
         {showPresets && (
@@ -978,6 +1101,24 @@ const styles = StyleSheet.create({
   presetDescription: {
     fontSize: 13,
     marginTop: 2,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  quickActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.xs,
+  },
+  quickActionText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   infoBox: {
     flexDirection: 'row',
