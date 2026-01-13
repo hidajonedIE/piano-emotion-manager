@@ -3,7 +3,7 @@
  * Genera la URL de autorización de Microsoft y redirige al usuario
  */
 
-import { generateMicrosoftAuthUrl } from '../server/_core/calendar/oauth-microsoft.js';
+import { getAuthorizationUrl } from '../server/_core/calendar/oauth-microsoft.js';
 
 export default async function handler(request: Request) {
   try {
@@ -21,7 +21,7 @@ export default async function handler(request: Request) {
     }
 
     // Generar URL de autorización de Microsoft
-    const authUrl = generateMicrosoftAuthUrl(userId);
+    const authUrl = await getAuthorizationUrl(userId);
 
     // Redirigir al usuario a Microsoft para autorización
     return Response.redirect(authUrl, 302);
