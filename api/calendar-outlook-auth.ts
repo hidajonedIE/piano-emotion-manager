@@ -5,7 +5,7 @@
 
 import { generateMicrosoftAuthUrl } from '../server/_core/calendar/oauth-microsoft.js';
 
-export async function GET(request: Request) {
+export default async function handler(request: Request) {
   try {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
