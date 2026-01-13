@@ -37,7 +37,7 @@ import { DashboardAlertsV2 } from '@/components/dashboard/dashboard-alerts-v2';
 import { useClientsData, usePianosData, useServicesData, useAppointmentsData, useInvoicesData, useQuotesData } from '@/hooks/data';
 import { useRecommendations } from '@/hooks/use-recommendations';
 import { useAllAlerts } from '@/hooks/use-all-alerts';
-import { useAlertsOptimized } from '@/hooks/use-alerts-optimized';
+// import { useAlertsOptimized } from '@/hooks/use-alerts-optimized';
 import { useWhatsNew } from '@/hooks/use-whats-new';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useDashboardPreferences, DashboardSectionId } from '@/hooks/use-dashboard-preferences';
@@ -77,12 +77,7 @@ export default function DashboardScreen() {
   const { urgentCount, pendingCount } = useRecommendations(pianos, services);
   
   // Sistema de alertas consolidado
-  // ANTIGUO: Carga datos en 6 queries separadas (2-3s)
-  // const allAlerts = useAllAlerts(pianos, services, appointments, invoices, quotes);
-  
-  // OPTIMIZADO: Carga todo en 1 query consolidada (<1s)
-  const { alerts: optimizedAlerts, stats: optimizedStats, isLoading: alertsLoading } = useAlertsOptimized();
-  const allAlerts = { alerts: optimizedAlerts, stats: optimizedStats };
+  const allAlerts = useAllAlerts(pianos, services, appointments, invoices, quotes);
 
   // DEBUG: Loguear datos cargados
   useEffect(() => {
