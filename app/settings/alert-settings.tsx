@@ -198,6 +198,7 @@ export default function AlertSettingsScreen() {
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [showPresets, setShowPresets] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
@@ -378,6 +379,196 @@ export default function AlertSettingsScreen() {
     } catch (error) {
       Alert.alert('Error', 'El archivo no tiene un formato válido.');
     }
+  };
+
+  // Analytics: Calcular qué preset está más cerca de la configuración actual
+  const getClosestPreset = (): { name: string; similarity: number } => {
+    let closestPreset = 'balanced';
+    let highestSimilarity = 0;
+
+    Object.entries(PRESETS).forEach(([key, preset]) => {
+      let matches = 0;
+      let total = 0;
+
+      // Comparar solo los campos numéricos principales
+      const fieldsToCompare: (keyof AlertSettingsForm)[] = [
+        'tuningPendingDays',
+        'tuningUrgentDays',
+        'regulationPendingDays',
+        'regulationUrgentDays',
+        'appointmentsNoticeDays',
+        'inventoryMinStock',
+        'clientFollowupDays',
+      ];
+
+      fieldsToCompare.forEach(field => {
+        total++;
+        const currentValue = settings[field] as number;
+        const presetValue = preset.settings[field] as number;
+        
+        // Considerar "match" si está dentro del 20% del valor del preset
+        const tolerance = presetValue * 0.2;
+        if (Math.abs(currentValue - presetValue) <= tolerance) {
+          matches++;
+        }
+      });
+
+      const similarity = (matches / total) * 100;
+      if (similarity > highestSimilarity) {
+        highestSimilarity = similarity;
+        closestPreset = key;
+      }
+    });
+
+    return {
+      name: PRESETS[closestPreset as keyof typeof PRESETS].name,
+      similarity: Math.round(highestSimilarity),
+    };
+  };
+
+  // Analytics: Determinar el perfil de configuración (conservador/balanceado/agresivo)
+  const getConfigurationProfile = (): {
+    profile: 'conservative' | 'balanced' | 'aggressive' | 'custom';
+    score: number;
+    description: string;
+  } => {
+    // Calcular un "score" basado en qué tan agresivos son los umbrales
+    // Score bajo = conservador, score alto = agresivo
+    
+    const conservativeSettings = PRESETS.conservative.settings;
+    const aggressiveSettings = PRESETS.aggressive.settings;
+    
+    let totalScore = 0;
+    let fieldCount = 0;
+    
+    // Campos que determinan el perfil (días más cortos = más agresivo)
+    const profileFields: (keyof AlertSettingsForm)[] = [
+      'tuningPendingDays',
+      'tuningUrgentDays',
+      'regulationPendingDays',
+      'regulationUrgentDays',
+      'appointmentsNoticeDays',
+      'scheduledServicesNoticeDays',
+      'invoicesDueNoticeDays',
+      'quotesExpiryNoticeDays',
+      'contractsRenewalNoticeDays',
+      'overduePaymentsNoticeDays',
+      'inventoryExpiryNoticeDays',
+      'toolsMaintenanceDays',
+      'clientFollowupDays',
+    ];
+    
+    profileFields.forEach(field => {
+      const currentValue = settings[field] as number;
+      const conservativeValue = conservativeSettings[field] as number;
+      const aggressiveValue = aggressiveSettings[field] as number;
+      
+      // Normalizar el valor actual entre 0 (agresivo) y 100 (conservador)
+      const range = conservativeValue - aggressiveValue;
+      const normalized = ((currentValue - aggressiveValue) / range) * 100;
+      
+      totalScore += Math.max(0, Math.min(100, normalized));
+      fieldCount++;
+    });
+    
+    const averageScore = totalScore / fieldCount;
+    
+    // Determinar el perfil basado en el score
+    let profile: 'conservative' | 'balanced' | 'aggressive' | 'custom';
+    let description: string;
+    
+    if (averageScore >= 70) {
+      profile = 'conservative';
+      description = 'Tu configuración es conservadora: recibirás menos alertas pero con más anticipación.';
+    } else if (averageScore >= 40) {
+      profile = 'balanced';
+      description = 'Tu configuración está balanceada: equilibrio entre alertas tempranas y frecuencia.';
+    } else if (averageScore >= 20) {
+      profile = 'aggressive';
+      description = 'Tu configuración es agresiva: recibirás más alertas y más frecuentes.';
+    } else {
+      profile = 'custom';
+      description = 'Tu configuración es personalizada y no coincide con ningún preset estándar.';
+    }
+    
+    return {
+      profile,
+      score: Math.round(averageScore),
+      description,
+    };
+  };
+
+  // Analytics: Detectar qué campos han sido modificados respecto al preset balanceado
+  const getModifiedFields = (): {
+    modifiedCount: number;
+    totalFields: number;
+    modifiedFieldNames: string[];
+  } => {
+    const balancedSettings = PRESETS.balanced.settings;
+    const modifiedFieldNames: string[] = [];
+    let modifiedCount = 0;
+    
+    // Todos los campos configurables
+    const allFields: (keyof AlertSettingsForm)[] = [
+      'tuningPendingDays',
+      'tuningUrgentDays',
+      'regulationPendingDays',
+      'regulationUrgentDays',
+      'appointmentsNoticeDays',
+      'scheduledServicesNoticeDays',
+      'invoicesDueNoticeDays',
+      'quotesExpiryNoticeDays',
+      'contractsRenewalNoticeDays',
+      'overduePaymentsNoticeDays',
+      'inventoryMinStock',
+      'inventoryExpiryNoticeDays',
+      'toolsMaintenanceDays',
+      'clientFollowupDays',
+      'clientInactiveMonths',
+      'emailNotificationsEnabled',
+      'pushNotificationsEnabled',
+      'weeklyDigestEnabled',
+      'weeklyDigestDay',
+    ];
+    
+    // Nombres legibles para los campos
+    const fieldLabels: Record<string, string> = {
+      tuningPendingDays: 'Afinación pendiente',
+      tuningUrgentDays: 'Afinación urgente',
+      regulationPendingDays: 'Regulación pendiente',
+      regulationUrgentDays: 'Regulación urgente',
+      appointmentsNoticeDays: 'Aviso de citas',
+      scheduledServicesNoticeDays: 'Servicios programados',
+      invoicesDueNoticeDays: 'Vencimiento de facturas',
+      quotesExpiryNoticeDays: 'Expiración de presupuestos',
+      contractsRenewalNoticeDays: 'Renovación de contratos',
+      overduePaymentsNoticeDays: 'Pagos vencidos',
+      inventoryMinStock: 'Stock mínimo',
+      inventoryExpiryNoticeDays: 'Expiración de inventario',
+      toolsMaintenanceDays: 'Mantenimiento de herramientas',
+      clientFollowupDays: 'Seguimiento de clientes',
+      clientInactiveMonths: 'Clientes inactivos',
+      emailNotificationsEnabled: 'Notificaciones por email',
+      pushNotificationsEnabled: 'Notificaciones push',
+      weeklyDigestEnabled: 'Resumen semanal',
+      weeklyDigestDay: 'Día del resumen',
+    };
+    
+    allFields.forEach(field => {
+      const currentValue = settings[field];
+      const balancedValue = balancedSettings[field];
+      
+      if (currentValue !== balancedValue) {
+        modifiedCount++;
+        modifiedFieldNames.push(fieldLabels[field] || field);
+      }
+    });
+    
+    return {
+      modifiedCount,
+      totalFields: allFields.length,
+      modifiedFieldNames,
+    };
   };
 
   const handleImport = async () => {
@@ -575,6 +766,129 @@ export default function AlertSettingsScreen() {
             </ThemedText>
           </Pressable>
         </View>
+
+        {/* Botón de analíticas */}
+        <Pressable
+          style={[styles.analyticsButton, { backgroundColor: cardBg, borderColor }]}
+          onPress={() => setShowAnalytics(!showAnalytics)}
+        >
+          <IconSymbol name="chart.bar.fill" size={20} color={accent} />
+          <ThemedText style={[styles.analyticsButtonText, { color: textColor }]}>
+            {showAnalytics ? 'Ocultar' : 'Ver'} analíticas de configuración
+          </ThemedText>
+          <IconSymbol 
+            name={showAnalytics ? 'chevron.up' : 'chevron.down'} 
+            size={16} 
+            color={textSecondary} 
+          />
+        </Pressable>
+
+        {/* Analíticas */}
+        {showAnalytics && (() => {
+          const closestPreset = getClosestPreset();
+          const profile = getConfigurationProfile();
+          const modifiedFields = getModifiedFields();
+          
+          return (
+            <View style={[styles.analyticsContainer, { backgroundColor: cardBg, borderColor }]}>
+              <ThemedText style={styles.analyticsTitle}>Análisis de tu configuración</ThemedText>
+              
+              {/* Perfil de configuración */}
+              <View style={[styles.analyticsCard, { borderColor }]}>
+                <View style={styles.analyticsCardHeader}>
+                  <IconSymbol 
+                    name={profile.profile === 'conservative' ? 'tortoise.fill' : 
+                          profile.profile === 'aggressive' ? 'hare.fill' : 'scale.3d'} 
+                    size={24} 
+                    color={accent} 
+                  />
+                  <ThemedText style={styles.analyticsCardTitle}>Perfil de configuración</ThemedText>
+                </View>
+                <ThemedText style={[styles.analyticsCardDescription, { color: textSecondary }]}>
+                  {profile.description}
+                </ThemedText>
+                
+                {/* Barra de progreso del perfil */}
+                <View style={styles.profileBarContainer}>
+                  <View style={styles.profileBarLabels}>
+                    <ThemedText style={[styles.profileBarLabel, { color: textSecondary }]}>Agresivo</ThemedText>
+                    <ThemedText style={[styles.profileBarLabel, { color: textSecondary }]}>Conservador</ThemedText>
+                  </View>
+                  <View style={[styles.profileBar, { backgroundColor: borderColor }]}>
+                    <View 
+                      style={[
+                        styles.profileBarFill, 
+                        { backgroundColor: accent, width: `${profile.score}%` }
+                      ]} 
+                    />
+                  </View>
+                  <ThemedText style={[styles.profileBarValue, { color: textSecondary }]}>
+                    Score: {profile.score}/100
+                  </ThemedText>
+                </View>
+              </View>
+              
+              {/* Preset más cercano */}
+              <View style={[styles.analyticsCard, { borderColor }]}>
+                <View style={styles.analyticsCardHeader}>
+                  <IconSymbol name="target" size={24} color={accent} />
+                  <ThemedText style={styles.analyticsCardTitle}>Preset más cercano</ThemedText>
+                </View>
+                <ThemedText style={[styles.analyticsCardDescription, { color: textSecondary }]}>
+                  Tu configuración es {closestPreset.similarity}% similar al preset <ThemedText style={{ fontWeight: '600' }}>{closestPreset.name}</ThemedText>.
+                </ThemedText>
+                {closestPreset.similarity < 70 && (
+                  <ThemedText style={[styles.analyticsCardHint, { color: warning }]}>
+                    ⚠️ Considera usar un preset como punto de partida si quieres simplificar tu configuración.
+                  </ThemedText>
+                )}
+              </View>
+              
+              {/* Campos modificados */}
+              <View style={[styles.analyticsCard, { borderColor }]}>
+                <View style={styles.analyticsCardHeader}>
+                  <IconSymbol name="pencil.circle.fill" size={24} color={accent} />
+                  <ThemedText style={styles.analyticsCardTitle}>Personalización</ThemedText>
+                </View>
+                <ThemedText style={[styles.analyticsCardDescription, { color: textSecondary }]}>
+                  Has personalizado <ThemedText style={{ fontWeight: '600' }}>{modifiedFields.modifiedCount} de {modifiedFields.totalFields}</ThemedText> campos respecto al preset balanceado.
+                </ThemedText>
+                {modifiedFields.modifiedCount > 0 && (
+                  <View style={styles.modifiedFieldsList}>
+                    <ThemedText style={[styles.modifiedFieldsTitle, { color: textSecondary }]}>
+                      Campos modificados:
+                    </ThemedText>
+                    {modifiedFields.modifiedFieldNames.slice(0, 5).map((fieldName, idx) => (
+                      <ThemedText key={idx} style={[styles.modifiedFieldItem, { color: textSecondary }]}>
+                        • {fieldName}
+                      </ThemedText>
+                    ))}
+                    {modifiedFields.modifiedCount > 5 && (
+                      <ThemedText style={[styles.modifiedFieldItem, { color: textSecondary }]}>
+                        ... y {modifiedFields.modifiedCount - 5} más
+                      </ThemedText>
+                    )}
+                  </View>
+                )}
+              </View>
+              
+              {/* Recomendación */}
+              <View style={[styles.analyticsCard, { backgroundColor: `${success}10`, borderColor: success }]}>
+                <View style={styles.analyticsCardHeader}>
+                  <IconSymbol name="lightbulb.fill" size={24} color={success} />
+                  <ThemedText style={[styles.analyticsCardTitle, { color: success }]}>Recomendación</ThemedText>
+                </View>
+                <ThemedText style={[styles.analyticsCardDescription, { color: textColor }]}>
+                  {modifiedFields.modifiedCount === 0 
+                    ? 'Estás usando la configuración balanceada por defecto. Puedes personalizarla según tus necesidades.'
+                    : profile.similarity < 50
+                    ? 'Tu configuración es muy personalizada. Asegúrate de que los umbrales sean apropiados para tu negocio.'
+                    : 'Tu configuración está bien equilibrada. Recuerda guardar los cambios si has hecho modificaciones.'}
+                </ThemedText>
+              </View>
+            </View>
+          );
+        })()}
 
         {/* Presets */}
         {showPresets && (
@@ -1119,6 +1433,94 @@ const styles = StyleSheet.create({
   quickActionText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  analyticsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  analyticsButtonText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  analyticsContainer: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  analyticsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: Spacing.xs,
+  },
+  analyticsCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  analyticsCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  analyticsCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  analyticsCardDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  analyticsCardHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: Spacing.xs,
+  },
+  profileBarContainer: {
+    marginTop: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  profileBarLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  profileBarLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  profileBar: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  profileBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  profileBarValue: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+  modifiedFieldsList: {
+    marginTop: Spacing.sm,
+    gap: 4,
+  },
+  modifiedFieldsTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  modifiedFieldItem: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   infoBox: {
     flexDirection: 'row',
