@@ -22,6 +22,8 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSnackbar } from '@/hooks/use-snackbar';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SkipButton } from '@/components/onboarding/skip-button';
+import { markStepAsSkipped } from '@/utils/onboarding-helpers';
 
 const ONBOARDING_STORAGE_KEY = '@onboarding_data';
 
@@ -151,6 +153,11 @@ export default function OnboardingStep2Screen() {
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
+  };
+  const handleSkip = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await markStepAsSkipped(8);
+    router.push('/(tabs)');
   };
 
   const handlePresetSelect = (preset: typeof PRESET_COLORS[0]) => {
@@ -314,6 +321,12 @@ export default function OnboardingStep2Screen() {
             </View>
           </View>
         </ScrollView>
+
+
+        {/* Skip Button */}
+        <View style={styles.skipContainer}>
+          <SkipButton onSkip={handleSkip} />
+        </View>
 
         {/* Footer Buttons */}
         <View style={[styles.footer, { backgroundColor, borderTopColor: borderColor }]}>

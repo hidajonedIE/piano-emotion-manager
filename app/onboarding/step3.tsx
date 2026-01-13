@@ -20,6 +20,8 @@ import { useSnackbar } from '@/hooks/use-snackbar';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { OnboardingData, ONBOARDING_STORAGE_KEY } from '@/types/onboarding';
+import { SkipButton } from '@/components/onboarding/skip-button';
+import { markStepAsSkipped } from '@/utils/onboarding-helpers';
 
 type BusinessMode = 'individual' | 'team';
 
@@ -82,6 +84,11 @@ export default function OnboardingStep3Screen() {
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
+  };
+  const handleSkip = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await markStepAsSkipped(3);
+    router.push('/onboarding/step4');
   };
 
   const handleSelectMode = (mode: BusinessMode) => {

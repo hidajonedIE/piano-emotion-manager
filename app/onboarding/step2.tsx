@@ -23,6 +23,8 @@ import { useSnackbar } from '@/hooks/use-snackbar';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { OnboardingData, ONBOARDING_STORAGE_KEY } from '@/types/onboarding';
+import { SkipButton } from '@/components/onboarding/skip-button';
+import { markStepAsSkipped } from '@/utils/onboarding-helpers';
 
 export default function OnboardingStep2Screen() {
   const router = useRouter();
@@ -165,6 +167,12 @@ export default function OnboardingStep2Screen() {
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
+  };
+
+  const handleSkip = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await markStepAsSkipped(2);
+    router.push('/onboarding/step3');
   };
 
   return (
@@ -435,6 +443,11 @@ export default function OnboardingStep2Screen() {
             </View>
           </View>
 
+          {/* Skip Button */}
+          <View style={styles.skipContainer}>
+            <SkipButton onSkip={handleSkip} />
+          </View>
+
           {/* Buttons */}
           <View style={styles.buttonContainer}>
             <Pressable
@@ -563,5 +576,9 @@ const styles = StyleSheet.create({
   },
   buttonPressed: {
     opacity: 0.8,
+  },
+  skipContainer: {
+    marginBottom: 16,
+    alignItems: 'center',
   },
 });

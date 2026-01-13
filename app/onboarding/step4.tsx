@@ -20,6 +20,8 @@ import { useSnackbar } from '@/hooks/use-snackbar';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { OnboardingData, ONBOARDING_STORAGE_KEY } from '@/types/onboarding';
+import { SkipButton } from '@/components/onboarding/skip-button';
+import { markStepAsSkipped } from '@/utils/onboarding-helpers';
 
 type EmailClient = 'gmail' | 'outlook' | 'default';
 
@@ -76,6 +78,11 @@ export default function OnboardingStep4Screen() {
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
+  };
+  const handleSkip = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await markStepAsSkipped(4);
+    router.push('/onboarding/step5');
   };
 
   const handleSelectClient = (client: EmailClient) => {

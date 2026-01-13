@@ -86,6 +86,11 @@ export default function OnboardingStep7Screen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
   };
+  const handleSkip = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await markStepAsSkipped(7);
+    router.push('/onboarding/step8');
+  };
 
   const handleSelectCalendar = (type: OnboardingStep7['calendarSync']) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
