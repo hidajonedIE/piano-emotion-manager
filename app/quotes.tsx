@@ -1,5 +1,5 @@
-import { useRouter, Stack } from 'expo-router';
-import { useState, useMemo } from 'react';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
+import { useState, useMemo, useEffect } from 'react';
 import {
   FlatList,
   Pressable,
@@ -44,9 +44,19 @@ export default function QuotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { quotes, loading } = useQuotesData();
+  const params = useLocalSearchParams<{ filter?: string }>();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all');
+  
+  // Aplicar filtro automáticamente cuando se viene desde una alerta
+  useEffect(() => {
+    if (params.filter === 'pending') {
+      setStatusFilter('sent');
+    } else if (params.filter === 'expiring') {
+      setStatusFilter('sent'); // Los que expiran también están en estado 'sent'
+    }
+  }, [params.filter]);
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');

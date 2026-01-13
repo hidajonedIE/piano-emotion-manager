@@ -213,29 +213,27 @@ export function useAllAlerts(
     });
 
     if (pendingQuotes.length > 0) {
-      // Navegar directamente al primer presupuesto pendiente
-      const firstQuoteId = pendingQuotes[0]?.id;
+      // Navegar a la lista de presupuestos con filtro de pendientes
       alerts.push({
         id: 'quotes-pending',
         type: 'quote',
         priority: 'info',
         title: 'Presupuestos pendientes',
         message: `${pendingQuotes.length} ${pendingQuotes.length === 1 ? 'presupuesto' : 'presupuestos'} esperando respuesta (€${totalPending.toFixed(2)})`,
-        actionUrl: firstQuoteId ? `/quote/${firstQuoteId}` : '/quotes',
+        actionUrl: '/quotes?filter=pending',
         data: { count: pendingQuotes.length, total: totalPending, quotes: pendingQuotes },
       });
     }
 
     if (expiringQuotes.length > 0) {
-      // Navegar directamente al primer presupuesto próximo a expirar
-      const firstExpiringId = expiringQuotes[0]?.id;
+      // Navegar a la lista de presupuestos con filtro de próximos a expirar
       alerts.push({
         id: 'quotes-expiring',
         type: 'quote',
         priority: 'warning',
         title: 'Presupuestos próximos a expirar',
         message: `${expiringQuotes.length} ${expiringQuotes.length === 1 ? 'presupuesto expira' : 'presupuestos expiran'} en menos de 7 días`,
-        actionUrl: firstExpiringId ? `/quote/${firstExpiringId}` : '/quotes',
+        actionUrl: '/quotes?filter=expiring',
         data: { count: expiringQuotes.length, quotes: expiringQuotes },
       });
     }
