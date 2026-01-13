@@ -168,41 +168,11 @@ export default function OnboardingStep5Screen() {
     }
   };
 
-  const handleSkip = () => {
-    Alert.alert(
-      'Omitir configuración',
-      'Podrás configurar los servicios más adelante desde Configuración. ¿Continuar?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Omitir',
-          onPress: async () => {
-            try {
-              const saved = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
-              const data: OnboardingData = saved ? JSON.parse(saved) : {};
-              
-              data.step5 = {
-                serviceTypes: [],
-              };
-
-              await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(data));
-              
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push('/onboarding/step6');
-            } catch (error) {
-              console.error('Error saving data:', error);
-              showSnackbar('Error al guardar los datos', 'error');
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
   };
+
   const handleSkip = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await markStepAsSkipped(5);
