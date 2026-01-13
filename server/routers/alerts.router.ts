@@ -2,9 +2,9 @@
  * Alerts Router
  * Endpoint optimizado para cargar todas las alertas en una sola llamada
  */
-import { router, protectedProcedure } from '../_core/trpc';
-import { db } from '../db';
-import { pianos, services, appointments, invoices, quotes } from '../db/schema';
+import { router, protectedProcedure } from '../_core/trpc.js';
+import { db } from '../db.js';
+import { pianos, services, appointments, invoices, quotes } from '../../drizzle/schema.js';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
 
 export const alertsRouter = router({
