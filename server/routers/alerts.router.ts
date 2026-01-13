@@ -1,192 +1,228 @@
-/**
- * Alerts Router
- * Endpoint optimizado para cargar todas las alertas en una sola llamada
- */
-import { router, protectedProcedure } from '../_core/trpc.js';
-import { getDb } from '../db.js';
-import { pianos, services, appointments, invoices, quotes } from '../../drizzle/schema.js';
-import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { router, protectedProcedure } from "../_core/trpc.js";
+import * as db from "../db.js";
+import { pianos, services, appointments, invoices, quotes } from "../../drizzle/schema.js";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
 
 export const alertsRouter = router({
-  /**
-   * Obtener todas las alertas consolidadas
-   * Ejecuta todas las queries en paralelo y pre-calcula las alertas
-   */
-  getAll: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user.id;
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    const sevenDaysFromNow = new Date(now);
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  getAll: protectedProcedure
+    .query(async ({ ctx }) => {
+      console.log('[ALERTS] Starting getAll procedure');
+      console.log('[ALERTS] ctx.user:', JSON.stringify(ctx.user));
+      
+      try {
+        // Obtener conexión a la base de datos (copiado de appointments.router)
+        console.log('[ALERTS] Getting database connection...');
+        const database = await db.getDb();
+        
+        if (!database) {
+          console.log('[ALERTS] ERROR: Database connection is null');
+          return { alerts: [], stats: { total: 0, urgent: 0, warning: 0, info: 0 } };
+        }
+        
+        console.log('[ALERTS] Database connection OK');
+        
+        const userId = ctx.user.id;
+        console.log('[ALERTS] userId:', userId);
+        
+        // Fechas para cálculos
+        const now = new Date();
+        const nextWeek = new Date(now);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        const sevenDaysFromNow = new Date(now);
+        sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
-    // Ejecutar todas las queries en paralelo
-    const database = await getDb();
-    if (!database) {
-      return { alerts: [], stats: { total: 0, urgent: 0, warning: 0, info: 0 } };
-    }
-    
-    const [
-      userPianos,
-      userServices,
-      userAppointments,
-      userInvoices,
-      userQuotes,
-    ] = await Promise.all([
-      database.select().from(pianos).where(eq(pianos.userId, userId)),
-      database.select().from(services).where(eq(services.userId, userId)).orderBy(desc(services.date)),
-      database.select().from(appointments).where(eq(appointments.userId, userId)),
-      database.select().from(invoices).where(eq(invoices.userId, userId)),
-      database.select().from(quotes).where(eq(quotes.userId, userId)),
-    ]);
+        console.log('[ALERTS] Fetching pianos...');
+        // Query 1: Pianos del usuario
+        const userPianos = await database
+          .select()
+          .from(pianos)
+          .where(eq(pianos.userId, userId));
+        console.log('[ALERTS] Pianos fetched:', userPianos.length);
 
-    const alerts: any[] = [];
+        console.log('[ALERTS] Fetching services...');
+        // Query 2: Servicios del usuario
+        const userServices = await database
+          .select()
+          .from(services)
+          .where(eq(services.userId, userId))
+          .orderBy(desc(services.date));
+        console.log('[ALERTS] Services fetched:', userServices.length);
 
-    // 1. Alertas de pianos (mantenimiento)
-    const pianoAlerts = userPianos
-      .filter(piano => {
-        if (!piano.lastMaintenanceDate) return true;
-        const lastMaintenance = new Date(piano.lastMaintenanceDate);
-        const monthsSince = (now.getTime() - lastMaintenance.getTime()) / (1000 * 60 * 60 * 24 * 30);
-        return monthsSince >= 6; // Más de 6 meses sin mantenimiento
-      })
-      .map(piano => ({
-        id: `piano-${piano.id}`,
-        type: 'piano',
-        priority: 'urgent',
-        title: 'Mantenimiento requerido',
-        message: `Piano ${piano.brand} ${piano.model} necesita mantenimiento`,
-        actionUrl: `/piano/${piano.id}`,
-        data: {
-          pianoId: piano.id,
-          clientId: piano.clientId,
-        },
-      }));
+        console.log('[ALERTS] Fetching appointments...');
+        // Query 3: Citas del usuario
+        const userAppointments = await database
+          .select()
+          .from(appointments)
+          .where(eq(appointments.userId, userId));
+        console.log('[ALERTS] Appointments fetched:', userAppointments.length);
 
-    alerts.push(...pianoAlerts);
+        console.log('[ALERTS] Fetching invoices...');
+        // Query 4: Facturas del usuario
+        const userInvoices = await database
+          .select()
+          .from(invoices)
+          .where(eq(invoices.userId, userId));
+        console.log('[ALERTS] Invoices fetched:', userInvoices.length);
 
-    // 2. Alertas de citas
-    const todayAppointments = userAppointments.filter(apt => {
-      const aptDate = new Date(apt.date);
-      return aptDate >= today && aptDate < tomorrow;
-    });
+        console.log('[ALERTS] Fetching quotes...');
+        // Query 5: Presupuestos del usuario
+        const userQuotes = await database
+          .select()
+          .from(quotes)
+          .where(eq(quotes.userId, userId));
+        console.log('[ALERTS] Quotes fetched:', userQuotes.length);
 
-    const weekAppointments = userAppointments.filter(apt => {
-      const aptDate = new Date(apt.date);
-      return aptDate >= tomorrow && aptDate < nextWeek;
-    });
+        const alerts: any[] = [];
 
-    if (todayAppointments.length > 0) {
-      alerts.push({
-        id: 'appointments-today',
-        type: 'appointment',
-        priority: 'urgent',
-        title: 'Citas de hoy',
-        message: `Tienes ${todayAppointments.length} ${todayAppointments.length === 1 ? 'cita' : 'citas'} programada${todayAppointments.length === 1 ? '' : 's'} para hoy`,
-        actionUrl: '/(tabs)/agenda',
-        data: { count: todayAppointments.length },
-      });
-    }
+        console.log('[ALERTS] Calculating piano alerts...');
+        // 1. Alertas de pianos (mantenimiento)
+        for (const piano of userPianos) {
+          const pianoServices = userServices.filter(s => s.pianoId === piano.id);
+          
+          if (pianoServices.length === 0) {
+            alerts.push({
+              id: `piano-no-service-${piano.id}`,
+              type: 'warning',
+              priority: 2,
+              title: 'Piano sin mantenimiento',
+              message: `El piano ${piano.brand} ${piano.model} no tiene servicios registrados`,
+              pianoId: piano.id,
+              date: now,
+            });
+          } else {
+            const lastService = pianoServices[0];
+            const lastServiceDate = new Date(lastService.date);
+            const monthsSinceService = (now.getTime() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+            
+            if (monthsSinceService > 12) {
+              alerts.push({
+                id: `piano-maintenance-${piano.id}`,
+                type: 'urgent',
+                priority: 1,
+                title: 'Mantenimiento urgente',
+                message: `El piano ${piano.brand} ${piano.model} lleva ${Math.floor(monthsSinceService)} meses sin mantenimiento`,
+                pianoId: piano.id,
+                date: lastServiceDate,
+              });
+            } else if (monthsSinceService > 6) {
+              alerts.push({
+                id: `piano-maintenance-soon-${piano.id}`,
+                type: 'warning',
+                priority: 2,
+                title: 'Mantenimiento recomendado',
+                message: `El piano ${piano.brand} ${piano.model} necesitará mantenimiento pronto (${Math.floor(monthsSinceService)} meses desde el último)`,
+                pianoId: piano.id,
+                date: lastServiceDate,
+              });
+            }
+          }
+        }
+        console.log('[ALERTS] Piano alerts calculated:', alerts.length);
 
-    if (weekAppointments.length > 0) {
-      alerts.push({
-        id: 'appointments-week',
-        type: 'appointment',
-        priority: 'info',
-        title: 'Citas esta semana',
-        message: `Tienes ${weekAppointments.length} ${weekAppointments.length === 1 ? 'cita' : 'citas'} esta semana`,
-        actionUrl: '/(tabs)/agenda',
-        data: { count: weekAppointments.length },
-      });
-    }
+        console.log('[ALERTS] Calculating appointment alerts...');
+        // 2. Alertas de citas
+        for (const appointment of userAppointments) {
+          const appointmentDate = new Date(appointment.date);
+          
+          if (appointmentDate < now && appointment.status === 'scheduled') {
+            alerts.push({
+              id: `appointment-overdue-${appointment.id}`,
+              type: 'urgent',
+              priority: 1,
+              title: 'Cita vencida',
+              message: `La cita "${appointment.title}" está vencida`,
+              appointmentId: appointment.id,
+              date: appointmentDate,
+            });
+          } else if (appointmentDate <= sevenDaysFromNow && appointmentDate >= now && appointment.status === 'scheduled') {
+            alerts.push({
+              id: `appointment-upcoming-${appointment.id}`,
+              type: 'info',
+              priority: 3,
+              title: 'Cita próxima',
+              message: `Tienes una cita "${appointment.title}" en los próximos 7 días`,
+              appointmentId: appointment.id,
+              date: appointmentDate,
+            });
+          }
+        }
+        console.log('[ALERTS] Appointment alerts calculated:', alerts.length);
 
-    // 3. Alertas de facturas
-    const pendingInvoices = userInvoices.filter(inv => inv.status === 'sent');
-    const overdueInvoices = pendingInvoices.filter(inv => {
-      if (!inv.dueDate) return false;
-      const dueDate = new Date(inv.dueDate);
-      return dueDate < now;
-    });
+        console.log('[ALERTS] Calculating invoice alerts...');
+        // 3. Alertas de facturas
+        for (const invoice of userInvoices) {
+          if (invoice.status === 'pending' || invoice.status === 'sent') {
+            const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
+            
+            if (dueDate && dueDate < now) {
+              alerts.push({
+                id: `invoice-overdue-${invoice.id}`,
+                type: 'urgent',
+                priority: 1,
+                title: 'Factura vencida',
+                message: `La factura #${invoice.invoiceNumber} está vencida`,
+                invoiceId: invoice.id,
+                date: dueDate,
+              });
+            } else if (dueDate && dueDate <= sevenDaysFromNow) {
+              alerts.push({
+                id: `invoice-due-soon-${invoice.id}`,
+                type: 'warning',
+                priority: 2,
+                title: 'Factura por vencer',
+                message: `La factura #${invoice.invoiceNumber} vence pronto`,
+                invoiceId: invoice.id,
+                date: dueDate,
+              });
+            }
+          }
+        }
+        console.log('[ALERTS] Invoice alerts calculated:', alerts.length);
 
-    const totalPending = pendingInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
-    const totalOverdue = overdueInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+        console.log('[ALERTS] Calculating quote alerts...');
+        // 4. Alertas de presupuestos
+        for (const quote of userQuotes) {
+          if (quote.status === 'sent') {
+            const expiryDate = quote.expiryDate ? new Date(quote.expiryDate) : null;
+            
+            if (expiryDate && expiryDate <= sevenDaysFromNow && expiryDate >= now) {
+              alerts.push({
+                id: `quote-expiring-${quote.id}`,
+                type: 'info',
+                priority: 3,
+                title: 'Presupuesto por expirar',
+                message: `El presupuesto #${quote.quoteNumber} expira pronto`,
+                quoteId: quote.id,
+                date: expiryDate,
+              });
+            }
+          }
+        }
+        console.log('[ALERTS] Quote alerts calculated:', alerts.length);
 
-    if (pendingInvoices.length > 0) {
-      alerts.push({
-        id: 'invoices-pending',
-        type: 'invoice',
-        priority: 'warning',
-        title: 'Facturas pendientes',
-        message: `${pendingInvoices.length} ${pendingInvoices.length === 1 ? 'factura pendiente' : 'facturas pendientes'} de pago (€${totalPending.toFixed(2)})`,
-        actionUrl: '/invoices?filter=pending',
-        data: { count: pendingInvoices.length, total: totalPending },
-      });
-    }
+        // Ordenar por prioridad y fecha
+        alerts.sort((a, b) => {
+          if (a.priority !== b.priority) return a.priority - b.priority;
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
 
-    if (overdueInvoices.length > 0) {
-      alerts.push({
-        id: 'invoices-overdue',
-        type: 'invoice',
-        priority: 'urgent',
-        title: 'Facturas vencidas',
-        message: `${overdueInvoices.length} ${overdueInvoices.length === 1 ? 'factura vencida' : 'facturas vencidas'} (€${totalOverdue.toFixed(2)})`,
-        actionUrl: '/invoices?filter=overdue',
-        data: { count: overdueInvoices.length, total: totalOverdue },
-      });
-    }
+        // Calcular estadísticas
+        const stats = {
+          total: alerts.length,
+          urgent: alerts.filter(a => a.type === 'urgent').length,
+          warning: alerts.filter(a => a.type === 'warning').length,
+          info: alerts.filter(a => a.type === 'info').length,
+        };
 
-    // 4. Alertas de presupuestos
-    const pendingQuotes = userQuotes.filter(q => q.status === 'sent');
-    const expiringQuotes = pendingQuotes.filter(q => {
-      if (!q.validUntil) return false;
-      const validUntil = new Date(q.validUntil);
-      return validUntil > now && validUntil <= sevenDaysFromNow;
-    });
+        console.log('[ALERTS] Final stats:', JSON.stringify(stats));
+        console.log('[ALERTS] Returning', alerts.length, 'alerts');
 
-    const totalPendingQuotes = pendingQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
-
-    if (pendingQuotes.length > 0) {
-      alerts.push({
-        id: 'quotes-pending',
-        type: 'quote',
-        priority: 'info',
-        title: 'Presupuestos pendientes',
-        message: `${pendingQuotes.length} ${pendingQuotes.length === 1 ? 'presupuesto' : 'presupuestos'} esperando respuesta (€${totalPendingQuotes.toFixed(2)})`,
-        actionUrl: '/quotes?filter=pending',
-        data: { count: pendingQuotes.length, total: totalPendingQuotes },
-      });
-    }
-
-    if (expiringQuotes.length > 0) {
-      alerts.push({
-        id: 'quotes-expiring',
-        type: 'quote',
-        priority: 'warning',
-        title: 'Presupuestos próximos a expirar',
-        message: `${expiringQuotes.length} ${expiringQuotes.length === 1 ? 'presupuesto expira' : 'presupuestos expiran'} en menos de 7 días`,
-        actionUrl: '/quotes?filter=expiring',
-        data: { count: expiringQuotes.length },
-      });
-    }
-
-    // Ordenar por prioridad
-    const priorityOrder = { urgent: 0, warning: 1, info: 2 };
-    alerts.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-
-    // Calcular estadísticas
-    const stats = {
-      total: alerts.length,
-      urgent: alerts.filter(a => a.priority === 'urgent').length,
-      warning: alerts.filter(a => a.priority === 'warning').length,
-      info: alerts.filter(a => a.priority === 'info').length,
-    };
-
-    return {
-      alerts,
-      stats,
-    };
-  }),
+        return { alerts, stats };
+        
+      } catch (error) {
+        console.error('[ALERTS] ERROR in getAll:', error);
+        console.error('[ALERTS] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        throw error;
+      }
+    }),
 });
