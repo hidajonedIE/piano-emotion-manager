@@ -92,6 +92,8 @@ export interface OnboardingData {
   step6?: OnboardingStep6;
   step7?: OnboardingStep7;
   step8?: OnboardingStep8;
+  skippedSteps?: number[]; // Array de números de pasos omitidos
+  completedSteps?: number[]; // Array de números de pasos completados
 }
 
 // Servicios predefinidos

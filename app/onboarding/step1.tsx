@@ -26,6 +26,8 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { OnboardingData, ONBOARDING_STORAGE_KEY } from '@/types/onboarding';
+import { SkipButton } from '@/components/onboarding/skip-button';
+import { markStepAsSkipped } from '@/utils/onboarding-helpers';
 
 export default function OnboardingStep1Screen() {
   const router = useRouter();
@@ -221,6 +223,12 @@ export default function OnboardingStep1Screen() {
     router.back();
   };
 
+  const handleSkip = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await markStepAsSkipped(1);
+    router.push('/onboarding/step2');
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
@@ -414,6 +422,11 @@ export default function OnboardingStep1Screen() {
           </View>
         </ScrollView>
 
+        {/* Skip Button */}
+        <View style={styles.skipContainer}>
+          <SkipButton onSkip={handleSkip} />
+        </View>
+
         {/* Footer Buttons */}
         <View style={[styles.footer, { backgroundColor, borderTopColor: borderColor }]}>
           <Pressable
@@ -521,6 +534,10 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 12,
     color: '#ef4444',
+  },
+  skipContainer: {
+    alignItems: 'center',
+    paddingVertical: 12,
   },
   footer: {
     position: 'absolute',
