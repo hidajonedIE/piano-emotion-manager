@@ -95,10 +95,44 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
       console.log('❌ Client not found');
       return;
     }
-    
-    const clientName = `${client.firstName} ${client.lastName}`;
+        const clientName = `${client.firstName} ${client.lastName1}`;
     const phone = client.phone;
     const email = client.email;
+    
+    console.log('📞 Phone:', phone);
+    console.log('📧 Email:', email);
+    console.log('🖥️ Platform:', Platform.OS);
+    
+    // Para web, usar window.confirm en lugar de ActionSheet/Alert
+    if (Platform.OS === 'web') {
+      const options = [];
+      if (phone) {
+        options.push('WhatsApp');
+        options.push('Llamar');
+      }
+      if (email) options.push('Email');
+      
+      const optionsText = options.map((opt, i) => `${i + 1}. ${opt}`).join('\n');
+      const choice = window.prompt(`Contactar a ${clientName}\n\n${optionsText}\n\nEscribe el número de la opción:`);
+      
+      if (choice) {
+        const index = parseInt(choice, 10) - 1;
+        if (phone && index === 0) {
+          // WhatsApp
+          const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+          window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${message}`, '_blank');
+        } else if (phone && index === 1) {
+          // Llamar
+          window.open(`tel:${phone}`, '_blank');
+        } else if (email && index === (phone ? 2 : 0)) {
+          // Email
+          const subject = encodeURIComponent('Mantenimiento de piano');
+          const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+          window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+        }
+      }
+      return;
+    }
     
     if (Platform.OS === 'ios') {
       const options = [];
