@@ -98,36 +98,36 @@ export const alertsRouter = router({
           const pianoServices = userServices.filter(s => s.pianoId === piano.id);
           
           if (pianoServices.length === 0) {
-            alerts.push({
-              id: `piano-no-service-${piano.id}`,
-              type: 'warning',
-              priority: 2,
-              title: 'Piano sin mantenimiento',
-              message: `El piano ${piano.brand} ${piano.model} no tiene servicios registrados`,
-              pianoId: piano.id,
-              date: now,
-            });
+          alerts.push({
+            id: `piano-no-service-${piano.id}`,
+            type: 'piano',
+            priority: 'warning',
+            title: 'Piano sin mantenimiento',
+            message: `El piano ${piano.brand} ${piano.model} no tiene servicios registrados`,
+            pianoId: piano.id,
+            date: now,
+          });
           } else {
             const lastService = pianoServices[0];
             const lastServiceDate = new Date(lastService.date);
             const monthsSinceService = (now.getTime() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
             
             if (monthsSinceService > 12) {
-              alerts.push({
-                id: `piano-maintenance-${piano.id}`,
-                type: 'urgent',
-                priority: 1,
-                title: 'Mantenimiento urgente',
-                message: `El piano ${piano.brand} ${piano.model} lleva ${Math.floor(monthsSinceService)} meses sin mantenimiento`,
-                pianoId: piano.id,
-                date: lastServiceDate,
-              });
+            alerts.push({
+              id: `piano-maintenance-${piano.id}`,
+              type: 'piano',
+              priority: 'urgent',
+              title: 'Mantenimiento urgente',
+              message: `El piano ${piano.brand} ${piano.model} lleva ${Math.floor(monthsSinceService)} meses sin mantenimiento`,
+              pianoId: piano.id,
+              date: lastServiceDate,
+            });
             } else if (monthsSinceService > 6) {
-              alerts.push({
-                id: `piano-maintenance-soon-${piano.id}`,
-                type: 'warning',
-                priority: 2,
-                title: 'Mantenimiento recomendado',
+            alerts.push({
+              id: `piano-maintenance-soon-${piano.id}`,
+              type: 'piano',
+              priority: 'warning',
+              title: 'Mantenimiento recomendado',
                 message: `El piano ${piano.brand} ${piano.model} necesitará mantenimiento pronto (${Math.floor(monthsSinceService)} meses desde el último)`,
                 pianoId: piano.id,
                 date: lastServiceDate,
@@ -143,25 +143,25 @@ export const alertsRouter = router({
           const appointmentDate = new Date(appointment.date);
           
           if (appointmentDate < now && appointment.status === 'scheduled') {
-            alerts.push({
-              id: `appointment-overdue-${appointment.id}`,
-              type: 'urgent',
-              priority: 1,
-              title: 'Cita vencida',
-              message: `La cita "${appointment.title}" está vencida`,
-              appointmentId: appointment.id,
-              date: appointmentDate,
-            });
+          alerts.push({
+            id: `appointment-overdue-${appointment.id}`,
+            type: 'appointment',
+            priority: 'urgent',
+            title: 'Cita vencida',
+            message: `La cita "${appointment.title}" está vencida`,
+            appointmentId: appointment.id,
+            date: appointmentDate,
+          });
           } else if (appointmentDate <= sevenDaysFromNow && appointmentDate >= now && appointment.status === 'scheduled') {
-            alerts.push({
-              id: `appointment-upcoming-${appointment.id}`,
-              type: 'info',
-              priority: 3,
-              title: 'Cita próxima',
-              message: `Tienes una cita "${appointment.title}" en los próximos 7 días`,
-              appointmentId: appointment.id,
-              date: appointmentDate,
-            });
+          alerts.push({
+            id: `appointment-upcoming-${appointment.id}`,
+            type: 'appointment',
+            priority: 'info',
+            title: 'Cita próxima',
+            message: `Tienes una cita "${appointment.title}" en los próximos 7 días`,
+            appointmentId: appointment.id,
+            date: appointmentDate,
+          });
           }
         }
         console.log('[ALERTS] Appointment alerts calculated:', alerts.length);
@@ -173,25 +173,25 @@ export const alertsRouter = router({
             const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
             
             if (dueDate && dueDate < now) {
-              alerts.push({
-                id: `invoice-overdue-${invoice.id}`,
-                type: 'urgent',
-                priority: 1,
-                title: 'Factura vencida',
-                message: `La factura #${invoice.invoiceNumber} está vencida`,
-                invoiceId: invoice.id,
-                date: dueDate,
-              });
+            alerts.push({
+              id: `invoice-overdue-${invoice.id}`,
+              type: 'invoice',
+              priority: 'urgent',
+              title: 'Factura vencida',
+              message: `La factura #${invoice.invoiceNumber} está vencida`,
+              invoiceId: invoice.id,
+              date: dueDate,
+            });
             } else if (dueDate && dueDate <= sevenDaysFromNow) {
-              alerts.push({
-                id: `invoice-due-soon-${invoice.id}`,
-                type: 'warning',
-                priority: 2,
-                title: 'Factura por vencer',
-                message: `La factura #${invoice.invoiceNumber} vence pronto`,
-                invoiceId: invoice.id,
-                date: dueDate,
-              });
+            alerts.push({
+              id: `invoice-due-soon-${invoice.id}`,
+              type: 'invoice',
+              priority: 'warning',
+              title: 'Factura por vencer',
+              message: `La factura #${invoice.invoiceNumber} vence pronto`,
+              invoiceId: invoice.id,
+              date: dueDate,
+            });
             }
           }
         }
@@ -204,32 +204,35 @@ export const alertsRouter = router({
             const expiryDate = quote.expiryDate ? new Date(quote.expiryDate) : null;
             
             if (expiryDate && expiryDate <= sevenDaysFromNow && expiryDate >= now) {
-              alerts.push({
-                id: `quote-expiring-${quote.id}`,
-                type: 'info',
-                priority: 3,
-                title: 'Presupuesto por expirar',
-                message: `El presupuesto #${quote.quoteNumber} expira pronto`,
-                quoteId: quote.id,
-                date: expiryDate,
-              });
+            alerts.push({
+              id: `quote-expiring-${quote.id}`,
+              type: 'quote',
+              priority: 'info',
+              title: 'Presupuesto por expirar',
+              message: `El presupuesto #${quote.quoteNumber} expira pronto`,
+              quoteId: quote.id,
+              date: expiryDate,
+            });
             }
           }
         }
         console.log('[ALERTS] Quote alerts calculated:', alerts.length);
 
         // Ordenar por prioridad y fecha
+        const priorityOrder = { urgent: 1, warning: 2, info: 3 };
         alerts.sort((a, b) => {
-          if (a.priority !== b.priority) return a.priority - b.priority;
+          const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 999;
+          const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 999;
+          if (priorityA !== priorityB) return priorityA - priorityB;
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         });
 
         // Calcular estadísticas
         const stats = {
           total: alerts.length,
-          urgent: alerts.filter(a => a.type === 'urgent').length,
-          warning: alerts.filter(a => a.type === 'warning').length,
-          info: alerts.filter(a => a.type === 'info').length,
+          urgent: alerts.filter(a => a.priority === 'urgent').length,
+          warning: alerts.filter(a => a.priority === 'warning').length,
+          info: alerts.filter(a => a.priority === 'info').length,
         };
 
         console.log('[ALERTS] Final stats:', JSON.stringify(stats));
