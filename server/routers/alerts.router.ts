@@ -2,6 +2,7 @@ import { router, protectedProcedure } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { pianos, services, appointments, invoices, quotes } from "../../drizzle/schema.js";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { filterByPartner } from "../utils/multi-tenant.js";
 
 export const alertsRouter = router({
   getAll: protectedProcedure
@@ -21,8 +22,10 @@ export const alertsRouter = router({
         
         console.log('[ALERTS] Database connection OK');
         
-        const userId = ctx.user.id;
-        console.log('[ALERTS] userId:', userId);
+        const userEmail = ctx.user.email;
+        const partnerId = ctx.partnerId;
+        console.log('[ALERTS] userEmail:', userEmail);
+        console.log('[ALERTS] partnerId:', partnerId);
         
         // Fechas para cálculos
         const now = new Date();
@@ -36,7 +39,10 @@ export const alertsRouter = router({
         const userPianos = await database
           .select()
           .from(pianos)
-          .where(eq(pianos.userId, userId));
+          .where(and(
+            filterByPartner(pianos.partnerId, partnerId),
+            eq(pianos.odId, userEmail)
+          ));
         console.log('[ALERTS] Pianos fetched:', userPianos.length);
 
         console.log('[ALERTS] Fetching services...');
@@ -44,7 +50,10 @@ export const alertsRouter = router({
         const userServices = await database
           .select()
           .from(services)
-          .where(eq(services.userId, userId))
+          .where(and(
+            filterByPartner(services.partnerId, partnerId),
+            eq(services.odId, userEmail)
+          ))
           .orderBy(desc(services.date));
         console.log('[ALERTS] Services fetched:', userServices.length);
 
@@ -53,7 +62,10 @@ export const alertsRouter = router({
         const userAppointments = await database
           .select()
           .from(appointments)
-          .where(eq(appointments.userId, userId));
+          .where(and(
+            filterByPartner(appointments.partnerId, partnerId),
+            eq(appointments.odId, userEmail)
+          ));
         console.log('[ALERTS] Appointments fetched:', userAppointments.length);
 
         console.log('[ALERTS] Fetching invoices...');
@@ -61,7 +73,10 @@ export const alertsRouter = router({
         const userInvoices = await database
           .select()
           .from(invoices)
-          .where(eq(invoices.userId, userId));
+          .where(and(
+            filterByPartner(invoices.partnerId, partnerId),
+            eq(invoices.odId, userEmail)
+          ));
         console.log('[ALERTS] Invoices fetched:', userInvoices.length);
 
         console.log('[ALERTS] Fetching quotes...');
@@ -69,7 +84,10 @@ export const alertsRouter = router({
         const userQuotes = await database
           .select()
           .from(quotes)
-          .where(eq(quotes.userId, userId));
+          .where(and(
+            filterByPartner(quotes.partnerId, partnerId),
+            eq(quotes.odId, userEmail)
+          ));
         console.log('[ALERTS] Quotes fetched:', userQuotes.length);
 
         const alerts: any[] = [];
