@@ -81,8 +81,7 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
   };
   
   // Función para contactar al cliente
-  const handleContactClient = (alert: Alert, event: any) => {
-    event.stopPropagation(); // Evitar que se navegue al piano
+  const handleContactClient = (alert: Alert) => {
     
     if (alert.type !== 'piano' || !alert.data?.clientId) return;
     
@@ -216,39 +215,45 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
               </View>
               <View style={styles.alertsList}>
                 {urgentAlerts.map((alert) => (
-                  <Pressable
+                  <View
                     key={alert.id}
                     style={[styles.alertItem, { borderLeftColor: error }]}
-                    onPress={() => handleAlertPress(alert)}
                   >
-                    <View style={[styles.alertIconContainer, { backgroundColor: error + '20' }]}>
-                      <IconSymbol 
-                        name={getAlertIcon(alert.type)} 
-                        size={16} 
-                        color={error} 
-                      />
-                    </View>
-                    <View style={styles.alertTextContainer}>
-                      <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
-                      <ThemedText style={[styles.alertMessage, { color: textSecondary }]}>
-                        {alert.message}
-                      </ThemedText>
-                    </View>
+                    <Pressable
+                      style={styles.alertPressableArea}
+                      onPress={() => handleAlertPress(alert)}
+                    >
+                      <View style={[styles.alertIconContainer, { backgroundColor: error + '20' }]}>
+                        <IconSymbol 
+                          name={getAlertIcon(alert.type)} 
+                          size={16} 
+                          color={error} 
+                        />
+                      </View>
+                      <View style={styles.alertTextContainer}>
+                        <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
+                        <ThemedText style={[styles.alertMessage, { color: textSecondary }]}>
+                          {alert.message}
+                        </ThemedText>
+                      </View>
+                    </Pressable>
                     {alert.type === 'piano' && alert.data?.clientId && (
                       <Pressable
                         style={[styles.contactButton, { backgroundColor: error + '15', borderColor: error }]}
-                        onPress={(e) => handleContactClient(alert, e)}
+                        onPress={() => handleContactClient(alert)}
                       >
                         <IconSymbol name="phone.fill" size={14} color={error} />
                         <ThemedText style={[styles.contactButtonText, { color: error }]}>Contactar</ThemedText>
                       </Pressable>
                     )}
-                    <IconSymbol 
-                      name="chevron.right" 
-                      size={16} 
-                      color={textSecondary} 
-                    />
-                  </Pressable>
+                    <Pressable onPress={() => handleAlertPress(alert)}>
+                      <IconSymbol 
+                        name="chevron.right" 
+                        size={16} 
+                        color={textSecondary} 
+                      />
+                    </Pressable>
+                  </View>
                 ))}
               </View>
             </View>
@@ -269,39 +274,45 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
               </View>
               <View style={styles.alertsList}>
                 {infoAlerts.map((alert) => (
-                  <Pressable
+                  <View
                     key={alert.id}
                     style={[styles.alertItem, { borderLeftColor: getPriorityColor(alert.priority) }]}
-                    onPress={() => handleAlertPress(alert)}
                   >
-                    <View style={[styles.alertIconContainer, { backgroundColor: getPriorityColor(alert.priority) + '20' }]}>
-                      <IconSymbol 
-                        name={getAlertIcon(alert.type)} 
-                        size={16} 
-                        color={getPriorityColor(alert.priority)} 
-                      />
-                    </View>
-                    <View style={styles.alertTextContainer}>
-                      <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
-                      <ThemedText style={[styles.alertMessage, { color: textSecondary }]}>
-                        {alert.message}
-                      </ThemedText>
-                    </View>
+                    <Pressable
+                      style={styles.alertPressableArea}
+                      onPress={() => handleAlertPress(alert)}
+                    >
+                      <View style={[styles.alertIconContainer, { backgroundColor: getPriorityColor(alert.priority) + '20' }]}>
+                        <IconSymbol 
+                          name={getAlertIcon(alert.type)} 
+                          size={16} 
+                          color={getPriorityColor(alert.priority)} 
+                        />
+                      </View>
+                      <View style={styles.alertTextContainer}>
+                        <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
+                        <ThemedText style={[styles.alertMessage, { color: textSecondary }]}>
+                          {alert.message}
+                        </ThemedText>
+                      </View>
+                    </Pressable>
                     {alert.type === 'piano' && alert.data?.clientId && (
                       <Pressable
                         style={[styles.contactButton, { backgroundColor: error + '15', borderColor: error }]}
-                        onPress={(e) => handleContactClient(alert, e)}
+                        onPress={() => handleContactClient(alert)}
                       >
                         <IconSymbol name="phone.fill" size={14} color={error} />
                         <ThemedText style={[styles.contactButtonText, { color: error }]}>Contactar</ThemedText>
                       </Pressable>
                     )}
-                    <IconSymbol 
-                      name="chevron.right" 
-                      size={16} 
-                      color={textSecondary} 
-                    />
-                  </Pressable>
+                    <Pressable onPress={() => handleAlertPress(alert)}>
+                      <IconSymbol 
+                        name="chevron.right" 
+                        size={16} 
+                        color={textSecondary} 
+                      />
+                    </Pressable>
+                  </View>
                 ))}
               </View>
             </View>
@@ -396,6 +407,12 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.sm,
     backgroundColor: '#00000005',
     borderLeftWidth: 3,
+  },
+  alertPressableArea: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   alertIconContainer: {
     width: 32,
