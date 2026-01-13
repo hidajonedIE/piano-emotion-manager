@@ -62,6 +62,11 @@ interface AlertSettingsForm {
   weeklyDigestDay: number;
 }
 
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
 const DEFAULT_SETTINGS: AlertSettingsForm = {
   // Umbrales de Pianos
   tuningPendingDays: 180,
@@ -103,6 +108,7 @@ export default function AlertSettingsScreen() {
 
   const [settings, setSettings] = useState<AlertSettingsForm>(DEFAULT_SETTINGS);
   const [hasChanges, setHasChanges] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
@@ -146,12 +152,72 @@ export default function AlertSettingsScreen() {
     }
   }, [serverSettings]);
 
+  // Validación en tiempo real
+  const validateSettings = (newSettings: AlertSettingsForm): ValidationError[] => {
+    const errors: ValidationError[] = [];
+
+    // Validar que urgent > pending para pianos
+    if (newSettings.tuningUrgentDays <= newSettings.tuningPendingDays) {
+      errors.push({
+        field: 'tuningUrgentDays',
+        message: 'Los días urgentes de afinación deben ser mayores que los días pendientes',
+      });
+    }
+
+    if (newSettings.regulationUrgentDays <= newSettings.regulationPendingDays) {
+      errors.push({
+        field: 'regulationUrgentDays',
+        message: 'Los días urgentes de regulación deben ser mayores que los días pendientes',
+      });
+    }
+
+    // Validar rangos razonables
+    if (newSettings.tuningPendingDays < 30 || newSettings.tuningPendingDays > 730) {
+      errors.push({
+        field: 'tuningPendingDays',
+        message: 'Los días pendientes de afinación deben estar entre 30 y 730 días',
+      });
+    }
+
+    if (newSettings.inventoryMinStock < 0 || newSettings.inventoryMinStock > 100) {
+      errors.push({
+        field: 'inventoryMinStock',
+        message: 'El stock mínimo debe estar entre 0 y 100',
+      });
+    }
+
+    if (newSettings.weeklyDigestDay < 0 || newSettings.weeklyDigestDay > 6) {
+      errors.push({
+        field: 'weeklyDigestDay',
+        message: 'El día de la semana debe estar entre 0 (Domingo) y 6 (Sábado)',
+      });
+    }
+
+    return errors;
+  };
+
   const updateSetting = <K extends keyof AlertSettingsForm>(key: K, value: AlertSettingsForm[K]) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
     setHasChanges(true);
+    
+    // Validar en tiempo real
+    const errors = validateSettings(newSettings);
+    setValidationErrors(errors);
   };
 
   const handleSave = async () => {
+    // Validar antes de guardar
+    const errors = validateSettings(settings);
+    if (errors.length > 0) {
+      Alert.alert(
+        'Errores de validación',
+        errors.map(e => `• ${e.message}`).join('\n'),
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     try {
       await updateMutation.mutateAsync(settings);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -214,18 +280,24 @@ export default function AlertSettingsScreen() {
       <Stack.Screen
         options={{
           title: 'Configuración de Alertas',
-          headerRight: () => (
-            <Pressable 
-              onPress={handleSave}
-              accessibilityRole="button"
-              accessibilityLabel="Guardar cambios"
-              disabled={!hasChanges}
-            >
-              <ThemedText style={[styles.saveButton, { color: hasChanges ? accent : textSecondary }]}>
-                Guardar
-              </ThemedText>
-            </Pressable>
-          ),
+          headerRight: () => {
+            const hasValidationErrors = validationErrors.length > 0;
+            return (
+              <Pressable 
+                onPress={handleSave}
+                accessibilityRole="button"
+                accessibilityLabel="Guardar cambios"
+                disabled={!hasChanges || hasValidationErrors}
+              >
+                <ThemedText style={[
+                  styles.saveButton, 
+                  { color: hasChanges && !hasValidationErrors ? accent : textSecondary }
+                ]}>
+                  Guardar
+                </ThemedText>
+              </Pressable>
+            );
+          },
         }}
       />
 
@@ -234,6 +306,23 @@ export default function AlertSettingsScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 20 }]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Errores de validación */}
+        {validationErrors.length > 0 && (
+          <View style={[styles.errorBox, { backgroundColor: `${error}15`, borderColor: error }]}>
+            <IconSymbol name="exclamationmark.triangle.fill" size={20} color={error} />
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[styles.errorTitle, { color: error }]}>
+                Errores de validación
+              </ThemedText>
+              {validationErrors.map((err, idx) => (
+                <ThemedText key={idx} style={[styles.errorText, { color: error }]}>
+                  • {err.message}
+                </ThemedText>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Descripción general */}
         <View style={[styles.infoBox, { backgroundColor: `${accent}10`, borderColor: accent }]}>
           <IconSymbol name="info.circle.fill" size={20} color={accent} />
@@ -686,6 +775,23 @@ const styles = StyleSheet.create({
   saveButton: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  errorBox: {
+    flexDirection: 'row',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+    alignItems: 'flex-start',
+  },
+  errorTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  errorText: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   infoBox: {
     flexDirection: 'row',
