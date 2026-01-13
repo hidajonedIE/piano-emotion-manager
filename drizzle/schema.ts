@@ -1065,7 +1065,7 @@ export const workAssignments = mysqlTable("work_assignments", {
 ]);
 
 // Alert Dismissals
-export * from './alerts-schema';
+// (alerts-schema removed - using alertSettings table in main schema)
 
 // ============================================================================
 // ONBOARDING STEP 5: SERVICE TYPES AND TASKS
