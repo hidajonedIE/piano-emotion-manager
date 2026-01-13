@@ -64,6 +64,7 @@ interface CalendarHeaderProps {
   onNext: () => void;
   onToday: () => void;
   onChangeView: (type: CalendarView['type']) => void;
+  onSettings?: () => void;
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({
@@ -72,6 +73,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onNext,
   onToday,
   onChangeView,
+  onSettings,
 }) => {
   const { t } = useTranslation();
 
@@ -105,23 +107,30 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
       <Text style={styles.headerTitle}>{formatTitle()}</Text>
 
-      <View style={styles.viewSelector}>
-        {(['day', 'week', 'month'] as const).map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={[styles.viewButton, view.type === type && styles.viewButtonActive]}
-            onPress={() => onChangeView(type)}
-          >
-            <Text
-              style={[
-                styles.viewButtonText,
-                view.type === type && styles.viewButtonTextActive,
-              ]}
+      <View style={styles.headerRight}>
+        <View style={styles.viewSelector}>
+          {(['day', 'week', 'month'] as const).map((type) => (
+            <TouchableOpacity
+              key={type}
+              style={[styles.viewButton, view.type === type && styles.viewButtonActive]}
+              onPress={() => onChangeView(type)}
             >
-              {t(`calendar.view.${type}`)}
-            </Text>
+              <Text
+                style={[
+                  styles.viewButtonText,
+                  view.type === type && styles.viewButtonTextActive,
+                ]}
+              >
+                {t(`calendar.view.${type}`)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {onSettings && (
+          <TouchableOpacity style={styles.settingsButton} onPress={onSettings}>
+            <Ionicons name="settings-outline" size={24} color="#374151" />
           </TouchableOpacity>
-        ))}
+        )}
       </View>
     </View>
   );
@@ -382,11 +391,13 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events, onEventPress, onDay
 interface AdvancedCalendarProps {
   onCreateEvent?: (date: string, time?: string) => void;
   onEditEvent?: (event: CalendarEvent) => void;
+  onSettings?: () => void;
 }
 
 export const AdvancedCalendar: React.FC<AdvancedCalendarProps> = ({
   onCreateEvent,
   onEditEvent,
+  onSettings,
 }) => {
   const { t } = useTranslation();
   const {
@@ -457,6 +468,7 @@ export const AdvancedCalendar: React.FC<AdvancedCalendarProps> = ({
         onNext={goToNext}
         onToday={goToToday}
         onChangeView={changeView}
+        onSettings={onSettings}
       />
       {renderContent()}
     </View>
@@ -506,6 +518,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     textTransform: 'capitalize',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  settingsButton: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: '#f3f4f6',
   },
   viewSelector: {
     flexDirection: 'row',

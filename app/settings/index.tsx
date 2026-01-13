@@ -755,12 +755,28 @@ export default function SettingsIndexScreen() {
 
         {/* ========== CALENDARIO ========== */}
         <Accordion
-          title="Calendario y Sincronización"
+          title="Calendario"
           icon="calendar"
-          iconColor="#A855F7"
+          iconColor="#10B981"
           defaultOpen={false}
         >
           <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <Pressable
+              style={[styles.linkRow, { borderBottomColor: borderColor }]}
+              onPress={() => router.push('/settings/calendar-settings' as any)}
+            >
+              <View style={[styles.settingIcon, { backgroundColor: `${accent}15` }]}>
+                <IconSymbol name="calendar.badge.clock" size={20} color={accent} />
+              </View>
+              <View style={styles.settingContent}>
+                <ThemedText style={styles.settingLabel}>Configuración de Calendarios</ThemedText>
+                <ThemedText style={[styles.settingSublabel, { color: textSecondary }]}>
+                  Conectar Google Calendar y Outlook
+                </ThemedText>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+            </Pressable>
+
             {renderSettingRow(
               'g.circle.fill',
               'Sincronizar con Google Calendar',
@@ -770,7 +786,7 @@ export default function SettingsIndexScreen() {
                 if (!settings.googleCalendarSync) {
                   Alert.alert('Conectar Google', '¿Deseas conectar tu cuenta de Google Calendar?', [
                     { text: 'Cancelar', style: 'cancel' },
-                    { text: 'Conectar', onPress: () => updateSettings({ googleCalendarSync: true }) },
+                    { text: 'Conectar', onPress: () => router.push('/settings/calendar-settings' as any) },
                   ]);
                 } else {
                   updateSettings({ googleCalendarSync: false });
@@ -787,7 +803,7 @@ export default function SettingsIndexScreen() {
                 if (!settings.outlookCalendarSync) {
                   Alert.alert('Conectar Outlook', '¿Deseas conectar tu cuenta de Outlook?', [
                     { text: 'Cancelar', style: 'cancel' },
-                    { text: 'Conectar', onPress: () => updateSettings({ outlookCalendarSync: true }) },
+                    { text: 'Conectar', onPress: () => router.push('/settings/calendar-settings' as any) },
                   ]);
                 } else {
                   updateSettings({ outlookCalendarSync: false });

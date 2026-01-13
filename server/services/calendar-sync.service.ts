@@ -2,13 +2,13 @@
  * Calendar Sync Service
  * Sincroniza citas programadas con Google Calendar y Outlook
  */
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import * as db from '../db.js';
-import { appointments, users } from '../../drizzle/schema.js';
+import { appointments, users, calendarConnections } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
-
-const execAsync = promisify(exec);
+import { createEvent, updateEvent, deleteEvent } from '../_core/calendar/google-calendar.js';
+import { isTokenExpired, refreshAccessToken } from '../_core/calendar/oauth-google.js';
+import { createEvent as createMsEvent, updateEvent as updateMsEvent, deleteEvent as deleteMsEvent } from '../_core/calendar/microsoft-calendar.js';
+import { isTokenExpired as isMsTokenExpired, refreshAccessToken as refreshMsAccessToken } from '../_core/calendar/oauth-microsoft.js';
 
 interface CalendarEvent {
   title: string;
@@ -82,13 +82,13 @@ export class CalendarSyncService {
       const event = this.prepareCalendarEvent(appointment);
 
       // Intentar sincronizar con Google Calendar primero
-      const googleResult = await this.syncWithGoogleCalendar(event);
+      const googleResult = await this.syncWithGoogleCalendar(event, userId);
       if (googleResult.success) {
         return googleResult;
       }
 
       // Si falla Google, intentar con Outlook
-      const outlookResult = await this.syncWithOutlookCalendar(event);
+      const outlookResult = await this.syncWithOutlookCalendar(event, userId);
       if (outlookResult.success) {
         return outlookResult;
       }
@@ -154,54 +154,92 @@ export class CalendarSyncService {
   }
 
   /**
-   * Sincronizar con Google Calendar usando MCP
+   * Sincronizar con Google Calendar usando core services
    */
-  private static async syncWithGoogleCalendar(event: CalendarEvent): Promise<SyncResult> {
+  private static async syncWithGoogleCalendar(event: CalendarEvent, userId: string): Promise<SyncResult> {
     try {
-      // Preparar comando para MCP de Google Calendar
-      const eventData = JSON.stringify({
-        summary: event.title,
-        description: event.description,
-        location: event.location,
-        start: {
-          dateTime: event.startDateTime,
-          timeZone: 'Europe/Madrid', // Ajustar según zona horaria del usuario
-        },
-        end: {
-          dateTime: event.endDateTime,
-          timeZone: 'Europe/Madrid',
-        },
-        attendees: event.attendees?.map(email => ({ email })),
-        reminders: {
-          useDefault: false,
-          overrides: [
-            { method: 'email', minutes: 24 * 60 }, // 1 día antes
-            { method: 'popup', minutes: 60 }, // 1 hora antes
-          ],
-        },
-      });
-
-      // Llamar a MCP de Google Calendar
-      const command = `manus-mcp-cli tool call create_event --server google-calendar --input '${eventData.replace(/'/g, "\\'")}'`;
-      const { stdout, stderr } = await execAsync(command);
-
-      if (stderr) {
-        console.error('[GoogleCalendar] Error:', stderr);
+      // 1. Obtener conexión de Google Calendar del usuario
+      const database = await db.getDb();
+      if (!database) {
         return {
           success: false,
           provider: 'google',
-          error: stderr,
+          error: 'Database not available',
         };
       }
 
-      // Parsear respuesta
-      const response = JSON.parse(stdout);
+      const connection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'google')
+        ),
+      });
+
+      if (!connection) {
+        return {
+          success: false,
+          provider: 'google',
+          error: 'Google Calendar no está conectado. Por favor, conecta tu cuenta en Configuración.',
+        };
+      }
+
+      // 2. Verificar si el token está expirado y refrescarlo si es necesario
+      let accessToken = connection.accessToken;
+      let refreshToken = connection.refreshToken;
+
+      if (isTokenExpired(connection.expiresAt ? new Date(connection.expiresAt) : null)) {
+        console.log('🔄 [GoogleCalendar] Token expired, refreshing...');
+        const newTokens = await refreshAccessToken(connection.refreshToken);
+        accessToken = newTokens.accessToken;
+        refreshToken = newTokens.refreshToken;
+
+        // Actualizar tokens en BD
+        await database
+          .update(calendarConnections)
+          .set({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+            expiresAt: newTokens.expiresAt,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(calendarConnections.id, connection.id));
+      }
+
+      // 3. Crear evento en Google Calendar
+      const createdEvent = await createEvent(
+        accessToken,
+        refreshToken,
+        connection.calendarId,
+        {
+          summary: event.title,
+          description: event.description,
+          location: event.location,
+          start: {
+            dateTime: event.startDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          end: {
+            dateTime: event.endDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          attendees: event.attendees?.map(email => ({ email })),
+          reminders: {
+            useDefault: false,
+            overrides: [
+              { method: 'email', minutes: 24 * 60 }, // 1 día antes
+              { method: 'popup', minutes: 60 }, // 1 hora antes
+            ],
+          },
+        }
+      );
+
+      console.log('✅ [GoogleCalendar] Event created:', createdEvent.id);
       
       return {
         success: true,
         provider: 'google',
-        eventId: response.id,
-        eventUrl: response.htmlLink,
+        eventId: createdEvent.id,
+        eventUrl: createdEvent.htmlLink,
       };
     } catch (error) {
       console.error('[GoogleCalendar] Error:', error);
@@ -216,42 +254,96 @@ export class CalendarSyncService {
   /**
    * Sincronizar con Outlook Calendar usando Microsoft Graph API
    */
-  private static async syncWithOutlookCalendar(event: CalendarEvent): Promise<SyncResult> {
-    try {
-      // Preparar datos del evento para Outlook
-      const eventData = JSON.stringify({
-        subject: event.title,
-        body: {
-          contentType: 'Text',
-          content: event.description,
-        },
-        start: {
-          dateTime: event.startDateTime,
-          timeZone: 'Europe/Madrid',
-        },
-        end: {
-          dateTime: event.endDateTime,
-          timeZone: 'Europe/Madrid',
-        },
-        location: event.location ? {
-          displayName: event.location,
-        } : undefined,
-        attendees: event.attendees?.map(email => ({
-          emailAddress: {
-            address: email,
-          },
-          type: 'required',
-        })),
-        isReminderOn: true,
-        reminderMinutesBeforeStart: 60,
-      });
-
-      // Aquí iría la llamada a Microsoft Graph API
-      // Por ahora, retornamos error ya que no está implementado
+  private static async syncWithOutlookCalendar(event: CalendarEvent, userId: string): Promise<SyncResult> {
+    const database = await db.getDb();
+    if (!database) {
       return {
         success: false,
         provider: 'outlook',
-        error: 'Sincronización con Outlook no disponible aún',
+        error: 'Database not available',
+      };
+    }
+
+    try {
+      // 1. Buscar conexión activa de Outlook para este usuario
+      const connection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'outlook'),
+          eq(calendarConnections.syncEnabled, 1)
+        ),
+      });
+
+      if (!connection) {
+        return {
+          success: false,
+          provider: 'outlook',
+          error: 'No hay conexión activa con Outlook Calendar',
+        };
+      }
+
+      // 2. Verificar y refrescar token si es necesario
+      let accessToken = connection.accessToken;
+      let refreshToken = connection.refreshToken;
+
+      if (isMsTokenExpired(connection.expiresAt)) {
+        console.log('⏳ [OutlookCalendar] Token expired, refreshing...');
+        const newTokens = await refreshMsAccessToken(refreshToken);
+        accessToken = newTokens.accessToken;
+        refreshToken = newTokens.refreshToken;
+
+        // Actualizar tokens en BD
+        await database
+          .update(calendarConnections)
+          .set({
+            accessToken,
+            refreshToken,
+            expiresAt: newTokens.expiresAt,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(calendarConnections.id, connection.id));
+      }
+
+      // 3. Crear evento en Outlook Calendar
+      const createdEvent = await createMsEvent(
+        accessToken,
+        refreshToken,
+        connection.calendarId,
+        {
+          subject: event.title,
+          body: {
+            contentType: 'text',
+            content: event.description,
+          },
+          start: {
+            dateTime: event.startDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          end: {
+            dateTime: event.endDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          location: event.location ? {
+            displayName: event.location,
+          } : undefined,
+          attendees: event.attendees?.map(email => ({
+            emailAddress: {
+              address: email,
+            },
+            type: 'required',
+          })),
+          isReminderOn: true,
+          reminderMinutesBeforeStart: 60,
+        }
+      );
+
+      console.log('✅ [OutlookCalendar] Event created:', createdEvent.id);
+      
+      return {
+        success: true,
+        provider: 'outlook',
+        eventId: createdEvent.id,
+        eventUrl: createdEvent.webLink,
       };
     } catch (error) {
       console.error('[OutlookCalendar] Error:', error);
@@ -326,9 +418,9 @@ export class CalendarSyncService {
       const event = this.prepareCalendarEvent(appointment);
 
       if (provider === 'google') {
-        return await this.updateGoogleCalendarEvent(externalEventId, event);
+        return await this.updateGoogleCalendarEvent(externalEventId, event, userId);
       } else {
-        return await this.updateOutlookCalendarEvent(externalEventId, event);
+        return await this.updateOutlookCalendarEvent(externalEventId, event, userId);
       }
     } catch (error) {
       console.error('[CalendarSync] Error updating:', error);
@@ -341,49 +433,91 @@ export class CalendarSyncService {
   }
 
   /**
-   * Actualizar evento en Google Calendar
+   * Actualizar evento en Google Calendar usando core services
    */
   private static async updateGoogleCalendarEvent(
     eventId: string,
-    event: CalendarEvent
+    event: CalendarEvent,
+    userId: string
   ): Promise<SyncResult> {
     try {
-      const eventData = JSON.stringify({
-        eventId,
-        summary: event.title,
-        description: event.description,
-        location: event.location,
-        start: {
-          dateTime: event.startDateTime,
-          timeZone: 'Europe/Madrid',
-        },
-        end: {
-          dateTime: event.endDateTime,
-          timeZone: 'Europe/Madrid',
-        },
-        attendees: event.attendees?.map(email => ({ email })),
-      });
-
-      const command = `manus-mcp-cli tool call update_event --server google-calendar --input '${eventData.replace(/'/g, "\\'")}'`;
-      const { stdout, stderr } = await execAsync(command);
-
-      if (stderr) {
+      // 1. Obtener conexión de Google Calendar del usuario
+      const database = await db.getDb();
+      if (!database) {
         return {
           success: false,
           provider: 'google',
-          error: stderr,
+          error: 'Database not available',
         };
       }
 
-      const response = JSON.parse(stdout);
+      const connection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'google')
+        ),
+      });
+
+      if (!connection) {
+        return {
+          success: false,
+          provider: 'google',
+          error: 'Google Calendar no está conectado',
+        };
+      }
+
+      // 2. Verificar y refrescar token si es necesario
+      let accessToken = connection.accessToken;
+      let refreshToken = connection.refreshToken;
+
+      if (isTokenExpired(connection.expiresAt ? new Date(connection.expiresAt) : null)) {
+        const newTokens = await refreshAccessToken(connection.refreshToken);
+        accessToken = newTokens.accessToken;
+        refreshToken = newTokens.refreshToken;
+
+        await database
+          .update(calendarConnections)
+          .set({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+            expiresAt: newTokens.expiresAt,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(calendarConnections.id, connection.id));
+      }
+
+      // 3. Actualizar evento en Google Calendar
+      const updatedEvent = await updateEvent(
+        accessToken,
+        refreshToken,
+        connection.calendarId,
+        eventId,
+        {
+          summary: event.title,
+          description: event.description,
+          location: event.location,
+          start: {
+            dateTime: event.startDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          end: {
+            dateTime: event.endDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          attendees: event.attendees?.map(email => ({ email })),
+        }
+      );
+
+      console.log('✅ [GoogleCalendar] Event updated:', updatedEvent.id);
       
       return {
         success: true,
         provider: 'google',
-        eventId: response.id,
-        eventUrl: response.htmlLink,
+        eventId: updatedEvent.id,
+        eventUrl: updatedEvent.htmlLink,
       };
     } catch (error) {
+      console.error('[GoogleCalendar] Error updating:', error);
       return {
         success: false,
         provider: 'google',
@@ -393,56 +527,284 @@ export class CalendarSyncService {
   }
 
   /**
-   * Actualizar evento en Outlook Calendar
+   * Actualizar evento en Outlook Calendar usando core services
    */
   private static async updateOutlookCalendarEvent(
     eventId: string,
-    event: CalendarEvent
+    event: CalendarEvent,
+    userId: string
   ): Promise<SyncResult> {
-    // Por implementar
-    return {
-      success: false,
-      provider: 'outlook',
-      error: 'Actualización de eventos en Outlook no disponible aún',
-    };
+    try {
+      // 1. Obtener conexión de Outlook Calendar del usuario
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          success: false,
+          provider: 'outlook',
+          error: 'Database not available',
+        };
+      }
+
+      const connection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'outlook')
+        ),
+      });
+
+      if (!connection) {
+        return {
+          success: false,
+          provider: 'outlook',
+          error: 'Outlook Calendar no está conectado',
+        };
+      }
+
+      // 2. Verificar y refrescar token si es necesario
+      let accessToken = connection.accessToken;
+      let refreshToken = connection.refreshToken;
+
+      if (isMsTokenExpired(connection.expiresAt ? new Date(connection.expiresAt) : null)) {
+        const newTokens = await refreshMsAccessToken(connection.refreshToken);
+        accessToken = newTokens.accessToken;
+        refreshToken = newTokens.refreshToken;
+
+        await database
+          .update(calendarConnections)
+          .set({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+            expiresAt: newTokens.expiresAt,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(calendarConnections.id, connection.id));
+      }
+
+      // 3. Actualizar evento en Outlook Calendar
+      const updatedEvent = await updateMsEvent(
+        accessToken,
+        refreshToken,
+        connection.calendarId,
+        eventId,
+        {
+          subject: event.title,
+          body: {
+            contentType: 'text',
+            content: event.description,
+          },
+          start: {
+            dateTime: event.startDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          end: {
+            dateTime: event.endDateTime,
+            timeZone: 'Europe/Madrid',
+          },
+          location: event.location ? {
+            displayName: event.location,
+          } : undefined,
+          attendees: event.attendees?.map(email => ({
+            emailAddress: {
+              address: email,
+            },
+            type: 'required',
+          })),
+          isReminderOn: true,
+          reminderMinutesBeforeStart: 60,
+        }
+      );
+
+      console.log('✅ [OutlookCalendar] Event updated:', updatedEvent.id);
+
+      return {
+        success: true,
+        provider: 'outlook',
+        eventId: updatedEvent.id,
+        eventUrl: updatedEvent.webLink,
+      };
+    } catch (error) {
+      console.error('[OutlookCalendar] Error updating:', error);
+      return {
+        success: false,
+        provider: 'outlook',
+        error: error instanceof Error ? error.message : 'Error al actualizar evento en Outlook Calendar',
+      };
+    }
   }
 
   /**
    * Eliminar evento de calendario externo
    */
   static async deleteCalendarEvent(
+    userId: string,
     externalEventId: string,
     provider: 'google' | 'outlook'
   ): Promise<SyncResult> {
     try {
       if (provider === 'google') {
-        const command = `manus-mcp-cli tool call delete_event --server google-calendar --input '{"eventId":"${externalEventId}"}'`;
-        const { stderr } = await execAsync(command);
-
-        if (stderr) {
-          return {
-            success: false,
-            provider: 'google',
-            error: stderr,
-          };
-        }
-
-        return {
-          success: true,
-          provider: 'google',
-        };
+        return await this.deleteGoogleCalendarEvent(externalEventId, userId);
       } else {
-        return {
-          success: false,
-          provider: 'outlook',
-          error: 'Eliminación de eventos en Outlook no disponible aún',
-        };
+        return await this.deleteOutlookCalendarEvent(externalEventId, userId);
       }
     } catch (error) {
       return {
         success: false,
         provider,
         error: error instanceof Error ? error.message : 'Error al eliminar evento',
+      };
+    }
+  }
+
+  /**
+   * Eliminar evento de Google Calendar usando core services
+   */
+  private static async deleteGoogleCalendarEvent(
+    eventId: string,
+    userId: string
+  ): Promise<SyncResult> {
+    try {
+      // 1. Obtener conexión de Google Calendar del usuario
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          success: false,
+          provider: 'google',
+          error: 'Database not available',
+        };
+      }
+
+      const connection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'google')
+        ),
+      });
+
+      if (!connection) {
+        return {
+          success: false,
+          provider: 'google',
+          error: 'Google Calendar no está conectado',
+        };
+      }
+
+      // 2. Verificar y refrescar token si es necesario
+      let accessToken = connection.accessToken;
+      let refreshToken = connection.refreshToken;
+
+      if (isTokenExpired(connection.expiresAt ? new Date(connection.expiresAt) : null)) {
+        const newTokens = await refreshAccessToken(connection.refreshToken);
+        accessToken = newTokens.accessToken;
+        refreshToken = newTokens.refreshToken;
+
+        await database
+          .update(calendarConnections)
+          .set({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+            expiresAt: newTokens.expiresAt,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(calendarConnections.id, connection.id));
+      }
+
+      // 3. Eliminar evento de Google Calendar
+      await deleteEvent(
+        accessToken,
+        refreshToken,
+        connection.calendarId,
+        eventId
+      );
+
+      console.log('✅ [GoogleCalendar] Event deleted:', eventId);
+      
+      return {
+        success: true,
+        provider: 'google',
+      };
+    } catch (error) {
+      console.error('[GoogleCalendar] Error deleting:', error);
+      return {
+        success: false,
+        provider: 'google',
+        error: error instanceof Error ? error.message : 'Error al eliminar evento de Google Calendar',
+      };
+    }
+  }
+
+  /**
+   * Eliminar evento de Outlook Calendar usando core services
+   */
+  private static async deleteOutlookCalendarEvent(
+    eventId: string,
+    userId: string
+  ): Promise<SyncResult> {
+    try {
+      // 1. Obtener conexión de Outlook Calendar del usuario
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          success: false,
+          provider: 'outlook',
+          error: 'Database not available',
+        };
+      }
+
+      const connection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'outlook')
+        ),
+      });
+
+      if (!connection) {
+        return {
+          success: false,
+          provider: 'outlook',
+          error: 'Outlook Calendar no está conectado',
+        };
+      }
+
+      // 2. Verificar y refrescar token si es necesario
+      let accessToken = connection.accessToken;
+      let refreshToken = connection.refreshToken;
+
+      if (isMsTokenExpired(connection.expiresAt ? new Date(connection.expiresAt) : null)) {
+        const newTokens = await refreshMsAccessToken(connection.refreshToken);
+        accessToken = newTokens.accessToken;
+        refreshToken = newTokens.refreshToken;
+
+        await database
+          .update(calendarConnections)
+          .set({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+            expiresAt: newTokens.expiresAt,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(calendarConnections.id, connection.id));
+      }
+
+      // 3. Eliminar evento de Outlook Calendar
+      await deleteMsEvent(
+        accessToken,
+        refreshToken,
+        connection.calendarId,
+        eventId
+      );
+
+      console.log('✅ [OutlookCalendar] Event deleted:', eventId);
+
+      return {
+        success: true,
+        provider: 'outlook',
+      };
+    } catch (error) {
+      console.error('[OutlookCalendar] Error deleting:', error);
+      return {
+        success: false,
+        provider: 'outlook',
+        error: error instanceof Error ? error.message : 'Error al eliminar evento de Outlook Calendar',
       };
     }
   }
@@ -481,24 +843,36 @@ export class CalendarSyncService {
     hasOutlook: boolean;
   }> {
     try {
-      // Verificar Google Calendar
-      const googleCommand = 'manus-mcp-cli tool call list_calendars --server google-calendar --input \'{}\'';
-      let hasGoogle = false;
-      try {
-        const { stderr: googleError } = await execAsync(googleCommand);
-        hasGoogle = !googleError;
-      } catch {
-        hasGoogle = false;
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          hasGoogle: false,
+          hasOutlook: false,
+        };
       }
 
-      // Verificar Outlook (por implementar)
-      const hasOutlook = false;
+      // Verificar Google Calendar
+      const googleConnection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'google')
+        ),
+      });
+
+      // Verificar Outlook Calendar
+      const outlookConnection = await database.query.calendarConnections.findFirst({
+        where: and(
+          eq(calendarConnections.userId, userId),
+          eq(calendarConnections.provider, 'outlook')
+        ),
+      });
 
       return {
-        hasGoogle,
-        hasOutlook,
+        hasGoogle: !!googleConnection,
+        hasOutlook: !!outlookConnection,
       };
     } catch (error) {
+      console.error('[CalendarSync] Error checking connections:', error);
       return {
         hasGoogle: false,
         hasOutlook: false,

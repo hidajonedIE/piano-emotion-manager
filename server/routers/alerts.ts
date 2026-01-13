@@ -594,6 +594,7 @@ export const alertsRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const result = await CalendarSyncService.deleteCalendarEvent(
+        ctx.userId,
         input.externalEventId,
         input.provider
       );

@@ -212,19 +212,34 @@ export default function AgendaScreen() {
         icon="calendar"
         showBackButton={true}
         rightAction={
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowCalendar(!showCalendar);
-            }}
-            style={[styles.toggleButton, { backgroundColor: `${accent}15` }]}
-          >
-            <IconSymbol
-              name={showCalendar ? 'list.bullet' : 'calendar'}
-              size={20}
-              color={accent}
-            />
-          </Pressable>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/settings/calendar-settings' as any);
+              }}
+              style={[styles.toggleButton, { backgroundColor: `${accent}15` }]}
+            >
+              <IconSymbol
+                name="gearshape.fill"
+                size={20}
+                color={accent}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowCalendar(!showCalendar);
+              }}
+              style={[styles.toggleButton, { backgroundColor: `${accent}15` }]}
+            >
+              <IconSymbol
+                name={showCalendar ? 'list.bullet' : 'calendar'}
+                size={20}
+                color={accent}
+              />
+            </Pressable>
+          </View>
         }
       />
 
