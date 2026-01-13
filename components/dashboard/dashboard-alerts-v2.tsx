@@ -95,7 +95,7 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
       console.log('❌ Client not found');
       return;
     }
-        const clientName = `${client.firstName} ${client.lastName1}`;
+        const clientName = client.name || `${client.firstName || ''} ${client.lastName1 || ''}`.trim();
     const phone = client.phone;
     const email = client.email;
     
@@ -119,7 +119,8 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
         const index = parseInt(choice, 10) - 1;
         if (phone && index === 0) {
           // WhatsApp
-          const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+          const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
+          const message = encodeURIComponent(`Hola ${firstName}, necesitamos programar el mantenimiento de tu piano.`);
           window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${message}`, '_blank');
         } else if (phone && index === 1) {
           // Llamar
@@ -127,7 +128,8 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
         } else if (email && index === (phone ? 2 : 0)) {
           // Email
           const subject = encodeURIComponent('Mantenimiento de piano');
-          const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+          const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
+          const body = encodeURIComponent(`Hola ${firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
           window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
         }
       }
@@ -152,7 +154,8 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
         (buttonIndex) => {
           if (phone && buttonIndex === 0) {
             // WhatsApp
-            const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+            const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
+          const message = encodeURIComponent(`Hola ${firstName}, necesitamos programar el mantenimiento de tu piano.`);
             Linking.openURL(`whatsapp://send?phone=${phone}&text=${message}`);
           } else if (phone && buttonIndex === 1) {
             // Llamar
@@ -160,7 +163,8 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
           } else if (email && buttonIndex === (phone ? 2 : 0)) {
             // Email
             const subject = encodeURIComponent('Mantenimiento de piano');
-            const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+            const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
+          const body = encodeURIComponent(`Hola ${firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
             Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
           }
         }
@@ -170,7 +174,8 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
       const buttons = [];
       if (phone) {
         buttons.push({ text: 'WhatsApp', onPress: () => {
-          const message = encodeURIComponent(`Hola ${client.firstName}, necesitamos programar el mantenimiento de tu piano.`);
+          const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
+          const message = encodeURIComponent(`Hola ${firstName}, necesitamos programar el mantenimiento de tu piano.`);
           Linking.openURL(`whatsapp://send?phone=${phone}&text=${message}`);
         }});
         buttons.push({ text: 'Llamar', onPress: () => Linking.openURL(`tel:${phone}`) });
@@ -178,7 +183,8 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
       if (email) {
         buttons.push({ text: 'Email', onPress: () => {
           const subject = encodeURIComponent('Mantenimiento de piano');
-          const body = encodeURIComponent(`Hola ${client.firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
+          const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
+          const body = encodeURIComponent(`Hola ${firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
           Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
         }});
       }
