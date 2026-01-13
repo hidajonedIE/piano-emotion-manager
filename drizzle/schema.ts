@@ -64,10 +64,34 @@ export const alertSettings = mysqlTable("alert_settings", {
 	userId: int(),
 	partnerId: int().default(1).notNull().references(() => partners.id, { onDelete: "cascade" } ),
 	organizationId: int(),
+	// Umbrales de Pianos
 	tuningPendingDays: int().default(180),
 	tuningUrgentDays: int().default(270),
 	regulationPendingDays: int().default(730),
 	regulationUrgentDays: int().default(1095),
+	
+	// Citas y Servicios
+	appointmentsNoticeDays: int().default(7),
+	scheduledServicesNoticeDays: int().default(7),
+	
+	// Finanzas
+	invoicesDueNoticeDays: int().default(7),
+	quotesExpiryNoticeDays: int().default(7),
+	contractsRenewalNoticeDays: int().default(30),
+	overduePaymentsNoticeDays: int().default(15),
+	
+	// Inventario
+	inventoryMinStock: int().default(5),
+	inventoryExpiryNoticeDays: int().default(30),
+	
+	// Mantenimiento
+	toolsMaintenanceDays: int().default(180),
+	
+	// Clientes
+	clientFollowupDays: int().default(90),
+	clientInactiveMonths: int().default(12),
+	
+	// Preferencias de Notificaciones
 	emailNotificationsEnabled: tinyint().default(1),
 	pushNotificationsEnabled: tinyint().default(0),
 	weeklyDigestEnabled: tinyint().default(1),
@@ -1041,7 +1065,7 @@ export const workAssignments = mysqlTable("work_assignments", {
 ]);
 
 // Alert Dismissals
-// export * from './alerts-schema'; // Removed: file no longer exists
+export * from './alerts-schema';
 
 // ============================================================================
 // ONBOARDING STEP 5: SERVICE TYPES AND TASKS
