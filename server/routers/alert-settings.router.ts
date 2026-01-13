@@ -5,7 +5,7 @@
  * Gestiona la configuración personalizada de umbrales de alertas por usuario.
  */
 
-import { router, protectedProcedure } from '../trpc';
+import { router, protectedProcedure } from '../_core/trpc.js';
 import { z } from 'zod';
 import * as db from '../db.js';
 import { alertSettings } from '../../drizzle/schema.js';
