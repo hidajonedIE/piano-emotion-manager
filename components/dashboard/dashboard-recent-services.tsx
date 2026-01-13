@@ -103,7 +103,7 @@ export function DashboardRecentServices({ services, clients, pianos }: Dashboard
 const styles = StyleSheet.create({
   servicesList: {
     paddingHorizontal: Spacing.xs,
-    paddingRight: Spacing.lg, // Extra padding at the end to prevent cutting
+    paddingRight: Spacing.xxl, // Extra padding at the end to prevent cutting (48px)
     gap: Spacing.md,
   },
   emptyCard: {
