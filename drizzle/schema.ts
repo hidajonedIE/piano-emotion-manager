@@ -96,6 +96,9 @@ export const alertSettings = mysqlTable("alert_settings", {
 	pushNotificationsEnabled: tinyint().default(0),
 	weeklyDigestEnabled: tinyint().default(1),
 	weeklyDigestDay: int().default(1),
+	
+	// UI/UX
+	hasSeenAdvancedConfigTip: tinyint().default(0),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP'),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow(),
 },
