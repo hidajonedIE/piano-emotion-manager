@@ -70,7 +70,7 @@ export function DashboardRecentServices({ services, clients, pianos }: Dashboard
       iconColor="#6B7280"
       rightAction={
         <Pressable 
-          onPress={() => router.push('/(tabs)/agenda' as any)}
+          onPress={() => router.push('/(tabs)/services' as any)}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
         >
           <ThemedText style={{ fontSize: 13, color: '#6B7280' }}>Ver todos</ThemedText>
