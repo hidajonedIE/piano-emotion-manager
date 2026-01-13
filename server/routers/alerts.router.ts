@@ -90,6 +90,11 @@ export const alertsRouter = router({
           ));
         console.log('[ALERTS] Quotes fetched:', userQuotes.length);
 
+        // Definir tipos basados en los resultados de Drizzle
+        type AppointmentItem = typeof userAppointments[number];
+        type InvoiceItem = typeof userInvoices[number];
+        type QuoteItem = typeof userQuotes[number];
+
         type AlertItem = {
           id: string;
           type: string;
@@ -158,10 +163,8 @@ export const alertsRouter = router({
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const todayAppointments: Array<any> = [];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const weekAppointments: Array<any> = [];
+        const todayAppointments: (typeof userAppointments) = [];
+        const weekAppointments: (typeof userAppointments) = [];
 
         for (const appointment of userAppointments) {
           const appointmentDate = new Date(appointment.date);
@@ -202,10 +205,8 @@ export const alertsRouter = router({
 
         console.log('[ALERTS] Calculating invoice alerts...');
         // 3. Alertas de facturas
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const pendingInvoices: Array<any> = [];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const overdueInvoices: Array<any> = [];
+        const pendingInvoices: (typeof userInvoices) = [];
+        const overdueInvoices: (typeof userInvoices) = [];
         let totalPending = 0;
         let totalOverdue = 0;
 
@@ -251,10 +252,8 @@ export const alertsRouter = router({
 
         console.log('[ALERTS] Calculating quote alerts...');
         // 4. Alertas de presupuestos
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const pendingQuotes: Array<any> = [];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const expiringQuotes: Array<any> = [];
+        const pendingQuotes: (typeof userQuotes) = [];
+        const expiringQuotes: (typeof userQuotes) = [];
         let totalPendingQuotes = 0;
 
         for (const quote of userQuotes) {
