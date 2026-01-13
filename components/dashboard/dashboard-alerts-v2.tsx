@@ -126,11 +126,11 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
           // Llamar
           window.open(`tel:${phone}`, '_blank');
         } else if (email && index === (phone ? 2 : 0)) {
-          // Email
+          // Email - Abrir Gmail web directamente
           const subject = encodeURIComponent('Mantenimiento de piano');
           const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
           const body = encodeURIComponent(`Hola ${firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
-          window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+          window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank');
         }
       }
       return;
