@@ -72,7 +72,7 @@ export function useCalendarConnection() {
       }
       
       // Abrir URL de OAuth con userId directamente (sin confirmación)
-      const authUrl = `/api/calendar/google/auth?userId=${encodeURIComponent(user.id)}`;
+      const authUrl = `/api/calendar-google-auth?userId=${encodeURIComponent(user.id)}`;
       
       if (Platform.OS === 'web') {
         window.location.href = authUrl;
@@ -104,7 +104,7 @@ export function useCalendarConnection() {
       }
       
       // Abrir URL de OAuth con userId directamente (sin confirmación)
-      const authUrl = `/api/calendar/outlook/auth?userId=${encodeURIComponent(user.id)}`;
+      const authUrl = `/api/calendar-outlook-auth?userId=${encodeURIComponent(user.id)}`;
       
       if (Platform.OS === 'web') {
         window.location.href = authUrl;
