@@ -1,6 +1,6 @@
 /**
- * Onboarding Step 2 - Branding
- * Personalización: logo, colores corporativos, nombre de marca
+ * Onboarding Step 2 - Datos Fiscales
+ * Información fiscal del partner: razón social, NIF, dirección, IBAN
  */
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
@@ -22,53 +22,27 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSnackbar } from '@/hooks/use-snackbar';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const ONBOARDING_STORAGE_KEY = '@onboarding_data';
-
-interface OnboardingData {
-  step1?: {
-    name: string;
-    slug: string;
-    email: string;
-    supportEmail?: string;
-    supportPhone?: string;
-  };
-  step2?: {
-    brandName?: string;
-    primaryColor: string;
-    secondaryColor: string;
-  };
-  step3?: {
-    allowMultipleSuppliers: boolean;
-    ecommerceEnabled: boolean;
-    autoOrderEnabled: boolean;
-    autoOrderThreshold: number;
-    notificationEmail?: string;
-  };
-}
-
-const PRESET_COLORS = [
-  { name: 'Azul', primary: '#3b82f6', secondary: '#10b981' },
-  { name: 'Púrpura', primary: '#8b5cf6', secondary: '#ec4899' },
-  { name: 'Verde', primary: '#10b981', secondary: '#3b82f6' },
-  { name: 'Naranja', primary: '#f59e0b', secondary: '#ef4444' },
-  { name: 'Rosa', primary: '#ec4899', secondary: '#8b5cf6' },
-  { name: 'Índigo', primary: '#6366f1', secondary: '#14b8a6' },
-];
+import type { OnboardingData, ONBOARDING_STORAGE_KEY } from '@/types/onboarding';
 
 export default function OnboardingStep2Screen() {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const defaultPrimaryColor = useThemeColor({}, 'tint');
+  const primaryColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const inputBackground = useThemeColor({}, 'cardBackground');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
 
   // Form state
-  const [brandName, setBrandName] = useState('');
-  const [primaryColor, setPrimaryColor] = useState('#3b82f6');
-  const [secondaryColor, setSecondaryColor] = useState('#10b981');
+  const [legalName, setLegalName] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [taxId, setTaxId] = useState('');
+  const [street, setStreet] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
+  const [iban, setIban] = useState('');
+  const [bankName, setBankName] = useState('');
 
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -83,17 +57,16 @@ export default function OnboardingStep2Screen() {
       const saved = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
       if (saved) {
         const data: OnboardingData = JSON.parse(saved);
-        
-        // Load step 2 data if exists
         if (data.step2) {
-          setBrandName(data.step2.brandName || '');
-          setPrimaryColor(data.step2.primaryColor || '#3b82f6');
-          setSecondaryColor(data.step2.secondaryColor || '#10b981');
-        }
-        
-        // If no brand name, use company name from step 1
-        if (!data.step2?.brandName && data.step1?.name) {
-          setBrandName(data.step1.name);
+          setLegalName(data.step2.legalName || '');
+          setBusinessName(data.step2.businessName || '');
+          setTaxId(data.step2.taxId || '');
+          setStreet(data.step2.address?.street || '');
+          setPostalCode(data.step2.address?.postalCode || '');
+          setCity(data.step2.address?.city || '');
+          setProvince(data.step2.address?.province || '');
+          setIban(data.step2.iban || '');
+          setBankName(data.step2.bankName || '');
         }
       }
     } catch (error) {
@@ -101,62 +74,97 @@ export default function OnboardingStep2Screen() {
     }
   };
 
-  const saveData = async () => {
-    try {
-      const existing = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
-      const data: OnboardingData = existing ? JSON.parse(existing) : {};
-      
-      data.step2 = {
-        brandName: brandName || undefined,
-        primaryColor,
-        secondaryColor,
-      };
-
-      await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-      console.error('Error saving data:', error);
-    }
-  };
-
-  const validate = (): boolean => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Validate color format
-    const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
-    
-    if (!hexColorRegex.test(primaryColor)) {
-      newErrors.primaryColor = 'Color hex válido requerido (#RRGGBB)';
+    if (!legalName.trim()) {
+      newErrors.legalName = 'La razón social es obligatoria';
     }
-    
-    if (!hexColorRegex.test(secondaryColor)) {
-      newErrors.secondaryColor = 'Color hex válido requerido (#RRGGBB)';
+
+    if (!taxId.trim()) {
+      newErrors.taxId = 'El NIF/CIF es obligatorio';
+    } else if (!validateTaxId(taxId)) {
+      newErrors.taxId = 'Formato de NIF/CIF inválido';
+    }
+
+    if (!street.trim()) {
+      newErrors.street = 'La dirección es obligatoria';
+    }
+
+    if (!postalCode.trim()) {
+      newErrors.postalCode = 'El código postal es obligatorio';
+    } else if (!/^\d{5}$/.test(postalCode)) {
+      newErrors.postalCode = 'Código postal inválido (5 dígitos)';
+    }
+
+    if (!city.trim()) {
+      newErrors.city = 'La ciudad es obligatoria';
+    }
+
+    if (!province.trim()) {
+      newErrors.province = 'La provincia es obligatoria';
+    }
+
+    if (iban && !validateIban(iban)) {
+      newErrors.iban = 'Formato de IBAN inválido';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateTaxId = (id: string): boolean => {
+    // Validación básica de NIF/CIF español
+    const nifRegex = /^[0-9]{8}[A-Z]$/;
+    const cifRegex = /^[A-Z][0-9]{7}[A-Z0-9]$/;
+    return nifRegex.test(id.toUpperCase()) || cifRegex.test(id.toUpperCase());
+  };
+
+  const validateIban = (iban: string): boolean => {
+    // Validación básica de IBAN
+    const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
+    return ibanRegex.test(iban.replace(/\s/g, '').toUpperCase());
+  };
+
   const handleNext = async () => {
-    if (!validate()) {
+    if (!validateForm()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showSnackbar('Por favor, corrige los errores', 'error');
+      showSnackbar('Por favor, completa todos los campos obligatorios', 'error');
       return;
     }
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await saveData();
-    router.push('/onboarding/step3');
+    try {
+      // Save data
+      const saved = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
+      const data: OnboardingData = saved ? JSON.parse(saved) : {};
+      
+      data.step2 = {
+        legalName: legalName.trim(),
+        businessName: businessName.trim() || undefined,
+        taxId: taxId.trim().toUpperCase(),
+        address: {
+          street: street.trim(),
+          postalCode: postalCode.trim(),
+          city: city.trim(),
+          province: province.trim(),
+        },
+        iban: iban.trim() || undefined,
+        bankName: bankName.trim() || undefined,
+      };
+
+      await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(data));
+      
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      router.push('/onboarding/step3');
+    } catch (error) {
+      console.error('Error saving data:', error);
+      showSnackbar('Error al guardar los datos', 'error');
+    }
   };
 
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
-  };
-
-  const handlePresetSelect = (preset: typeof PRESET_COLORS[0]) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPrimaryColor(preset.primary);
-    setSecondaryColor(preset.secondary);
   };
 
   return (
@@ -172,183 +180,280 @@ export default function OnboardingStep2Screen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <ThemedText style={styles.stepIndicator}>Paso 2 de 3</ThemedText>
-            <ThemedText style={styles.title}>Personalización</ThemedText>
-            <ThemedText style={styles.subtitle}>
-              Dale tu toque personal
-            </ThemedText>
+            <Pressable onPress={handleBack} style={styles.backButton}>
+              <IconSymbol name="chevron.left" size={24} color={primaryColor} />
+            </Pressable>
+            <View style={styles.progressContainer}>
+              <View style={[styles.progressBar, { backgroundColor: borderColor }]}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    { backgroundColor: primaryColor, width: '25%' },
+                  ]}
+                />
+              </View>
+              <ThemedText style={styles.progressText}>Paso 2 de 8</ThemedText>
+            </View>
           </View>
 
-          {/* Progress Bar */}
-          <View style={[styles.progressBar, { backgroundColor: borderColor }]}>
-            <View style={[styles.progressFill, { width: '66%', backgroundColor: primaryColor }]} />
+          {/* Title */}
+          <View style={styles.titleContainer}>
+            <ThemedText style={styles.title}>Datos Fiscales</ThemedText>
+            <ThemedText style={styles.subtitle}>
+              Información fiscal de tu empresa
+            </ThemedText>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Brand Name */}
-            <View style={styles.field}>
+            {/* Razón Social */}
+            <View style={styles.inputContainer}>
               <ThemedText style={styles.label}>
-                Nombre de Marca (Opcional)
+                Razón Social <Text style={styles.required}>*</Text>
               </ThemedText>
               <TextInput
                 style={[
                   styles.input,
-                  { backgroundColor: inputBackground, color: textColor, borderColor },
+                  { backgroundColor: inputBackground, borderColor, color: textColor },
+                  errors.legalName && styles.inputError,
                 ]}
-                value={brandName}
-                onChangeText={setBrandName}
-                placeholder="Ej: Piano Emotion"
-                placeholderTextColor={textColor + '60'}
+                value={legalName}
+                onChangeText={(text) => {
+                  setLegalName(text);
+                  if (errors.legalName) {
+                    setErrors({ ...errors, legalName: '' });
+                  }
+                }}
+                placeholder="Ej: Piano Emotion S.L."
+                placeholderTextColor={borderColor}
                 autoCapitalize="words"
               />
-              <ThemedText style={styles.hint}>
-                Si es diferente al nombre de la empresa
-              </ThemedText>
-            </View>
-
-            {/* Color Presets */}
-            <View style={styles.field}>
-              <ThemedText style={styles.label}>
-                Paleta de Colores Predefinida
-              </ThemedText>
-              <View style={styles.presetsContainer}>
-                {PRESET_COLORS.map((preset, index) => (
-                  <Pressable
-                    key={index}
-                    style={({ pressed }) => [
-                      styles.presetCard,
-                      { backgroundColor: inputBackground, borderColor },
-                      primaryColor === preset.primary && styles.presetSelected,
-                      primaryColor === preset.primary && { borderColor: preset.primary },
-                      pressed && styles.buttonPressed,
-                    ]}
-                    onPress={() => handlePresetSelect(preset)}
-                  >
-                    <View style={styles.presetColors}>
-                      <View style={[styles.presetColor, { backgroundColor: preset.primary }]} />
-                      <View style={[styles.presetColor, { backgroundColor: preset.secondary }]} />
-                    </View>
-                    <ThemedText style={styles.presetName}>{preset.name}</ThemedText>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-
-            {/* Primary Color */}
-            <View style={styles.field}>
-              <ThemedText style={styles.label}>
-                Color Primario *
-              </ThemedText>
-              <View style={styles.colorInputContainer}>
-                <View style={[styles.colorPreview, { backgroundColor: primaryColor }]} />
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.colorInput,
-                    { backgroundColor: inputBackground, color: textColor, borderColor },
-                    errors.primaryColor && styles.inputError,
-                  ]}
-                  value={primaryColor}
-                  onChangeText={setPrimaryColor}
-                  placeholder="#3b82f6"
-                  placeholderTextColor={textColor + '60'}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  maxLength={7}
-                />
-              </View>
-              {errors.primaryColor && (
-                <ThemedText style={styles.errorText}>{errors.primaryColor}</ThemedText>
+              {errors.legalName && (
+                <ThemedText style={styles.errorText}>{errors.legalName}</ThemedText>
               )}
             </View>
 
-            {/* Secondary Color */}
-            <View style={styles.field}>
+            {/* Nombre Comercial */}
+            <View style={styles.inputContainer}>
+              <ThemedText style={styles.label}>Nombre Comercial (opcional)</ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: inputBackground, borderColor, color: textColor },
+                ]}
+                value={businessName}
+                onChangeText={setBusinessName}
+                placeholder="Ej: Piano Emotion"
+                placeholderTextColor={borderColor}
+                autoCapitalize="words"
+              />
+            </View>
+
+            {/* NIF/CIF */}
+            <View style={styles.inputContainer}>
               <ThemedText style={styles.label}>
-                Color Secundario *
+                NIF/CIF <Text style={styles.required}>*</Text>
               </ThemedText>
-              <View style={styles.colorInputContainer}>
-                <View style={[styles.colorPreview, { backgroundColor: secondaryColor }]} />
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.colorInput,
-                    { backgroundColor: inputBackground, color: textColor, borderColor },
-                    errors.secondaryColor && styles.inputError,
-                  ]}
-                  value={secondaryColor}
-                  onChangeText={setSecondaryColor}
-                  placeholder="#10b981"
-                  placeholderTextColor={textColor + '60'}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  maxLength={7}
-                />
-              </View>
-              {errors.secondaryColor && (
-                <ThemedText style={styles.errorText}>{errors.secondaryColor}</ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: inputBackground, borderColor, color: textColor },
+                  errors.taxId && styles.inputError,
+                ]}
+                value={taxId}
+                onChangeText={(text) => {
+                  setTaxId(text);
+                  if (errors.taxId) {
+                    setErrors({ ...errors, taxId: '' });
+                  }
+                }}
+                placeholder="Ej: B12345678"
+                placeholderTextColor={borderColor}
+                autoCapitalize="characters"
+                maxLength={9}
+              />
+              {errors.taxId && (
+                <ThemedText style={styles.errorText}>{errors.taxId}</ThemedText>
               )}
             </View>
 
-            {/* Preview */}
-            <View style={styles.field}>
+            {/* Dirección Fiscal */}
+            <ThemedText style={styles.sectionTitle}>Dirección Fiscal</ThemedText>
+
+            {/* Calle */}
+            <View style={styles.inputContainer}>
               <ThemedText style={styles.label}>
-                Vista Previa
+                Calle y Número <Text style={styles.required}>*</Text>
               </ThemedText>
-              <ThemedView style={[styles.previewCard, { backgroundColor: inputBackground, borderColor }]}>
-                <View style={[styles.previewHeader, { backgroundColor: primaryColor }]}>
-                  <Text style={styles.previewTitle}>
-                    {brandName || 'Tu Marca'}
-                  </Text>
-                </View>
-                <View style={styles.previewContent}>
-                  <View style={[styles.previewButton, { backgroundColor: primaryColor }]}>
-                    <Text style={styles.previewButtonText}>Botón Primario</Text>
-                  </View>
-                  <View style={[styles.previewButton, { backgroundColor: secondaryColor }]}>
-                    <Text style={styles.previewButtonText}>Botón Secundario</Text>
-                  </View>
-                </View>
-              </ThemedView>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: inputBackground, borderColor, color: textColor },
+                  errors.street && styles.inputError,
+                ]}
+                value={street}
+                onChangeText={(text) => {
+                  setStreet(text);
+                  if (errors.street) {
+                    setErrors({ ...errors, street: '' });
+                  }
+                }}
+                placeholder="Ej: Calle Mayor 123"
+                placeholderTextColor={borderColor}
+                autoCapitalize="words"
+              />
+              {errors.street && (
+                <ThemedText style={styles.errorText}>{errors.street}</ThemedText>
+              )}
+            </View>
+
+            {/* Código Postal y Ciudad */}
+            <View style={styles.row}>
+              <View style={[styles.inputContainer, styles.halfWidth]}>
+                <ThemedText style={styles.label}>
+                  Código Postal <Text style={styles.required}>*</Text>
+                </ThemedText>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { backgroundColor: inputBackground, borderColor, color: textColor },
+                    errors.postalCode && styles.inputError,
+                  ]}
+                  value={postalCode}
+                  onChangeText={(text) => {
+                    setPostalCode(text);
+                    if (errors.postalCode) {
+                      setErrors({ ...errors, postalCode: '' });
+                    }
+                  }}
+                  placeholder="28001"
+                  placeholderTextColor={borderColor}
+                  keyboardType="numeric"
+                  maxLength={5}
+                />
+                {errors.postalCode && (
+                  <ThemedText style={styles.errorText}>{errors.postalCode}</ThemedText>
+                )}
+              </View>
+
+              <View style={[styles.inputContainer, styles.halfWidth]}>
+                <ThemedText style={styles.label}>
+                  Ciudad <Text style={styles.required}>*</Text>
+                </ThemedText>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { backgroundColor: inputBackground, borderColor, color: textColor },
+                    errors.city && styles.inputError,
+                  ]}
+                  value={city}
+                  onChangeText={(text) => {
+                    setCity(text);
+                    if (errors.city) {
+                      setErrors({ ...errors, city: '' });
+                    }
+                  }}
+                  placeholder="Madrid"
+                  placeholderTextColor={borderColor}
+                  autoCapitalize="words"
+                />
+                {errors.city && (
+                  <ThemedText style={styles.errorText}>{errors.city}</ThemedText>
+                )}
+              </View>
+            </View>
+
+            {/* Provincia */}
+            <View style={styles.inputContainer}>
+              <ThemedText style={styles.label}>
+                Provincia <Text style={styles.required}>*</Text>
+              </ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: inputBackground, borderColor, color: textColor },
+                  errors.province && styles.inputError,
+                ]}
+                value={province}
+                onChangeText={(text) => {
+                  setProvince(text);
+                  if (errors.province) {
+                    setErrors({ ...errors, province: '' });
+                  }
+                }}
+                placeholder="Madrid"
+                placeholderTextColor={borderColor}
+                autoCapitalize="words"
+              />
+              {errors.province && (
+                <ThemedText style={styles.errorText}>{errors.province}</ThemedText>
+              )}
+            </View>
+
+            {/* Datos Bancarios (opcional) */}
+            <ThemedText style={styles.sectionTitle}>Datos Bancarios (opcional)</ThemedText>
+
+            {/* IBAN */}
+            <View style={styles.inputContainer}>
+              <ThemedText style={styles.label}>IBAN</ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: inputBackground, borderColor, color: textColor },
+                  errors.iban && styles.inputError,
+                ]}
+                value={iban}
+                onChangeText={(text) => {
+                  setIban(text);
+                  if (errors.iban) {
+                    setErrors({ ...errors, iban: '' });
+                  }
+                }}
+                placeholder="ES00 0000 0000 0000 0000 0000"
+                placeholderTextColor={borderColor}
+                autoCapitalize="characters"
+              />
+              {errors.iban && (
+                <ThemedText style={styles.errorText}>{errors.iban}</ThemedText>
+              )}
+            </View>
+
+            {/* Banco */}
+            <View style={styles.inputContainer}>
+              <ThemedText style={styles.label}>Nombre del Banco</ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: inputBackground, borderColor, color: textColor },
+                ]}
+                value={bankName}
+                onChangeText={setBankName}
+                placeholder="Ej: Banco Santander"
+                placeholderTextColor={borderColor}
+                autoCapitalize="words"
+              />
             </View>
           </View>
+
+          {/* Buttons */}
+          <View style={styles.buttonContainer}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.nextButton,
+                { backgroundColor: primaryColor },
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={handleNext}
+            >
+              <Text style={styles.nextButtonText}>Continuar</Text>
+              <IconSymbol name="arrow.right" size={20} color="#FFFFFF" />
+            </Pressable>
+          </View>
         </ScrollView>
-
-        {/* Footer Buttons */}
-        <View style={[styles.footer, { backgroundColor, borderTopColor: borderColor }]}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.backButton,
-              { borderColor },
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={handleBack}
-          >
-            <IconSymbol name="arrow.left" size={20} color={textColor} />
-            <ThemedText style={styles.backButtonText}>Atrás</ThemedText>
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.nextButton,
-              { backgroundColor: primaryColor },
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={handleNext}
-          >
-            <Text style={styles.nextButtonText}>Siguiente</Text>
-            <IconSymbol name="arrow.right" size={20} color="#FFFFFF" />
-          </Pressable>
-        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-
-// ============================================================================
-// ESTILOS
-// ============================================================================
 
 const styles = StyleSheet.create({
   container: {
@@ -359,15 +464,36 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
-    paddingBottom: 100,
+    paddingBottom: 40,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 24,
+    gap: 16,
   },
-  stepIndicator: {
-    fontSize: 14,
-    opacity: 0.6,
+  backButton: {
+    padding: 8,
+  },
+  progressContainer: {
+    flex: 1,
+  },
+  progressBar: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
     marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  progressText: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
+  titleContainer: {
+    marginBottom: 32,
   },
   title: {
     fontSize: 28,
@@ -378,141 +504,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     opacity: 0.7,
   },
-  progressBar: {
-    height: 4,
-    borderRadius: 2,
-    marginBottom: 32,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
   form: {
-    gap: 24,
+    marginBottom: 32,
   },
-  field: {
-    gap: 8,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  inputContainer: {
+    marginBottom: 20,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  required: {
+    color: '#EF4444',
   },
   input: {
-    padding: 16,
-    borderRadius: 12,
-    fontSize: 16,
     borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
   },
   inputError: {
-    borderColor: '#ef4444',
-  },
-  hint: {
-    fontSize: 12,
-    opacity: 0.6,
+    borderColor: '#EF4444',
   },
   errorText: {
+    color: '#EF4444',
     fontSize: 12,
-    color: '#ef4444',
+    marginTop: 4,
   },
-  presetsContainer: {
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    gap: 16,
   },
-  presetCard: {
-    width: 100,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 2,
-    alignItems: 'center',
-    gap: 8,
-  },
-  presetSelected: {
-    borderWidth: 2,
-  },
-  presetColors: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  presetColor: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  presetName: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  colorInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  colorPreview: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-  },
-  colorInput: {
+  halfWidth: {
     flex: 1,
   },
-  previewCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  previewHeader: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  previewTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  previewContent: {
-    padding: 16,
+  buttonContainer: {
     gap: 12,
-  },
-  previewButton: {
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  previewButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    padding: 24,
-    gap: 12,
-    borderTopWidth: 1,
-  },
-  backButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    gap: 8,
-    borderWidth: 1,
-  },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   nextButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
