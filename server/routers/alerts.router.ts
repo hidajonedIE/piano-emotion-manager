@@ -1,8 +1,13 @@
 import { router, protectedProcedure } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { pianos, services, appointments, invoices, quotes } from "../../drizzle/schema.js";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { eq, and, desc, type InferSelectModel } from "drizzle-orm";
 import { filterByPartner } from "../utils/multi-tenant.js";
+
+// Definir tipos basados en el schema de Drizzle
+type AppointmentItem = InferSelectModel<typeof appointments>;
+type InvoiceItem = InferSelectModel<typeof invoices>;
+type QuoteItem = InferSelectModel<typeof quotes>;
 
 export const alertsRouter = router({
   getAll: protectedProcedure
@@ -89,11 +94,6 @@ export const alertsRouter = router({
             eq(quotes.odId, userEmail)
           ));
         console.log('[ALERTS] Quotes fetched:', userQuotes.length);
-
-        // Definir tipos basados en los resultados de Drizzle
-        type AppointmentItem = typeof userAppointments[number];
-        type InvoiceItem = typeof userInvoices[number];
-        type QuoteItem = typeof userQuotes[number];
 
         type AlertItem = {
           id: string;
