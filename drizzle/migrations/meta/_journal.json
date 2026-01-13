@@ -29,6 +29,27 @@
       "when": 1767652373109,
       "tag": "0003_harsh_trauma",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1768308601887,
+      "tag": "0004_legal_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1768308761313,
+      "tag": "0005_powerful_captain_midlands",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1768310114229,
+      "tag": "0006_bizarre_micromax",
+      "breakpoints": true
     }
   ]
 }

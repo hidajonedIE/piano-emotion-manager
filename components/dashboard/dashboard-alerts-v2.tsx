@@ -56,6 +56,7 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
   const cardBackground = useThemeColor({}, 'cardBackground');
   const border = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
+  const textColor = useThemeColor({}, 'text');
 
   // Separar alertas urgentes y avisos informativos
   const urgentAlerts = alerts.filter(a => a.priority === 'urgent');
