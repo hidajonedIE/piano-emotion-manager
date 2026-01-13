@@ -683,6 +683,21 @@ export const partnerSettings = mysqlTable("partner_settings", {
 	maxUsers: int(),
 	maxOrganizations: int(),
 	supportedLanguages: json(),
+	// Onboarding Step 6: Alertas
+	alertPianoTuning: tinyint().default(1),
+	alertPianoRegulation: tinyint().default(1),
+	alertPianoMaintenance: tinyint().default(1),
+	alertQuotesPending: tinyint().default(1),
+	alertQuotesExpiring: tinyint().default(1),
+	alertInvoicesPending: tinyint().default(1),
+	alertInvoicesOverdue: tinyint().default(1),
+	alertUpcomingAppointments: tinyint().default(1),
+	alertUnconfirmedAppointments: tinyint().default(1),
+	alertFrequency: mysqlEnum(['realtime','daily','weekly']).default('realtime'),
+	// Onboarding Step 7: Notificaciones y Calendario
+	pushNotifications: tinyint().default(1),
+	emailNotifications: tinyint().default(1),
+	calendarSync: mysqlEnum(['none','google','outlook']).default('none'),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
@@ -718,6 +733,20 @@ export const partners = mysqlTable("partners", {
 	defaultLanguage: varchar({ length: 5 }).default('es').notNull(),
 	supportEmail: varchar({ length: 320 }),
 	supportPhone: varchar({ length: 50 }),
+	// Onboarding Step 2: Datos Fiscales
+	legalName: varchar({ length: 255 }),
+	businessName: varchar({ length: 255 }),
+	taxId: varchar({ length: 20 }),
+	addressStreet: varchar({ length: 255 }),
+	addressPostalCode: varchar({ length: 5 }),
+	addressCity: varchar({ length: 100 }),
+	addressProvince: varchar({ length: 100 }),
+	iban: varchar({ length: 34 }),
+	bankName: varchar({ length: 255 }),
+	// Onboarding Step 3: Modo de Negocio
+	businessMode: mysqlEnum(['individual','team']).default('individual'),
+	// Onboarding Step 4: Cliente de Correo
+	emailClientPreference: mysqlEnum(['gmail','outlook','default']).default('gmail'),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
@@ -1013,3 +1042,35 @@ export const workAssignments = mysqlTable("work_assignments", {
 
 // Alert Dismissals
 // export * from './alerts-schema'; // Removed: file no longer exists
+
+// ============================================================================
+// ONBOARDING STEP 5: SERVICE TYPES AND TASKS
+// ============================================================================
+
+export const serviceTypes = mysqlTable("service_types", {
+	id: int().autoincrement().notNull(),
+	partnerId: int().notNull().references(() => partners.id, { onDelete: "cascade" } ),
+	name: varchar({ length: 255 }).notNull(),
+	price: decimal({ precision: 10, scale: 2 }).notNull(),
+	duration: int().notNull(), // en minutos
+	isActive: tinyint().default(1).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("service_types_partner_idx").on(table.partnerId),
+	index("service_types_active_idx").on(table.isActive),
+]);
+
+export const serviceTasks = mysqlTable("service_tasks", {
+	id: int().autoincrement().notNull(),
+	serviceTypeId: int().notNull().references(() => serviceTypes.id, { onDelete: "cascade" } ),
+	description: varchar({ length: 500 }).notNull(),
+	orderIndex: int().default(0).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("service_tasks_type_idx").on(table.serviceTypeId),
+	index("service_tasks_order_idx").on(table.serviceTypeId, table.orderIndex),
+]);

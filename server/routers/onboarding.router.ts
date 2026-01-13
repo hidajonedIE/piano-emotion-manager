@@ -56,9 +56,101 @@ const step1Schema = z.object({
 });
 
 /**
- * Schema para el paso 2: Branding
+ * Schema para el paso 2: Datos Fiscales
  */
 const step2Schema = z.object({
+  legalName: z.string()
+    .min(1, "La razón social es obligatoria")
+    .max(255),
+  businessName: z.string()
+    .max(255)
+    .optional()
+    .nullable(),
+  taxId: z.string()
+    .min(1, "El NIF/CIF es obligatorio")
+    .max(20),
+  address: z.object({
+    street: z.string().min(1).max(255),
+    postalCode: z.string().regex(/^\d{5}$/),
+    city: z.string().min(1).max(100),
+    province: z.string().min(1).max(100),
+  }),
+  iban: z.string()
+    .max(34)
+    .optional()
+    .nullable(),
+  bankName: z.string()
+    .max(255)
+    .optional()
+    .nullable(),
+});
+
+/**
+ * Schema para el paso 3: Modo de Negocio
+ */
+const step3Schema = z.object({
+  businessMode: z.enum(["individual", "team"]),
+});
+
+/**
+ * Schema para el paso 4: Cliente de Correo
+ */
+const step4Schema = z.object({
+  emailClientPreference: z.enum(["gmail", "outlook", "default"]).default("gmail"),
+});
+
+/**
+ * Schema para el paso 5: Servicios y Tareas
+ */
+const step5Schema = z.object({
+  serviceTypes: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string().min(1).max(255),
+      price: z.number().positive(),
+      duration: z.number().positive(),
+      tasks: z.array(
+        z.object({
+          id: z.string(),
+          description: z.string().min(1).max(500),
+          completed: z.boolean().default(false),
+        })
+      ).min(1),
+    })
+  ),
+});
+
+/**
+ * Schema para el paso 6: Alertas
+ */
+const step6Schema = z.object({
+  alerts: z.object({
+    pianoTuning: z.boolean().default(true),
+    pianoRegulation: z.boolean().default(true),
+    pianoMaintenance: z.boolean().default(true),
+    quotesPending: z.boolean().default(true),
+    quotesExpiring: z.boolean().default(true),
+    invoicesPending: z.boolean().default(true),
+    invoicesOverdue: z.boolean().default(true),
+    upcomingAppointments: z.boolean().default(true),
+    unconfirmedAppointments: z.boolean().default(true),
+  }),
+  alertFrequency: z.enum(["realtime", "daily", "weekly"]).default("realtime"),
+});
+
+/**
+ * Schema para el paso 7: Notificaciones y Calendario
+ */
+const step7Schema = z.object({
+  pushNotifications: z.boolean().default(true),
+  emailNotifications: z.boolean().default(true),
+  calendarSync: z.enum(["none", "google", "outlook"]).default("none"),
+});
+
+/**
+ * Schema para el paso 8: Personalización (Branding)
+ */
+const step8Schema = z.object({
   brandName: z.string()
     .max(255, "El nombre de marca no puede tener más de 255 caracteres")
     .optional()
@@ -74,27 +166,19 @@ const step2Schema = z.object({
     .default("#10b981"),
 });
 
-/**
- * Schema para el paso 3: Configuración inicial
- */
-const step3Schema = z.object({
-  allowMultipleSuppliers: z.boolean().default(false),
-  ecommerceEnabled: z.boolean().default(false),
-  autoOrderEnabled: z.boolean().default(false),
-  autoOrderThreshold: z.number().int().min(0).default(5),
-  notificationEmail: z.string()
-    .email("Email no válido")
-    .max(320)
-    .optional()
-    .nullable(),
-});
+
 
 /**
- * Schema completo para registro de partner
+ * Schema completo para registro de partner (8 pasos)
  */
 const completeRegistrationSchema = step1Schema
   .merge(step2Schema)
   .merge(step3Schema)
+  .merge(step4Schema)
+  .merge(step5Schema)
+  .merge(step6Schema)
+  .merge(step7Schema)
+  .merge(step8Schema)
   .extend({
     // Información del usuario administrador
     adminUserName: z.string()
@@ -279,14 +363,12 @@ export const onboardingRouter = router({
     }),
 
   /**
-   * Validar paso 2: Branding
+   * Validar paso 2: Datos Fiscales
    */
   validateStep2: publicProcedure
     .input(step2Schema)
     .mutation(async ({ input }) => {
-      // Validación de colores (ya hecha por Zod)
-      // Aquí se pueden agregar validaciones adicionales si es necesario
-
+      // Validaciones adicionales si es necesario
       return {
         valid: true,
         data: input,
@@ -294,13 +376,78 @@ export const onboardingRouter = router({
     }),
 
   /**
-   * Validar paso 3: Configuración
+   * Validar paso 3: Modo de Negocio
    */
   validateStep3: publicProcedure
     .input(step3Schema)
     .mutation(async ({ input }) => {
-      // Validaciones adicionales si es necesario
-      
+      return {
+        valid: true,
+        data: input,
+      };
+    }),
+
+  /**
+   * Validar paso 4: Cliente de Correo
+   */
+  validateStep4: publicProcedure
+    .input(step4Schema)
+    .mutation(async ({ input }) => {
+      return {
+        valid: true,
+        data: input,
+      };
+    }),
+
+  /**
+   * Validar paso 5: Servicios y Tareas
+   */
+  validateStep5: publicProcedure
+    .input(step5Schema)
+    .mutation(async ({ input }) => {
+      // Validar que haya al menos un servicio
+      if (input.serviceTypes.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Debe configurar al menos un servicio",
+        });
+      }
+      return {
+        valid: true,
+        data: input,
+      };
+    }),
+
+  /**
+   * Validar paso 6: Alertas
+   */
+  validateStep6: publicProcedure
+    .input(step6Schema)
+    .mutation(async ({ input }) => {
+      return {
+        valid: true,
+        data: input,
+      };
+    }),
+
+  /**
+   * Validar paso 7: Notificaciones y Calendario
+   */
+  validateStep7: publicProcedure
+    .input(step7Schema)
+    .mutation(async ({ input }) => {
+      return {
+        valid: true,
+        data: input,
+      };
+    }),
+
+  /**
+   * Validar paso 8: Personalización (Branding)
+   */
+  validateStep8: publicProcedure
+    .input(step8Schema)
+    .mutation(async ({ input }) => {
       return {
         valid: true,
         data: input,

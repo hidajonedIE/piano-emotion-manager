@@ -145,7 +145,7 @@ export default function OnboardingStep2Screen() {
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await saveData();
-    router.push('/onboarding/complete');
+    router.push('/onboarding/success');
   };
 
   const handleBack = () => {
