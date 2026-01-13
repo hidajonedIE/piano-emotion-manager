@@ -3,7 +3,7 @@
  * Endpoint optimizado para cargar todas las alertas en una sola llamada
  */
 import { router, protectedProcedure } from '../_core/trpc.js';
-import { db } from '../db.js';
+import { getDb } from '../db.js';
 import { pianos, services, appointments, invoices, quotes } from '../../drizzle/schema.js';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
 
@@ -24,6 +24,8 @@ export const alertsRouter = router({
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
     // Ejecutar todas las queries en paralelo
+    const db = getDb();
+    
     const [
       userPianos,
       userServices,
