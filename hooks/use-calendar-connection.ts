@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { Alert, Linking } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/utils/trpc';
+import { useAuth } from '@/hooks/use-auth';
 
 export interface CalendarConnection {
   id: number;
@@ -25,6 +26,7 @@ export interface CalendarConnectionStatus {
 }
 
 export function useCalendarConnection() {
+  const { user } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -69,8 +71,13 @@ export function useCalendarConnection() {
           {
             text: 'Continuar',
             onPress: async () => {
-              // Abrir URL de OAuth
-              const authUrl = `${process.env.EXPO_PUBLIC_API_URL || 'https://www.pianoemotion.com'}/api/calendar/google/auth`;
+              if (!user?.id) {
+                Alert.alert('Error', 'No se pudo obtener el ID de usuario');
+                return;
+              }
+              
+              // Abrir URL de OAuth con userId
+              const authUrl = `${process.env.EXPO_PUBLIC_API_URL || 'https://www.pianoemotion.com'}/api/calendar/google/auth?userId=${encodeURIComponent(user.id)}`;
               const supported = await Linking.canOpenURL(authUrl);
               
               if (supported) {
@@ -114,8 +121,13 @@ export function useCalendarConnection() {
           {
             text: 'Continuar',
             onPress: async () => {
-              // Abrir URL de OAuth
-              const authUrl = `${process.env.EXPO_PUBLIC_API_URL || 'https://www.pianoemotion.com'}/api/calendar/outlook/auth`;
+              if (!user?.id) {
+                Alert.alert('Error', 'No se pudo obtener el ID de usuario');
+                return;
+              }
+              
+              // Abrir URL de OAuth con userId
+              const authUrl = `${process.env.EXPO_PUBLIC_API_URL || 'https://www.pianoemotion.com'}/api/calendar/outlook/auth?userId=${encodeURIComponent(user.id)}`;
               const supported = await Linking.canOpenURL(authUrl);
               
               if (supported) {

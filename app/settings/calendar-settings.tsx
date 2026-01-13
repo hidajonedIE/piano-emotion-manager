@@ -446,7 +446,8 @@ export default function CalendarSettingsScreen() {
             <ThemedText style={[styles.infoText, { color: textSecondary }]}>
               • Las citas se sincronizan automáticamente con tu calendario{'\n'}
               • Los cambios en el calendario externo se reflejan aquí{'\n'}
-              • Puedes conectar múltiples calendarios simultáneamente{'\n'}
+              • Puedes conectar Google Calendar y Outlook Calendar al mismo tiempo{'\n'}
+              • Compatible con cuentas personales y corporativas (Gmail, Google Workspace, Outlook.com, Microsoft 365){'\n'}
               • Los datos se cifran y se almacenan de forma segura
             </ThemedText>
           </View>
