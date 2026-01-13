@@ -85,12 +85,15 @@ export function DashboardRecentServices({ services, clients, pianos }: Dashboard
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.servicesList}
         renderItem={({ item }) => (
-          <ServiceCard
-            service={item}
-            clientName={getClientName(item.clientId)}
-            pianoInfo={getPianoInfo(item.pianoId)}
-            onPress={() => handleServicePress(item.id.toString())}
-          />
+          <View style={{ width: 280 }}>
+            <ServiceCard
+              service={item}
+              clientName={getClientName(item.clientId)}
+              pianoInfo={getPianoInfo(item.pianoId)}
+              onPress={() => handleServicePress(item.id.toString())}
+              isPast={(item as any).isPast}
+            />
+          </View>
         )}
       />
     </Accordion>

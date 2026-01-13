@@ -114,11 +114,26 @@ export default function DashboardScreen() {
   }, [user, clients.length, pianos.length, services.length, urgentCount, pendingCount]);
   const { hasUnseenUpdates, markAsSeen } = useWhatsNew();
 
-  // Servicios recientes
+  // Servicios recientes (2 pasados + 2 futuros)
   const recentServices = useMemo(() => {
-    return [...services]
+    const now = new Date();
+    
+    // Servicios pasados (completados)
+    const pastServices = services
+      .filter(s => new Date(s.date) < now)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5);
+      .slice(0, 2)
+      .map(s => ({ ...s, isPast: true }));
+    
+    // Servicios futuros (pendientes)
+    const futureServices = services
+      .filter(s => new Date(s.date) >= now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 2)
+      .map(s => ({ ...s, isPast: false }));
+    
+    // Combinar: pasados primero, futuros después
+    return [...pastServices, ...futureServices];
   }, [services]);
 
   // Estadísticas del mes
