@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Alert, Linking } from 'react-native';
+import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/utils/trpc';
 import { useAuth } from '@/hooks/use-auth';
@@ -25,13 +25,20 @@ export interface CalendarConnectionStatus {
   hasAny: boolean;
 }
 
+// Helper para mostrar alertas compatibles con web
+const showAlert = (message: string) => {
+  if (Platform.OS === 'web') {
+    window.alert(message);
+  }
+};
+
 export function useCalendarConnection() {
   const { user } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // tRPC queries
-  const { data: connectionStatus, refetch: refetchStatus } = 
+  const { data: connectionStatus, refetch: refetchStatus} = 
     trpc.alerts.hasCalendarConnected.useQuery();
 
   // Mutations
@@ -59,51 +66,38 @@ export function useCalendarConnection() {
       setIsConnecting(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-      // TODO: Obtener URL de OAuth desde el backend
-      // const authUrl = await trpc.calendar.getGoogleAuthUrl.query();
+      if (!user?.id) {
+        showAlert('Error: No se pudo obtener el ID de usuario');
+        return;
+      }
       
-      // Por ahora, mostrar alerta informativa
-      Alert.alert(
-        'Conectar Google Calendar',
-        'Se abrirá una ventana para autorizar el acceso a tu Google Calendar. Después de autorizar, tus citas se sincronizarán automáticamente.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Continuar',
-            onPress: async () => {
-              if (!user?.id) {
-                Alert.alert('Error', 'No se pudo obtener el ID de usuario');
-                return;
-              }
-              
-              // Abrir URL de OAuth con userId
-              const authUrl = `${process.env.EXPO_PUBLIC_API_URL || 'https://www.pianoemotion.com'}/api/calendar/google/auth?userId=${encodeURIComponent(user.id)}`;
-              const supported = await Linking.canOpenURL(authUrl);
-              
-              if (supported) {
-                await Linking.openURL(authUrl);
-                
-                // Refrescar estado después de un tiempo
-                setTimeout(() => {
-                  refetchStatus();
-                }, 3000);
-              } else {
-                Alert.alert('Error', 'No se puede abrir el navegador');
-              }
-            },
-          },
-        ]
-      );
+      // Confirmar acción
+      const confirmed = Platform.OS === 'web'
+        ? window.confirm('Se abrirá una ventana para autorizar el acceso a tu Google Calendar. ¿Deseas continuar?')
+        : true;
+      
+      if (!confirmed) {
+        return;
+      }
+      
+      // Abrir URL de OAuth con userId
+      const authUrl = `/api/calendar-google-auth?userId=${encodeURIComponent(user.id)}`;
+      
+      if (Platform.OS === 'web') {
+        window.location.href = authUrl;
+      }
+      
+      // Refrescar estado después de un tiempo
+      setTimeout(() => {
+        refetchStatus();
+      }, 3000);
     } catch (error) {
       console.error('Error connecting Google Calendar:', error);
-      Alert.alert(
-        'Error',
-        'No se pudo conectar con Google Calendar. Por favor, intenta de nuevo.'
-      );
+      showAlert('Error: No se pudo conectar con Google Calendar. Por favor, intenta de nuevo.');
     } finally {
       setIsConnecting(false);
     }
-  }, [refetchStatus]);
+  }, [user, refetchStatus]);
 
   /**
    * Conectar Outlook Calendar
@@ -113,78 +107,64 @@ export function useCalendarConnection() {
       setIsConnecting(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-      Alert.alert(
-        'Conectar Outlook Calendar',
-        'Se abrirá una ventana para autorizar el acceso a tu Outlook Calendar. Después de autorizar, tus citas se sincronizarán automáticamente.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Continuar',
-            onPress: async () => {
-              if (!user?.id) {
-                Alert.alert('Error', 'No se pudo obtener el ID de usuario');
-                return;
-              }
-              
-              // Abrir URL de OAuth con userId
-              const authUrl = `${process.env.EXPO_PUBLIC_API_URL || 'https://www.pianoemotion.com'}/api/calendar/outlook/auth?userId=${encodeURIComponent(user.id)}`;
-              const supported = await Linking.canOpenURL(authUrl);
-              
-              if (supported) {
-                await Linking.openURL(authUrl);
-                
-                // Refrescar estado después de un tiempo
-                setTimeout(() => {
-                  refetchStatus();
-                }, 3000);
-              } else {
-                Alert.alert('Error', 'No se puede abrir el navegador');
-              }
-            },
-          },
-        ]
-      );
+      if (!user?.id) {
+        showAlert('Error: No se pudo obtener el ID de usuario');
+        return;
+      }
+      
+      // Confirmar acción
+      const confirmed = Platform.OS === 'web'
+        ? window.confirm('Se abrirá una ventana para autorizar el acceso a tu Outlook Calendar. ¿Deseas continuar?')
+        : true;
+      
+      if (!confirmed) {
+        return;
+      }
+      
+      // Abrir URL de OAuth con userId
+      const authUrl = `/api/calendar-outlook-auth?userId=${encodeURIComponent(user.id)}`;
+      
+      if (Platform.OS === 'web') {
+        window.location.href = authUrl;
+      }
+      
+      // Refrescar estado después de un tiempo
+      setTimeout(() => {
+        refetchStatus();
+      }, 3000);
     } catch (error) {
       console.error('Error connecting Outlook Calendar:', error);
-      Alert.alert(
-        'Error',
-        'No se pudo conectar con Outlook Calendar. Por favor, intenta de nuevo.'
-      );
+      showAlert('Error: No se pudo conectar con Outlook Calendar. Por favor, intenta de nuevo.');
     } finally {
       setIsConnecting(false);
     }
-  }, [refetchStatus]);
+  }, [user, refetchStatus]);
 
   /**
    * Desconectar calendario
    */
   const disconnect = useCallback(async (provider: 'google' | 'outlook') => {
     try {
-      Alert.alert(
-        'Desconectar Calendario',
-        `¿Estás seguro de que deseas desconectar ${provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'}? Las citas existentes no se eliminarán.`,
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Desconectar',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                // TODO: Implementar desconexión en el backend
-                // await trpc.calendar.disconnect.mutate({ provider });
-                
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                Alert.alert('Desconectado', 'El calendario se ha desconectado correctamente');
-                
-                await refetchStatus();
-              } catch (error) {
-                console.error('Error disconnecting:', error);
-                Alert.alert('Error', 'No se pudo desconectar el calendario');
-              }
-            },
-          },
-        ]
-      );
+      const confirmed = Platform.OS === 'web'
+        ? window.confirm(`¿Estás seguro de que deseas desconectar ${provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'}? Las citas existentes no se eliminarán.`)
+        : true;
+      
+      if (!confirmed) {
+        return;
+      }
+      
+      try {
+        // TODO: Implementar desconexión en el backend
+        // await trpc.calendar.disconnect.mutate({ provider });
+        
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        showAlert('El calendario se ha desconectado correctamente');
+        
+        await refetchStatus();
+      } catch (error) {
+        console.error('Error disconnecting:', error);
+        showAlert('Error: No se pudo desconectar el calendario');
+      }
     } catch (error) {
       console.error('Error in disconnect:', error);
     }
@@ -210,7 +190,7 @@ export function useCalendarConnection() {
           provider: result.provider,
         };
       } else {
-        Alert.alert('Error de Sincronización', result.error || 'No se pudo sincronizar la cita');
+        showAlert(`Error de Sincronización: ${result.error || 'No se pudo sincronizar la cita'}`);
         return {
           success: false,
           error: result.error,
@@ -218,7 +198,7 @@ export function useCalendarConnection() {
       }
     } catch (error) {
       console.error('Error syncing appointment:', error);
-      Alert.alert('Error', 'No se pudo sincronizar la cita con el calendario');
+      showAlert('Error: No se pudo sincronizar la cita con el calendario');
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -244,21 +224,15 @@ export function useCalendarConnection() {
 
       if (failCount === 0) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert(
-          'Sincronización Completa',
-          `Se sincronizaron ${successCount} cita(s) correctamente`
-        );
+        showAlert(`Sincronización Completa: Se sincronizaron ${successCount} cita(s) correctamente`);
       } else {
-        Alert.alert(
-          'Sincronización Parcial',
-          `Se sincronizaron ${successCount} cita(s) correctamente.\n${failCount} cita(s) fallaron.`
-        );
+        showAlert(`Sincronización Parcial: Se sincronizaron ${successCount} cita(s) correctamente.\n${failCount} cita(s) fallaron.`);
       }
 
       return results;
     } catch (error) {
       console.error('Error syncing multiple appointments:', error);
-      Alert.alert('Error', 'No se pudieron sincronizar las citas');
+      showAlert('Error: No se pudieron sincronizar las citas');
       return [];
     } finally {
       setIsSyncing(false);
@@ -284,12 +258,12 @@ export function useCalendarConnection() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         return { success: true };
       } else {
-        Alert.alert('Error', result.error || 'No se pudo actualizar el evento');
+        showAlert(`Error: ${result.error || 'No se pudo actualizar el evento'}`);
         return { success: false, error: result.error };
       }
     } catch (error) {
       console.error('Error updating event:', error);
-      Alert.alert('Error', 'No se pudo actualizar el evento en el calendario');
+      showAlert('Error: No se pudo actualizar el evento en el calendario');
       return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' };
     }
   }, [updateEventMutation]);
@@ -311,12 +285,12 @@ export function useCalendarConnection() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         return { success: true };
       } else {
-        Alert.alert('Error', result.error || 'No se pudo eliminar el evento');
+        showAlert(`Error: ${result.error || 'No se pudo eliminar el evento'}`);
         return { success: false, error: result.error };
       }
     } catch (error) {
       console.error('Error deleting event:', error);
-      Alert.alert('Error', 'No se pudo eliminar el evento del calendario');
+      showAlert('Error: No se pudo eliminar el evento del calendario');
       return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' };
     }
   }, [deleteEventMutation]);
@@ -335,12 +309,12 @@ export function useCalendarConnection() {
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulación
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Sincronizado', 'Las citas se han sincronizado correctamente');
+      showAlert('Sincronizado: Las citas se han sincronizado correctamente');
 
       await refetchStatus();
     } catch (error) {
       console.error('Error syncing now:', error);
-      Alert.alert('Error', 'No se pudo sincronizar con el calendario');
+      showAlert('Error: No se pudo sincronizar con el calendario');
     } finally {
       setIsSyncing(false);
     }
