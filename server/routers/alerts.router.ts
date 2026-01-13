@@ -211,12 +211,12 @@ export const alertsRouter = router({
         for (const invoice of userInvoices) {
           if (invoice.status === 'sent') {
             pendingInvoices.push(invoice);
-            totalPending += invoice.total || 0;
+            totalPending += Number(invoice.total) || 0;
             
             const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
             if (dueDate && dueDate < now) {
               overdueInvoices.push(invoice);
-              totalOverdue += invoice.total || 0;
+              totalOverdue += Number(invoice.total) || 0;
             }
           }
         }
@@ -257,7 +257,7 @@ export const alertsRouter = router({
         for (const quote of userQuotes) {
           if (quote.status === 'sent') {
             pendingQuotes.push(quote);
-            totalPendingQuotes += quote.total || 0;
+            totalPendingQuotes += Number(quote.total) || 0;
             
             const expiryDate = quote.validUntil ? new Date(quote.validUntil) : null;
             if (expiryDate && expiryDate > now && expiryDate <= sevenDaysFromNow) {
