@@ -22,9 +22,10 @@ interface DashboardAlertsV2Props {
   totalWarning: number;
   totalInfo: number;
   clients: Client[];
+  isLoading?: boolean;
 }
 
-export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients }: DashboardAlertsV2Props) {
+export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients, isLoading = false }: DashboardAlertsV2Props) {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const [emailClientPreference, setEmailClientPreference] = useState<'gmail' | 'outlook' | 'default'>('gmail');
@@ -218,6 +219,24 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
       RNAlert.alert(`Contactar a ${clientName}`, 'Selecciona una opción:', buttons);
     }
   };
+
+  // Mostrar loading state mientras se cargan los datos
+  if (isLoading) {
+    return (
+      <View style={[styles.alertBanner, { backgroundColor: cardBackground, borderColor: border }]}>
+        <IconSymbol 
+          name="clock.fill" 
+          size={22} 
+          color={textColor} 
+        />
+        <View style={styles.alertContent}>
+          <ThemedText style={[styles.alertText, { color: textColor, opacity: 0.6 }]}>
+            Cargando alertas...
+          </ThemedText>
+        </View>
+      </View>
+    );
+  }
 
   if (!hasAlerts) {
     return (

@@ -181,6 +181,7 @@ export default function DashboardScreen() {
               totalWarning={allAlerts.stats.warning}
               totalInfo={allAlerts.stats.info}
               clients={clients}
+              isLoading={alertsLoading}
             />
           </>
         );
