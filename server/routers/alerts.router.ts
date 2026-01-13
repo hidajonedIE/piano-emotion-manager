@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { router, protectedProcedure } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { pianos, services, appointments, invoices, quotes } from "../../drizzle/schema.js";
@@ -91,7 +90,20 @@ export const alertsRouter = router({
           ));
         console.log('[ALERTS] Quotes fetched:', userQuotes.length);
 
-        const alerts: any[] = [];
+        type AlertItem = {
+          id: string;
+          type: string;
+          priority: string;
+          title: string;
+          message: string;
+          data?: Record<string, unknown>;
+          date: Date;
+          pianoId?: number;
+          appointmentId?: number;
+          invoiceId?: number;
+          quoteId?: number;
+        };
+        const alerts: AlertItem[] = [];
 
         console.log('[ALERTS] Calculating piano alerts...');
         // 1. Alertas de pianos (mantenimiento)
@@ -146,8 +158,8 @@ export const alertsRouter = router({
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
 
-        const todayAppointments: any[] = [];
-        const weekAppointments: any[] = [];
+        const todayAppointments: typeof userAppointments = [];
+        const weekAppointments: typeof userAppointments = [];
 
         for (const appointment of userAppointments) {
           const appointmentDate = new Date(appointment.date);
@@ -188,8 +200,8 @@ export const alertsRouter = router({
 
         console.log('[ALERTS] Calculating invoice alerts...');
         // 3. Alertas de facturas
-        const pendingInvoices: any[] = [];
-        const overdueInvoices: any[] = [];
+        const pendingInvoices: typeof userInvoices = [];
+        const overdueInvoices: typeof userInvoices = [];
         let totalPending = 0;
         let totalOverdue = 0;
 
@@ -235,8 +247,8 @@ export const alertsRouter = router({
 
         console.log('[ALERTS] Calculating quote alerts...');
         // 4. Alertas de presupuestos
-        const pendingQuotes: any[] = [];
-        const expiringQuotes: any[] = [];
+        const pendingQuotes: typeof userQuotes = [];
+        const expiringQuotes: typeof userQuotes = [];
         let totalPendingQuotes = 0;
 
         for (const quote of userQuotes) {
