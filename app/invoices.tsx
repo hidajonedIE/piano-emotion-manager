@@ -77,10 +77,17 @@ export default function InvoicesScreen() {
           }
         }
         
-        return matchesSearch && matchesStatus && matchesDate;
+        // Filtro adicional para facturas vencidas
+        let matchesOverdue = true;
+        if (params.filter === 'overdue' && inv.dueDate) {
+          const dueDate = new Date(inv.dueDate);
+          matchesOverdue = dueDate < now;
+        }
+        
+        return matchesSearch && matchesStatus && matchesDate && matchesOverdue;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [invoices, searchQuery, statusFilter, dateFilter]);
+  }, [invoices, searchQuery, statusFilter, dateFilter, params.filter]);
 
   const stats = useMemo(() => {
     const total = invoices.reduce((sum, inv) => sum + inv.total, 0);

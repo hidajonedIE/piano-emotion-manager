@@ -68,16 +68,28 @@ export default function QuotesScreen() {
   const textColor = useThemeColor({}, 'text');
 
   const filteredQuotes = useMemo(() => {
+    const now = new Date();
+    const sevenDaysFromNow = new Date(now);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    
     return quotes
       .filter((quote: Quote) => {
         const matchesSearch = 
           quote.quoteNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
           quote.clientName.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || quote.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        
+        // Filtro adicional para presupuestos próximos a expirar
+        let matchesExpiring = true;
+        if (params.filter === 'expiring' && quote.validUntil) {
+          const validUntil = new Date(quote.validUntil);
+          matchesExpiring = validUntil > now && validUntil <= sevenDaysFromNow;
+        }
+        
+        return matchesSearch && matchesStatus && matchesExpiring;
       })
       .sort((a: Quote, b: Quote) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [quotes, searchQuery, statusFilter]);
+  }, [quotes, searchQuery, statusFilter, params.filter]);
 
   const stats = useMemo(() => {
     const total = quotes.reduce((sum: number, q: Quote) => sum + q.total, 0);
