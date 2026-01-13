@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc.js";
 import { getDb } from "../db.js";
-import { partners, partnerSettings, partnerUsers, users } from "../../drizzle/schema.js";
+import { partners, partnerSettings, partnerUsers, users, serviceTypes as serviceTypesTable, serviceTasks as serviceTasksTable } from "../../drizzle/schema.js";
 import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -469,22 +469,40 @@ export const onboardingRouter = router({
         });
       }
 
-      // Extraer datos por sección
+      // Extraer datos por sección (8 pasos)
       const {
+        // Step 1: Información Básica
         slug,
         name,
         email,
         supportEmail,
         supportPhone,
+        // Step 2: Datos Fiscales
+        legalName,
+        businessName,
+        taxId,
+        address,
+        iban,
+        bankName,
+        // Step 3: Modo de Negocio
+        businessMode,
+        // Step 4: Cliente de Correo
+        emailClientPreference,
+        // Step 5: Servicios y Tareas
+        serviceTypes,
+        // Step 6: Alertas
+        alerts,
+        alertFrequency,
+        // Step 7: Notificaciones y Calendario
+        pushNotifications,
+        emailNotifications,
+        calendarSync,
+        // Step 8: Personalización (Branding)
         brandName,
         logo,
         primaryColor,
         secondaryColor,
-        allowMultipleSuppliers,
-        ecommerceEnabled,
-        autoOrderEnabled,
-        autoOrderThreshold,
-        notificationEmail,
+        // Usuario administrador
         adminUserName,
         adminUserEmail,
       } = input;
@@ -520,16 +538,33 @@ export const onboardingRouter = router({
       try {
         // 1. Crear partner
         const partnerResult = await database.insert(partners).values({
+          // Step 1: Información Básica
           slug,
           name,
           email,
           supportEmail,
           supportPhone,
+          // Step 2: Datos Fiscales
+          legalName,
+          businessName,
+          taxId,
+          addressStreet: address?.street,
+          addressPostalCode: address?.postalCode,
+          addressCity: address?.city,
+          addressProvince: address?.province,
+          iban,
+          bankName,
+          // Step 3: Modo de Negocio
+          businessMode,
+          // Step 4: Cliente de Correo
+          emailClientPreference,
+          // Step 8: Personalización (Branding)
           brandName,
           logo,
           primaryColor,
           secondaryColor,
-          allowMultipleSuppliers,
+          // Legacy fields
+          allowMultipleSuppliers: false,
           status: "active",
         });
 
@@ -538,12 +573,28 @@ export const onboardingRouter = router({
         // 2. Crear settings del partner
         await database.insert(partnerSettings).values({
           partnerId,
-          ecommerceEnabled,
-          autoOrderEnabled,
-          autoOrderThreshold,
-          notificationEmail,
-          maxUsers: null, // Sin límite por defecto
-          maxOrganizations: null, // Sin límite por defecto
+          // Legacy fields
+          ecommerceEnabled: false,
+          autoOrderEnabled: false,
+          autoOrderThreshold: 5,
+          notificationEmail: email,
+          maxUsers: null,
+          maxOrganizations: null,
+          // Step 6: Alertas
+          alertPianoTuning: alerts?.pianoTuning ? 1 : 0,
+          alertPianoRegulation: alerts?.pianoRegulation ? 1 : 0,
+          alertPianoMaintenance: alerts?.pianoMaintenance ? 1 : 0,
+          alertQuotesPending: alerts?.quotesPending ? 1 : 0,
+          alertQuotesExpiring: alerts?.quotesExpiring ? 1 : 0,
+          alertInvoicesPending: alerts?.invoicesPending ? 1 : 0,
+          alertInvoicesOverdue: alerts?.invoicesOverdue ? 1 : 0,
+          alertUpcomingAppointments: alerts?.upcomingAppointments ? 1 : 0,
+          alertUnconfirmedAppointments: alerts?.unconfirmedAppointments ? 1 : 0,
+          alertFrequency,
+          // Step 7: Notificaciones y Calendario
+          pushNotifications: pushNotifications ? 1 : 0,
+          emailNotifications: emailNotifications ? 1 : 0,
+          calendarSync,
         });
 
         // 3. Verificar si el usuario administrador ya existe
@@ -604,6 +655,33 @@ export const onboardingRouter = router({
           canManageUsers: true,
           canViewAnalytics: true,
         });
+
+        // 5. Crear tipos de servicios y sus tareas (Step 5)
+        if (serviceTypes && serviceTypes.length > 0) {
+          for (const serviceType of serviceTypes) {
+            // Insertar tipo de servicio
+            const serviceTypeResult = await database.insert(serviceTypesTable).values({
+              partnerId,
+              name: serviceType.name,
+              price: serviceType.price.toString(),
+              duration: serviceType.duration,
+              isActive: 1,
+            });
+
+            const serviceTypeId = serviceTypeResult[0].insertId;
+
+            // Insertar tareas del servicio
+            if (serviceType.tasks && serviceType.tasks.length > 0) {
+              for (let i = 0; i < serviceType.tasks.length; i++) {
+                await database.insert(serviceTasksTable).values({
+                  serviceTypeId,
+                  description: serviceType.tasks[i].description,
+                  orderIndex: i,
+                });
+              }
+            }
+          }
+        }
 
         return {
           success: true,
