@@ -34,8 +34,6 @@ export const alertsRouter = router({
         
         // Fechas para cálculos
         const now = new Date();
-        const nextWeek = new Date(now);
-        nextWeek.setDate(nextWeek.getDate() + 7);
         const sevenDaysFromNow = new Date(now);
         sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
