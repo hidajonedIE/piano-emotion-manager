@@ -7,8 +7,8 @@
 
 import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
-import { db } from '@/drizzle/db';
-import { alertSettings } from '@/drizzle/schema';
+import * as db from '../db.js';
+import { alertSettings } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 
 // Valores por defecto
@@ -96,8 +96,16 @@ export const alertSettingsRouter = router({
       console.log('[ALERT_SETTINGS] Getting settings for user:', userId);
 
       try {
+        // Obtener conexión a la base de datos
+        const database = await db.getDb();
+        
+        if (!database) {
+          console.error('[ALERT_SETTINGS] Database connection is null');
+          throw new Error('Error de conexión a la base de datos');
+        }
+
         // Buscar configuración existente
-        const existingSettings = await db
+        const existingSettings = await database
           .select()
           .from(alertSettings)
           .where(
@@ -140,8 +148,16 @@ export const alertSettingsRouter = router({
       console.log('[ALERT_SETTINGS] Input:', input);
 
       try {
+        // Obtener conexión a la base de datos
+        const database = await db.getDb();
+        
+        if (!database) {
+          console.error('[ALERT_SETTINGS] Database connection is null');
+          throw new Error('Error de conexión a la base de datos');
+        }
+
         // Buscar configuración existente
-        const existingSettings = await db
+        const existingSettings = await database
           .select()
           .from(alertSettings)
           .where(
@@ -155,7 +171,7 @@ export const alertSettingsRouter = router({
         if (existingSettings.length > 0) {
           // Actualizar configuración existente
           console.log('[ALERT_SETTINGS] Updating existing settings');
-          await db
+          await database
             .update(alertSettings)
             .set({
               ...input,
@@ -170,7 +186,7 @@ export const alertSettingsRouter = router({
         } else {
           // Crear nueva configuración
           console.log('[ALERT_SETTINGS] Creating new settings');
-          await db.insert(alertSettings).values({
+          await database.insert(alertSettings).values({
             userId,
             partnerId,
             ...DEFAULT_SETTINGS,
@@ -179,7 +195,7 @@ export const alertSettingsRouter = router({
         }
 
         // Devolver configuración actualizada
-        const updatedSettings = await db
+        const updatedSettings = await database
           .select()
           .from(alertSettings)
           .where(
@@ -209,8 +225,16 @@ export const alertSettingsRouter = router({
       console.log('[ALERT_SETTINGS] Resetting settings to defaults for user:', userId);
 
       try {
+        // Obtener conexión a la base de datos
+        const database = await db.getDb();
+        
+        if (!database) {
+          console.error('[ALERT_SETTINGS] Database connection is null');
+          throw new Error('Error de conexión a la base de datos');
+        }
+
         // Buscar configuración existente
-        const existingSettings = await db
+        const existingSettings = await database
           .select()
           .from(alertSettings)
           .where(
@@ -223,7 +247,7 @@ export const alertSettingsRouter = router({
 
         if (existingSettings.length > 0) {
           // Actualizar con valores por defecto
-          await db
+          await database
             .update(alertSettings)
             .set({
               ...DEFAULT_SETTINGS,
@@ -237,7 +261,7 @@ export const alertSettingsRouter = router({
             );
         } else {
           // Crear con valores por defecto
-          await db.insert(alertSettings).values({
+          await database.insert(alertSettings).values({
             userId,
             partnerId,
             ...DEFAULT_SETTINGS,
@@ -245,7 +269,7 @@ export const alertSettingsRouter = router({
         }
 
         // Devolver configuración actualizada
-        const updatedSettings = await db
+        const updatedSettings = await database
           .select()
           .from(alertSettings)
           .where(
