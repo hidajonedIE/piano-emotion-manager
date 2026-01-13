@@ -34,6 +34,7 @@ export default function ServicesScreen() {
 
   // Filtrar servicios
   const filteredServices = useMemo(() => {
+    const now = new Date();
     let result = [...services].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
@@ -58,7 +59,11 @@ export default function ServicesScreen() {
       });
     }
 
-    return result;
+    // Agregar flag isPast para determinar el color del borde
+    return result.map(s => ({
+      ...s,
+      isPast: new Date(s.date) < now // true = completado (verde), false = pendiente (rojo)
+    }));
   }, [services, filter, search, getPiano, getClient]);
 
   const handleServicePress = (service: Service) => {
@@ -93,6 +98,7 @@ export default function ServicesScreen() {
           pianoInfo={piano ? `${piano.brand} ${piano.model}` : undefined}
           clientName={client ? getClientFullName(client) : undefined}
           onPress={() => handleServicePress(item)}
+          isPast={(item as any).isPast}
         />
       );
     },
