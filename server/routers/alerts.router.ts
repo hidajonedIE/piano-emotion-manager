@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { router, protectedProcedure } from "../_core/trpc.js";
 import * as db from "../db.js";
 import { pianos, services, appointments, invoices, quotes } from "../../drizzle/schema.js";
