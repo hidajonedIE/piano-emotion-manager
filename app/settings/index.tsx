@@ -90,6 +90,9 @@ interface AppSettings {
   
   // Contabilidad
   fiscalCountry: 'ES' | 'DE' | 'FR' | 'IT' | 'PT' | 'GB' | 'MX' | 'AR' | 'CO' | 'CL';
+  
+  // Preferencias de comunicación
+  emailClientPreference: 'gmail' | 'outlook' | 'default';
 }
 
 const defaultSettings: AppSettings = {
@@ -116,6 +119,7 @@ const defaultSettings: AppSettings = {
   aiRecommendationsEnabled: true,
   aiAssistantEnabled: false,
   fiscalCountry: 'ES',
+  emailClientPreference: 'gmail',
 };
 
 const EINVOICING_COUNTRIES = [
@@ -166,6 +170,7 @@ export default function SettingsIndexScreen() {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [hasChanges, setHasChanges] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [emailClientPreference, setEmailClientPreference] = useState<'gmail' | 'outlook' | 'default'>('gmail');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
@@ -187,6 +192,7 @@ export default function SettingsIndexScreen() {
           const parsed = JSON.parse(savedSettings) as Partial<AppSettings>;
           setSettings(prev => ({ ...prev, ...parsed }));
           setNotificationsEnabled(parsed.notificationsEnabled ?? true);
+          setEmailClientPreference(parsed.emailClientPreference ?? 'gmail');
         }
         
         // Intentar sincronizar con la API si hay conexión
@@ -223,6 +229,7 @@ export default function SettingsIndexScreen() {
       const settingsToSave: AppSettings = {
         ...settings,
         notificationsEnabled,
+        emailClientPreference,
       };
       
       // Guardar en AsyncStorage (offline-first)
@@ -830,6 +837,74 @@ export default function SettingsIndexScreen() {
                 }
               }
             )}
+          </View>
+        </Accordion>
+
+        {/* ========== PREFERENCIAS DE COMUNICACIÓN ========== */}
+        <Accordion
+          title="Preferencias de Comunicación"
+          icon="envelope.fill"
+          iconColor="#3B82F6"
+          defaultOpen={false}
+        >
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+            <View style={[styles.settingRow, { borderBottomColor: borderColor }]}>
+              <View style={[styles.settingIcon, { backgroundColor: '#3B82F615' }]}>
+                <IconSymbol name="envelope.fill" size={20} color="#3B82F6" />
+              </View>
+              <View style={styles.settingContent}>
+                <ThemedText style={styles.settingLabel}>Cliente de correo preferido</ThemedText>
+                <ThemedText style={[styles.settingSublabel, { color: textSecondary }]}>
+                  Selecciona qué cliente usar al enviar emails a clientes
+                </ThemedText>
+                <View style={styles.radioGroup}>
+                  <Pressable
+                    style={styles.radioOption}
+                    onPress={() => {
+                      setEmailClientPreference('gmail');
+                      setHasChanges(true);
+                    }}
+                  >
+                    <View style={[styles.radioCircle, { borderColor }]}>
+                      {emailClientPreference === 'gmail' && (
+                        <View style={[styles.radioCircleSelected, { backgroundColor: accent }]} />
+                      )}
+                    </View>
+                    <ThemedText style={styles.radioLabel}>Gmail</ThemedText>
+                  </Pressable>
+                  
+                  <Pressable
+                    style={styles.radioOption}
+                    onPress={() => {
+                      setEmailClientPreference('outlook');
+                      setHasChanges(true);
+                    }}
+                  >
+                    <View style={[styles.radioCircle, { borderColor }]}>
+                      {emailClientPreference === 'outlook' && (
+                        <View style={[styles.radioCircleSelected, { backgroundColor: accent }]} />
+                      )}
+                    </View>
+                    <ThemedText style={styles.radioLabel}>Outlook</ThemedText>
+                  </Pressable>
+                  
+                  <Pressable
+                    style={styles.radioOption}
+                    onPress={() => {
+                      setEmailClientPreference('default');
+                      setHasChanges(true);
+                    }}
+                  >
+                    <View style={[styles.radioCircle, { borderColor }]}>
+                      {emailClientPreference === 'default' && (
+                        <View style={[styles.radioCircleSelected, { backgroundColor: accent }]} />
+                      )}
+                    </View>
+                    <ThemedText style={styles.radioLabel}>Cliente predeterminado</ThemedText>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
           </View>
         </Accordion>
 
@@ -1529,5 +1604,31 @@ const styles = StyleSheet.create({
   linkSubtext: {
     fontSize: 12,
     marginTop: 2,
+  },
+  radioGroup: {
+    marginTop: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.xs,
+    gap: Spacing.sm,
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioCircleSelected: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  radioLabel: {
+    fontSize: 14,
   },
 });

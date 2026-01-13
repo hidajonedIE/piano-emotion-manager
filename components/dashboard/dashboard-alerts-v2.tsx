@@ -5,8 +5,9 @@
  * - Avisos: Informativos (para conocimiento)
  * - Colapsable por defecto
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, TouchableOpacity, Linking, Platform, ActionSheetIOS, Alert as RNAlert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -26,6 +27,23 @@ interface DashboardAlertsV2Props {
 export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients }: DashboardAlertsV2Props) {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [emailClientPreference, setEmailClientPreference] = useState<'gmail' | 'outlook' | 'default'>('gmail');
+  
+  // Cargar preferencia de cliente de correo
+  useEffect(() => {
+    const loadEmailPreference = async () => {
+      try {
+        const savedSettings = await AsyncStorage.getItem('userSettings');
+        if (savedSettings) {
+          const parsed = JSON.parse(savedSettings);
+          setEmailClientPreference(parsed.emailClientPreference || 'gmail');
+        }
+      } catch (error) {
+        console.error('Error loading email preference:', error);
+      }
+    };
+    loadEmailPreference();
+  }, []);
   
   // Función para obtener cliente por ID
   const getClient = (clientId: string) => clients.find(c => c.id === clientId);
@@ -126,11 +144,18 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
           // Llamar
           window.open(`tel:${phone}`, '_blank');
         } else if (email && index === (phone ? 2 : 0)) {
-          // Email - Abrir Gmail web directamente
+          // Email - Usar preferencia guardada
           const subject = encodeURIComponent('Mantenimiento de piano');
           const firstName = client.firstName || client.name?.split(' ')[0] || 'cliente';
           const body = encodeURIComponent(`Hola ${firstName},\n\nNecesitamos programar el mantenimiento de tu piano.\n\nSaludos`);
-          window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank');
+          
+          if (emailClientPreference === 'gmail') {
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank');
+          } else if (emailClientPreference === 'outlook') {
+            window.open(`https://outlook.office.com/mail/deeplink/compose?to=${email}&subject=${subject}&body=${body}`, '_blank');
+          } else {
+            window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+          }
         }
       }
       return;
