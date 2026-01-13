@@ -37,7 +37,7 @@ export default function OnboardingWelcomeScreen() {
             ¡Bienvenido a Piano Emotion!
           </ThemedText>
           <ThemedText style={styles.subtitle}>
-            Configura tu espacio de trabajo en solo 3 pasos
+            Configura tu espacio de trabajo en 8 pasos
           </ThemedText>
         </View>
 
@@ -45,20 +45,32 @@ export default function OnboardingWelcomeScreen() {
         <View style={styles.stepsContainer}>
           <StepCard
             icon="building.2"
-            title="1. Información Básica"
-            description="Nombre de tu empresa, identificador único y datos de contacto"
-            color={primaryColor}
-          />
-          <StepCard
-            icon="paintbrush"
-            title="2. Personalización"
-            description="Logo, colores corporativos y nombre de marca"
+            title="1-2. Información de la Empresa"
+            description="Datos básicos y fiscales de tu negocio"
             color={primaryColor}
           />
           <StepCard
             icon="gearshape"
-            title="3. Configuración"
-            description="Preferencias del sistema y opciones avanzadas"
+            title="3-4. Configuración Inicial"
+            description="Modo de negocio y preferencias de comunicación"
+            color={primaryColor}
+          />
+          <StepCard
+            icon="wrench.and.screwdriver"
+            title="5. Servicios y Tareas"
+            description="Define los servicios que ofreces y sus tareas"
+            color={primaryColor}
+          />
+          <StepCard
+            icon="bell"
+            title="6-7. Alertas y Notificaciones"
+            description="Configura alertas y sincronización de calendario"
+            color={primaryColor}
+          />
+          <StepCard
+            icon="paintbrush"
+            title="8. Personalización"
+            description="Logo y colores corporativos"
             color={primaryColor}
           />
         </View>

@@ -25,29 +25,7 @@ import { trpc } from '@/lib/trpc';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ONBOARDING_STORAGE_KEY = '@onboarding_data';
-
-interface OnboardingData {
-  step1?: {
-    name: string;
-    slug: string;
-    email: string;
-    supportEmail?: string;
-    supportPhone?: string;
-  };
-  step2?: {
-    brandName?: string;
-    primaryColor: string;
-    secondaryColor: string;
-  };
-  step3?: {
-    allowMultipleSuppliers: boolean;
-    ecommerceEnabled: boolean;
-    autoOrderEnabled: boolean;
-    autoOrderThreshold: number;
-    notificationEmail?: string;
-  };
-}
+import type { OnboardingData, ONBOARDING_STORAGE_KEY } from '@/types/onboarding';
 
 export default function OnboardingStep1Screen() {
   const router = useRouter();
