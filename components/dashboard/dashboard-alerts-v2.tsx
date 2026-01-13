@@ -6,7 +6,7 @@
  * - Colapsable por defecto
  */
 import { useState } from 'react';
-import { View, StyleSheet, Pressable, Linking, Platform, ActionSheetIOS, Alert as RNAlert } from 'react-native';
+import { View, StyleSheet, Pressable, TouchableOpacity, Linking, Platform, ActionSheetIOS, Alert as RNAlert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -247,13 +247,14 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
                       </View>
                     </Pressable>
                     {alert.type === 'piano' && alert.data?.clientId && (
-                      <Pressable
+                      <TouchableOpacity
                         style={[styles.contactButton, { backgroundColor: error + '15', borderColor: error }]}
                         onPress={() => handleContactClient(alert)}
+                        activeOpacity={0.7}
                       >
                         <IconSymbol name="phone.fill" size={14} color={error} />
                         <ThemedText style={[styles.contactButtonText, { color: error }]}>Contactar</ThemedText>
-                      </Pressable>
+                      </TouchableOpacity>
                     )}
                     <Pressable onPress={() => handleAlertPress(alert)}>
                       <IconSymbol 
@@ -306,13 +307,14 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
                       </View>
                     </Pressable>
                     {alert.type === 'piano' && alert.data?.clientId && (
-                      <Pressable
+                      <TouchableOpacity
                         style={[styles.contactButton, { backgroundColor: error + '15', borderColor: error }]}
                         onPress={() => handleContactClient(alert)}
+                        activeOpacity={0.7}
                       >
                         <IconSymbol name="phone.fill" size={14} color={error} />
                         <ThemedText style={[styles.contactButtonText, { color: error }]}>Contactar</ThemedText>
-                      </Pressable>
+                      </TouchableOpacity>
                     )}
                     <Pressable onPress={() => handleAlertPress(alert)}>
                       <IconSymbol 
