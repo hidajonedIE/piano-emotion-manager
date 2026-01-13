@@ -13,7 +13,7 @@ export const alertsRouter = router({
    * Ejecuta todas las queries en paralelo y pre-calcula las alertas
    */
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.userId;
+    const userId = ctx.user.id;
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tomorrow = new Date(today);
