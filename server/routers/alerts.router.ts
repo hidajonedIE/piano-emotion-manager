@@ -24,7 +24,10 @@ export const alertsRouter = router({
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
     // Ejecutar todas las queries en paralelo
-    const db = getDb();
+    const database = await getDb();
+    if (!database) {
+      return { alerts: [], stats: { total: 0, urgent: 0, warning: 0, info: 0 } };
+    }
     
     const [
       userPianos,
@@ -33,11 +36,11 @@ export const alertsRouter = router({
       userInvoices,
       userQuotes,
     ] = await Promise.all([
-      db.select().from(pianos).where(eq(pianos.userId, userId)),
-      db.select().from(services).where(eq(services.userId, userId)).orderBy(desc(services.date)),
-      db.select().from(appointments).where(eq(appointments.userId, userId)),
-      db.select().from(invoices).where(eq(invoices.userId, userId)),
-      db.select().from(quotes).where(eq(quotes.userId, userId)),
+      database.select().from(pianos).where(eq(pianos.userId, userId)),
+      database.select().from(services).where(eq(services.userId, userId)).orderBy(desc(services.date)),
+      database.select().from(appointments).where(eq(appointments.userId, userId)),
+      database.select().from(invoices).where(eq(invoices.userId, userId)),
+      database.select().from(quotes).where(eq(quotes.userId, userId)),
     ]);
 
     const alerts: any[] = [];
