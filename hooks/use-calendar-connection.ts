@@ -71,17 +71,8 @@ export function useCalendarConnection() {
         return;
       }
       
-      // Confirmar acción
-      const confirmed = Platform.OS === 'web'
-        ? window.confirm('Se abrirá una ventana para autorizar el acceso a tu Google Calendar. ¿Deseas continuar?')
-        : true;
-      
-      if (!confirmed) {
-        return;
-      }
-      
-      // Abrir URL de OAuth con userId
-      const authUrl = `/api/calendar-google-auth?userId=${encodeURIComponent(user.id)}`;
+      // Abrir URL de OAuth con userId directamente (sin confirmación)
+      const authUrl = `/api/calendar/google/auth?userId=${encodeURIComponent(user.id)}`;
       
       if (Platform.OS === 'web') {
         window.location.href = authUrl;
@@ -112,17 +103,8 @@ export function useCalendarConnection() {
         return;
       }
       
-      // Confirmar acción
-      const confirmed = Platform.OS === 'web'
-        ? window.confirm('Se abrirá una ventana para autorizar el acceso a tu Outlook Calendar. ¿Deseas continuar?')
-        : true;
-      
-      if (!confirmed) {
-        return;
-      }
-      
-      // Abrir URL de OAuth con userId
-      const authUrl = `/api/calendar-outlook-auth?userId=${encodeURIComponent(user.id)}`;
+      // Abrir URL de OAuth con userId directamente (sin confirmación)
+      const authUrl = `/api/calendar/outlook/auth?userId=${encodeURIComponent(user.id)}`;
       
       if (Platform.OS === 'web') {
         window.location.href = authUrl;
