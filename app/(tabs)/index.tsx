@@ -82,7 +82,10 @@ export default function DashboardScreen() {
   
   // OPTIMIZADO: Carga todo en 1 query consolidada (<1s)
   const { alerts: optimizedAlerts, stats: optimizedStats, isLoading: alertsLoading } = useAlertsOptimized();
-  const allAlerts = { alerts: optimizedAlerts, stats: optimizedStats };
+  const allAlerts = { 
+    alerts: optimizedAlerts || [], 
+    stats: optimizedStats || { total: 0, urgent: 0, warning: 0, info: 0 } 
+  };
 
   // DEBUG: Loguear datos cargados
   useEffect(() => {
