@@ -197,7 +197,7 @@ export const alertsRouter = router({
           }
           
           // 2. RECOMENDACIÓN DE AFINACIÓN (servicio principal, 2 veces al año)
-          const lastTuning = pianoServices.find((s) => s.type === 'tuning');
+          const lastTuning = pianoServices.find((s) => s.serviceType === 'tuning');
           
           if (!lastTuning) {
             // Nunca se ha afinado - usar fecha de creación del piano
@@ -253,7 +253,7 @@ export const alertsRouter = router({
           }
           
           // 3. RECOMENDACIÓN DE REGULACIÓN (periódica, cada ~2 años)
-          const lastRegulation = pianoServices.find((s) => s.type === 'regulation');
+          const lastRegulation = pianoServices.find((s) => s.serviceType === 'regulation');
           
           if (!lastRegulation) {
             // Verificar si el piano tiene suficiente antigüedad para necesitar regulación
