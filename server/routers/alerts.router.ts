@@ -9,6 +9,55 @@ type AppointmentItem = InferSelectModel<typeof appointments>;
 type InvoiceItem = InferSelectModel<typeof invoices>;
 type QuoteItem = InferSelectModel<typeof quotes>;
 
+// ============================================
+// FUNCIONES AUXILIARES PARA ALERTAS DE PIANOS
+// ============================================
+
+// Constantes de umbrales (copiadas de use-recommendations.ts)
+const TUNING_THRESHOLDS = {
+  urgent: 270,  // Más de 9 meses = urgente
+  pending: 180, // Entre 6 y 9 meses = pendiente
+};
+
+const REGULATION_THRESHOLDS = {
+  urgent: 1095,  // Más de 3 años = urgente
+  pending: 730,  // Entre 2 y 3 años = pendiente
+};
+
+// Función auxiliar para calcular días desde una fecha
+function daysSince(dateString: string): number {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Función auxiliar para formatear período de tiempo en español
+function formatTimePeriod(days: number): string {
+  if (days < 0) {
+    return 'próximamente';
+  }
+  
+  const years = Math.floor(days / 365);
+  const months = Math.floor((days % 365) / 30);
+  
+  if (years >= 2) {
+    return `${years} años`;
+  } else if (years === 1) {
+    if (months > 0) {
+      return `1 año y ${months} ${months === 1 ? 'mes' : 'meses'}`;
+    }
+    return '1 año';
+  } else if (months >= 1) {
+    return `${months} ${months === 1 ? 'mes' : 'meses'}`;
+  } else if (days >= 7) {
+    const weeks = Math.floor(days / 7);
+    return `${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`;
+  } else {
+    return `${days} ${days === 1 ? 'día' : 'días'}`;
+  }
+}
+
 export const alertsRouter = router({
   getAll: protectedProcedure
     .query(async ({ ctx }) => {
@@ -108,53 +157,152 @@ export const alertsRouter = router({
         };
         const alerts: AlertItem[] = [];
 
+        // ============================================
+        // 1. ALERTAS DE PIANOS (NUEVA LÓGICA COMPLETA)
+        // ============================================
         console.log('[ALERTS] Calculating piano alerts...');
-        // 1. Alertas de pianos (mantenimiento)
+        
+        // Crear mapa de servicios por piano (optimización)
+        const servicesByPiano = new Map();
+        for (const service of userServices) {
+          if (!servicesByPiano.has(service.pianoId)) {
+            servicesByPiano.set(service.pianoId, []);
+          }
+          servicesByPiano.get(service.pianoId).push(service);
+        }
+
+        // Ordenar servicios de cada piano por fecha (más reciente primero)
+        servicesByPiano.forEach((pianoServices) => {
+          pianoServices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        });
+
+        // Procesar cada piano
         for (const piano of userPianos) {
-          const pianoServices = userServices.filter(s => s.pianoId === piano.id);
+          const pianoServices = servicesByPiano.get(piano.id) || [];
           
-          if (pianoServices.length === 0) {
-          alerts.push({
-            id: `piano-no-service-${piano.id}`,
-            type: 'piano',
-            priority: 'warning',
-            title: 'Piano sin mantenimiento',
-            message: `El piano ${piano.brand} ${piano.model} no tiene servicios registrados`,
-            pianoId: piano.id,
-            date: now,
-          });
-          } else {
-            const lastService = pianoServices[0];
-            const lastServiceDate = new Date(lastService.date);
-            const monthsSinceService = (now.getTime() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
-            
-            if (monthsSinceService > 12) {
+          // 1. VERIFICAR ESTADO DEL PIANO
+          // Si el piano necesita reparación, esa es la prioridad máxima
+          if (piano.condition === 'needs_repair') {
             alerts.push({
-              id: `piano-maintenance-${piano.id}`,
+              id: `piano-repair-${piano.id}`,
               type: 'piano',
               priority: 'urgent',
-              title: 'Mantenimiento urgente',
-              message: `El piano ${piano.brand} ${piano.model} lleva ${Math.floor(monthsSinceService)} meses sin mantenimiento`,
+              title: 'Reparación requerida',
+              message: `El piano ${piano.brand} ${piano.model} requiere reparación antes de poder ser afinado`,
               pianoId: piano.id,
-              date: lastServiceDate,
+              date: now,
             });
-            } else if (monthsSinceService > 6) {
-            alerts.push({
-              id: `piano-maintenance-soon-${piano.id}`,
-              type: 'piano',
-              priority: 'warning',
-              title: 'Mantenimiento recomendado',
-                message: `El piano ${piano.brand} ${piano.model} necesitará mantenimiento pronto (${Math.floor(monthsSinceService)} meses desde el último)`,
+            // No agregar recomendación de afinación si necesita reparación
+            continue;
+          }
+          
+          // 2. RECOMENDACIÓN DE AFINACIÓN (servicio principal, 2 veces al año)
+          const lastTuning = pianoServices.find((s) => s.type === 'tuning');
+          
+          if (!lastTuning) {
+            // Nunca se ha afinado - usar fecha de creación del piano
+            const daysSinceCreation = daysSince(piano.createdAt);
+            let priority: 'urgent' | 'warning' | 'info' = 'info';
+            let message = '';
+            
+            if (daysSinceCreation > TUNING_THRESHOLDS.urgent) {
+              priority = 'urgent';
+              message = `Piano sin registro de afinación. Registrado hace ${formatTimePeriod(daysSinceCreation)}.`;
+            } else if (daysSinceCreation > TUNING_THRESHOLDS.pending) {
+              priority = 'warning';
+              message = `Piano sin registro de afinación. Registrado hace ${formatTimePeriod(daysSinceCreation)}.`;
+            }
+            // No generar alerta si es un piano nuevo (< 6 meses)
+            
+            if (message) {
+              alerts.push({
+                id: `piano-tuning-${piano.id}`,
+                type: 'piano',
+                priority,
+                title: 'Afinación requerida',
+                message,
                 pianoId: piano.id,
-                date: lastServiceDate,
+                date: new Date(piano.createdAt),
+              });
+            }
+          } else {
+            const daysSinceLastTuning = daysSince(lastTuning.date);
+            let priority: 'urgent' | 'warning' | 'info' = 'info';
+            let message = '';
+            
+            if (daysSinceLastTuning > TUNING_THRESHOLDS.urgent) {
+              priority = 'urgent';
+              message = `Hace ${formatTimePeriod(daysSinceLastTuning)} desde la última afinación. Se recomienda afinar urgentemente.`;
+            } else if (daysSinceLastTuning > TUNING_THRESHOLDS.pending) {
+              priority = 'warning';
+              message = `Hace ${formatTimePeriod(daysSinceLastTuning)} desde la última afinación. Es momento de programar la próxima.`;
+            }
+            // No generar alerta si la afinación está al día
+            
+            if (message) {
+              alerts.push({
+                id: `piano-tuning-${piano.id}`,
+                type: 'piano',
+                priority,
+                title: 'Afinación requerida',
+                message,
+                pianoId: piano.id,
+                date: new Date(lastTuning.date),
+              });
+            }
+          }
+          
+          // 3. RECOMENDACIÓN DE REGULACIÓN (periódica, cada ~2 años)
+          const lastRegulation = pianoServices.find((s) => s.type === 'regulation');
+          
+          if (!lastRegulation) {
+            // Verificar si el piano tiene suficiente antigüedad para necesitar regulación
+            const daysSinceCreation = daysSince(piano.createdAt);
+            
+            if (daysSinceCreation > REGULATION_THRESHOLDS.pending) {
+              const priority = daysSinceCreation > REGULATION_THRESHOLDS.urgent ? 'urgent' : 'warning';
+              alerts.push({
+                id: `piano-regulation-${piano.id}`,
+                type: 'piano',
+                priority,
+                title: 'Regulación recomendada',
+                message: `El piano ${piano.brand} ${piano.model} no tiene registro de regulación. Se recomienda una regulación para optimizar el mecanismo.`,
+                pianoId: piano.id,
+                date: new Date(piano.createdAt),
+              });
+            }
+          } else {
+            const daysSinceLastRegulation = daysSince(lastRegulation.date);
+            
+            if (daysSinceLastRegulation > REGULATION_THRESHOLDS.urgent) {
+              alerts.push({
+                id: `piano-regulation-${piano.id}`,
+                type: 'piano',
+                priority: 'urgent',
+                title: 'Regulación recomendada',
+                message: `El piano ${piano.brand} ${piano.model}: Hace ${formatTimePeriod(daysSinceLastRegulation)} desde la última regulación. Se recomienda programar una regulación.`,
+                pianoId: piano.id,
+                date: new Date(lastRegulation.date),
+              });
+            } else if (daysSinceLastRegulation > REGULATION_THRESHOLDS.pending) {
+              alerts.push({
+                id: `piano-regulation-${piano.id}`,
+                type: 'piano',
+                priority: 'warning',
+                title: 'Regulación recomendada',
+                message: `El piano ${piano.brand} ${piano.model}: Hace ${formatTimePeriod(daysSinceLastRegulation)} desde la última regulación. Considerar programar una regulación próximamente.`,
+                pianoId: piano.id,
+                date: new Date(lastRegulation.date),
               });
             }
           }
         }
         console.log('[ALERTS] Piano alerts calculated:', alerts.length);
 
+        // ============================================
+        // 2. ALERTAS DE CITAS (SIN CAMBIOS)
+        // ============================================
         console.log('[ALERTS] Calculating appointment alerts...');
-        // 2. Alertas de citas (consolidadas)
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -201,8 +349,10 @@ export const alertsRouter = router({
         }
         console.log('[ALERTS] Appointment alerts calculated:', alerts.length);
 
+        // ============================================
+        // 3. ALERTAS DE FACTURAS (SIN CAMBIOS)
+        // ============================================
         console.log('[ALERTS] Calculating invoice alerts...');
-        // 3. Alertas de facturas
         const pendingInvoices: InvoiceItem[] = [];
         const overdueInvoices: InvoiceItem[] = [];
         let totalPending = 0;
@@ -248,8 +398,10 @@ export const alertsRouter = router({
         }
         console.log('[ALERTS] Invoice alerts calculated:', alerts.length);
 
+        // ============================================
+        // 4. ALERTAS DE PRESUPUESTOS (SIN CAMBIOS)
+        // ============================================
         console.log('[ALERTS] Calculating quote alerts...');
-        // 4. Alertas de presupuestos
         const pendingQuotes: QuoteItem[] = [];
         const expiringQuotes: QuoteItem[] = [];
         let totalPendingQuotes = 0;
