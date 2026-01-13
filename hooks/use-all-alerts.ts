@@ -156,29 +156,27 @@ export function useAllAlerts(
     });
 
     if (pendingInvoices.length > 0) {
-      // Navegar directamente a la primera factura pendiente
-      const firstInvoiceId = pendingInvoices[0]?.id;
+      // Navegar a la lista de facturas con filtro de pendientes
       alerts.push({
         id: 'invoices-pending',
         type: 'invoice',
         priority: 'warning',
         title: 'Facturas pendientes',
         message: `${pendingInvoices.length} ${pendingInvoices.length === 1 ? 'factura pendiente' : 'facturas pendientes'} de pago (€${totalPending.toFixed(2)})`,
-        actionUrl: firstInvoiceId ? `/invoice/${firstInvoiceId}` : '/invoices',
+        actionUrl: '/invoices?filter=pending',
         data: { count: pendingInvoices.length, total: totalPending, invoices: pendingInvoices },
       });
     }
 
     if (overdueInvoices.length > 0) {
-      // Navegar directamente a la primera factura vencida
-      const firstOverdueId = overdueInvoices[0]?.id;
+      // Navegar a la lista de facturas con filtro de vencidas
       alerts.push({
         id: 'invoices-overdue',
         type: 'invoice',
         priority: 'urgent',
         title: 'Facturas vencidas',
         message: `${overdueInvoices.length} ${overdueInvoices.length === 1 ? 'factura vencida' : 'facturas vencidas'} (€${totalOverdue.toFixed(2)})`,
-        actionUrl: firstOverdueId ? `/invoice/${firstOverdueId}` : '/invoices',
+        actionUrl: '/invoices?filter=overdue',
         data: { count: overdueInvoices.length, total: totalOverdue, invoices: overdueInvoices },
       });
     }

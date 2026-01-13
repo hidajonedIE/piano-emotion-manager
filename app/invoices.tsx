@@ -1,5 +1,5 @@
-import { useRouter, Stack } from 'expo-router';
-import { useState, useMemo } from 'react';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
+import { useState, useMemo, useEffect } from 'react';
 import {
   FlatList,
   Pressable,
@@ -22,10 +22,21 @@ export default function InvoicesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { invoices, loading } = useInvoicesData();
+  const params = useLocalSearchParams<{ filter?: string }>();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Invoice['status'] | 'all'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'thisMonth' | 'lastMonth' | 'thisYear'>('all');
+  
+  // Aplicar filtro automáticamente cuando se viene desde una alerta
+  useEffect(() => {
+    if (params.filter === 'pending') {
+      setStatusFilter('sent');
+    } else if (params.filter === 'overdue') {
+      setStatusFilter('sent'); // Las vencidas también están en estado 'sent'
+      // TODO: Agregar filtro adicional para mostrar solo las vencidas
+    }
+  }, [params.filter]);
 
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
