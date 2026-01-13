@@ -138,83 +138,142 @@ export const alertsRouter = router({
         console.log('[ALERTS] Piano alerts calculated:', alerts.length);
 
         console.log('[ALERTS] Calculating appointment alerts...');
-        // 2. Alertas de citas
+        // 2. Alertas de citas (consolidadas)
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const nextWeek = new Date(today);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+
+        const todayAppointments: any[] = [];
+        const weekAppointments: any[] = [];
+
         for (const appointment of userAppointments) {
           const appointmentDate = new Date(appointment.date);
           
-          if (appointmentDate < now && appointment.status === 'scheduled') {
+          if (appointmentDate >= today && appointmentDate < tomorrow) {
+            todayAppointments.push(appointment);
+          } else if (appointmentDate >= tomorrow && appointmentDate < nextWeek) {
+            weekAppointments.push(appointment);
+          }
+        }
+
+        // Alerta consolidada de citas de hoy
+        if (todayAppointments.length > 0) {
           alerts.push({
-            id: `appointment-overdue-${appointment.id}`,
+            id: 'appointments-today',
             type: 'appointment',
             priority: 'urgent',
-            title: 'Cita vencida',
-            message: `La cita "${appointment.title}" está vencida`,
-            appointmentId: appointment.id,
-            date: appointmentDate,
+            title: 'Citas de hoy',
+            message: `Tienes ${todayAppointments.length} ${todayAppointments.length === 1 ? 'cita' : 'citas'} programada${todayAppointments.length === 1 ? '' : 's'} para hoy`,
+            data: { count: todayAppointments.length },
+            date: now,
           });
-          } else if (appointmentDate <= sevenDaysFromNow && appointmentDate >= now && appointment.status === 'scheduled') {
+        }
+
+        // Alerta consolidada de citas esta semana
+        if (weekAppointments.length > 0) {
           alerts.push({
-            id: `appointment-upcoming-${appointment.id}`,
+            id: 'appointments-week',
             type: 'appointment',
             priority: 'info',
-            title: 'Cita próxima',
-            message: `Tienes una cita "${appointment.title}" en los próximos 7 días`,
-            appointmentId: appointment.id,
-            date: appointmentDate,
+            title: 'Citas esta semana',
+            message: `Tienes ${weekAppointments.length} ${weekAppointments.length === 1 ? 'cita' : 'citas'} esta semana`,
+            data: { count: weekAppointments.length },
+            date: now,
           });
-          }
         }
         console.log('[ALERTS] Appointment alerts calculated:', alerts.length);
 
         console.log('[ALERTS] Calculating invoice alerts...');
         // 3. Alertas de facturas
+        const pendingInvoices: any[] = [];
+        const overdueInvoices: any[] = [];
+        let totalPending = 0;
+        let totalOverdue = 0;
+
         for (const invoice of userInvoices) {
-          if (invoice.status === 'pending' || invoice.status === 'sent') {
-            const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
+          if (invoice.status === 'sent') {
+            pendingInvoices.push(invoice);
+            totalPending += invoice.total || 0;
             
+            const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
             if (dueDate && dueDate < now) {
-            alerts.push({
-              id: `invoice-overdue-${invoice.id}`,
-              type: 'invoice',
-              priority: 'urgent',
-              title: 'Factura vencida',
-              message: `La factura #${invoice.invoiceNumber} está vencida`,
-              invoiceId: invoice.id,
-              date: dueDate,
-            });
-            } else if (dueDate && dueDate <= sevenDaysFromNow) {
-            alerts.push({
-              id: `invoice-due-soon-${invoice.id}`,
-              type: 'invoice',
-              priority: 'warning',
-              title: 'Factura por vencer',
-              message: `La factura #${invoice.invoiceNumber} vence pronto`,
-              invoiceId: invoice.id,
-              date: dueDate,
-            });
+              overdueInvoices.push(invoice);
+              totalOverdue += invoice.total || 0;
             }
           }
+        }
+
+        // Alerta consolidada de facturas pendientes
+        if (pendingInvoices.length > 0) {
+          alerts.push({
+            id: 'invoices-pending',
+            type: 'invoice',
+            priority: 'warning',
+            title: 'Facturas pendientes',
+            message: `${pendingInvoices.length} ${pendingInvoices.length === 1 ? 'factura pendiente' : 'facturas pendientes'} de pago (€${totalPending.toFixed(2)})`,
+            data: { count: pendingInvoices.length, total: totalPending },
+            date: now,
+          });
+        }
+
+        // Alerta consolidada de facturas vencidas
+        if (overdueInvoices.length > 0) {
+          alerts.push({
+            id: 'invoices-overdue',
+            type: 'invoice',
+            priority: 'urgent',
+            title: 'Facturas vencidas',
+            message: `${overdueInvoices.length} ${overdueInvoices.length === 1 ? 'factura vencida' : 'facturas vencidas'} (€${totalOverdue.toFixed(2)})`,
+            data: { count: overdueInvoices.length, total: totalOverdue },
+            date: now,
+          });
         }
         console.log('[ALERTS] Invoice alerts calculated:', alerts.length);
 
         console.log('[ALERTS] Calculating quote alerts...');
         // 4. Alertas de presupuestos
+        const pendingQuotes: any[] = [];
+        const expiringQuotes: any[] = [];
+        let totalPendingQuotes = 0;
+
         for (const quote of userQuotes) {
           if (quote.status === 'sent') {
-            const expiryDate = quote.expiryDate ? new Date(quote.expiryDate) : null;
+            pendingQuotes.push(quote);
+            totalPendingQuotes += quote.total || 0;
             
-            if (expiryDate && expiryDate <= sevenDaysFromNow && expiryDate >= now) {
-            alerts.push({
-              id: `quote-expiring-${quote.id}`,
-              type: 'quote',
-              priority: 'info',
-              title: 'Presupuesto por expirar',
-              message: `El presupuesto #${quote.quoteNumber} expira pronto`,
-              quoteId: quote.id,
-              date: expiryDate,
-            });
+            const expiryDate = quote.validUntil ? new Date(quote.validUntil) : null;
+            if (expiryDate && expiryDate > now && expiryDate <= sevenDaysFromNow) {
+              expiringQuotes.push(quote);
             }
           }
+        }
+
+        // Alerta consolidada de presupuestos pendientes
+        if (pendingQuotes.length > 0) {
+          alerts.push({
+            id: 'quotes-pending',
+            type: 'quote',
+            priority: 'info',
+            title: 'Presupuestos pendientes',
+            message: `${pendingQuotes.length} ${pendingQuotes.length === 1 ? 'presupuesto' : 'presupuestos'} esperando respuesta (€${totalPendingQuotes.toFixed(2)})`,
+            data: { count: pendingQuotes.length, total: totalPendingQuotes },
+            date: now,
+          });
+        }
+
+        // Alerta consolidada de presupuestos próximos a expirar
+        if (expiringQuotes.length > 0) {
+          alerts.push({
+            id: 'quotes-expiring',
+            type: 'quote',
+            priority: 'warning',
+            title: 'Presupuestos próximos a expirar',
+            message: `${expiringQuotes.length} ${expiringQuotes.length === 1 ? 'presupuesto expira' : 'presupuestos expiran'} en menos de 7 días`,
+            data: { count: expiringQuotes.length },
+            date: now,
+          });
         }
         console.log('[ALERTS] Quote alerts calculated:', alerts.length);
 
