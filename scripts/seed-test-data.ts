@@ -26,7 +26,7 @@ import {
 } from '../drizzle/schema';
 
 // ID del usuario propietario (debe coincidir con el usuario autenticado)
-const OWNER_ID = 'test_user_seed';
+const OWNER_ID = 'jnavarrete@inboundemotion.com';
 
 // ============================================================================
 // DATOS DE CLIENTES
@@ -337,6 +337,7 @@ async function seed() {
     for (const client of clientsData) {
       const [result] = await db.insert(clients).values({
         odId: OWNER_ID,
+        partnerId: 1,
         ...client,
       });
       insertedClients.push({ ...client, id: result.insertId });
@@ -351,6 +352,7 @@ async function seed() {
       const clientId = insertedClients[piano.clientIndex].id;
       const [result] = await db.insert(pianos).values({
         odId: OWNER_ID,
+        partnerId: 1,
         clientId,
         brand: piano.brand,
         model: piano.model,
@@ -372,6 +374,7 @@ async function seed() {
     for (const item of inventoryData) {
       await db.insert(inventory).values({
         odId: OWNER_ID,
+        partnerId: 1,
         ...item,
       });
       console.log(`   ✓ ${item.name}`);
@@ -383,6 +386,7 @@ async function seed() {
     for (const rate of serviceRatesData) {
       await db.insert(serviceRates).values({
         odId: OWNER_ID,
+        partnerId: 1,
         ...rate,
       });
       console.log(`   ✓ ${rate.name}`);
@@ -424,6 +428,7 @@ async function seed() {
         
         await db.insert(services).values({
           odId: OWNER_ID,
+          partnerId: 1,
           pianoId: piano.id,
           clientId: piano.clientId,
           serviceType,
@@ -455,6 +460,7 @@ async function seed() {
       
       await db.insert(appointments).values({
         odId: OWNER_ID,
+        partnerId: 1,
         clientId: piano.clientId,
         pianoId: piano.id,
         title: `${serviceType === 'tuning' ? 'Afinación' : serviceType === 'repair' ? 'Reparación' : 'Mantenimiento'} - ${clientName}`,
@@ -492,6 +498,7 @@ async function seed() {
       
       await db.insert(invoices).values({
         odId: OWNER_ID,
+        partnerId: 1,
         invoiceNumber: `FAC-2024-${String(i + 1).padStart(4, '0')}`,
         clientId: client.id,
         clientName: client.name,
@@ -535,6 +542,7 @@ async function seed() {
       
       await db.insert(quotes).values({
         odId: OWNER_ID,
+        partnerId: 1,
         quoteNumber: `PRES-2024-${String(i + 1).padStart(4, '0')}`,
         clientId: client.id,
         clientName: client.name,
@@ -572,6 +580,7 @@ async function seed() {
       
       await db.insert(reminders).values({
         odId: OWNER_ID,
+        partnerId: 1,
         clientId: client.id,
         reminderType,
         dueDate,
