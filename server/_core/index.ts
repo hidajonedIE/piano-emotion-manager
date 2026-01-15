@@ -9,6 +9,10 @@ import { appRouter } from "../routers.js";
 import { createContext } from "./context.js";
 import { applyCorsHeaders, isOriginAllowed } from "../security/cors.config.js";
 import { applyRateLimit } from "../security/rate-limit.js";
+import { getLogger } from "../services/logging/logger.service.js";
+
+// Initialize logger
+const logger = getLogger().child("server");
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -51,6 +55,26 @@ async function startServer() {
     },
   }));
 
+  // Request logging middleware
+  app.use((req, res, next) => {
+    const start = Date.now();
+    
+    // Capture response finish
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      logger.request({
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        duration,
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+      });
+    });
+    
+    next();
+  });
+
   // CORS middleware with strict origin checking
   app.use((req, res, next) => {
     const origin = req.headers.origin;
@@ -60,6 +84,7 @@ async function startServer() {
     
     // Reject requests from unauthorized origins (except for requests without origin)
     if (origin && !isOriginAllowed(origin)) {
+      logger.warn('CORS: Origin not allowed', { origin, path: req.path });
       res.status(403).json({ error: 'Origin not allowed' });
       return;
     }
@@ -97,6 +122,12 @@ async function startServer() {
     
     // Check if rate limited
     if (!rateLimitResult.allowed) {
+      logger.warn('Rate limit exceeded', {
+        path: req.path,
+        ip: req.ip,
+        limitType,
+        retryAfter: rateLimitResult.retryAfter,
+      });
       res.status(429).json({ 
         error: 'Too many requests',
         retryAfter: rateLimitResult.retryAfter 
@@ -128,10 +159,19 @@ async function startServer() {
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
+    logger.warn(`Port ${preferredPort} unavailable, using port ${port}`);
   }
 
   server.listen(port, () => {
+    logger.info(`Server started successfully`, {
+      port,
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString(),
+    });
   });
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => {
+  logger.fatal('Failed to start server', error);
+  process.exit(1);
+});
