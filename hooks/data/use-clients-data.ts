@@ -302,14 +302,16 @@ export function useClientsData(options: UseClientsDataOptions = {}) {
   const getClientQuery = trpc.clients.getById.useQuery;
 
   const getClient = useCallback(
-    (id: string) => {
-      const client = clients.find((c) => c.id === id);
+    (id: string | number) => {
+      // Normalizar el ID a string para la comparación
+      const normalizedId = String(id);
+      const client = clients.find((c) => c.id === normalizedId);
       if (client) return client;
 
       // Si no está en la lista, intentar obtenerlo del backend
       // Esto es útil para componentes que necesitan un cliente específico
       // que aún no se ha cargado en la lista paginada.
-      // const { data } = getClientQuery({ id: parseInt(id, 10) });
+      // const { data } = getClientQuery({ id: parseInt(normalizedId, 10) });
       // return data ? serverToLocalClient(data as ServerClient) : undefined;
       return undefined; // Por ahora, para evitar llamadas extra
     },

@@ -181,13 +181,19 @@ export function usePianosData(options: UsePianosDataOptions = {}) {
 
   // Obtener piano por ID
   const getPiano = useCallback(
-    (id: string) => pianos.find((p) => p.id === id),
+    (id: string | number) => {
+      const normalizedId = String(id);
+      return pianos.find((p) => p.id === normalizedId);
+    },
     [pianos]
   );
 
   // Obtener pianos por cliente
   const getPianosByClient = useCallback(
-    (clientId: string) => pianos.filter((p) => p.clientId === clientId),
+    (clientId: string | number) => {
+      const normalizedId = String(clientId);
+      return pianos.filter((p) => p.clientId === normalizedId);
+    },
     [pianos]
   );
 
