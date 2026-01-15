@@ -417,6 +417,23 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
               </View>
             </View>
           )}
+
+          {/* Botón Ver Todas */}
+          {pagination && pagination.hasMore && (
+            <Pressable
+              style={[styles.viewAllButton, { borderColor: border }]}
+              onPress={() => router.push('/alerts' as any)}
+            >
+              <ThemedText style={[styles.viewAllText, { color: primaryColor }]}>
+                Ver todas las alertas ({pagination.total})
+              </ThemedText>
+              <IconSymbol 
+                name="arrow.right" 
+                size={16} 
+                color={primaryColor} 
+              />
+            </Pressable>
+          )}
         </View>
       )}
     </View>
@@ -543,6 +560,20 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     fontSize: 11,
+    fontWeight: '600',
+  },
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    padding: Spacing.sm,
+    marginTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderRadius: BorderRadius.sm,
+  },
+  viewAllText: {
+    fontSize: 13,
     fontWeight: '600',
   },
 });
