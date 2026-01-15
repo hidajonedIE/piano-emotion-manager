@@ -17,6 +17,13 @@ import { useClientsData, usePianosData, useServicesData, useAppointmentsData } f
 import { useInvoices } from '@/hooks/use-invoices';
 import { getClientFullName } from '@/types';
 
+// Widgets extraídos
+export { AlertsWidget } from './widgets/AlertsWidget';
+export { QuickActionsWidget } from './widgets/QuickActionsWidget';
+export { HelpWidget } from './widgets/HelpWidget';
+export { AccessShortcutsWidget } from './widgets/AccessShortcutsWidget';
+export { AdvancedToolsWidget } from './widgets/AdvancedToolsWidget';
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 // ============================================================================
@@ -29,161 +36,9 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-// ============================================================================
-// WIDGET: ALERTAS
-// ============================================================================
 
-export function AlertsWidget({ config, isEditing }: WidgetProps) {
-  const { colors } = useTheme();
-  const { services } = useServicesData();
-  const { appointments } = useAppointmentsData();
-  const { invoices } = useInvoices();
 
-  const alerts = useMemo(() => {
-    const result = [];
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Citas próximas (hoy y mañana)
-    const upcomingAppointments = appointments.filter(apt => {
-      const aptDate = new Date(apt.date);
-      return aptDate >= now && aptDate <= tomorrow;
-    });
-
-    if (upcomingAppointments.length > 0) {
-      result.push({
-        id: 'upcoming-appointments',
-        type: 'info',
-        icon: 'time',
-        color: '#3B82F6',
-        title: `${upcomingAppointments.length} cita${upcomingAppointments.length > 1 ? 's' : ''} próxima${upcomingAppointments.length > 1 ? 's' : ''}`,
-        message: 'En las próximas 24 horas',
-      });
-    }
-
-    // Facturas pendientes
-    const pendingInvoices = invoices.filter(inv => inv.status === 'sent');
-    if (pendingInvoices.length > 0) {
-      const totalPending = pendingInvoices.reduce((sum, inv) => sum + inv.total, 0);
-      result.push({
-        id: 'pending-invoices',
-        type: 'warning',
-        icon: 'document-text',
-        color: '#F59E0B',
-        title: `${pendingInvoices.length} factura${pendingInvoices.length > 1 ? 's' : ''} pendiente${pendingInvoices.length > 1 ? 's' : ''}`,
-        message: `Total: ${totalPending.toFixed(2)}€`,
-      });
-    }
-
-    // Facturas vencidas
-    const overdueInvoices = invoices.filter(inv => {
-      if (inv.status !== 'sent') return false;
-      const dueDate = new Date(inv.dueDate);
-      return dueDate < now;
-    });
-
-    if (overdueInvoices.length > 0) {
-      result.push({
-        id: 'overdue-invoices',
-        type: 'error',
-        icon: 'alert-circle',
-        color: '#EF4444',
-        title: `${overdueInvoices.length} factura${overdueInvoices.length > 1 ? 's' : ''} vencida${overdueInvoices.length > 1 ? 's' : ''}`,
-        message: 'Requiere atención inmediata',
-      });
-    }
-
-    return result;
-  }, [appointments, invoices]);
-
-  if (isEditing) {
-    return (
-      <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
-        <ThemedText style={{ color: colors.textSecondary, textAlign: 'center' }}>
-          Vista previa de Alertas
-        </ThemedText>
-      </View>
-    );
-  }
-
-  return (
-    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
-      {alerts.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="checkmark-circle" size={32} color={colors.success} />
-          <ThemedText style={{ color: colors.textSecondary, marginTop: 8 }}>
-            No hay alertas
-          </ThemedText>
-        </View>
-      ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {alerts.map((alert) => (
-            <View
-              key={alert.id}
-              style={[
-                styles.alertItem,
-                { backgroundColor: `${alert.color}15`, borderLeftColor: alert.color },
-              ]}
-            >
-              <Ionicons name={alert.icon as any} size={20} color={alert.color} />
-              <View style={styles.alertContent}>
-                <ThemedText style={[styles.alertTitle, { color: colors.text }]}>
-                  {alert.title}
-                </ThemedText>
-                <ThemedText style={[styles.alertMessage, { color: colors.textSecondary }]}>
-                  {alert.message}
-                </ThemedText>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-    </View>
-  );
-}
-
-// ============================================================================
-// WIDGET: ACCIONES RÁPIDAS
-// ============================================================================
-
-export function QuickActionsWidget({ config, isEditing }: WidgetProps) {
-  const { colors } = useTheme();
-  const router = useRouter();
-
-  const actions = [
-    { id: 'new-service', icon: 'add-circle', label: 'Nuevo Servicio', color: '#10B981', route: '/services/new' },
-    { id: 'new-client', icon: 'person-add', label: 'Nuevo Cliente', color: '#3B82F6', route: '/clients/new' },
-    { id: 'new-appointment', icon: 'calendar', label: 'Nueva Cita', color: '#F59E0B', route: '/agenda/new' },
-    { id: 'new-invoice', icon: 'document-text', label: 'Nueva Factura', color: '#8B5CF6', route: '/invoices/new' },
-  ];
-
-  const handleAction = (route: string) => {
-    if (!isEditing) {
-      router.push(route as any);
-    }
-  };
-
-  return (
-    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
-      <View style={styles.actionsGrid}>
-        {actions.map((action) => (
-          <Pressable
-            key={action.id}
-            style={[styles.actionButton, { backgroundColor: `${action.color}15` }]}
-            onPress={() => handleAction(action.route)}
-            disabled={isEditing}
-          >
-            <Ionicons name={action.icon as any} size={24} color={action.color} />
-            <ThemedText style={[styles.actionLabel, { color: colors.text }]}>
-              {action.label}
-            </ThemedText>
-          </Pressable>
-        ))}
-      </View>
-    </View>
-  );
-}
 
 // ============================================================================
 // WIDGET: PREDICCIONES IA
@@ -665,168 +520,11 @@ const styles = StyleSheet.create({
   },
 });
 
-// ============================================================================
-// WIDGET: ACCESOS RÁPIDOS (CONFIGURABLE)
-// ============================================================================
 
-export function AccessShortcutsWidget({ config, isEditing }: WidgetProps) {
-  const { colors } = useTheme();
-  const router = useRouter();
 
-  // Accesos disponibles que el usuario puede elegir
-  const availableShortcuts = [
-    { id: 'clients', icon: 'people', label: 'Clientes', color: '#3B82F6', route: '/clients' },
-    { id: 'pianos', icon: 'musical-notes', label: 'Pianos', color: '#8B5CF6', route: '/pianos' },
-    { id: 'services', icon: 'construct', label: 'Servicios', color: '#10B981', route: '/services' },
-    { id: 'agenda', icon: 'calendar', label: 'Agenda', color: '#F59E0B', route: '/agenda' },
-    { id: 'invoices', icon: 'document-text', label: 'Facturas', color: '#EF4444', route: '/invoices' },
-    { id: 'quotes', icon: 'calculator', label: 'Presupuestos', color: '#06B6D4', route: '/quotes' },
-    { id: 'inventory', icon: 'cube', label: 'Inventario', color: '#EC4899', route: '/inventory' },
-    { id: 'partners', icon: 'briefcase', label: 'Proveedores', color: '#14B8A6', route: '/partners' },
-    { id: 'contracts', icon: 'document', label: 'Contratos', color: '#6366F1', route: '/contracts' },
-    { id: 'reminders', icon: 'notifications', label: 'Recordatorios', color: '#F97316', route: '/reminders' },
-    { id: 'reports', icon: 'bar-chart', label: 'Informes', color: '#22C55E', route: '/reports' },
-    { id: 'settings', icon: 'settings', label: 'Ajustes', color: '#64748B', route: '/settings' },
-  ];
 
-  // Si el usuario ha configurado sus accesos, usarlos; si no, mostrar los primeros 6
-  const selectedShortcuts = config?.shortcuts 
-    ? availableShortcuts.filter(s => config.shortcuts.includes(s.id))
-    : availableShortcuts.slice(0, 6);
 
-  const handleShortcut = (route: string) => {
-    if (!isEditing) {
-      router.push(route as any);
-    }
-  };
 
-  return (
-    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
-      <View style={styles.shortcutsGrid}>
-        {selectedShortcuts.map((shortcut) => (
-          <Pressable
-            key={shortcut.id}
-            style={[styles.shortcutButton, { backgroundColor: `${shortcut.color}15` }]}
-            onPress={() => handleShortcut(shortcut.route)}
-            disabled={isEditing}
-          >
-            <View style={[styles.shortcutIconContainer, { backgroundColor: shortcut.color }]}>
-              <Ionicons name={shortcut.icon as any} size={20} color="#FFFFFF" />
-            </View>
-            <ThemedText style={[styles.shortcutLabel, { color: colors.text }]}>
-              {shortcut.label}
-            </ThemedText>
-          </Pressable>
-        ))}
-      </View>
-      {isEditing && (
-        <ThemedText style={{ color: colors.textSecondary, fontSize: 11, marginTop: 8, textAlign: 'center' }}>
-          Configurable: elige qué accesos mostrar
-        </ThemedText>
-      )}
-    </View>
-  );
-}
-
-// ============================================================================
-// WIDGET: HERRAMIENTAS AVANZADAS
-// ============================================================================
-
-export function AdvancedToolsWidget({ config, isEditing }: WidgetProps) {
-  const { colors } = useTheme();
-  const router = useRouter();
-
-  const tools = [
-    { id: 'store', icon: 'storefront', label: 'Tienda', color: '#10B981', route: '/store' },
-    { id: 'calendar_plus', icon: 'calendar-outline', label: 'Calendario+', color: '#3B82F6', route: '/calendar-plus' },
-    { id: 'dashboard_editor', icon: 'grid', label: 'Dashboard+', color: '#EC4899', route: '/dashboard-editor' },
-    { id: 'team', icon: 'people-circle', label: 'Equipos', color: '#8B5CF6', route: '/team' },
-    { id: 'crm', icon: 'analytics', label: 'CRM', color: '#06B6D4', route: '/crm' },
-    { id: 'reports_advanced', icon: 'document-text', label: 'Reportes', color: '#6366F1', route: '/reports' },
-    { id: 'portal', icon: 'globe', label: 'Portal Clientes', color: '#14B8A6', route: '/portal' },
-    { id: 'distributor', icon: 'business', label: 'Distribuidor', color: '#EF4444', route: '/distributor' },
-    { id: 'marketing', icon: 'megaphone', label: 'Marketing', color: '#F97316', route: '/marketing' },
-    { id: 'payments', icon: 'card', label: 'Pasarelas Pago', color: '#22C55E', route: '/payments' },
-    { id: 'accounting', icon: 'calculator', label: 'Contabilidad', color: '#64748B', route: '/accounting' },
-    { id: 'workflows', icon: 'git-branch', label: 'Workflows', color: '#EC4899', route: '/workflows' },
-    { id: 'ai', icon: 'sparkles', label: 'IA Avanzada', color: '#8B5CF6', route: '/ai' },
-  ];
-
-  const handleTool = (route: string) => {
-    if (!isEditing) {
-      router.push(route as any);
-    }
-  };
-
-  return (
-    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.toolsGrid}>
-          {tools.map((tool) => (
-            <Pressable
-              key={tool.id}
-              style={[styles.toolButton, { backgroundColor: `${tool.color}10`, borderColor: `${tool.color}30` }]}
-              onPress={() => handleTool(tool.route)}
-              disabled={isEditing}
-            >
-              <Ionicons name={tool.icon as any} size={24} color={tool.color} />
-              <ThemedText style={[styles.toolLabel, { color: colors.text }]}>
-                {tool.label}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
-
-// ============================================================================
-// WIDGET: AYUDA
-// ============================================================================
-
-export function HelpWidget({ config, isEditing }: WidgetProps) {
-  const { colors } = useTheme();
-  const router = useRouter();
-
-  const helpItems = [
-    { id: 'docs', icon: 'book', label: 'Documentación', color: '#3B82F6', route: '/help/docs' },
-    { id: 'tutorials', icon: 'play-circle', label: 'Tutoriales', color: '#10B981', route: '/help/tutorials' },
-    { id: 'faq', icon: 'help-circle', label: 'Preguntas frecuentes', color: '#F59E0B', route: '/help/faq' },
-    { id: 'support', icon: 'chatbubbles', label: 'Soporte', color: '#EF4444', route: '/help/support' },
-    { id: 'whats-new', icon: 'sparkles', label: 'Novedades', color: '#8B5CF6', route: '/help/whats-new' },
-    { id: 'feedback', icon: 'megaphone', label: 'Enviar feedback', color: '#06B6D4', route: '/help/feedback' },
-  ];
-
-  const handleHelpItem = (route: string) => {
-    if (!isEditing) {
-      router.push(route as any);
-    }
-  };
-
-  return (
-    <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {helpItems.map((item) => (
-          <Pressable
-            key={item.id}
-            style={[styles.helpItem, { borderBottomColor: colors.border }]}
-            onPress={() => handleHelpItem(item.route)}
-            disabled={isEditing}
-          >
-            <View style={[styles.helpItemIcon, { backgroundColor: `${item.color}15` }]}>
-              <Ionicons name={item.icon as any} size={20} color={item.color} />
-            </View>
-            <ThemedText style={[styles.helpItemLabel, { color: colors.text }]}>
-              {item.label}
-            </ThemedText>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </Pressable>
-        ))}
-      </ScrollView>
-    </View>
-  );
-}
 
 // ============================================================================
 // WIDGET: CLIENTES RECIENTES
