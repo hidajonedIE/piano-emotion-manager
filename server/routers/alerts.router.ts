@@ -514,19 +514,38 @@ export const alertsRouter = router({
           const warningRatio = warningAlerts.length / totalAlerts;
           const infoRatio = infoAlerts.length / totalAlerts;
           
-          // Calcular cuántas alertas de cada tipo incluir (mínimo 1 si existen)
+          // Calcular cuántas alertas de cada tipo incluir
+          // Mínimos: urgent=1, warning=1, info=2 (cuando existan)
           let urgentCount = urgentAlerts.length > 0 ? Math.max(1, Math.floor(limit * urgentRatio)) : 0;
           let warningCount = warningAlerts.length > 0 ? Math.max(1, Math.floor(limit * warningRatio)) : 0;
-          let infoCount = infoAlerts.length > 0 ? Math.max(1, Math.floor(limit * infoRatio)) : 0;
+          let infoCount = infoAlerts.length > 0 ? Math.max(2, Math.floor(limit * infoRatio)) : 0;
+          
+          // Si hay menos de 2 alertas info disponibles, usar todas las disponibles
+          if (infoAlerts.length > 0 && infoAlerts.length < 2) {
+            infoCount = infoAlerts.length;
+          }
           
           // Ajustar si la suma excede el límite
           let total = urgentCount + warningCount + infoCount;
           if (total > limit) {
-            // Reducir proporcionalmente
+            // Reducir proporcionalmente, manteniendo mínimos (urgent=1, warning=1, info=2)
             const excess = total - limit;
-            if (infoCount > 1) infoCount = Math.max(1, infoCount - Math.ceil(excess / 2));
-            if (warningCount > 1 && urgentCount + warningCount + infoCount > limit) {
-              warningCount = Math.max(1, warningCount - Math.floor(excess / 2));
+            // Primero reducir info si tiene más de 2
+            if (infoCount > 2) {
+              const reduceInfo = Math.min(excess, infoCount - 2);
+              infoCount -= reduceInfo;
+              total = urgentCount + warningCount + infoCount;
+            }
+            // Si aún hay exceso, reducir warning si tiene más de 1
+            if (total > limit && warningCount > 1) {
+              const reduceWarning = Math.min(total - limit, warningCount - 1);
+              warningCount -= reduceWarning;
+              total = urgentCount + warningCount + infoCount;
+            }
+            // Si aún hay exceso, reducir urgent si tiene más de 1
+            if (total > limit && urgentCount > 1) {
+              const reduceUrgent = Math.min(total - limit, urgentCount - 1);
+              urgentCount -= reduceUrgent;
             }
           }
           
