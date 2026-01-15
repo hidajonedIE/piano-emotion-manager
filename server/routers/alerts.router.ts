@@ -497,8 +497,70 @@ export const alertsRouter = router({
         console.log('[ALERTS] Final stats:', JSON.stringify(stats));
         console.log('[ALERTS] Total alerts before pagination:', alerts.length);
         
-        // Aplicar paginación
-        const paginatedAlerts = alerts.slice(offset, offset + limit);
+        // Aplicar paginación con distribución equilibrada de tipos
+        let paginatedAlerts: typeof alerts = [];
+        
+        if (limit >= alerts.length) {
+          // Si el límite es mayor o igual al total, devolver todas
+          paginatedAlerts = alerts.slice(offset, offset + limit);
+        } else {
+          // Distribuir proporcionalmente entre urgent, warning e info
+          const urgentAlerts = alerts.filter(a => a.priority === 'urgent');
+          const warningAlerts = alerts.filter(a => a.priority === 'warning');
+          const infoAlerts = alerts.filter(a => a.priority === 'info');
+          
+          const totalAlerts = alerts.length;
+          const urgentRatio = urgentAlerts.length / totalAlerts;
+          const warningRatio = warningAlerts.length / totalAlerts;
+          const infoRatio = infoAlerts.length / totalAlerts;
+          
+          // Calcular cuántas alertas de cada tipo incluir (mínimo 1 si existen)
+          let urgentCount = urgentAlerts.length > 0 ? Math.max(1, Math.floor(limit * urgentRatio)) : 0;
+          let warningCount = warningAlerts.length > 0 ? Math.max(1, Math.floor(limit * warningRatio)) : 0;
+          let infoCount = infoAlerts.length > 0 ? Math.max(1, Math.floor(limit * infoRatio)) : 0;
+          
+          // Ajustar si la suma excede el límite
+          let total = urgentCount + warningCount + infoCount;
+          if (total > limit) {
+            // Reducir proporcionalmente
+            const excess = total - limit;
+            if (infoCount > 1) infoCount = Math.max(1, infoCount - Math.ceil(excess / 2));
+            if (warningCount > 1 && urgentCount + warningCount + infoCount > limit) {
+              warningCount = Math.max(1, warningCount - Math.floor(excess / 2));
+            }
+          }
+          
+          // Rellenar hasta el límite si hay espacio
+          total = urgentCount + warningCount + infoCount;
+          if (total < limit) {
+            const remaining = limit - total;
+            // Priorizar urgent, luego warning, luego info
+            if (urgentAlerts.length > urgentCount) {
+              const add = Math.min(remaining, urgentAlerts.length - urgentCount);
+              urgentCount += add;
+            } else if (warningAlerts.length > warningCount) {
+              const add = Math.min(remaining, warningAlerts.length - warningCount);
+              warningCount += add;
+            } else if (infoAlerts.length > infoCount) {
+              const add = Math.min(remaining, infoAlerts.length - infoCount);
+              infoCount += add;
+            }
+          }
+          
+          // Seleccionar alertas de cada tipo
+          paginatedAlerts = [
+            ...urgentAlerts.slice(0, urgentCount),
+            ...warningAlerts.slice(0, warningCount),
+            ...infoAlerts.slice(0, infoCount),
+          ];
+          
+          console.log('[ALERTS] Distributed pagination:', {
+            urgent: urgentCount,
+            warning: warningCount,
+            info: infoCount,
+            total: paginatedAlerts.length
+          });
+        }
         console.log('[ALERTS] Returning', paginatedAlerts.length, 'alerts (offset:', offset, ', limit:', limit, ')');
 
         return { 
