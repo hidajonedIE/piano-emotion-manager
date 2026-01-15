@@ -419,3 +419,4 @@ Desarrollado con ❤️ para técnicos de pianos profesionales
 <-- Trigger Vercel redeploy -->
 
 <-- Trigger Vercel redeploy for UX improvements -->
+
