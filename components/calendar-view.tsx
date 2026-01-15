@@ -467,6 +467,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     overflow: 'hidden',
+    maxWidth: 900,
+    alignSelf: 'center',
+    width: '100%',
   },
   header: {
     flexDirection: 'row',
