@@ -400,7 +400,22 @@ async function seed() {
       const numServices = Math.floor(Math.random() * 3) + 1;
       
       for (let j = 0; j < numServices; j++) {
-        const daysAgo = Math.floor(Math.random() * 365) + 1;
+        // Distribución de fechas para generar variedad de alertas:
+        // - 40% servicios recientes (0-180 días) -> sin alertas
+        // - 30% servicios antiguos (180-365 días) -> alertas warning de afinación
+        // - 20% servicios muy antiguos (365-900 días) -> alertas urgent de afinación
+        // - 10% servicios extremadamente antiguos (900-1500 días) -> alertas de regulación
+        const rand = Math.random();
+        let daysAgo;
+        if (rand < 0.4) {
+          daysAgo = Math.floor(Math.random() * 180) + 1; // 0-180 días
+        } else if (rand < 0.7) {
+          daysAgo = Math.floor(Math.random() * 185) + 180; // 180-365 días
+        } else if (rand < 0.9) {
+          daysAgo = Math.floor(Math.random() * 535) + 365; // 365-900 días
+        } else {
+          daysAgo = Math.floor(Math.random() * 600) + 900; // 900-1500 días
+        }
         const serviceDate = new Date();
         serviceDate.setDate(serviceDate.getDate() - daysAgo);
         
