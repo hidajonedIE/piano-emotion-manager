@@ -161,8 +161,18 @@ async function generateServices(userId: number, clientIds: string[], pianoIds: s
   const servicesData = [];
   
   for (let i = 0; i < SERVICES_COUNT; i++) {
-    // Generar servicios desde 2024 para reducir alertas
-    const date = randomDate(new Date(2024, 0, 1), new Date());
+    // Generar servicios con variedad de fechas para tener diferentes tipos de alertas
+    // 60% servicios recientes (2024-2026), 30% de 2023, 10% de 2022
+    let startDate;
+    const rand = Math.random();
+    if (rand < 0.6) {
+      startDate = new Date(2024, 0, 1); // Recientes
+    } else if (rand < 0.9) {
+      startDate = new Date(2023, 0, 1); // Warnings
+    } else {
+      startDate = new Date(2022, 0, 1); // Urgentes
+    }
+    const date = randomDate(startDate, new Date());
     servicesData.push({
       odId: userEmail,
       clientId: randomElement(clientIds),
@@ -242,7 +252,7 @@ async function generateInvoices(userId: number, clientIds: string[], db: any, us
   for (let i = 0; i < INVOICES_COUNT; i++) {
     const date = randomDate(new Date(2023, 0, 1), new Date());
     const amount = 100 + Math.floor(Math.random() * 900);
-    const paid = Math.random() > 0.1; // 90% de facturas pagadas
+    const paid = Math.random() > 0.25; // 75% de facturas pagadas (25% pendientes para generar avisos)
     
     const clientId = randomElement(clientIds);
     invoicesData.push({

@@ -23,9 +23,13 @@ interface DashboardAlertsV2Props {
   totalInfo: number;
   clients: Client[];
   isLoading?: boolean;
+  pagination?: {
+    total: number;
+    hasMore: boolean;
+  };
 }
 
-export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients, isLoading = false }: DashboardAlertsV2Props) {
+export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients, isLoading = false, pagination }: DashboardAlertsV2Props) {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const [emailClientPreference, setEmailClientPreference] = useState<'gmail' | 'outlook' | 'default'>('gmail');
@@ -276,6 +280,7 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
             {urgentAlerts.length > 0 && `${urgentAlerts.length} alerta${urgentAlerts.length !== 1 ? 's' : ''}`}
             {urgentAlerts.length > 0 && infoAlerts.length > 0 && ' • '}
             {infoAlerts.length > 0 && `${infoAlerts.length} aviso${infoAlerts.length !== 1 ? 's' : ''}`}
+            {pagination && pagination.hasMore && ` • Mostrando ${alerts.length} de ${pagination.total}`}
           </ThemedText>
         </View>
         {hasUrgent && (

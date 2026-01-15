@@ -83,10 +83,11 @@ export default function DashboardScreen() {
   // const allAlerts = useAllAlerts(pianos, services, appointments, invoices, quotes);
   
   // OPTIMIZADO: Carga todo en 1 query consolidada (<1s)
-  const { alerts: optimizedAlerts, stats: optimizedStats, isLoading: alertsLoading } = useAlertsOptimized();
+  const { alerts: optimizedAlerts, stats: optimizedStats, pagination, isLoading: alertsLoading } = useAlertsOptimized(15);
   const allAlerts = { 
     alerts: optimizedAlerts || [], 
-    stats: optimizedStats || { total: 0, urgent: 0, warning: 0, info: 0 } 
+    stats: optimizedStats || { total: 0, urgent: 0, warning: 0, info: 0 },
+    pagination: pagination || { total: 0, limit: 15, offset: 0, hasMore: false }
   };
   
   // Configuración de alertas (para mostrar banner)
@@ -197,6 +198,7 @@ export default function DashboardScreen() {
               totalInfo={allAlerts.stats.info}
               clients={clients}
               isLoading={alertsLoading}
+              pagination={allAlerts.pagination}
             />
           </>
         );
