@@ -547,6 +547,7 @@ async function seed() {
         clientId: client.id,
         clientName: client.name,
         clientEmail: client.email,
+        title: `Presupuesto para ${client.name}`,
         date: quoteDate,
         validUntil,
         status,
