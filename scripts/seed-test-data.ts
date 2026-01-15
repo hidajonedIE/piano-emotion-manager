@@ -440,7 +440,41 @@ async function seed() {
         servicesCount++;
       }
     }
-    console.log(`   Total: ${servicesCount} servicios\n`);
+    console.log(`   Total: ${servicesCount} servicios históricos\n`);
+
+    // 5b. Insertar servicios futuros (programados)
+    console.log('🔧 Insertando servicios futuros programados...');
+    let futureServicesCount = 0;
+    
+    // Generar 10-15 servicios futuros
+    const numFutureServices = Math.floor(Math.random() * 6) + 10;
+    for (let i = 0; i < numFutureServices; i++) {
+      const pianoIndex = Math.floor(Math.random() * insertedPianos.length);
+      const piano = insertedPianos[pianoIndex];
+      
+      // Servicios futuros entre 1 y 90 días adelante
+      const daysAhead = Math.floor(Math.random() * 90) + 1;
+      const serviceDate = new Date();
+      serviceDate.setDate(serviceDate.getDate() + daysAhead);
+      
+      const serviceType = serviceTypes[Math.floor(Math.random() * serviceTypes.length)];
+      const cost = 80 + Math.floor(Math.random() * 200);
+      
+      await db.insert(services).values({
+        odId: OWNER_ID,
+        partnerId: 1,
+        pianoId: piano.id,
+        clientId: piano.clientId,
+        serviceType,
+        date: serviceDate,
+        cost: cost.toString(),
+        duration: 60 + Math.floor(Math.random() * 120),
+        notes: `Servicio de ${serviceType} programado.`,
+      });
+      futureServicesCount++;
+    }
+    console.log(`   Total: ${futureServicesCount} servicios futuros\n`);
+    console.log(`   📊 Total servicios: ${servicesCount + futureServicesCount} (${servicesCount} históricos + ${futureServicesCount} futuros)\n`);
 
     // 6. Insertar citas (futuras)
     console.log('📅 Insertando citas programadas...');
