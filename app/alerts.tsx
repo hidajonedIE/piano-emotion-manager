@@ -2,23 +2,37 @@
  * Página de Alertas Completas
  * Muestra todas las alertas y avisos del sistema sin límite
  */
-import { View, ScrollView, StyleSheet, Pressable, TouchableOpacity, Linking, Platform, ActionSheetIOS, Alert as RNAlert } from 'react-native';
+import { View, ScrollView, StyleSheet, Pressable, TouchableOpacity, Linking, Platform, Alert as RNAlert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Spacing, BorderRadius } from '@/constants/theme';
-import { useAllAlerts, type Alert } from '@/hooks/use-all-alerts';
+import { usePianosData } from '@/hooks/data/use-pianos-data';
+import { useServicesData } from '@/hooks/data/use-services-data';
+import { useAppointmentsData } from '@/hooks/data/use-appointments-data';
+import { useInvoicesData } from '@/hooks/data/use-invoices-data';
+import { useQuotesData } from '@/hooks/data/use-quotes-data';
 import { useClientsData } from '@/hooks/data/use-clients-data';
+import { useAllAlerts, type Alert } from '@/hooks/use-all-alerts';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AlertsScreen() {
   const router = useRouter();
-  const { alerts, isLoading } = useAllAlerts();
+  const { pianos, isLoading: loadingPianos } = usePianosData();
+  const { services, isLoading: loadingServices } = useServicesData();
+  const { appointments, isLoading: loadingAppointments } = useAppointmentsData();
+  const { invoices, isLoading: loadingInvoices } = useInvoicesData();
+  const { quotes, isLoading: loadingQuotes } = useQuotesData();
   const { clients } = useClientsData();
+  
+  const { alerts, stats } = useAllAlerts(pianos, services, appointments, invoices, quotes);
+  
   const [emailClientPreference, setEmailClientPreference] = useState<'gmail' | 'outlook' | 'default'>('gmail');
+  
+  const isLoading = loadingPianos || loadingServices || loadingAppointments || loadingInvoices || loadingQuotes;
   
   // Cargar preferencia de cliente de correo
   useEffect(() => {
@@ -51,7 +65,10 @@ export default function AlertsScreen() {
   const infoAlerts = alerts.filter(a => a.priority === 'info');
 
   // Función para obtener cliente por ID
-  const getClient = (clientId: string) => clients.find(c => c.id === clientId);
+  const getClient = (clientId: string | number) => {
+    const normalizedId = String(clientId);
+    return clients.find(c => c.id === normalizedId);
+  };
 
   // Iconos por tipo de alerta
   const getAlertIcon = (type: Alert['type']) => {
