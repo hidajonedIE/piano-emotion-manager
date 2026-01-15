@@ -17,7 +17,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function CalendarWidget({ config, isEditing }: WidgetProps) {
+export const CalendarWidget = React.memo(function CalendarWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
   const { appointments } = useAppointmentsData();
@@ -116,4 +116,5 @@ const styles = StyleSheet.create({
   calendarSubtext: {
     fontSize: 12,
   },
+});
 });

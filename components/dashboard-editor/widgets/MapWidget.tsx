@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function MapWidget({ config, isEditing }: WidgetProps) {
+export const MapWidget = React.memo(function MapWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
 
@@ -66,4 +66,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+});
 });

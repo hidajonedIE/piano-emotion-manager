@@ -19,7 +19,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function ChartPieWidget({ config, isEditing }: WidgetProps) {
+export const ChartPieWidget = React.memo(function ChartPieWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const { services } = useServicesData();
 
@@ -120,4 +120,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+});
 });

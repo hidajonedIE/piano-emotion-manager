@@ -18,18 +18,21 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function RecentServicesWidget({ config, isEditing }: WidgetProps) {
+export const RecentServicesWidget = React.memo(function RecentServicesWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
   const { services } = useServicesData();
   const { clients } = useClientsData();
 
   const recentServices = useMemo(() => {
+    // Crear un mapa de clientes para búsqueda O(1)
+    const clientsMap = new Map(clients.map(c => [c.id, c]));
+    
     return services
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, config?.limit || 5)
       .map(service => {
-        const client = clients.find(c => c.id === service.clientId);
+        const client = clientsMap.get(service.clientId);
         return {
           ...service,
           clientName: client ? getClientFullName(client) : 'Cliente desconocido',
@@ -127,4 +130,5 @@ const styles = StyleSheet.create({
   listItemSubtitle: {
     fontSize: 12,
   },
+});
 });

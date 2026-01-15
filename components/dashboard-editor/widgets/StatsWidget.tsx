@@ -22,7 +22,7 @@ const MONTHS_SHORT = [
   'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
 ];
 
-export function StatsWidget({ config, isEditing }: WidgetProps) {
+export const StatsWidget = React.memo(function StatsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
   const { services } = useServicesData();
@@ -239,4 +239,5 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
   },
+});
 });

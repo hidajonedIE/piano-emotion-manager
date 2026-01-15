@@ -17,7 +17,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function StatsCardWidget({ config, isEditing }: WidgetProps) {
+export const StatsCardWidget = React.memo(function StatsCardWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const { services } = useServicesData();
   const { clients } = useClientsData();
@@ -125,4 +125,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
+});
 });

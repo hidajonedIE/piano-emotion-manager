@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function RevenueSummaryWidget({ config, isEditing }: WidgetProps) {
+export const RevenueSummaryWidget = React.memo(function RevenueSummaryWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const { services } = useServicesData();
   const { invoices } = useInvoices();
@@ -130,4 +130,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+});
 });

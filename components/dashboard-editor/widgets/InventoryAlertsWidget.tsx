@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function InventoryAlertsWidget({ config, isEditing }: WidgetProps) {
+export const InventoryAlertsWidget = React.memo(function InventoryAlertsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
 
@@ -108,4 +108,5 @@ const styles = StyleSheet.create({
   inventoryAlertSubtitle: {
     fontSize: 12,
   },
+});
 });

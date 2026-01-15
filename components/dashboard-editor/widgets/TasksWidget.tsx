@@ -15,7 +15,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function TasksWidget({ config, isEditing }: WidgetProps) {
+export const TasksWidget = React.memo(function TasksWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
 
   // Simulación de tareas (conectar con hook real cuando esté disponible)
@@ -90,4 +90,5 @@ const styles = StyleSheet.create({
   taskCompleted: {
     textDecorationLine: 'line-through',
   },
+});
 });

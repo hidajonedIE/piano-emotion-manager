@@ -18,7 +18,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function UpcomingAppointmentsWidget({ config, isEditing }: WidgetProps) {
+export const UpcomingAppointmentsWidget = React.memo(function UpcomingAppointmentsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
   const { appointments } = useAppointmentsData();
@@ -26,12 +26,15 @@ export function UpcomingAppointmentsWidget({ config, isEditing }: WidgetProps) {
 
   const upcomingAppointments = useMemo(() => {
     const now = new Date();
+    // Crear un mapa de clientes para búsqueda O(1)
+    const clientsMap = new Map(clients.map(c => [c.id, c]));
+    
     return appointments
       .filter(apt => new Date(apt.date) >= now)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, config?.limit || 5)
       .map(apt => {
-        const client = clients.find(c => c.id === apt.clientId);
+        const client = clientsMap.get(apt.clientId);
         return {
           ...apt,
           clientName: client ? getClientFullName(client) : 'Cliente desconocido',
@@ -134,4 +137,5 @@ const styles = StyleSheet.create({
   listItemSubtitle: {
     fontSize: 12,
   },
+});
 });

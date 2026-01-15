@@ -17,7 +17,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function RecentInvoicesWidget({ config, isEditing }: WidgetProps) {
+export const RecentInvoicesWidget = React.memo(function RecentInvoicesWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
   const { invoices } = useInvoices();
@@ -138,4 +138,5 @@ const styles = StyleSheet.create({
   listItemSubtitle: {
     fontSize: 12,
   },
+});
 });

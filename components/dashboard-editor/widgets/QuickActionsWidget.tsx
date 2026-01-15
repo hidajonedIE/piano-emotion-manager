@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function QuickActionsWidget({ config, isEditing }: WidgetProps) {
+export const QuickActionsWidget = React.memo(function QuickActionsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
 
@@ -79,4 +79,5 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
+});
 });

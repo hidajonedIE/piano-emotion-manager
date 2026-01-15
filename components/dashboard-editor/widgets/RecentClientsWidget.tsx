@@ -18,7 +18,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function RecentClientsWidget({ config, isEditing }: WidgetProps) {
+export const RecentClientsWidget = React.memo(function RecentClientsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
   const { clients } = useClientsData();
@@ -119,4 +119,5 @@ const styles = StyleSheet.create({
   listItemSubtitle: {
     fontSize: 12,
   },
+});
 });

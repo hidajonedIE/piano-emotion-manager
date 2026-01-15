@@ -18,7 +18,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function ChartLineWidget({ config, isEditing }: WidgetProps) {
+export const ChartLineWidget = React.memo(function ChartLineWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const { services } = useServicesData();
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
@@ -79,7 +79,7 @@ export function ChartLineWidget({ config, isEditing }: WidgetProps) {
     return { labels, data };
   }, [services, period]);
 
-  const chartConfig = {
+  const chartConfig = useMemo(() => ({
     backgroundColor: colors.card,
     backgroundGradientFrom: colors.card,
     backgroundGradientTo: colors.card,
@@ -94,7 +94,7 @@ export function ChartLineWidget({ config, isEditing }: WidgetProps) {
       strokeWidth: '2',
       stroke: '#10B981',
     },
-  };
+  }), [colors]);
 
   if (isEditing) {
     return (
@@ -192,4 +192,5 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 16,
   },
+});
 });

@@ -15,7 +15,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function PaymentStatusWidget({ config, isEditing }: WidgetProps) {
+export const PaymentStatusWidget = React.memo(function PaymentStatusWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const { invoices } = useInvoices();
 
@@ -115,4 +115,5 @@ const styles = StyleSheet.create({
   paymentStatusLabel: {
     fontSize: 12,
   },
+});
 });

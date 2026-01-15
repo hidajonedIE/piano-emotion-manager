@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function AccessShortcutsWidget({ config, isEditing }: WidgetProps) {
+export const AccessShortcutsWidget = React.memo(function AccessShortcutsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
 
@@ -107,4 +107,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+});
 });

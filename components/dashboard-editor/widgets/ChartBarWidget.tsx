@@ -20,7 +20,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function ChartBarWidget({ config, isEditing }: WidgetProps) {
+export const ChartBarWidget = React.memo(function ChartBarWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const { services } = useServicesData();
   const { clients } = useClientsData();
@@ -29,8 +29,11 @@ export function ChartBarWidget({ config, isEditing }: WidgetProps) {
   const chartData = useMemo(() => {
     const clientRevenue = new Map<string, { name: string; revenue: number }>();
 
+    // Crear un mapa de clientes para búsqueda O(1)
+    const clientsMap = new Map(clients.map(c => [c.id, c]));
+    
     services.forEach(service => {
-      const client = clients.find(c => c.id === service.clientId);
+      const client = clientsMap.get(service.clientId);
       if (client) {
         const clientName = getClientFullName(client);
         const current = clientRevenue.get(service.clientId) || { name: clientName, revenue: 0 };
@@ -49,7 +52,7 @@ export function ChartBarWidget({ config, isEditing }: WidgetProps) {
     };
   }, [services, clients]);
 
-  const chartConfig = {
+  const chartConfig = useMemo(() => ({
     backgroundColor: colors.card,
     backgroundGradientFrom: colors.card,
     backgroundGradientTo: colors.card,
@@ -59,7 +62,7 @@ export function ChartBarWidget({ config, isEditing }: WidgetProps) {
     style: {
       borderRadius: 16,
     },
-  };
+  }), [colors]);
 
   if (isEditing) {
     return (
@@ -138,4 +141,5 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 16,
   },
+});
 });

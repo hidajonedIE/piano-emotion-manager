@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function HelpWidget({ config, isEditing }: WidgetProps) {
+export const HelpWidget = React.memo(function HelpWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
 
@@ -84,4 +84,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 12,
   },
+});
 });

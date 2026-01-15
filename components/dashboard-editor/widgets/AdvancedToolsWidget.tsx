@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function AdvancedToolsWidget({ config, isEditing }: WidgetProps) {
+export const AdvancedToolsWidget = React.memo(function AdvancedToolsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
 
@@ -91,4 +91,5 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: 'center',
   },
+});
 });

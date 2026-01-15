@@ -17,7 +17,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function AlertsWidget({ config, isEditing }: WidgetProps) {
+export const AlertsWidget = React.memo(function AlertsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   const { services } = useServicesData();
   const { appointments } = useAppointmentsData();
@@ -159,4 +159,5 @@ const styles = StyleSheet.create({
   alertMessage: {
     fontSize: 12,
   },
+});
 });
