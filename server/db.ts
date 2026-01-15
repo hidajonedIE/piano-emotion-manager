@@ -15,11 +15,21 @@ export async function getDb() {
       console.log("[Database] DATABASE_URL length:", process.env.DATABASE_URL?.length);
       
       // Create connection pool with SSL configuration for TiDB Cloud
+      // Optimized for 2500 concurrent users
       const pool = mysql.createPool({
         uri: process.env.DATABASE_URL,
         ssl: {
           rejectUnauthorized: true,
         },
+        // Connection pool configuration for high concurrency
+        connectionLimit: 100,           // Max connections (TiDB serverless supports up to 1000)
+        waitForConnections: true,       // Queue requests when pool is full
+        queueLimit: 0,                  // Unlimited queue (requests will wait)
+        enableKeepAlive: true,          // Keep connections alive
+        keepAliveInitialDelay: 10000,   // 10 seconds
+        maxIdle: 50,                    // Max idle connections
+        idleTimeout: 60000,             // 60 seconds idle timeout
+        connectTimeout: 10000,          // 10 seconds connect timeout
       });
       _db = drizzle(pool, { casing: 'preserve' });
       console.log("[Database] ✓ Connection pool created successfully");
