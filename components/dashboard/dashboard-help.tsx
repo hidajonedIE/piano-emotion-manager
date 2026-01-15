@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -16,7 +17,7 @@ interface HelpSection {
   display_order: number;
 }
 
-export function DashboardHelp() {
+export const DashboardHelp = memo(function DashboardHelp() {
   const router = useRouter();
   const [sections, setSections] = useState<HelpSection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +120,7 @@ export function DashboardHelp() {
       )}
     </ThemedView>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

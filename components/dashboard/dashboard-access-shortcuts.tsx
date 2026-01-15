@@ -2,6 +2,7 @@
  * Dashboard Access Shortcuts Component
  * Muestra los accesos rápidos a módulos principales
  */
+import { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -66,7 +67,7 @@ interface DashboardAccessShortcutsProps {
   badge?: number;
 }
 
-export function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessShortcutsProps) {
+export const DashboardAccessShortcuts = memo(function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessShortcutsProps) {
   const router = useRouter();
   const { visibleShortcuts } = useDashboardPreferences();
 
@@ -112,7 +113,7 @@ export function DashboardAccessShortcuts({ urgentCount = 0 }: DashboardAccessSho
       </View>
     </Accordion>
   );
-}
+});
 
 const styles = StyleSheet.create({
   centeredGrid: {

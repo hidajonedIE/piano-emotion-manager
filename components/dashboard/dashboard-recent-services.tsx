@@ -2,6 +2,7 @@
  * Dashboard Recent Services Component
  * Muestra los servicios recientes
  */
+import { memo } from 'react';
 import { FlatList, Pressable, View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Accordion } from '@/components/accordion';
@@ -18,7 +19,7 @@ interface DashboardRecentServicesProps {
   pianos: Piano[];
 }
 
-export function DashboardRecentServices({ services, clients, pianos }: DashboardRecentServicesProps) {
+export const DashboardRecentServices = memo(function DashboardRecentServices({ services, clients, pianos }: DashboardRecentServicesProps) {
   const router = useRouter();
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -98,7 +99,7 @@ export function DashboardRecentServices({ services, clients, pianos }: Dashboard
       />
     </Accordion>
   );
-}
+});
 
 const styles = StyleSheet.create({
   servicesList: {

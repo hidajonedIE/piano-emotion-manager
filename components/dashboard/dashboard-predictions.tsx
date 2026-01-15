@@ -2,6 +2,7 @@
  * Dashboard Predictions Component
  * Muestra predicciones de IA
  */
+import { memo } from 'react';
 import { Pressable, View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Accordion } from '@/components/accordion';
@@ -10,7 +11,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Spacing } from '@/constants/theme';
 
-export function DashboardPredictions() {
+export const DashboardPredictions = memo(function DashboardPredictions() {
   const router = useRouter();
   const textSecondary = useThemeColor({}, 'textSecondary');
 
@@ -52,7 +53,7 @@ export function DashboardPredictions() {
       </View>
     </Accordion>
   );
-}
+});
 
 interface PredictionItemProps {
   icon: string;

@@ -6,6 +6,7 @@
  * para informarle sobre la configuración avanzada de alertas.
  */
 
+import { memo } from 'react';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +18,7 @@ interface AlertConfigBannerProps {
   onDismiss: () => void;
 }
 
-export function AlertConfigBanner({ onDismiss }: AlertConfigBannerProps) {
+export const AlertConfigBanner = memo(function AlertConfigBanner({ onDismiss }: AlertConfigBannerProps) {
   const utils = trpc.useUtils();
   const dismissMutation = trpc.alertSettings.updateSettings.useMutation({
     onSuccess: () => {
@@ -80,7 +81,7 @@ export function AlertConfigBanner({ onDismiss }: AlertConfigBannerProps) {
       </TouchableOpacity>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

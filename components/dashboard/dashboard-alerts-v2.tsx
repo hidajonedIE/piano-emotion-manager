@@ -5,7 +5,7 @@
  * - Avisos: Informativos (para conocimiento)
  * - Colapsable por defecto
  */
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, TouchableOpacity, Linking, Platform, ActionSheetIOS, Alert as RNAlert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
@@ -29,7 +29,7 @@ interface DashboardAlertsV2Props {
   };
 }
 
-export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients, isLoading = false, pagination }: DashboardAlertsV2Props) {
+export const DashboardAlertsV2 = memo(function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo, clients, isLoading = false, pagination }: DashboardAlertsV2Props) {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const [emailClientPreference, setEmailClientPreference] = useState<'gmail' | 'outlook' | 'default'>('gmail');
@@ -438,7 +438,7 @@ export function DashboardAlertsV2({ alerts, totalUrgent, totalWarning, totalInfo
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

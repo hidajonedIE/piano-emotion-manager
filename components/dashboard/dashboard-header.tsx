@@ -3,12 +3,13 @@
  * Muestra el header con logo, título y fecha
  * Diseño responsivo: más compacto en móvil
  */
+import { memo } from 'react';
 import { Image, Platform, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing, BorderRadius } from '@/constants/theme';
 
-export function DashboardHeader() {
+export const DashboardHeader = memo(function DashboardHeader() {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
@@ -53,7 +54,7 @@ export function DashboardHeader() {
       </View>
     </LinearGradient>
   );
-}
+});
 
 const styles = StyleSheet.create({
   headerGradient: {
