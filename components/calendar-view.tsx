@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
   
   // Vista mensual
   monthGrid: {
-    padding: Spacing.sm,
+    padding: Spacing.xs,
   },
   weekHeader: {
     flexDirection: 'row',
@@ -533,10 +533,12 @@ const styles = StyleSheet.create({
   },
   dayCell: {
     width: '14.28%',
-    aspectRatio: 1,
+    minHeight: 60,
+    maxHeight: 80,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 2,
+    justifyContent: 'flex-start',
+    padding: 4,
+    paddingTop: 6,
   },
   todayCell: {
     borderWidth: 2,
