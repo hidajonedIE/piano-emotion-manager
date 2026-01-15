@@ -1,4 +1,5 @@
 import { router, protectedProcedure } from "../_core/trpc.js";
+import { z } from "zod";
 import * as db from "../db.js";
 import { pianos, services, appointments, invoices, quotes, alertSettings } from "../../drizzle/schema.js";
 import { eq, and, desc, type InferSelectModel } from "drizzle-orm";
@@ -49,7 +50,13 @@ function formatTimePeriod(days: number): string {
 
 export const alertsRouter = router({
   getAll: protectedProcedure
-    .query(async ({ ctx }) => {
+    .input(z.object({
+      limit: z.number().min(1).max(100).default(50),
+      offset: z.number().min(0).default(0),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const limit = input?.limit ?? 50;
+      const offset = input?.offset ?? 0;
       console.log('[ALERTS] Starting getAll procedure');
       console.log('[ALERTS] ctx.user:', JSON.stringify(ctx.user));
       
@@ -488,9 +495,22 @@ export const alertsRouter = router({
         };
 
         console.log('[ALERTS] Final stats:', JSON.stringify(stats));
-        console.log('[ALERTS] Returning', alerts.length, 'alerts');
+        console.log('[ALERTS] Total alerts before pagination:', alerts.length);
+        
+        // Aplicar paginación
+        const paginatedAlerts = alerts.slice(offset, offset + limit);
+        console.log('[ALERTS] Returning', paginatedAlerts.length, 'alerts (offset:', offset, ', limit:', limit, ')');
 
-        return { alerts, stats };
+        return { 
+          alerts: paginatedAlerts, 
+          stats,
+          pagination: {
+            total: alerts.length,
+            limit,
+            offset,
+            hasMore: offset + limit < alerts.length
+          }
+        };
         
       } catch (error) {
         console.error('[ALERTS] ERROR in getAll:', error);
