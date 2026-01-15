@@ -263,23 +263,22 @@ export const inventoryRouter = router({
         .from(inventory)
         .where(and(...whereClauses));
 
-      // Calcular estadísticas
-      const allItems = await database
-        .select()
+      // Calcular estadísticas con agregaciones SQL (optimizado)
+      const [statsResult] = await database
+        .select({
+          totalItems: count(),
+          totalValue: sql<number>`COALESCE(SUM(CAST(${inventory.quantity} AS DECIMAL(10,2)) * CAST(${inventory.costPerUnit} AS DECIMAL(10,2))), 0)`,
+          lowStockCount: sql<number>`SUM(CASE WHEN CAST(${inventory.quantity} AS DECIMAL(10,2)) > 0 AND CAST(${inventory.quantity} AS DECIMAL(10,2)) <= CAST(${inventory.minStock} AS DECIMAL(10,2)) THEN 1 ELSE 0 END)`,
+          outOfStockCount: sql<number>`SUM(CASE WHEN CAST(${inventory.quantity} AS DECIMAL(10,2)) = 0 THEN 1 ELSE 0 END)`,
+        })
         .from(inventory)
-        .where(
-          filterByPartner(inventory.partnerId, ctx.partnerId),
-        );
+        .where(filterByPartner(inventory.partnerId, ctx.partnerId));
 
       const stats = {
-        totalItems: allItems.length,
-        totalValue: calculateInventoryValue(allItems),
-        lowStockCount: allItems.filter(item => {
-          const qty = parseFloat(item.quantity);
-          const min = parseFloat(item.minStock);
-          return qty > 0 && qty <= min;
-        }).length,
-        outOfStockCount: allItems.filter(item => parseFloat(item.quantity) === 0).length,
+        totalItems: Number(statsResult.totalItems),
+        totalValue: Number(statsResult.totalValue),
+        lowStockCount: Number(statsResult.lowStockCount),
+        outOfStockCount: Number(statsResult.outOfStockCount),
       };
 
       let nextCursor: number | undefined = undefined;

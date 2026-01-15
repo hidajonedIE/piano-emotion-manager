@@ -286,7 +286,85 @@ function markExpiredQuotes(quotesList: any[]): any[] {
 }
 
 /**
- * Calcula estadísticas de presupuestos
+ * Calcula estadísticas de presupuestos con agregaciones SQL (OPTIMIZADO)
+ */
+async function calculateQuoteStatsOptimized(database: any, partnerId: string) {
+  const today = new Date();
+  const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  
+  // Obtener conteos y sumas por status en una sola query
+  const statsQuery = await database
+    .select({
+      status: quotes.status,
+      count: count(),
+      totalValue: sql<number>`COALESCE(SUM(CAST(${quotes.total} AS DECIMAL(10,2))), 0)`,
+    })
+    .from(quotes)
+    .where(filterByPartner(quotes.partnerId, partnerId))
+    .groupBy(quotes.status);
+  
+  // Procesar resultados
+  let total = 0;
+  let totalValue = 0;
+  let acceptedValue = 0;
+  const byStatus = {
+    draft: 0,
+    sent: 0,
+    accepted: 0,
+    rejected: 0,
+    expired: 0,
+    converted: 0,
+    negotiating: 0,
+    viewed: 0,
+  };
+  
+  statsQuery.forEach((row: any) => {
+    const statusCount = Number(row.count);
+    const statusValue = Number(row.totalValue);
+    
+    total += statusCount;
+    totalValue += statusValue;
+    
+    if (row.status === 'accepted' || row.status === 'converted') {
+      acceptedValue += statusValue;
+    }
+    
+    if (row.status in byStatus) {
+      byStatus[row.status as keyof typeof byStatus] = statusCount;
+    }
+  });
+  
+  // Calcular tasa de conversión
+  const acceptedOrConverted = byStatus.accepted + byStatus.converted;
+  const conversionRate = total > 0 ? (acceptedOrConverted / total) * 100 : 0;
+  
+  // Contar presupuestos que expiran pronto (requiere query separada por la lógica de fechas)
+  const expiringSoonQuery = await database
+    .select({ count: count() })
+    .from(quotes)
+    .where(
+      and(
+        filterByPartner(quotes.partnerId, partnerId),
+        eq(quotes.status, 'sent'),
+        gte(quotes.validUntil, today),
+        lte(quotes.validUntil, sevenDaysFromNow)
+      )
+    );
+  
+  const expiringSoon = Number(expiringSoonQuery[0]?.count || 0);
+  
+  return {
+    total,
+    totalValue,
+    acceptedValue,
+    conversionRate,
+    byStatus,
+    expiringSoon,
+  };
+}
+
+/**
+ * Calcula estadísticas de presupuestos (LEGACY - mantener para compatibilidad)
  */
 function calculateQuoteStats(quotesList: any[]) {
   const today = new Date();
@@ -429,15 +507,8 @@ export const quotesRouter = router({
         .from(quotes)
         .where(and(...whereClauses));
 
-      // Calcular estadísticas
-      const allQuotes = await database
-        .select()
-        .from(quotes)
-        .where(
-          filterByPartner(quotes.partnerId, ctx.partnerId),
-        );
-
-      const stats = calculateQuoteStats(allQuotes);
+      // Calcular estadísticas con agregaciones SQL (optimizado)
+      const stats = await calculateQuoteStatsOptimized(database, ctx.partnerId);
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {
