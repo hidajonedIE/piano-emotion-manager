@@ -55,6 +55,7 @@ const SECTION_COLORS: Record<DashboardSectionId, string> = {
 const SHORTCUT_INFO: Record<AccessShortcutModule, { label: string; icon: keyof typeof Ionicons.glyphMap; color: string }> = {
   clients: { label: 'Clientes', icon: 'people', color: '#3B82F6' },
   pianos: { label: 'Pianos', icon: 'musical-notes', color: '#8B5CF6' },
+  services: { label: 'Servicios', icon: 'construct', color: '#10B981' },
   suppliers: { label: 'Proveedores', icon: 'business', color: '#F97316' },
   dashboard: { label: 'Panel Control', icon: 'pie-chart', color: '#2D5A27' },
   inventory: { label: 'Inventario', icon: 'cube', color: '#F59E0B' },
