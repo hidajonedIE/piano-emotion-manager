@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import compression from "compression";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -31,6 +32,24 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // HTTP Compression middleware
+  // Compresses responses to reduce bandwidth usage and improve load times
+  app.use(compression({
+    // Only compress responses that are larger than 1kb
+    threshold: 1024,
+    // Compression level: 6 is a good balance between speed and compression ratio
+    level: 6,
+    // Filter function to determine which responses should be compressed
+    filter: (req, res) => {
+      // Don't compress if client explicitly requests no compression
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      // Use compression's default filter for other cases
+      return compression.filter(req, res);
+    },
+  }));
 
   // CORS middleware with strict origin checking
   app.use((req, res, next) => {
