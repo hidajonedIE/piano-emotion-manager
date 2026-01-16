@@ -15,6 +15,7 @@ import {
   validateWritePermission
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -102,7 +103,8 @@ const orgProcedure = protectedProcedure.use(withOrganizationContext);
 export const pianosRouter = router({
   list: protectedProcedure
     .input(paginationSchema.optional())
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "brand", sortOrder = "asc", search, category, brand, condition, clientId, yearFrom, yearTo } = input || {};
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
@@ -156,9 +158,12 @@ export const pianosRouter = router({
       }
 
       return { items, nextCursor, total };
-    }),
+    },
+    { ttl: 120, prefix: 'pianos', includeUser: true }
+  )),
   
-  listAll: orgProcedure.query(async ({ ctx }) => {
+  listAll: orgProcedure.query(withCache(
+    async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return [];
     
@@ -173,11 +178,14 @@ export const pianosRouter = router({
           "pianos"
         )
       );
-  }),
+  },
+  { ttl: 300, prefix: 'pianos', includeUser: true }
+)),
   
   get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
@@ -196,7 +204,9 @@ export const pianosRouter = router({
 
       if (!piano) throw new Error("Piano no encontrado");
       return piano;
-    }),
+    },
+    { ttl: 300, prefix: 'pianos', includeUser: true }
+  )),
   
   byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
@@ -227,7 +237,13 @@ export const pianosRouter = router({
         "pianos"
       );
       
-      return db.createPiano(pianoData);
+      const result = await db.createPiano(pianoData);
+      
+      // Invalidar caché
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('pianos');
+      
+      return result;
     }),
   
   update: orgProcedure
@@ -260,7 +276,13 @@ export const pianosRouter = router({
       validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
 
       const { id, ...data } = input;
-      return db.updatePiano(existingPiano.odId, id, data);
+      const result = await db.updatePiano(existingPiano.odId, id, data);
+      
+      // Invalidar caché
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('pianos');
+      
+      return result;
     }),
   
   delete: orgProcedure
@@ -290,7 +312,13 @@ export const pianosRouter = router({
       // Validar permisos de escritura
       validateWritePermission(ctx.orgContext, "pianos", existingPiano.odId);
 
-      return db.deletePiano(existingPiano.odId, input.id);
+      const result = await db.deletePiano(existingPiano.odId, input.id);
+      
+      // Invalidar caché
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('pianos');
+      
+      return result;
     }),
   
   getBrands: orgProcedure.query(async ({ ctx }) => {
