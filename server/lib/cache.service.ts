@@ -13,6 +13,7 @@ class CacheService {
   private isConnected: boolean = false;
   private useMemoryFallback: boolean = false;
   private memoryCache: Map<string, { value: string; expiry: number }> = new Map();
+  private connectPromise: Promise<void> | null = null;
 
   /**
    * Inicializar conexión a Upstash Redis
@@ -55,9 +56,21 @@ class CacheService {
   }
 
   /**
+   * Asegurar que está conectado (lazy initialization)
+   */
+  private async ensureConnected(): Promise<void> {
+    if (this.isConnected) return;
+    if (this.connectPromise) return this.connectPromise;
+    this.connectPromise = this.connect();
+    await this.connectPromise;
+  }
+
+  /**
    * Obtener valor del caché
    */
   async get<T>(key: string): Promise<T | null> {
+    await this.ensureConnected();
+    
     try {
       if (this.useMemoryFallback) {
         return this.getFromMemory<T>(key);
@@ -82,6 +95,8 @@ class CacheService {
    * Establecer valor en caché con TTL
    */
   async set(key: string, value: any, ttlSeconds: number = 300): Promise<boolean> {
+    await this.ensureConnected();
+    
     try {
       if (this.useMemoryFallback) {
         return this.setInMemory(key, value, ttlSeconds);
@@ -268,7 +283,4 @@ class CacheService {
 // Singleton instance
 export const cacheService = new CacheService();
 
-// Inicializar al importar
-cacheService.connect().catch((err) => {
-  console.error('Failed to initialize cache service:', err);
-});
+// NO inicializar al importar, usar lazy initialization
