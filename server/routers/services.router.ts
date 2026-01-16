@@ -16,6 +16,7 @@ import {
   validateWritePermission
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -120,7 +121,8 @@ const orgProcedure = protectedProcedure;
 export const servicesRouter = router({
   list: protectedProcedure
     .input(paginationSchema.optional())
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "date", sortOrder = "desc", search, serviceType, status, clientId, pianoId, dateFrom, dateTo } = input || {};
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
@@ -216,11 +218,14 @@ export const servicesRouter = router({
       }
 
       return { items, nextCursor, total, stats: { total, totalRevenue: Number(totalRevenue) || 0 } };
-    }),
+    },
+    { ttl: 60, prefix: 'services', includeUser: true }
+  )),
   
   get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) return undefined;
 
@@ -271,7 +276,9 @@ export const servicesRouter = router({
         );
 
       return result;
-    }),
+    },
+    { ttl: 180, prefix: 'services', includeUser: true }
+  )),
 
   byPiano: orgProcedure
     .input(z.object({ pianoId: z.number() }))
@@ -324,7 +331,10 @@ export const servicesRouter = router({
         "services"
       );
       
-      return db.createService(serviceData);
+      const result = await db.createService(serviceData);
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('services');
+      return result;
     }),
 
   update: orgProcedure
@@ -357,7 +367,10 @@ export const servicesRouter = router({
       validateWritePermission(ctx.orgContext, "services", existingService.odId);
 
       const { id, ...data } = input;
-      return db.updateService(existingService.odId, id, data);
+      const result = await db.updateService(existingService.odId, id, data);
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('services');
+      return result;
     }),
 
   delete: orgProcedure
@@ -387,7 +400,10 @@ export const servicesRouter = router({
       // Validar permisos de escritura
       validateWritePermission(ctx.orgContext, "services", existingService.odId);
 
-      return db.deleteService(existingService.odId, input.id);
+      const result = await db.deleteService(existingService.odId, input.id);
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('services');
+      return result;
     }),
 
   getStats: orgProcedure
