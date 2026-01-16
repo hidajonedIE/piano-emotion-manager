@@ -15,6 +15,7 @@ import {
   validateWritePermission
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -322,7 +323,8 @@ export const appointmentsRouter = router({
    */
   list: protectedProcedure
     .input(paginationSchema.optional())
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const { 
         limit = 30, 
         cursor, 
@@ -426,12 +428,15 @@ export const appointmentsRouter = router({
       }
 
       return { items, nextCursor, total, stats };
-    }),
+    },
+    { ttl: 60, prefix: 'appointments', includeUser: true }
+  )),
   
   /**
    * Lista completa sin paginación (para selects)
    */
-  listAll: orgProcedure.query(async ({ ctx }) => {
+  listAll: orgProcedure.query(withCache(
+    async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return [];
     
@@ -442,9 +447,11 @@ export const appointmentsRouter = router({
         filterByPartner(appointments.partnerId, ctx.partnerId),
       )
       .orderBy(asc(appointments.date));
-
+    
     return items;
-  }),
+  },
+  { ttl: 180, prefix: 'appointments', includeUser: true }
+)),
   
   /**
    * Vista de calendario optimizada con eager loading
@@ -536,7 +543,8 @@ export const appointmentsRouter = router({
    */
   get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
@@ -579,7 +587,9 @@ export const appointmentsRouter = router({
       if (!result) throw new Error("Cita no encontrada");
       
       return result;
-    }),
+    },
+    { ttl: 180, prefix: 'appointments', includeUser: true }
+  )),
   
   /**
    * Obtener citas de un cliente
@@ -812,11 +822,16 @@ export const appointmentsRouter = router({
         };
       }
 
-      return {
+      const result = {
         id: createdIds[0],
         conflicts,
         isRecurring: false,
       };
+      
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('appointments');
+      
+      return result;
     }),
   
   /**
@@ -890,6 +905,9 @@ export const appointmentsRouter = router({
         .set(updateData)
         .where(eq(appointments.id, id));
       
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('appointments');
+      
       return { success: true, conflicts };
     }),
   
@@ -929,6 +947,9 @@ export const appointmentsRouter = router({
         .set({ status: input.status })
         .where(eq(appointments.id, input.id));
       
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('appointments');
+      
       return { success: true };
     }),
   
@@ -961,6 +982,9 @@ export const appointmentsRouter = router({
       validateWritePermission(ctx.orgContext, "appointments", existingAppointment.odId);
 
       await database.delete(appointments).where(eq(appointments.id, input.id));
+      
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('appointments');
       
       return { success: true };
     }),
