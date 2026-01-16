@@ -15,6 +15,7 @@ import {
   validateWritePermission
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -416,6 +417,7 @@ function calculateQuoteStats(quotesList: any[]) {
 // ============================================================================
 
 const orgProcedure = protectedProcedure.use(withOrganizationContext);
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ROUTER
@@ -427,7 +429,8 @@ export const quotesRouter = router({
    */
   list: protectedProcedure
     .input(paginationSchema.optional())
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const { 
         limit = 30, 
         cursor, 
@@ -516,12 +519,15 @@ export const quotesRouter = router({
       }
 
       return { items, nextCursor, total, stats };
-    }),
+    },
+    { ttl: 180, prefix: 'quotes', includeUser: true }
+  )),
   
   /**
    * Lista completa sin paginación (para selects)
    */
-  listAll: orgProcedure.query(async ({ ctx }) => {
+  listAll: orgProcedure.query(withCache(
+    async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return [];
     
@@ -534,14 +540,17 @@ export const quotesRouter = router({
       .orderBy(desc(quotes.date));
 
     return markExpiredQuotes(items);
-  }),
+  },
+  { ttl: 300, prefix: 'quotes', includeUser: true }
+)),
   
   /**
    * Obtener presupuesto por ID
    */
   get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
@@ -561,7 +570,9 @@ export const quotesRouter = router({
       // Marcar como expirado si corresponde
       const [markedQuote] = markExpiredQuotes([quote]);
       return markedQuote;
-    }),
+    },
+    { ttl: 300, prefix: 'quotes', includeUser: true }
+  )),
   
   /**
    * Obtener presupuestos de un cliente
@@ -654,6 +665,10 @@ export const quotesRouter = router({
       );
       
       const result = await database.insert(quotes).values(quoteData);
+      
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('quotes');
+      
       return result[0].insertId;
     }),
   
@@ -724,6 +739,9 @@ export const quotesRouter = router({
         .set(updateData)
         .where(eq(quotes.id, id));
       
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('quotes');
+      
       return { success: true };
     }),
   
@@ -756,6 +774,9 @@ export const quotesRouter = router({
       validateWritePermission(ctx.orgContext, "quotes", existingQuote.odId);
 
       await database.delete(quotes).where(eq(quotes.id, input.id));
+      
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('quotes');
       
       return { success: true };
     }),
