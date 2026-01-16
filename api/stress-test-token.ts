@@ -39,9 +39,10 @@ export default async function handler(
   try {
     // Obtener el primer usuario de la base de datos para usar como usuario de prueba
     // En una aplicación real, crearías usuarios de prueba específicos
-    const users = await clerkClient.users.getUserList({ limit: 1 });
+    const usersResponse = await clerkClient.users.getUserList({ limit: 1 });
+    const users = usersResponse.data || usersResponse;
     
-    if (users.length === 0) {
+    if (!users || users.length === 0) {
       return res.status(404).json({ error: 'No users found' });
     }
 
