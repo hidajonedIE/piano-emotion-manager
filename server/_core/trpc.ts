@@ -46,7 +46,8 @@ const globalRateLimit = t.middleware(async (opts) => {
   
   // Determinar límite según el tipo de operación
   const isWriteOperation = type === 'mutation';
-  const maxRequests = isWriteOperation ? 20 : 100; // 20 para escritura, 100 para lectura
+  // Aumentados para soportar 2500 usuarios concurrentes con caché
+  const maxRequests = isWriteOperation ? 50 : 300; // 50 para escritura, 300 para lectura
   const windowMs = 60000; // 1 minuto
   
   // Clave única por usuario y tipo de operación

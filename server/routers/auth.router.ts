@@ -5,9 +5,13 @@
 import { COOKIE_NAME } from "../../shared/const.js";
 import { getSessionCookieOptions } from "../_core/cookies.js";
 import { publicProcedure, router } from "../_core/trpc.js";
+import { withCache } from "../lib/cache.middleware.js";
 
 export const authRouter = router({
-  me: publicProcedure.query((opts) => opts.ctx.user),
+  me: publicProcedure.query(withCache(
+    async (opts) => opts.ctx.user,
+    { ttl: 300, prefix: 'auth', includeUser: true, procedurePath: 'auth.me' }
+  )),
   
   logout: publicProcedure.mutation(({ ctx }) => {
     const cookieOptions = getSessionCookieOptions(ctx.req);

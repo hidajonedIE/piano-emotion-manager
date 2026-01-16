@@ -40,15 +40,17 @@ export const RATE_LIMITS: Record<string, RateLimitConfig> = {
   },
   
   // Public endpoints - moderate limits
+  // Aumentado para soportar 2500 usuarios concurrentes
   public: {
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 30,
+    maxRequests: 100,
   },
   
   // Protected API endpoints - generous limits for authenticated users
+  // Aumentado para soportar 2500 usuarios concurrentes
   api: {
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 100,
+    maxRequests: 300,
   },
   
   // Expensive operations (PDF generation, email sending)
