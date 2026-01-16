@@ -29,6 +29,13 @@ const t = initTRPC.context<TrpcContext>().create({
 const globalRateLimit = t.middleware(async (opts) => {
   const { ctx, next, path, type } = opts;
   
+  // TEMPORARY: Bypass rate limiting for stress tests
+  const stressTestSecret = ctx.req.headers['x-stress-test-secret'];
+  if (stressTestSecret === process.env.STRESS_TEST_SECRET) {
+    console.log('[Stress Test] Bypassing rate limiting');
+    return next();
+  }
+  
   // Identificar al usuario por ID o IP
   const identifier = ctx.user?.id?.toString() || 'anonymous';
   const now = Date.now();
