@@ -83,10 +83,18 @@ class CacheService {
    * Obtener valor del caché
    */
   async get<T>(key: string): Promise<T | null> {
+    console.log('[Cache Service] GET operation started', {
+      key: key.substring(0, 50) + '...',
+      useMemoryFallback: this.useMemoryFallback,
+      isConnected: this.isConnected,
+      hasClient: !!this.client
+    });
+    
     await this.ensureConnected();
     
     try {
       if (this.useMemoryFallback) {
+        console.log('[Cache Service] Using MEMORY fallback for GET');
         return this.getFromMemory<T>(key);
       }
 
@@ -109,10 +117,19 @@ class CacheService {
    * Establecer valor en caché con TTL
    */
   async set(key: string, value: any, ttlSeconds: number = 300): Promise<boolean> {
+    console.log('[Cache Service] SET operation started', {
+      key: key.substring(0, 50) + '...',
+      ttlSeconds,
+      useMemoryFallback: this.useMemoryFallback,
+      isConnected: this.isConnected,
+      hasClient: !!this.client
+    });
+    
     await this.ensureConnected();
     
     try {
       if (this.useMemoryFallback) {
+        console.log('[Cache Service] Using MEMORY fallback for SET');
         return this.setInMemory(key, value, ttlSeconds);
       }
 
