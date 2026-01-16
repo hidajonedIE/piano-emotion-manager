@@ -2,6 +2,7 @@ import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from "../../shared/const.js";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context.js";
+import { monitoring } from "../lib/monitoring.service.js";
 
 // Rate limiting storage
 interface RateLimitEntry {
@@ -25,14 +26,17 @@ const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
 });
 
-// Global rate limiting middleware
+// Global monitoring and rate limiting middleware
 const globalRateLimit = t.middleware(async (opts) => {
   const { ctx, next, path, type } = opts;
+  const startTime = Date.now();
+  const endpoint = `${type}.${path}`;
+  const userId = ctx.user?.id;
   
   // TEMPORARY: Bypass rate limiting for stress tests
   const stressTestSecret = ctx.req.headers['x-stress-test-secret'];
   if (stressTestSecret === process.env.STRESS_TEST_SECRET) {
-    console.log('[Stress Test] Bypassing rate limiting');
+    monitoring.info('Stress test bypassing rate limiting', { endpoint, userId });
     return next();
   }
   
@@ -83,7 +87,27 @@ const globalRateLimit = t.middleware(async (opts) => {
   // Incrementar contador
   entry.count++;
   
-  return next();
+  try {
+    const result = await next();
+    const duration = Date.now() - startTime;
+    
+    // Track successful request
+    monitoring.trackRequestDuration(endpoint, duration, userId);
+    
+    return result;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    
+    // Track error
+    monitoring.trackError(endpoint, error instanceof Error ? error.name : 'Unknown', userId);
+    monitoring.error('Request failed', error as Error, {
+      endpoint,
+      duration,
+      userId,
+    });
+    
+    throw error;
+  }
 });
 
 export const router = t.router;

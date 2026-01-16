@@ -1,4 +1,5 @@
 import { Redis } from '@upstash/redis';
+import { monitoring } from './monitoring.service.js';
 
 /**
  * Servicio de caché distribuido usando Upstash Redis
@@ -125,6 +126,9 @@ class CacheService {
       
       if (value !== null) {
         console.log(`[Cache Service] GET HIT: ${key} (${duration}ms)`);
+        monitoring.trackCacheOperation('hit', key, duration);
+      } else {
+        monitoring.trackCacheOperation('miss', key, duration);
       }
       
       return value;
@@ -153,6 +157,7 @@ class CacheService {
       await this.client.set(key, value, { ex: ttlSeconds });
       const duration = Date.now() - startTime;
       console.log(`[Cache Service] SET: ${key} (${duration}ms, TTL: ${ttlSeconds}s)`);
+      monitoring.trackCacheOperation('set', key, duration);
     } catch (error) {
       console.error('[Cache Service] SET error, falling back to memory', {
         key,
