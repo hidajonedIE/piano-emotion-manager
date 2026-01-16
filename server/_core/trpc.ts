@@ -3,12 +3,84 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context.js";
 
+// Rate limiting storage
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+const rateLimitMap = new Map<string, RateLimitEntry>();
+
+// Clean up expired entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap.entries()) {
+    if (now > entry.resetTime) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
+
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
 });
 
+// Global rate limiting middleware
+const globalRateLimit = t.middleware(async (opts) => {
+  const { ctx, next, path, type } = opts;
+  
+  // Identificar al usuario por ID o IP
+  const identifier = ctx.user?.id?.toString() || 'anonymous';
+  const now = Date.now();
+  
+  // Determinar límite según el tipo de operación
+  const isWriteOperation = type === 'mutation';
+  const maxRequests = isWriteOperation ? 20 : 100; // 20 para escritura, 100 para lectura
+  const windowMs = 60000; // 1 minuto
+  
+  // Clave única por usuario y tipo de operación
+  const key = `${identifier}:${type}`;
+  
+  // Obtener o crear entrada de rate limiting
+  let entry = rateLimitMap.get(key);
+  
+  if (!entry || now > entry.resetTime) {
+    // Nueva ventana de tiempo
+    entry = {
+      count: 1,
+      resetTime: now + windowMs
+    };
+    rateLimitMap.set(key, entry);
+    return next();
+  }
+  
+  // Verificar si se excedió el límite
+  if (entry.count >= maxRequests) {
+    const resetIn = Math.ceil((entry.resetTime - now) / 1000);
+    
+    console.warn('[Rate Limit] Limit exceeded', {
+      identifier,
+      type,
+      path,
+      count: entry.count,
+      maxRequests,
+      resetIn
+    });
+    
+    throw new TRPCError({
+      code: 'TOO_MANY_REQUESTS',
+      message: `Too many ${type === 'mutation' ? 'write' : 'read'} operations. Try again in ${resetIn} seconds.`
+    });
+  }
+  
+  // Incrementar contador
+  entry.count++;
+  
+  return next();
+});
+
 export const router = t.router;
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(globalRateLimit);
 
 const requireUser = t.middleware(async (opts) => {
   console.log('[DEBUG] Entering requireUser middleware...');

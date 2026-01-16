@@ -18,7 +18,6 @@ import {
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
 import { withCache, invalidatePath, invalidateUserCache } from "../lib/cache.middleware.js";
-import { moderateRateLimit, strictRateLimit } from "../lib/rate-limit.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -138,9 +137,8 @@ export const clientsRouter = router({
           sortOrder: z.enum(["asc", "desc"]).default("asc"),
         })
       )
-     .query(moderateRateLimit(
-      withCache(
-        async ({ ctx, input }) => {
+     .query(withCache(
+      async ({ ctx, input }) => {
       const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
@@ -219,10 +217,9 @@ export const clientsRouter = router({
         console.error('[clients.list] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
         throw error;
       }
-        },
-        { ttl: 900, prefix: 'clients', includeUser: true, procedurePath: 'clients.list' }
-      )
-    )),
+    },
+    { ttl: 900, prefix: 'clients', includeUser: true, procedurePath: 'clients.list' }
+  )),
   
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
