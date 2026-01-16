@@ -1,62 +1,54 @@
 /**
- * Servicio de Caché con Redis
+ * Servicio de Caché con Upstash Redis
  * 
- * Implementa caché en memoria para reducir carga en base de datos
+ * Implementa caché distribuido con Upstash Redis para reducir carga en base de datos
  * Soporta TTL, invalidación y estrategias de caché
+ * Fallback automático a memoria si Redis no está disponible
  */
 
-import { createClient, RedisClientType } from 'redis';
+import { Redis } from '@upstash/redis';
 
 class CacheService {
-  private client: RedisClientType | null = null;
+  private client: Redis | null = null;
   private isConnected: boolean = false;
   private useMemoryFallback: boolean = false;
   private memoryCache: Map<string, { value: string; expiry: number }> = new Map();
 
   /**
-   * Inicializar conexión a Redis
+   * Inicializar conexión a Upstash Redis
    */
   async connect(): Promise<void> {
     try {
-      // Intentar conectar a Redis (Vercel KV o Redis externo)
-      const redisUrl = process.env.REDIS_URL || process.env.KV_URL;
+      // Intentar conectar a Upstash Redis
+      const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+      const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
       
-      if (!redisUrl) {
-        console.warn('⚠️  No REDIS_URL configured, using in-memory cache fallback');
+      if (!redisUrl || !redisToken) {
+        console.warn('⚠️  No UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN configured, using in-memory cache fallback');
         this.useMemoryFallback = true;
         this.isConnected = true;
         return;
       }
 
-      this.client = createClient({
+      // Crear cliente de Upstash Redis (REST API)
+      this.client = new Redis({
         url: redisUrl,
-        socket: {
-          connectTimeout: 5000,
-          reconnectStrategy: (retries) => {
-            if (retries > 3) {
-              console.error('❌ Redis connection failed after 3 retries, using memory fallback');
-              this.useMemoryFallback = true;
-              return false;
-            }
-            return Math.min(retries * 100, 3000);
-          },
-        },
+        token: redisToken,
       });
 
-      this.client.on('error', (err) => {
-        console.error('Redis Client Error:', err);
-        this.useMemoryFallback = true;
-      });
-
-      this.client.on('connect', () => {
-        console.log('✅ Redis connected successfully');
+      // Verificar conexión con un ping
+      try {
+        await this.client.ping();
+        console.log('✅ Upstash Redis connected successfully');
         this.isConnected = true;
         this.useMemoryFallback = false;
-      });
-
-      await this.client.connect();
+      } catch (pingError) {
+        console.error('❌ Upstash Redis ping failed, using memory fallback:', pingError);
+        this.useMemoryFallback = true;
+        this.isConnected = true;
+      }
     } catch (error) {
-      console.error('❌ Failed to connect to Redis:', error);
+      console.error('❌ Failed to connect to Upstash Redis:', error);
       this.useMemoryFallback = true;
       this.isConnected = true;
     }
@@ -78,7 +70,8 @@ class CacheService {
       const value = await this.client.get(key);
       if (!value) return null;
 
-      return JSON.parse(value) as T;
+      // Upstash devuelve el valor parseado automáticamente si es JSON
+      return value as T;
     } catch (error) {
       console.error(`Cache get error for key ${key}:`, error);
       return null;
@@ -98,8 +91,8 @@ class CacheService {
         return false;
       }
 
-      const serialized = JSON.stringify(value);
-      await this.client.setEx(key, ttlSeconds, serialized);
+      // Upstash maneja la serialización automáticamente
+      await this.client.setex(key, ttlSeconds, value);
       return true;
     } catch (error) {
       console.error(`Cache set error for key ${key}:`, error);
@@ -152,7 +145,8 @@ class CacheService {
       const keys = await this.client.keys(pattern);
       if (keys.length === 0) return 0;
 
-      await this.client.del(keys);
+      // Eliminar todas las claves encontradas
+      await Promise.all(keys.map(key => this.client!.del(key)));
       return keys.length;
     } catch (error) {
       console.error(`Cache delPattern error for pattern ${pattern}:`, error);
@@ -204,20 +198,20 @@ class CacheService {
     // Si no está en caché, obtener del origen
     const value = await fetcher();
     
-    // Guardar en caché
-    await this.set(key, value, ttlSeconds);
+    // Guardar en caché (no bloqueante)
+    this.set(key, value, ttlSeconds).catch(err => {
+      console.error('Failed to cache value:', err);
+    });
     
     return value;
   }
 
   /**
-   * Cerrar conexión
+   * Cerrar conexión (no necesario para Upstash REST API)
    */
   async disconnect(): Promise<void> {
-    if (this.client && this.isConnected && !this.useMemoryFallback) {
-      await this.client.quit();
-      this.isConnected = false;
-    }
+    // Upstash REST API no requiere cerrar conexión
+    this.isConnected = false;
   }
 
   // ===== Métodos privados para fallback en memoria =====
