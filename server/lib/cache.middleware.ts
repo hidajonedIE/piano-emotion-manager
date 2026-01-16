@@ -5,7 +5,7 @@
  */
 
 import { TRPCError } from '@trpc/server';
-import { cacheService } from '../services/cache.service.js';
+import { cacheService } from './cache.service.js';
 
 export interface CacheOptions {
   /**

@@ -15,7 +15,7 @@ import {
   validateWritePermission
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
-import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
+import { withCache, invalidatePath, invalidateUserCache } from "../lib/cache.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
