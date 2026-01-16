@@ -81,6 +81,7 @@ export default function (data) {
 }
 
 function viewClients(secret) {
+  const input = encodeURIComponent(JSON.stringify({ limit: 30 }));
   const params = {
     headers: {
       'X-Stress-Test-Secret': secret,
@@ -89,7 +90,7 @@ function viewClients(secret) {
   };
 
   const response = http.get(
-    `${BASE_URL}/api/trpc/clients.list`,
+    `${BASE_URL}/api/trpc/clients.list?input=${input}`,
     params
   );
 
@@ -104,6 +105,7 @@ function viewClients(secret) {
 }
 
 function viewPianos(secret) {
+  const input = encodeURIComponent(JSON.stringify({ limit: 30 }));
   const params = {
     headers: {
       'X-Stress-Test-Secret': secret,
@@ -112,7 +114,7 @@ function viewPianos(secret) {
   };
 
   const response = http.get(
-    `${BASE_URL}/api/trpc/pianos.list`,
+    `${BASE_URL}/api/trpc/pianos.list?input=${input}`,
     params
   );
 
@@ -127,6 +129,7 @@ function viewPianos(secret) {
 }
 
 function viewAppointments(secret) {
+  const input = encodeURIComponent(JSON.stringify({ limit: 30 }));
   const params = {
     headers: {
       'X-Stress-Test-Secret': secret,
@@ -135,7 +138,7 @@ function viewAppointments(secret) {
   };
 
   const response = http.get(
-    `${BASE_URL}/api/trpc/appointments.list`,
+    `${BASE_URL}/api/trpc/appointments.list?input=${input}`,
     params
   );
 
@@ -150,6 +153,7 @@ function viewAppointments(secret) {
 }
 
 function viewServices(secret) {
+  const input = encodeURIComponent(JSON.stringify({ limit: 30 }));
   const params = {
     headers: {
       'X-Stress-Test-Secret': secret,
@@ -158,7 +162,7 @@ function viewServices(secret) {
   };
 
   const response = http.get(
-    `${BASE_URL}/api/trpc/services.list`,
+    `${BASE_URL}/api/trpc/services.list?input=${input}`,
     params
   );
 
@@ -200,8 +204,9 @@ function viewDashboard(secret) {
     tags: { name: 'clients.list' },
   };
 
+  const input = encodeURIComponent(JSON.stringify({ limit: 30 }));
   const clientsResponse = http.get(
-    `${BASE_URL}/api/trpc/clients.list`,
+    `${BASE_URL}/api/trpc/clients.list?input=${input}`,
     clientsParams
   );
 

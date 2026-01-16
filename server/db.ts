@@ -22,7 +22,7 @@ export async function getDb() {
           rejectUnauthorized: true,
         },
         // Connection pool configuration for high concurrency
-        connectionLimit: 500,           // Max connections (TiDB serverless supports up to 1000)
+        connectionLimit: 1000,          // Max connections (TiDB serverless supports up to 1000)
         waitForConnections: true,       // Queue requests when pool is full
         queueLimit: 0,                  // Unlimited queue (requests will wait)
         enableKeepAlive: true,          // Keep connections alive
