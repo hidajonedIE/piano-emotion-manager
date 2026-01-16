@@ -109,7 +109,10 @@ export function withCache<TInput, TOutput>(
   options?: CacheOptions
 ) {
   return async (opts: { ctx: any; input: TInput }): Promise<TOutput> => {
-    const { ctx, inp    try {
+    const { ctx, input } = opts;
+    let cacheError: Error | null = null;
+    
+    try {
       // DEBUG: Log env vars at the start
       console.log('[Cache Middleware] ENV CHECK:', {
         hasUrl: !!process.env.UPSTASH_REDIS_REST_URL,
@@ -119,9 +122,7 @@ export function withCache<TInput, TOutput>(
       });
       
       const startTime = Date.now();
-      let cacheHit = false;    let cacheError: Error | null = null;
-    
-    try {
+      let cacheHit = false;
       // Solo cachear en producción o si está explícitamente habilitado
       const cacheEnabled = process.env.NODE_ENV === 'production' || 
                           process.env.ENABLE_CACHE === 'true';
