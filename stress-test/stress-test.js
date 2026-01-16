@@ -42,26 +42,14 @@ const USER_SCENARIOS = [
   'view_dashboard',
 ];
 
-// Setup: Obtener token de autenticación antes de iniciar la prueba
+// Setup: Configurar bypass de autenticación
 export function setup() {
-  console.log('🔐 Obteniendo token de autenticación...');
+  console.log('🔐 Configurando prueba de estrés con bypass de autenticación...');
+  console.log('✅ Bypass configurado exitosamente');
   
-  const response = http.post(
-    `${BASE_URL}/api/stress-test-token`,
-    JSON.stringify({ secret: STRESS_TEST_SECRET }),
-    {
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
-
-  if (response.status !== 200) {
-    throw new Error(`Failed to get auth token: ${response.status} ${response.body}`);
-  }
-
-  const data = JSON.parse(response.body);
-  console.log(`✅ Token obtenido exitosamente para usuario ${data.userId}`);
-  
-  return { token: data.token, userId: data.userId };
+  return {
+    stressTestSecret: STRESS_TEST_SECRET,
+  };
 }
 
 export default function (data) {
@@ -71,19 +59,19 @@ export default function (data) {
   // Simular comportamiento de usuario real
   switch (scenario) {
     case 'view_clients':
-      viewClients(data.token);
+      viewClients(data.stressTestSecret);
       break;
     case 'view_pianos':
-      viewPianos(data.token);
+      viewPianos(data.stressTestSecret);
       break;
     case 'view_appointments':
-      viewAppointments(data.token);
+      viewAppointments(data.stressTestSecret);
       break;
     case 'view_services':
-      viewServices(data.token);
+      viewServices(data.stressTestSecret);
       break;
     case 'view_dashboard':
-      viewDashboard(data.token);
+      viewDashboard(data.stressTestSecret);
       break;
   }
   
@@ -91,11 +79,11 @@ export default function (data) {
   sleep(Math.random() * 3 + 2); // Entre 2 y 5 segundos
 }
 
-function viewClients(token) {
+function viewClients(secret) {
   const params = {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'clients.list' },
   };
@@ -116,11 +104,11 @@ function viewClients(token) {
   }
 }
 
-function viewPianos(token) {
+function viewPianos(secret) {
   const params = {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'pianos.list' },
   };
@@ -141,11 +129,11 @@ function viewPianos(token) {
   }
 }
 
-function viewAppointments(token) {
+function viewAppointments(secret) {
   const params = {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'appointments.list' },
   };
@@ -166,11 +154,11 @@ function viewAppointments(token) {
   }
 }
 
-function viewServices(token) {
+function viewServices(secret) {
   const params = {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'services.list' },
   };
@@ -191,11 +179,11 @@ function viewServices(token) {
   }
 }
 
-function viewDashboard(token) {
+function viewDashboard(secret) {
   const params = {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'auth.me' },
   };

@@ -73,6 +73,33 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
   let user: User | null = null;
   let debugLog: Record<string, string> = {};
 
+  // TEMPORARY: Stress test bypass
+  // Check for stress test header
+  const stressTestSecret = opts.req.headers['x-stress-test-secret'];
+  if (stressTestSecret === process.env.STRESS_TEST_SECRET) {
+    console.log('[Stress Test] Bypassing authentication for stress test');
+    try {
+      const db = await getDb();
+      if (db) {
+        // Get the first user from database for stress testing
+        const [testUser] = await db.select().from(users).limit(1);
+        if (testUser) {
+          console.log('[Stress Test] Using test user:', { id: testUser.id, email: testUser.email });
+          return { 
+            req: opts.req, 
+            res: opts.res, 
+            user: testUser, 
+            partnerId: testUser.partnerId || null, 
+            language: 'es',
+            debugLog: { point1: 'Stress test bypass activated' }
+          };
+        }
+      }
+    } catch (error) {
+      console.error('[Stress Test] Error during bypass:', error);
+    }
+  }
+
   // Try Clerk authentication first (new system)
   try {
     console.log("[DEBUG] [Context] Attempting Clerk authentication...");
