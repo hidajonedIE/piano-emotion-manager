@@ -105,10 +105,11 @@ function simpleHash(str: string): string {
  * ```
  */
 export function withCache<TInput, TOutput>(
-  handler: (input: TInput, ctx: any) => Promise<TOutput>,
+  handler: (opts: { ctx: any; input: TInput }) => Promise<TOutput>,
   options?: CacheOptions
 ) {
-  return async (input: TInput, ctx: any): Promise<TOutput> => {
+  return async (opts: { ctx: any; input: TInput }): Promise<TOutput> => {
+    const { ctx, input } = opts;
     const startTime = Date.now();
     let cacheHit = false;
     let cacheError: Error | null = null;
@@ -120,7 +121,7 @@ export function withCache<TInput, TOutput>(
       
       if (!cacheEnabled) {
         console.log('[Cache] Cache disabled, executing handler directly');
-        return await handler(input, ctx);
+        return await handler({ ctx, input });
       }
       
       // Validar que tenemos un path válido
@@ -132,7 +133,7 @@ export function withCache<TInput, TOutput>(
           ctxPath: ctx.path,
           procedurePath: ctx.procedure?.path
         });
-        return await handler(input, ctx);
+        return await handler({ ctx, input });
       }
       
       // Obtener userId de forma segura
@@ -171,7 +172,7 @@ export function withCache<TInput, TOutput>(
       
       // Si no está en caché o hubo error, ejecutar handler
       console.log('[Cache] Cache MISS, executing handler', { key: cacheKey });
-      const result = await handler(input, ctx);
+      const result = await handler({ ctx, input });
       
       // Intentar guardar en caché (no bloqueante)
       const ttl = options?.ttl || 300;
@@ -208,7 +209,7 @@ export function withCache<TInput, TOutput>(
       
       // Si es un error desconocido, intentar ejecutar el handler sin caché
       console.error('[Cache] Unexpected error, attempting to execute handler without cache');
-      return await handler(input, ctx);
+      return await handler({ ctx, input });
     }
   };
 }
