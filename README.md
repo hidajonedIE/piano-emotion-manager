@@ -420,3 +420,4 @@ Desarrollado con ❤️ para técnicos de pianos profesionales
 
 <-- Trigger Vercel redeploy for UX improvements -->
 
+# Cache fix
