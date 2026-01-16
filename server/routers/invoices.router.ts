@@ -15,6 +15,7 @@ import {
   validateWritePermission
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -168,6 +169,7 @@ function calculateInvoiceStats(invoicesList: any[]) {
 // ============================================================================
 
 const orgProcedure = protectedProcedure.use(withOrganizationContext);
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ROUTER
@@ -179,7 +181,8 @@ export const invoicesRouter = router({
    */
   list: protectedProcedure
     .input(paginationSchema.optional())
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const { 
         limit = 30, 
         cursor, 
@@ -265,12 +268,15 @@ export const invoicesRouter = router({
       }
 
       return { items, nextCursor, total, stats };
-    }),
+    },
+    { ttl: 180, prefix: 'invoices', includeUser: true }
+  )),
   
   /**
    * Lista completa sin paginación (para selects)
    */
-  listAll: orgProcedure.query(async ({ ctx }) => {
+  listAll: orgProcedure.query(withCache(
+    async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return [];
     
@@ -283,14 +289,17 @@ export const invoicesRouter = router({
       .orderBy(desc(invoices.date));
 
     return markOverdueInvoices(items);
-  }),
+  },
+  { ttl: 300, prefix: 'invoices', includeUser: true }
+)),
   
   /**
    * Obtener factura por ID
    */
   get: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
@@ -310,7 +319,9 @@ export const invoicesRouter = router({
       // Marcar como vencida si corresponde
       const [markedInvoice] = markOverdueInvoices([invoice]);
       return markedInvoice;
-    }),
+    },
+    { ttl: 300, prefix: 'invoices', includeUser: true }
+  )),
   
   /**
    * Obtener factura por número
@@ -394,6 +405,10 @@ export const invoicesRouter = router({
       );
       
       const result = await database.insert(invoices).values(invoiceData);
+      
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('invoices');
+      
       return result[0].insertId;
     }),
   
@@ -451,6 +466,9 @@ export const invoicesRouter = router({
         .set(updateData)
         .where(eq(invoices.id, id));
       
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('invoices');
+      
       return { success: true };
     }),
   
@@ -483,6 +501,9 @@ export const invoicesRouter = router({
       validateWritePermission(ctx.orgContext, "invoices", existingInvoice.odId);
 
       await database.delete(invoices).where(eq(invoices.id, input.id));
+      
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('invoices');
       
       return { success: true };
     }),
@@ -522,6 +543,9 @@ export const invoicesRouter = router({
         .update(invoices)
         .set({ status: input.status })
         .where(eq(invoices.id, input.id));
+      
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('invoices');
       
       return { success: true };
     }),
