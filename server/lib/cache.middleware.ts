@@ -81,33 +81,39 @@ export function withCache<TInput, TOutput>(
   options?: CacheOptions
 ) {
   return async (input: TInput, ctx: any): Promise<TOutput> => {
-    // Solo cachear en producción o si está explícitamente habilitado
-    const cacheEnabled = process.env.NODE_ENV === 'production' || 
-                        process.env.ENABLE_CACHE === 'true';
-    
-    if (!cacheEnabled) {
+    try {
+      // Solo cachear en producción o si está explícitamente habilitado
+      const cacheEnabled = process.env.NODE_ENV === 'production' || 
+                          process.env.ENABLE_CACHE === 'true';
+      
+      if (!cacheEnabled) {
+        return handler(input, ctx);
+      }
+      
+      // Generar clave de caché
+      const userId = ctx.user?.id?.toString() || ctx.session?.userId?.toString();
+      const path = ctx.path || ctx.procedure?.path || 'unknown';
+      const cacheKey = generateCacheKey(path, input, userId, options);
+      
+      // Intentar obtener del caché
+      const cached = await cacheService.get<TOutput>(cacheKey);
+      if (cached !== null) {
+        return cached;
+      }
+      
+      // Si no está en caché, ejecutar handler
+      const result = await handler(input, ctx);
+      
+      // Guardar en caché
+      const ttl = options?.ttl || 300; // 5 minutos por defecto
+      await cacheService.set(cacheKey, result, ttl);
+      
+      return result;
+    } catch (error) {
+      // Si el caché falla, ejecutar handler sin caché
+      console.error('[Cache] Error in cache middleware, falling back to direct execution:', error);
       return handler(input, ctx);
     }
-    
-    // Generar clave de caché
-    const userId = ctx.user?.id || ctx.session?.userId;
-    const path = ctx.path || 'unknown';
-    const cacheKey = generateCacheKey(path, input, userId, options);
-    
-    // Intentar obtener del caché
-    const cached = await cacheService.get<TOutput>(cacheKey);
-    if (cached !== null) {
-      return cached;
-    }
-    
-    // Si no está en caché, ejecutar handler
-    const result = await handler(input, ctx);
-    
-    // Guardar en caché
-    const ttl = options?.ttl || 300; // 5 minutos por defecto
-    await cacheService.set(cacheKey, result, ttl);
-    
-    return result;
   };
 }
 
