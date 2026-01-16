@@ -24,8 +24,15 @@ class CacheService {
       const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
       const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
       
+      console.log('[Cache Service] Attempting to connect to Redis', {
+        hasUrl: !!redisUrl,
+        hasToken: !!redisToken,
+        urlPrefix: redisUrl ? redisUrl.substring(0, 30) + '...' : 'none',
+        tokenLength: redisToken ? redisToken.length : 0
+      });
+      
       if (!redisUrl || !redisToken) {
-        console.warn('⚠️  No UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN configured, using in-memory cache fallback');
+        console.warn('⚠️  [Cache Service] No UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN configured, using in-memory cache fallback');
         this.useMemoryFallback = true;
         this.isConnected = true;
         return;
@@ -39,17 +46,24 @@ class CacheService {
 
       // Verificar conexión con un ping
       try {
-        await this.client.ping();
-        console.log('✅ Upstash Redis connected successfully');
+        console.log('[Cache Service] Pinging Redis...');
+        const pingResult = await this.client.ping();
+        console.log('✅ [Cache Service] Upstash Redis connected successfully', { pingResult });
         this.isConnected = true;
         this.useMemoryFallback = false;
       } catch (pingError) {
-        console.error('❌ Upstash Redis ping failed, using memory fallback:', pingError);
+        console.error('❌ [Cache Service] Upstash Redis ping failed, using memory fallback', {
+          error: pingError instanceof Error ? pingError.message : String(pingError),
+          stack: pingError instanceof Error ? pingError.stack : undefined
+        });
         this.useMemoryFallback = true;
         this.isConnected = true;
       }
     } catch (error) {
-      console.error('❌ Failed to connect to Upstash Redis:', error);
+      console.error('❌ [Cache Service] Failed to connect to Upstash Redis', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       this.useMemoryFallback = true;
       this.isConnected = true;
     }

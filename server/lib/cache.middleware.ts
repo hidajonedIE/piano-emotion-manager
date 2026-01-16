@@ -195,11 +195,18 @@ export function withCache<TInput, TOutput>(
     } catch (error) {
       // Si hay un error en el handler, propagarlo
       const duration = Date.now() - startTime;
+      
+      // Logging detallado con stack trace completo
       console.error('[Cache] Error in cache middleware or handler', {
         duration: `${duration}ms`,
         cacheHit,
         cacheError: cacheError?.message,
-        handlerError: error instanceof Error ? error.message : String(error)
+        handlerError: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        errorType: error?.constructor?.name,
+        procedurePath: options?.procedurePath,
+        hasCtx: !!ctx,
+        hasInput: !!input
       });
       
       // Si el error es del handler, propagarlo
@@ -208,7 +215,10 @@ export function withCache<TInput, TOutput>(
       }
       
       // Si es un error desconocido, intentar ejecutar el handler sin caché
-      console.error('[Cache] Unexpected error, attempting to execute handler without cache');
+      console.error('[Cache] Unexpected error, attempting to execute handler without cache', {
+        errorMessage: error instanceof Error ? error.message : String(error),
+        fullStack: error instanceof Error ? error.stack : 'No stack trace available'
+      });
       return await handler({ ctx, input });
     }
   };
