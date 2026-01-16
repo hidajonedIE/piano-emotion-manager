@@ -109,6 +109,13 @@ export function withCache<TInput, TOutput>(
   options?: CacheOptions
 ) {
   return async (opts: { ctx: any; input: TInput }): Promise<TOutput> => {
+    // IMMEDIATE LOGGING - ALWAYS EXECUTES
+    console.log('🔥🔥🔥 [CACHE MIDDLEWARE] EXECUTING - THIS SHOULD ALWAYS APPEAR', {
+      timestamp: new Date().toISOString(),
+      NODE_ENV: process.env.NODE_ENV,
+      ENABLE_CACHE: process.env.ENABLE_CACHE
+    });
+    
     const { ctx, input } = opts;
     let cacheError: Error | null = null;
     
