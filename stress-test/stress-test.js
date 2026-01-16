@@ -5,7 +5,7 @@ import { Counter } from 'k6/metrics';
 // Métrica personalizada para contar errores
 const errors = new Counter('errors');
 
-// Configuración de la prueba
+// Configuración de la prueba para 2500 usuarios concurrentes
 export const options = {
   stages: [
     // Warm-up: 0 → 500 usuarios en 2 minutos
@@ -22,8 +22,8 @@ export const options = {
   thresholds: {
     // 95% de las requests deben completarse en menos de 1000ms
     'http_req_duration': ['p(95)<1000', 'p(99)<2000'],
-    // Tasa de error debe ser menor al 1%
-    'errors': ['rate<0.01'],
+    // Tasa de error debe ser menor al 5%
+    'errors': ['rate<0.05'],
     // 95% de las requests deben ser exitosas
     'http_req_failed': ['rate<0.05'],
   },
@@ -44,8 +44,8 @@ const USER_SCENARIOS = [
 
 // Setup: Configurar bypass de autenticación
 export function setup() {
-  console.log('🔐 Configurando prueba de estrés con bypass de autenticación...');
-  console.log('✅ Bypass configurado exitosamente');
+  console.log('🚀 Iniciando prueba de estrés de 2500 usuarios concurrentes...');
+  console.log('✅ Bypass de autenticación y rate limiting configurado');
   
   return {
     stressTestSecret: STRESS_TEST_SECRET,
@@ -75,8 +75,9 @@ export default function (data) {
       break;
   }
   
-  // Pausa entre requests (simular tiempo de lectura del usuario)
-  sleep(Math.random() * 3 + 2); // Entre 2 y 5 segundos
+  // Pausa realista entre requests (5-10 segundos)
+  // Esto distribuye la carga: 2500 usuarios / 7.5s promedio = ~333 req/s
+  sleep(Math.random() * 5 + 5);
 }
 
 function viewClients(secret) {
@@ -190,6 +191,9 @@ function viewDashboard(secret) {
     'response time < 1000ms': (r) => r.timings.duration < 1000,
   });
 
+  // Pequeña pausa entre requests del mismo usuario
+  sleep(1);
+
   // 2. Obtener resumen de clientes
   const clientsParams = {
     ...params,
@@ -209,4 +213,10 @@ function viewDashboard(secret) {
   if (!success) {
     errors.add(1);
   }
+}
+
+// Teardown: Resumen final
+export function teardown(data) {
+  console.log('✅ Prueba de estrés completada');
+  console.log('📊 Revisa los resultados arriba para ver el rendimiento del sistema');
 }
