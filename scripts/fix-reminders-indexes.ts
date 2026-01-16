@@ -10,47 +10,77 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: '.env.local' });
 
 async function fixRemindersIndexes() {
-  console.log('[Fix Reminders] Starting...\n');
+  console.log('[Reminders Indexes] Starting...');
   
-  const connection = await mysql.createConnection({
-    uri: process.env.DATABASE_URL!,
-    ssl: { rejectUnauthorized: true },
-  });
-  
-  console.log('[Fix Reminders] ✓ Connected\n');
-
-  const sqlFile = path.join(__dirname, '../drizzle/migrations/fix-reminders-indexes.sql');
-  const sql = fs.readFileSync(sqlFile, 'utf8');
-  
-  const createIndexRegex = /CREATE INDEX IF NOT EXISTS (\w+) ON (\w+)\([^)]+\);/g;
-  const statements: Array<{sql: string, indexName: string}> = [];
-  
-  let match;
-  while ((match = createIndexRegex.exec(sql)) !== null) {
-    statements.push({ sql: match[0], indexName: match[1] });
+  if (!process.env.DATABASE_URL) {
+    console.error('[Reminders Indexes] ERROR: DATABASE_URL not found');
+    process.exit(1);
   }
 
-  console.log(`[Fix Reminders] Found ${statements.length} indexes to create\n`);
+  let connection;
+  
+  try {
+    console.log('[Reminders Indexes] Connecting to database...');
+    connection = await mysql.createConnection({
+      uri: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: true },
+      multipleStatements: true,
+    });
+    
+    console.log('[Reminders Indexes] ✓ Connected');
 
-  let success = 0, skipped = 0;
+    const sqlFile = path.join(__dirname, '../drizzle/migrations/fix-reminders-indexes-v2.sql');
+    const sql = fs.readFileSync(sqlFile, 'utf8');
+    
+    const statements = sql
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => {
+        if (s.length === 0) return false;
+        const lines = s.split('\n').filter(line => !line.trim().startsWith('--'));
+        return lines.join('\n').trim().length > 0;
+      })
+      .map(s => {
+        return s.split('\n').filter(line => !line.trim().startsWith('--')).join('\n').trim();
+      });
 
-  for (const { sql: stmt, indexName } of statements) {
-    try {
-      await connection.execute(stmt);
-      console.log(`✓ ${indexName}`);
-      success++;
-    } catch (error: any) {
-      if (error.code === 'ER_DUP_KEYNAME') {
-        console.log(`⊘ ${indexName} (exists)`);
-        skipped++;
-      } else {
-        console.log(`✗ ${indexName}: ${error.message}`);
+    console.log(`[Reminders Indexes] Found ${statements.length} statements`);
+
+    let successCount = 0;
+    let skipCount = 0;
+
+    for (const statement of statements) {
+      const indexMatch = statement.match(/idx_\w+/);
+      const indexName = indexMatch ? indexMatch[0] : 'unknown';
+
+      try {
+        await connection.execute(statement);
+        console.log(`[Reminders Indexes] ✓ Created: ${indexName}`);
+        successCount++;
+      } catch (error: any) {
+        if (error.code === 'ER_DUP_KEYNAME' || error.message.includes('Duplicate key name')) {
+          console.log(`[Reminders Indexes] ⊘ Skipped: ${indexName}`);
+          skipCount++;
+        } else {
+          console.error(`[Reminders Indexes] ✗ Error: ${indexName}:`, error.message);
+        }
       }
     }
-  }
 
-  console.log(`\n[Fix Reminders] ✓ Created: ${success}, Skipped: ${skipped}`);
-  await connection.end();
+    console.log('\n[Reminders Indexes] ========================================');
+    console.log(`[Reminders Indexes] Created: ${successCount}`);
+    console.log(`[Reminders Indexes] Skipped: ${skipCount}`);
+    console.log('[Reminders Indexes] ========================================\n');
+    console.log('[Reminders Indexes] ✓ Done!');
+
+  } catch (error) {
+    console.error('[Reminders Indexes] ❌ Fatal error:', error);
+    process.exit(1);
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
 }
 
 fixRemindersIndexes().catch(console.error);

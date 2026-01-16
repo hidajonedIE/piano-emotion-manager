@@ -43,7 +43,17 @@ async function applyIndexes() {
     const statements = sql
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .filter(s => {
+        // Filter out empty lines and comment-only lines
+        if (s.length === 0) return false;
+        // Remove all comment lines
+        const lines = s.split('\n').filter(line => !line.trim().startsWith('--'));
+        return lines.join('\n').trim().length > 0;
+      })
+      .map(s => {
+        // Remove inline comments
+        return s.split('\n').filter(line => !line.trim().startsWith('--')).join('\n').trim();
+      });
 
     console.log(`[Indexes] Found ${statements.length} SQL statements to execute`);
 
