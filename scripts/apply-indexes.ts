@@ -1,118 +1,45 @@
-import mysql from 'mysql2/promise';
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load environment variables
-dotenv.config({ path: '.env.local' });
+import { getDb } from '../server/db.js';
+import { readFileSync } from 'fs';
 
 async function applyIndexes() {
-  console.log('[Indexes] Starting index creation...');
+  console.log('🔌 Connecting to TiDB...');
+  const db = await getDb();
   
-  if (!process.env.DATABASE_URL) {
-    console.error('[Indexes] ERROR: DATABASE_URL not found in environment');
+  if (!db) {
+    console.error('❌ Could not connect to database');
     process.exit(1);
   }
 
-  let connection;
+  console.log('✅ Connected to TiDB');
+  console.log('📝 Reading SQL file...');
   
-  try {
-    // Create connection
-    console.log('[Indexes] Connecting to database...');
-    connection = await mysql.createConnection({
-      uri: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: true,
-      },
-      multipleStatements: true,
-    });
-    
-    console.log('[Indexes] ✓ Connected successfully');
+  const sql = readFileSync('./drizzle/migrations/add_performance_indexes.sql', 'utf8');
+  
+  // Split by semicolon and execute each statement
+  const statements = sql
+    .split(';')
+    .map(s => s.trim())
+    .filter(s => s.length > 0 && !s.startsWith('--'));
 
-    // Read SQL file
-    const sqlFile = path.join(__dirname, '../drizzle/migrations/add-performance-indexes.sql');
-    console.log('[Indexes] Reading SQL file:', sqlFile);
-    
-    const sql = fs.readFileSync(sqlFile, 'utf8');
-    
-    // Split by semicolon and filter out comments and empty lines
-    const statements = sql
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => {
-        // Filter out empty lines and comment-only lines
-        if (s.length === 0) return false;
-        // Remove all comment lines
-        const lines = s.split('\n').filter(line => !line.trim().startsWith('--'));
-        return lines.join('\n').trim().length > 0;
-      })
-      .map(s => {
-        // Remove inline comments
-        return s.split('\n').filter(line => !line.trim().startsWith('--')).join('\n').trim();
-      });
-
-    console.log(`[Indexes] Found ${statements.length} SQL statements to execute`);
-
-    // Execute each statement
-    let successCount = 0;
-    let skipCount = 0;
-    let errorCount = 0;
-
-    for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i];
-      
-      // Skip comments
-      if (statement.startsWith('--')) {
-        continue;
-      }
-
-      // Extract index name for logging
-      const indexMatch = statement.match(/idx_\w+/);
-      const indexName = indexMatch ? indexMatch[0] : `statement ${i + 1}`;
-
+  console.log(`📊 Executing ${statements.length} SQL statements...`);
+  
+  for (let i = 0; i < statements.length; i++) {
+    const stmt = statements[i];
+    if (stmt) {
       try {
-        await connection.execute(statement);
-        console.log(`[Indexes] ✓ Created: ${indexName}`);
-        successCount++;
+        await (db as any).execute(stmt);
+        console.log(`✅ [${i + 1}/${statements.length}] ${stmt.substring(0, 60)}...`);
       } catch (error: any) {
-        if (error.code === 'ER_DUP_KEYNAME' || error.message.includes('Duplicate key name')) {
-          console.log(`[Indexes] ⊘ Skipped (already exists): ${indexName}`);
-          skipCount++;
-        } else {
-          console.error(`[Indexes] ✗ Error creating ${indexName}:`, error.message);
-          errorCount++;
-        }
+        console.error(`⚠️  [${i + 1}/${statements.length}] Error: ${error.message}`);
       }
     }
-
-    console.log('\n[Indexes] ========================================');
-    console.log(`[Indexes] Summary:`);
-    console.log(`[Indexes]   Created: ${successCount}`);
-    console.log(`[Indexes]   Skipped: ${skipCount}`);
-    console.log(`[Indexes]   Errors: ${errorCount}`);
-    console.log('[Indexes] ========================================\n');
-
-    if (errorCount > 0) {
-      console.error('[Indexes] ⚠️  Some indexes failed to create. Check errors above.');
-      process.exit(1);
-    } else {
-      console.log('[Indexes] ✓ All indexes created successfully!');
-    }
-
-  } catch (error) {
-    console.error('[Indexes] ❌ Fatal error:', error);
-    process.exit(1);
-  } finally {
-    if (connection) {
-      await connection.end();
-      console.log('[Indexes] Connection closed');
-    }
   }
+
+  console.log('✅ Índices aplicados exitosamente');
+  process.exit(0);
 }
 
-// Run the script
-applyIndexes().catch(console.error);
+applyIndexes().catch((error) => {
+  console.error('❌ Error:', error.message);
+  process.exit(1);
+});

@@ -119,7 +119,8 @@ export function withCache<TInput, TOutput>(
       let cacheHit = false;
       // Solo cachear en producción o si está explícitamente habilitado
       const cacheEnabled = process.env.NODE_ENV === 'production' || 
-                          process.env.ENABLE_CACHE === 'true';
+                          process.env.ENABLE_CACHE === 'true' ||
+                          process.env.VERCEL_ENV === 'production';
       
       if (!cacheEnabled) {
         console.log('[Cache] Cache disabled, executing handler directly');

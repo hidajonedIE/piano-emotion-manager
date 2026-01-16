@@ -10,7 +10,7 @@ import { withCache } from "../lib/cache.middleware.js";
 export const authRouter = router({
   me: publicProcedure.query(withCache(
     async (opts) => opts.ctx.user,
-    { ttl: 300, prefix: 'auth', includeUser: true, procedurePath: 'auth.me' }
+    { ttl: 60, prefix: 'auth', includeUser: true, procedurePath: 'auth.me' }
   )),
   
   logout: publicProcedure.mutation(({ ctx }) => {
