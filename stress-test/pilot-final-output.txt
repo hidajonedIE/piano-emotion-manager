@@ -1,0 +1,50 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: stress-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 100 max VUs, 2m30s max duration (incl. graceful stop):
+              * default: 100 looping VUs for 2m0s (gracefulStop: 30s)
+
+time="2026-01-16T13:07:46-05:00" level=info msg="🔐 Obteniendo token de autenticación..." source=console
+
+
+  █ THRESHOLDS 
+
+    errors
+    ✓ 'rate<0.01' rate=0/s
+
+    http_req_duration
+    ✓ 'p(95)<1000' p(95)=674.59ms
+    ✓ 'p(99)<2000' p(99)=674.59ms
+
+    http_req_failed
+    ✗ 'rate<0.05' rate=100.00%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    errors..............: 0       0/s
+
+    HTTP
+    http_req_duration...: avg=674.59ms min=674.59ms med=674.59ms max=674.59ms p(90)=674.59ms p(95)=674.59ms
+    http_req_failed.....: 100.00% 1 out of 1
+    http_reqs...........: 1       1.157205/s
+
+    NETWORK
+    data_received.......: 4.9 kB  5.6 kB/s
+    data_sent...........: 1.9 kB  2.2 kB/s
+
+
+
+
+Run       [ 100% ] setup()
+default   [   0% ]
+time="2026-01-16T13:07:47-05:00" level=error msg="Error: Failed to get auth token: 500 {\"error\":\"Failed to generate token\",\"details\":\"Bad Request\"}\n\tat setup (file:///home/ubuntu/piano-emotion-manager/stress-test/stress-test.js:58:11(40))\n" hint="script exception"

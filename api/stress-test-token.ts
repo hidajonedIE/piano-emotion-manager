@@ -38,7 +38,6 @@ export default async function handler(
 
   try {
     // Obtener el primer usuario de la base de datos para usar como usuario de prueba
-    // En una aplicación real, crearías usuarios de prueba específicos
     const usersResponse = await clerkClient.users.getUserList({ limit: 1 });
     const users = usersResponse.data || usersResponse;
     
@@ -48,19 +47,17 @@ export default async function handler(
 
     const user = users[0];
 
-    // Crear una sesión temporal
-    const session = await clerkClient.sessions.createSession({
+    // Generar un JWT firmado directamente usando Clerk
+    // Este es el método recomendado para pruebas de estrés
+    const token = await clerkClient.signJwt({
       userId: user.id,
+      expiresInSeconds: 3600, // 1 hora
     });
-
-    // Obtener el token de la sesión
-    const token = await clerkClient.sessions.getToken(session.id, 'piano-emotion-manager');
 
     return res.status(200).json({
       token,
       userId: user.id,
-      sessionId: session.id,
-      expiresAt: session.expireAt,
+      expiresAt: Date.now() + 3600 * 1000,
     });
   } catch (error) {
     console.error('[Stress Test Token] Error generating token:', error);
