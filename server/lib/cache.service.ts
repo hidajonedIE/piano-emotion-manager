@@ -31,16 +31,23 @@ class CacheService {
    * Inicializar conexión a Upstash Redis
    */
   async connect(): Promise<void> {
+    console.log('[Cache Service] 🔌 CONNECT() METHOD CALLED', {
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack?.split('\n').slice(0, 5).join('\n')
+    });
+    
     try {
       // Intentar conectar a Upstash Redis
       const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
       const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
       
-      console.log('[Cache Service] Attempting to connect to Redis', {
+      console.log('[Cache Service] 🔍 Attempting to connect to Redis', {
         hasUrl: !!redisUrl,
         hasToken: !!redisToken,
         urlPrefix: redisUrl ? redisUrl.substring(0, 30) + '...' : 'none',
-        tokenLength: redisToken ? redisToken.length : 0
+        tokenLength: redisToken ? redisToken.length : 0,
+        urlFull: redisUrl || 'NOT_SET',
+        tokenPrefix: redisToken ? redisToken.substring(0, 20) + '...' : 'NOT_SET'
       });
       
       if (!redisUrl || !redisToken) {
@@ -85,10 +92,38 @@ class CacheService {
    * Asegurar que está conectado (lazy initialization)
    */
   private async ensureConnected(): Promise<void> {
-    if (this.isConnected) return;
-    if (this.connectPromise) return this.connectPromise;
+    console.log('[Cache Service] 🔄 ensureConnected() called', {
+      isConnected: this.isConnected,
+      useMemoryFallback: this.useMemoryFallback,
+      hasClient: !!this.client,
+      hasConnectPromise: !!this.connectPromise,
+      hasRedisUrl: !!process.env.UPSTASH_REDIS_REST_URL,
+      hasRedisToken: !!process.env.UPSTASH_REDIS_REST_TOKEN
+    });
+    
+    // Si ya está usando memory fallback, no reintentar
+    if (this.useMemoryFallback) {
+      console.log('[Cache Service] ⚠️  Already using memory fallback, skipping Redis connection');
+      return;
+    }
+    
+    // Si ya está conectado, verificar que el cliente existe
+    if (this.isConnected && this.client) {
+      console.log('[Cache Service] ✅ Already connected with active client');
+      return;
+    }
+    
+    // Si hay una conexión en progreso, esperarla
+    if (this.connectPromise) {
+      console.log('[Cache Service] ⏳ Connection in progress, waiting...');
+      return this.connectPromise;
+    }
+    
+    // Intentar conectar
+    console.log('[Cache Service] 🚀 Initiating new connection...');
     this.connectPromise = this.connect();
     await this.connectPromise;
+    this.connectPromise = null;
   }
 
   /**
