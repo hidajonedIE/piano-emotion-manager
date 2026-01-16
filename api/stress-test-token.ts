@@ -23,8 +23,17 @@ export default async function handler(
 
   // Verificar secret
   const { secret } = req.body;
+  console.log('[Stress Test Token] Received secret:', secret);
+  console.log('[Stress Test Token] Expected secret:', process.env.STRESS_TEST_SECRET);
+  
   if (secret !== process.env.STRESS_TEST_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ 
+      error: 'Unauthorized',
+      debug: {
+        received: secret,
+        expected: process.env.STRESS_TEST_SECRET ? 'SET' : 'UNDEFINED'
+      }
+    });
   }
 
   try {
