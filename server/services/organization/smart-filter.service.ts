@@ -13,7 +13,7 @@
  */
 
 import { SQL, and, eq, or } from "drizzle-orm";
-import { OrganizationContext } from "../../middleware/organization-context";
+import { OrganizationContext } from "../../middleware/organization-context.js";
 
 /**
  * Tipo de recurso compartible
