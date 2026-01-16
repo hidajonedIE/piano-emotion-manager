@@ -21,8 +21,8 @@ class CacheService {
   async connect(): Promise<void> {
     try {
       // Intentar conectar a Upstash Redis
-      const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-      const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+      const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
+      const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
       
       console.log('[Cache Service] Attempting to connect to Redis', {
         hasUrl: !!redisUrl,
