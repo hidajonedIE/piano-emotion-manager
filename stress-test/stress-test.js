@@ -82,15 +82,13 @@ export default function (data) {
 function viewClients(secret) {
   const params = {
     headers: {
-      'Content-Type': 'application/json',
       'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'clients.list' },
   };
 
-  const response = http.post(
+  const response = http.get(
     `${BASE_URL}/api/trpc/clients.list`,
-    JSON.stringify({}),
     params
   );
 
@@ -107,15 +105,13 @@ function viewClients(secret) {
 function viewPianos(secret) {
   const params = {
     headers: {
-      'Content-Type': 'application/json',
       'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'pianos.list' },
   };
 
-  const response = http.post(
+  const response = http.get(
     `${BASE_URL}/api/trpc/pianos.list`,
-    JSON.stringify({}),
     params
   );
 
@@ -132,15 +128,13 @@ function viewPianos(secret) {
 function viewAppointments(secret) {
   const params = {
     headers: {
-      'Content-Type': 'application/json',
       'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'appointments.list' },
   };
 
-  const response = http.post(
+  const response = http.get(
     `${BASE_URL}/api/trpc/appointments.list`,
-    JSON.stringify({}),
     params
   );
 
@@ -157,15 +151,13 @@ function viewAppointments(secret) {
 function viewServices(secret) {
   const params = {
     headers: {
-      'Content-Type': 'application/json',
       'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'services.list' },
   };
 
-  const response = http.post(
+  const response = http.get(
     `${BASE_URL}/api/trpc/services.list`,
-    JSON.stringify({}),
     params
   );
 
@@ -182,16 +174,14 @@ function viewServices(secret) {
 function viewDashboard(secret) {
   const params = {
     headers: {
-      'Content-Type': 'application/json',
       'X-Stress-Test-Secret': secret,
     },
     tags: { name: 'auth.me' },
   };
 
   // 1. Obtener información del usuario
-  const authResponse = http.post(
+  const authResponse = http.get(
     `${BASE_URL}/api/trpc/auth.me`,
-    null,
     params
   );
 
@@ -206,9 +196,8 @@ function viewDashboard(secret) {
     tags: { name: 'clients.list' },
   };
 
-  const clientsResponse = http.post(
+  const clientsResponse = http.get(
     `${BASE_URL}/api/trpc/clients.list`,
-    JSON.stringify({}),
     clientsParams
   );
 
