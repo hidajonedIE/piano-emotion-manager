@@ -429,7 +429,7 @@ export const appointmentsRouter = router({
 
       return { items, nextCursor, total, stats };
     },
-    { ttl: 60, prefix: 'appointments', includeUser: true }
+    { ttl: 60, prefix: 'appointments', includeUser: true, procedurePath: 'appointments.list' }
   )),
   
   /**
@@ -450,7 +450,7 @@ export const appointmentsRouter = router({
     
     return items;
   },
-  { ttl: 180, prefix: 'appointments', includeUser: true }
+  { ttl: 180, prefix: 'appointments', includeUser: true, procedurePath: 'appointments.listAll' }
 )),
   
   /**
@@ -588,7 +588,7 @@ export const appointmentsRouter = router({
       
       return result;
     },
-    { ttl: 180, prefix: 'appointments', includeUser: true }
+    { ttl: 180, prefix: 'appointments', includeUser: true, procedurePath: 'appointments.getById' }
   )),
   
   /**

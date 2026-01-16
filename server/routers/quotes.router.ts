@@ -519,7 +519,7 @@ export const quotesRouter = router({
 
       return { items, nextCursor, total, stats };
     },
-    { ttl: 180, prefix: 'quotes', includeUser: true }
+    { ttl: 180, prefix: 'quotes', includeUser: true, procedurePath: 'quotes.list' }
   )),
   
   /**
@@ -540,7 +540,7 @@ export const quotesRouter = router({
 
     return markExpiredQuotes(items);
   },
-  { ttl: 300, prefix: 'quotes', includeUser: true }
+  { ttl: 300, prefix: 'quotes', includeUser: true, procedurePath: 'quotes.listAll' }
 )),
   
   /**
@@ -570,7 +570,7 @@ export const quotesRouter = router({
       const [markedQuote] = markExpiredQuotes([quote]);
       return markedQuote;
     },
-    { ttl: 300, prefix: 'quotes', includeUser: true }
+    { ttl: 300, prefix: 'quotes', includeUser: true, procedurePath: 'quotes.getById' }
   )),
   
   /**

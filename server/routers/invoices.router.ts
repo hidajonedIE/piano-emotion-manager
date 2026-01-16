@@ -268,7 +268,7 @@ export const invoicesRouter = router({
 
       return { items, nextCursor, total, stats };
     },
-    { ttl: 180, prefix: 'invoices', includeUser: true }
+    { ttl: 180, prefix: 'invoices', includeUser: true, procedurePath: 'invoices.list' }
   )),
   
   /**
@@ -289,7 +289,7 @@ export const invoicesRouter = router({
 
     return markOverdueInvoices(items);
   },
-  { ttl: 300, prefix: 'invoices', includeUser: true }
+  { ttl: 300, prefix: 'invoices', includeUser: true, procedurePath: 'invoices.listAll' }
 )),
   
   /**
@@ -319,7 +319,7 @@ export const invoicesRouter = router({
       const [markedInvoice] = markOverdueInvoices([invoice]);
       return markedInvoice;
     },
-    { ttl: 300, prefix: 'invoices', includeUser: true }
+    { ttl: 300, prefix: 'invoices', includeUser: true, procedurePath: 'invoices.getById' }
   )),
   
   /**

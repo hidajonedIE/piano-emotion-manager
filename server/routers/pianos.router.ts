@@ -159,7 +159,7 @@ export const pianosRouter = router({
 
       return { items, nextCursor, total };
     },
-    { ttl: 120, prefix: 'pianos', includeUser: true }
+    { ttl: 120, prefix: 'pianos', includeUser: true, procedurePath: 'pianos.list' }
   )),
   
   listAll: orgProcedure.query(withCache(
@@ -179,7 +179,7 @@ export const pianosRouter = router({
         )
       );
   },
-  { ttl: 300, prefix: 'pianos', includeUser: true }
+  { ttl: 300, prefix: 'pianos', includeUser: true, procedurePath: 'pianos.listAll' }
 )),
   
   get: orgProcedure
@@ -205,7 +205,7 @@ export const pianosRouter = router({
       if (!piano) throw new Error("Piano no encontrado");
       return piano;
     },
-    { ttl: 300, prefix: 'pianos', includeUser: true }
+    { ttl: 300, prefix: 'pianos', includeUser: true, procedurePath: 'pianos.getById' }
   )),
   
   byClient: orgProcedure
