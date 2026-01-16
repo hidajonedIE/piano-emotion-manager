@@ -218,7 +218,7 @@ export const clientsRouter = router({
         throw error;
       }
     },
-    { ttl: 120, prefix: 'clients', includeUser: true, procedurePath: 'clients.list' }
+    { ttl: 900, prefix: 'clients', includeUser: true, procedurePath: 'clients.list' }
   )),
   
   listAll: orgProcedure.query(withCache(
@@ -238,7 +238,7 @@ export const clientsRouter = router({
         )
       );
   },
-  { ttl: 300, prefix: 'clients', includeUser: true, procedurePath: 'clients.listAll' }
+  { ttl: 900, prefix: 'clients', includeUser: true, procedurePath: 'clients.listAll' }
 )),
   
   getById: orgProcedure
@@ -264,7 +264,7 @@ export const clientsRouter = router({
       if (!client) throw new Error("Cliente no encontrado");
       return client;
     },
-    { ttl: 300, prefix: 'clients', includeUser: true, procedurePath: 'clients.getById' }
+    { ttl: 900, prefix: 'clients', includeUser: true, procedurePath: 'clients.getById' }
   )),
   
   create: orgProcedure

@@ -219,7 +219,7 @@ export const servicesRouter = router({
 
       return { items, nextCursor, total, stats: { total, totalRevenue: Number(totalRevenue) || 0 } };
     },
-    { ttl: 60, prefix: 'services', includeUser: true, procedurePath: 'services.list' }
+    { ttl: 900, prefix: 'services', includeUser: true, procedurePath: 'services.list' }
   )),
   
   get: orgProcedure
@@ -277,7 +277,7 @@ export const servicesRouter = router({
 
       return result;
     },
-    { ttl: 180, prefix: 'services', includeUser: true, procedurePath: 'services.getById' }
+    { ttl: 900, prefix: 'services', includeUser: true, procedurePath: 'services.getById' }
   )),
 
   byPiano: orgProcedure

@@ -268,7 +268,7 @@ export const invoicesRouter = router({
 
       return { items, nextCursor, total, stats };
     },
-    { ttl: 180, prefix: 'invoices', includeUser: true, procedurePath: 'invoices.list' }
+    { ttl: 300, prefix: 'invoices', includeUser: true, procedurePath: 'invoices.list' }
   )),
   
   /**

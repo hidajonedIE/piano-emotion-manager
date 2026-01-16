@@ -519,7 +519,7 @@ export const quotesRouter = router({
 
       return { items, nextCursor, total, stats };
     },
-    { ttl: 180, prefix: 'quotes', includeUser: true, procedurePath: 'quotes.list' }
+    { ttl: 300, prefix: 'quotes', includeUser: true, procedurePath: 'quotes.list' }
   )),
   
   /**
