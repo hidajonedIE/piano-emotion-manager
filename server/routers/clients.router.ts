@@ -17,6 +17,7 @@ import {
   validateWritePermission
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
+import { withCache, invalidatePath, invalidateUserCache } from "../middleware/cache.middleware.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -136,7 +137,8 @@ export const clientsRouter = router({
           sortOrder: z.enum(["asc", "desc"]).default("asc"),
         })
       )
-     .query(async ({ ctx, input }) => {
+     .query(withCache(
+      async ({ ctx, input }) => {
       const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
       const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
@@ -215,9 +217,12 @@ export const clientsRouter = router({
         console.error('[clients.list] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
         throw error;
       }
-    }),
+    },
+    { ttl: 120, prefix: 'clients', includeUser: true }
+  )),
   
-  listAll: orgProcedure.query(async ({ ctx }) => {
+  listAll: orgProcedure.query(withCache(
+    async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) return [];
     
@@ -232,11 +237,14 @@ export const clientsRouter = router({
           "clients"
         )
       );
-  }),
+  },
+  { ttl: 300, prefix: 'clients', includeUser: true }
+)),
   
   getById: orgProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
+    .query(withCache(
+      async ({ ctx, input }) => {
       const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
@@ -255,7 +263,9 @@ export const clientsRouter = router({
 
       if (!client) throw new Error("Cliente no encontrado");
       return client;
-    }),
+    },
+    { ttl: 300, prefix: 'clients', includeUser: true }
+  )),
   
   create: orgProcedure
     .input(clientBaseSchema)
@@ -285,7 +295,13 @@ export const clientsRouter = router({
         partnerId: ctx.partnerId,
       };
       
-      return db.createClient(clientData);
+      const result = await db.createClient(clientData);
+      
+      // Invalidar caché
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('clients');
+      
+      return result;
     }),
   
   update: orgProcedure
@@ -338,7 +354,13 @@ export const clientsRouter = router({
       }
       
       // Actualizar usando el odId del cliente original (no del usuario actual)
-      return db.updateClient(existingClient.odId, id, updateData);
+      const result = await db.updateClient(existingClient.odId, id, updateData);
+      
+      // Invalidar caché
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('clients');
+      
+      return result;
     }),
   
   delete: orgProcedure
@@ -369,7 +391,13 @@ export const clientsRouter = router({
       validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
 
       // Eliminar usando el odId del cliente original
-      return db.deleteClient(existingClient.odId, input.id);
+      const result = await db.deleteClient(existingClient.odId, input.id);
+      
+      // Invalidar caché
+      await invalidateUserCache(ctx.user.id);
+      await invalidatePath('clients');
+      
+      return result;
     }),
   
   getRegions: orgProcedure.query(async ({ ctx }) => {
