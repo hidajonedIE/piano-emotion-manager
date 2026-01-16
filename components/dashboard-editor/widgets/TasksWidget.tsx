@@ -63,8 +63,7 @@ export const TasksWidget = React.memo(function TasksWidget({ config, isEditing }
       </ScrollView>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -90,5 +89,4 @@ const styles = StyleSheet.create({
   taskCompleted: {
     textDecorationLine: 'line-through',
   },
-});
 });

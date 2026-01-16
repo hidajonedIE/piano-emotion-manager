@@ -76,8 +76,7 @@ export const InventoryAlertsWidget = React.memo(function InventoryAlertsWidget({
       )}
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -108,5 +107,4 @@ const styles = StyleSheet.create({
   inventoryAlertSubtitle: {
     fontSize: 12,
   },
-});
 });

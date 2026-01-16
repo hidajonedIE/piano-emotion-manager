@@ -63,8 +63,7 @@ export const AdvancedToolsWidget = React.memo(function AdvancedToolsWidget({ con
       </ScrollView>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -91,5 +90,4 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: 'center',
   },
-});
 });

@@ -99,8 +99,7 @@ export const RecentInvoicesWidget = React.memo(function RecentInvoicesWidget({ c
       )}
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -138,5 +137,4 @@ const styles = StyleSheet.create({
   listItemSubtitle: {
     fontSize: 12,
   },
-});
 });

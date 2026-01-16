@@ -125,7 +125,7 @@ export const AlertsWidget = React.memo(function AlertsWidget({ config, isEditing
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   widgetContent: {
@@ -159,5 +159,4 @@ const styles = StyleSheet.create({
   alertMessage: {
     fontSize: 12,
   },
-});
 });

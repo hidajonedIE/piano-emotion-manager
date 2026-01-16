@@ -96,8 +96,7 @@ export const ChartPieWidget = React.memo(function ChartPieWidget({ config, isEdi
       />
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -120,5 +119,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-});
 });

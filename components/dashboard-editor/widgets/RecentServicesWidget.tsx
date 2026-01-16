@@ -91,8 +91,7 @@ export const RecentServicesWidget = React.memo(function RecentServicesWidget({ c
       )}
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -130,5 +129,4 @@ const styles = StyleSheet.create({
   listItemSubtitle: {
     fontSize: 12,
   },
-});
 });

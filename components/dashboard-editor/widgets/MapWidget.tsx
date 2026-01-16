@@ -43,8 +43,7 @@ export const MapWidget = React.memo(function MapWidget({ config, isEditing }: Wi
       </View>
     </Pressable>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -66,5 +65,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-});
 });

@@ -95,8 +95,7 @@ export const StatsCardWidget = React.memo(function StatsCardWidget({ config, isE
       </View>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -125,5 +124,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
-});
 });

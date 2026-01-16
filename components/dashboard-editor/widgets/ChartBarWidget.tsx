@@ -113,8 +113,7 @@ export const ChartBarWidget = React.memo(function ChartBarWidget({ config, isEdi
       </ScrollView>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -141,5 +140,4 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 16,
   },
-});
 });

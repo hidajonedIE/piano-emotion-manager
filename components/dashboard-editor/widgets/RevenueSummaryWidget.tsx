@@ -94,8 +94,7 @@ export const RevenueSummaryWidget = React.memo(function RevenueSummaryWidget({ c
       </View>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -130,5 +129,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-});
 });

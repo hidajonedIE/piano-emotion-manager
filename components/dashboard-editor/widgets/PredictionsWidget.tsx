@@ -16,7 +16,7 @@ interface WidgetProps {
   size?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
 }
 
-export function PredictionsWidget({ config, isEditing }: WidgetProps) {
+export const PredictionsWidget = React.memo(function PredictionsWidget({ config, isEditing }: WidgetProps) {
   const { colors } = useTheme();
   
   // Usar la API de predicciones avanzadas
@@ -144,7 +144,7 @@ export function PredictionsWidget({ config, isEditing }: WidgetProps) {
       ))}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   widgetContent: {

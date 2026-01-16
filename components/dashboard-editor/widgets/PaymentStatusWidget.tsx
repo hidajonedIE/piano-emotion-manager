@@ -83,8 +83,7 @@ export const PaymentStatusWidget = React.memo(function PaymentStatusWidget({ con
       </View>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -115,5 +114,4 @@ const styles = StyleSheet.create({
   paymentStatusLabel: {
     fontSize: 12,
   },
-});
 });

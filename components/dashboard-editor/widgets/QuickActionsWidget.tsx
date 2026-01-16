@@ -52,8 +52,7 @@ export const QuickActionsWidget = React.memo(function QuickActionsWidget({ confi
       </View>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -79,5 +78,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-});
 });

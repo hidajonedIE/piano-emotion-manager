@@ -80,8 +80,7 @@ export const CalendarWidget = React.memo(function CalendarWidget({ config, isEdi
       )}
     </Pressable>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -116,5 +115,4 @@ const styles = StyleSheet.create({
   calendarSubtext: {
     fontSize: 12,
   },
-});
 });

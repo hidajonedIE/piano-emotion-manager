@@ -170,8 +170,7 @@ export const StatsWidget = React.memo(function StatsWidget({ config, isEditing }
       </View>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -239,5 +238,4 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
   },
-});
 });

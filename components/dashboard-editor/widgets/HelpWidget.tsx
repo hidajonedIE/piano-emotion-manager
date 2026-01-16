@@ -57,8 +57,7 @@ export const HelpWidget = React.memo(function HelpWidget({ config, isEditing }: 
       </ScrollView>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -84,5 +83,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 12,
   },
-});
 });

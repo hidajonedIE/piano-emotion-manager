@@ -157,8 +157,7 @@ export const ChartLineWidget = React.memo(function ChartLineWidget({ config, isE
       </ScrollView>
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -192,5 +191,4 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 16,
   },
-});
 });

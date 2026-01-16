@@ -73,8 +73,7 @@ export const AccessShortcutsWidget = React.memo(function AccessShortcutsWidget({
       )}
     </View>
   );
-}
-
+});
 const styles = StyleSheet.create({
   widgetContent: {
     flex: 1,
@@ -107,5 +106,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-});
 });
