@@ -15,6 +15,18 @@ class CacheService {
   private memoryCache: Map<string, { value: string; expiry: number }> = new Map();
   private connectPromise: Promise<void> | null = null;
 
+  constructor() {
+    // Log inicial para debugging
+    console.log('[Cache Service] 🔧 CONSTRUCTOR CALLED - Initial state', {
+      timestamp: new Date().toISOString(),
+      hasRedisUrl: !!process.env.UPSTASH_REDIS_REST_URL,
+      hasRedisToken: !!process.env.UPSTASH_REDIS_REST_TOKEN,
+      redisUrlLength: process.env.UPSTASH_REDIS_REST_URL?.length || 0,
+      redisTokenLength: process.env.UPSTASH_REDIS_REST_TOKEN?.length || 0,
+      nodeEnv: process.env.NODE_ENV
+    });
+  }
+
   /**
    * Inicializar conexión a Upstash Redis
    */
