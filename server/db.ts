@@ -1,7 +1,10 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import { InsertUser, users } from "../drizzle/schema.js";
+import { users } from "../drizzle/schema.js";
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
+
+type InsertUser = InferInsertModel<typeof users>;
 import { ENV } from "./_core/env.js";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -31,7 +34,7 @@ export async function getDb() {
         idleTimeout: 60000,             // 60 seconds idle timeout
         connectTimeout: 10000,          // 10 seconds connect timeout
       });
-      _db = drizzle(pool, { casing: 'preserve' });
+      _db = drizzle(pool);
       console.log("[Database] ✓ Connection pool created successfully");
     } catch (error) {
       console.error("[Database] ❌ Failed to connect:", error instanceof Error ? error.message : error);
@@ -129,18 +132,42 @@ export async function getUserByOpenId(openId: string) {
 
 import { and, desc } from "drizzle-orm";
 import {
-  clients, Client, InsertClient,
-  pianos, Piano, InsertPiano,
-  services, Service, InsertService,
-  inventory, InventoryItem, InsertInventoryItem,
-  appointments, Appointment, InsertAppointment,
-  invoices, Invoice, InsertInvoice,
-  serviceRates, ServiceRate, InsertServiceRate,
-  businessInfo, BusinessInfo, InsertBusinessInfo,
-  reminders, Reminder, InsertReminder,
-  quotes, Quote, InsertQuote,
-  quoteTemplates, QuoteTemplate, InsertQuoteTemplate,
+  clients,
+  pianos,
+  services,
+  inventory,
+  appointments,
+  invoices,
+  serviceRates,
+  businessInfo,
+  reminders,
+  quotes,
+  quoteTemplates,
 } from "../drizzle/schema.js";
+
+type Client = InferSelectModel<typeof clients>;
+type Piano = InferSelectModel<typeof pianos>;
+type Service = InferSelectModel<typeof services>;
+type InventoryItem = InferSelectModel<typeof inventory>;
+type Appointment = InferSelectModel<typeof appointments>;
+type Invoice = InferSelectModel<typeof invoices>;
+type ServiceRate = InferSelectModel<typeof serviceRates>;
+type BusinessInfo = InferSelectModel<typeof businessInfo>;
+type Reminder = InferSelectModel<typeof reminders>;
+type Quote = InferSelectModel<typeof quotes>;
+type QuoteTemplate = InferSelectModel<typeof quoteTemplates>;
+
+type InsertClient = InferInsertModel<typeof clients>;
+type InsertPiano = InferInsertModel<typeof pianos>;
+type InsertService = InferInsertModel<typeof services>;
+type InsertInventoryItem = InferInsertModel<typeof inventory>;
+type InsertAppointment = InferInsertModel<typeof appointments>;
+type InsertInvoice = InferInsertModel<typeof invoices>;
+type InsertServiceRate = InferInsertModel<typeof serviceRates>;
+type InsertBusinessInfo = InferInsertModel<typeof businessInfo>;
+type InsertReminder = InferInsertModel<typeof reminders>;
+type InsertQuote = InferInsertModel<typeof quotes>;
+type InsertQuoteTemplate = InferInsertModel<typeof quoteTemplates>;
 
 // ============ CLIENTS ============
 
