@@ -181,11 +181,11 @@ export const remindersRouter = router({
       }
       
       if (dateFrom) {
-        whereClauses.push(gte(reminders.dueDate, new Date(dateFrom)));
+        whereClauses.push(gte(reminders.dueDate, new Date(dateFrom).toISOString()));
       }
       
       if (dateTo) {
-        whereClauses.push(lte(reminders.dueDate, new Date(dateTo)));
+        whereClauses.push(lte(reminders.dueDate, new Date(dateTo).toISOString()));
       }
 
       // Construir ORDER BY
@@ -645,11 +645,11 @@ export const remindersRouter = router({
       ];
 
       if (input?.dateFrom) {
-        whereClauses.push(gte(reminders.dueDate, new Date(input.dateFrom)));
+        whereClauses.push(gte(reminders.dueDate, new Date(input.dateFrom).toISOString()));
       }
 
       if (input?.dateTo) {
-        whereClauses.push(lte(reminders.dueDate, new Date(input.dateTo)));
+        whereClauses.push(lte(reminders.dueDate, new Date(input.dateTo).toISOString()));
       }
 
       const items = await database

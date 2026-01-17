@@ -1,5 +1,6 @@
 import type { HttpRequest, HttpResponse } from "@vercel/node";
 import type { User } from "../../drizzle/schema.js";
+import type { OrganizationContext } from "../middleware/organization-context.js";
 import { eq } from "drizzle-orm";
 import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
 import { getDb } from "../../server/db.js";
@@ -16,6 +17,7 @@ export type TrpcContext = {
   res: HttpResponse;
   user: User | null;
   partnerId: number | null; // Partner ID for multi-tenant filtering
+  orgContext?: OrganizationContext; // Organization context added by withOrganizationContext middleware
   language: string; // User's preferred language for AI and content generation
   debugLog?: {
     point1?: string;
