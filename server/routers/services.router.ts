@@ -17,6 +17,7 @@ import {
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
 import { withCache, invalidatePath, invalidateUserCache } from "../lib/cache.middleware.js";
+import { withQueue } from "../lib/queue.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -157,7 +158,7 @@ export const servicesRouter = router({
       
       let items;
       try {
-        items = await database
+        items = await withQueue(() => database
         .select({
           id: services.id,
           odId: services.odId,
@@ -192,7 +193,7 @@ export const servicesRouter = router({
         .where(and(...whereClauses))
         .orderBy(orderByClause)
         .limit(limit)
-        .offset(offset);
+        .offset(offset));
         
         console.log('[services.list] Query successful, items count:', items.length);
       } catch (error: any) {
@@ -202,15 +203,15 @@ export const servicesRouter = router({
         throw error;
       }
 
-      const [{ total }] = await database
+      const [{ total }] = await withQueue(() => database
         .select({ total: count() })
         .from(services)
-        .where(and(...whereClauses));
+        .where(and(...whereClauses)));
 
-      const [{ totalRevenue }] = await database
+      const [{ totalRevenue }] = await withQueue(() => database
         .select({ totalRevenue: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
         .from(services)
-        .where(and(...whereClauses));
+        .where(and(...whereClauses)));
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {

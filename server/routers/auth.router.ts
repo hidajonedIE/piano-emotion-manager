@@ -6,10 +6,11 @@ import { COOKIE_NAME } from "../../shared/const.js";
 import { getSessionCookieOptions } from "../_core/cookies.js";
 import { publicProcedure, router } from "../_core/trpc.js";
 import { withCache } from "../lib/cache.middleware.js";
+import { withQueue } from "../lib/queue.js";
 
 export const authRouter = router({
   me: publicProcedure.query(withCache(
-    async (opts) => opts.ctx.user,
+    async (opts) => withQueue(async () => opts.ctx.user),
     { ttl: 300, prefix: 'auth', includeUser: true, procedurePath: 'auth.me' }
   )),
   

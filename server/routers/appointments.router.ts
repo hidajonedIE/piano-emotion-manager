@@ -16,6 +16,7 @@ import {
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
 import { withCache, invalidatePath, invalidateUserCache } from "../lib/cache.middleware.js";
+import { withQueue } from "../lib/queue.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -372,7 +373,7 @@ export const appointmentsRouter = router({
 
       // Consulta principal con paginación y eager loading
       const offset = cursor || 0;
-      const items = await database
+      const items = await withQueue(() => database
         .select({
           // Campos de appointment
           id: appointments.id,
@@ -404,21 +405,21 @@ export const appointmentsRouter = router({
         .where(and(...whereClauses))
         .orderBy(orderByClause)
         .limit(limit)
-        .offset(offset);
+        .offset(offset));
 
       // Contar total
-      const [{ total }] = await database
+      const [{ total }] = await withQueue(() => database
         .select({ total: count() })
         .from(appointments)
-        .where(and(...whereClauses));
+        .where(and(...whereClauses)));
 
       // Calcular estadísticas
-      const allAppointments = await database
+      const allAppointments = await withQueue(() => database
         .select()
         .from(appointments)
         .where(
           filterByPartner(appointments.partnerId, ctx.partnerId),
-        );
+        ));
 
       const stats = calculateAppointmentStats(allAppointments);
 

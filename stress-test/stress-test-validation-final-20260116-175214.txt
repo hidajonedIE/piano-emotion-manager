@@ -1,0 +1,3254 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: stress-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 2500 max VUs, 22m30s max duration (incl. graceful stop):
+              * default: Up to 2500 looping VUs for 22m0s over 5 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+time="2026-01-16T17:52:15-05:00" level=info msg="🚀 Iniciando prueba de estrés de 2500 usuarios concurrentes..." source=console
+time="2026-01-16T17:52:15-05:00" level=info msg="✅ Bypass de autenticación y rate limiting configurado" source=console
+
+running (00m00.7s), 0003/2500 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 0003/2500 VUs  00m00.7s/22m00.0s
+
+running (00m01.7s), 0008/2500 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 0008/2500 VUs  00m01.7s/22m00.0s
+
+running (00m02.7s), 0012/2500 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 0012/2500 VUs  00m02.7s/22m00.0s
+
+running (00m03.7s), 0016/2500 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 0016/2500 VUs  00m03.7s/22m00.0s
+
+running (00m04.7s), 0020/2500 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 0020/2500 VUs  00m04.7s/22m00.0s
+
+running (00m05.7s), 0024/2500 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 0024/2500 VUs  00m05.7s/22m00.0s
+
+running (00m06.7s), 0028/2500 VUs, 0 complete and 0 interrupted iterations
+default   [   1% ] 0028/2500 VUs  00m06.7s/22m00.0s
+
+running (00m07.7s), 0033/2500 VUs, 1 complete and 0 interrupted iterations
+default   [   1% ] 0033/2500 VUs  00m07.7s/22m00.0s
+
+running (00m08.7s), 0037/2500 VUs, 3 complete and 0 interrupted iterations
+default   [   1% ] 0037/2500 VUs  00m08.7s/22m00.0s
+
+running (00m09.7s), 0041/2500 VUs, 7 complete and 0 interrupted iterations
+default   [   1% ] 0041/2500 VUs  00m09.7s/22m00.0s
+
+running (00m10.7s), 0045/2500 VUs, 9 complete and 0 interrupted iterations
+default   [   1% ] 0045/2500 VUs  00m10.7s/22m00.0s
+
+running (00m11.7s), 0049/2500 VUs, 14 complete and 0 interrupted iterations
+default   [   1% ] 0049/2500 VUs  00m11.7s/22m00.0s
+
+running (00m12.7s), 0053/2500 VUs, 20 complete and 0 interrupted iterations
+default   [   1% ] 0053/2500 VUs  00m12.7s/22m00.0s
+
+running (00m13.7s), 0057/2500 VUs, 23 complete and 0 interrupted iterations
+default   [   1% ] 0057/2500 VUs  00m13.7s/22m00.0s
+
+running (00m14.7s), 0062/2500 VUs, 28 complete and 0 interrupted iterations
+default   [   1% ] 0062/2500 VUs  00m14.7s/22m00.0s
+
+running (00m15.7s), 0066/2500 VUs, 36 complete and 0 interrupted iterations
+default   [   1% ] 0066/2500 VUs  00m15.7s/22m00.0s
+
+running (00m16.7s), 0070/2500 VUs, 41 complete and 0 interrupted iterations
+default   [   1% ] 0070/2500 VUs  00m16.7s/22m00.0s
+
+running (00m17.7s), 0074/2500 VUs, 47 complete and 0 interrupted iterations
+default   [   1% ] 0074/2500 VUs  00m17.7s/22m00.0s
+
+running (00m18.7s), 0078/2500 VUs, 56 complete and 0 interrupted iterations
+default   [   1% ] 0078/2500 VUs  00m18.7s/22m00.0s
+
+running (00m19.7s), 0082/2500 VUs, 66 complete and 0 interrupted iterations
+default   [   1% ] 0082/2500 VUs  00m19.7s/22m00.0s
+
+running (00m20.7s), 0087/2500 VUs, 77 complete and 0 interrupted iterations
+default   [   2% ] 0087/2500 VUs  00m20.7s/22m00.0s
+
+running (00m21.7s), 0091/2500 VUs, 83 complete and 0 interrupted iterations
+default   [   2% ] 0091/2500 VUs  00m21.7s/22m00.0s
+
+running (00m22.7s), 0095/2500 VUs, 92 complete and 0 interrupted iterations
+default   [   2% ] 0095/2500 VUs  00m22.7s/22m00.0s
+
+running (00m23.7s), 0099/2500 VUs, 106 complete and 0 interrupted iterations
+default   [   2% ] 0099/2500 VUs  00m23.7s/22m00.0s
+
+running (00m24.7s), 0103/2500 VUs, 115 complete and 0 interrupted iterations
+default   [   2% ] 0103/2500 VUs  00m24.7s/22m00.0s
+
+running (00m25.7s), 0107/2500 VUs, 119 complete and 0 interrupted iterations
+default   [   2% ] 0107/2500 VUs  00m25.7s/22m00.0s
+
+running (00m26.7s), 0112/2500 VUs, 136 complete and 0 interrupted iterations
+default   [   2% ] 0112/2500 VUs  00m26.7s/22m00.0s
+
+running (00m27.7s), 0116/2500 VUs, 154 complete and 0 interrupted iterations
+default   [   2% ] 0116/2500 VUs  00m27.7s/22m00.0s
+
+running (00m28.7s), 0120/2500 VUs, 166 complete and 0 interrupted iterations
+default   [   2% ] 0120/2500 VUs  00m28.7s/22m00.0s
+
+running (00m29.7s), 0124/2500 VUs, 184 complete and 0 interrupted iterations
+default   [   2% ] 0124/2500 VUs  00m29.7s/22m00.0s
+
+running (00m30.7s), 0128/2500 VUs, 193 complete and 0 interrupted iterations
+default   [   2% ] 0128/2500 VUs  00m30.7s/22m00.0s
+
+running (00m31.7s), 0132/2500 VUs, 203 complete and 0 interrupted iterations
+default   [   2% ] 0132/2500 VUs  00m31.7s/22m00.0s
+
+running (00m32.7s), 0136/2500 VUs, 219 complete and 0 interrupted iterations
+default   [   2% ] 0136/2500 VUs  00m32.7s/22m00.0s
+
+running (00m33.7s), 0141/2500 VUs, 238 complete and 0 interrupted iterations
+default   [   3% ] 0141/2500 VUs  00m33.7s/22m00.0s
+
+running (00m34.7s), 0145/2500 VUs, 257 complete and 0 interrupted iterations
+default   [   3% ] 0145/2500 VUs  00m34.7s/22m00.0s
+
+running (00m35.7s), 0149/2500 VUs, 278 complete and 0 interrupted iterations
+default   [   3% ] 0149/2500 VUs  00m35.7s/22m00.0s
+
+running (00m36.7s), 0153/2500 VUs, 291 complete and 0 interrupted iterations
+default   [   3% ] 0153/2500 VUs  00m36.7s/22m00.0s
+
+running (00m37.7s), 0157/2500 VUs, 304 complete and 0 interrupted iterations
+default   [   3% ] 0157/2500 VUs  00m37.7s/22m00.0s
+
+running (00m38.7s), 0161/2500 VUs, 318 complete and 0 interrupted iterations
+default   [   3% ] 0161/2500 VUs  00m38.7s/22m00.0s
+
+running (00m39.7s), 0166/2500 VUs, 339 complete and 0 interrupted iterations
+default   [   3% ] 0166/2500 VUs  00m39.7s/22m00.0s
+
+running (00m40.7s), 0170/2500 VUs, 355 complete and 0 interrupted iterations
+default   [   3% ] 0170/2500 VUs  00m40.7s/22m00.0s
+
+running (00m41.7s), 0174/2500 VUs, 378 complete and 0 interrupted iterations
+default   [   3% ] 0174/2500 VUs  00m41.7s/22m00.0s
+
+running (00m42.7s), 0178/2500 VUs, 400 complete and 0 interrupted iterations
+default   [   3% ] 0178/2500 VUs  00m42.7s/22m00.0s
+
+running (00m43.7s), 0182/2500 VUs, 421 complete and 0 interrupted iterations
+default   [   3% ] 0182/2500 VUs  00m43.7s/22m00.0s
+
+running (00m44.7s), 0186/2500 VUs, 438 complete and 0 interrupted iterations
+default   [   3% ] 0186/2500 VUs  00m44.7s/22m00.0s
+
+running (00m45.7s), 0191/2500 VUs, 463 complete and 0 interrupted iterations
+default   [   3% ] 0191/2500 VUs  00m45.7s/22m00.0s
+
+running (00m46.7s), 0195/2500 VUs, 479 complete and 0 interrupted iterations
+default   [   4% ] 0195/2500 VUs  00m46.7s/22m00.0s
+
+running (00m47.7s), 0199/2500 VUs, 505 complete and 0 interrupted iterations
+default   [   4% ] 0199/2500 VUs  00m47.7s/22m00.0s
+
+running (00m48.7s), 0203/2500 VUs, 530 complete and 0 interrupted iterations
+default   [   4% ] 0203/2500 VUs  00m48.7s/22m00.0s
+
+running (00m49.7s), 0207/2500 VUs, 558 complete and 0 interrupted iterations
+default   [   4% ] 0207/2500 VUs  00m49.7s/22m00.0s
+
+running (00m50.7s), 0211/2500 VUs, 580 complete and 0 interrupted iterations
+default   [   4% ] 0211/2500 VUs  00m50.7s/22m00.0s
+
+running (00m51.7s), 0215/2500 VUs, 608 complete and 0 interrupted iterations
+default   [   4% ] 0215/2500 VUs  00m51.7s/22m00.0s
+
+running (00m52.7s), 0220/2500 VUs, 631 complete and 0 interrupted iterations
+default   [   4% ] 0220/2500 VUs  00m52.7s/22m00.0s
+
+running (00m53.7s), 0224/2500 VUs, 655 complete and 0 interrupted iterations
+default   [   4% ] 0224/2500 VUs  00m53.7s/22m00.0s
+
+running (00m54.7s), 0228/2500 VUs, 680 complete and 0 interrupted iterations
+default   [   4% ] 0228/2500 VUs  00m54.7s/22m00.0s
+
+running (00m55.7s), 0232/2500 VUs, 708 complete and 0 interrupted iterations
+default   [   4% ] 0232/2500 VUs  00m55.7s/22m00.0s
+
+running (00m56.7s), 0236/2500 VUs, 728 complete and 0 interrupted iterations
+default   [   4% ] 0236/2500 VUs  00m56.7s/22m00.0s
+
+running (00m57.7s), 0240/2500 VUs, 767 complete and 0 interrupted iterations
+default   [   4% ] 0240/2500 VUs  00m57.7s/22m00.0s
+
+running (00m58.7s), 0245/2500 VUs, 791 complete and 0 interrupted iterations
+default   [   4% ] 0245/2500 VUs  00m58.7s/22m00.0s
+
+running (00m59.7s), 0249/2500 VUs, 826 complete and 0 interrupted iterations
+default   [   5% ] 0249/2500 VUs  00m59.7s/22m00.0s
+
+running (01m00.7s), 0253/2500 VUs, 861 complete and 0 interrupted iterations
+default   [   5% ] 0253/2500 VUs  01m00.7s/22m00.0s
+
+running (01m01.7s), 0257/2500 VUs, 887 complete and 0 interrupted iterations
+default   [   5% ] 0257/2500 VUs  01m01.7s/22m00.0s
+
+running (01m02.7s), 0261/2500 VUs, 912 complete and 0 interrupted iterations
+default   [   5% ] 0261/2500 VUs  01m02.7s/22m00.0s
+
+running (01m03.7s), 0265/2500 VUs, 941 complete and 0 interrupted iterations
+default   [   5% ] 0265/2500 VUs  01m03.7s/22m00.0s
+
+running (01m04.7s), 0270/2500 VUs, 970 complete and 0 interrupted iterations
+default   [   5% ] 0270/2500 VUs  01m04.7s/22m00.0s
+
+running (01m05.7s), 0274/2500 VUs, 1011 complete and 0 interrupted iterations
+default   [   5% ] 0274/2500 VUs  01m05.7s/22m00.0s
+
+running (01m06.7s), 0278/2500 VUs, 1040 complete and 0 interrupted iterations
+default   [   5% ] 0278/2500 VUs  01m06.7s/22m00.0s
+
+running (01m07.7s), 0282/2500 VUs, 1083 complete and 0 interrupted iterations
+default   [   5% ] 0282/2500 VUs  01m07.7s/22m00.0s
+
+running (01m08.7s), 0286/2500 VUs, 1120 complete and 0 interrupted iterations
+default   [   5% ] 0286/2500 VUs  01m08.7s/22m00.0s
+
+running (01m09.7s), 0290/2500 VUs, 1153 complete and 0 interrupted iterations
+default   [   5% ] 0290/2500 VUs  01m09.7s/22m00.0s
+
+running (01m10.7s), 0295/2500 VUs, 1187 complete and 0 interrupted iterations
+default   [   5% ] 0295/2500 VUs  01m10.7s/22m00.0s
+
+running (01m11.7s), 0299/2500 VUs, 1221 complete and 0 interrupted iterations
+default   [   5% ] 0299/2500 VUs  01m11.7s/22m00.0s
+
+running (01m12.7s), 0303/2500 VUs, 1252 complete and 0 interrupted iterations
+default   [   6% ] 0303/2500 VUs  01m12.7s/22m00.0s
+
+running (01m13.7s), 0307/2500 VUs, 1288 complete and 0 interrupted iterations
+default   [   6% ] 0307/2500 VUs  01m13.7s/22m00.0s
+
+running (01m14.7s), 0311/2500 VUs, 1324 complete and 0 interrupted iterations
+default   [   6% ] 0311/2500 VUs  01m14.7s/22m00.0s
+
+running (01m15.7s), 0315/2500 VUs, 1367 complete and 0 interrupted iterations
+default   [   6% ] 0315/2500 VUs  01m15.7s/22m00.0s
+
+running (01m16.7s), 0319/2500 VUs, 1402 complete and 0 interrupted iterations
+default   [   6% ] 0319/2500 VUs  01m16.7s/22m00.0s
+
+running (01m17.7s), 0324/2500 VUs, 1446 complete and 0 interrupted iterations
+default   [   6% ] 0324/2500 VUs  01m17.7s/22m00.0s
+
+running (01m18.7s), 0328/2500 VUs, 1490 complete and 0 interrupted iterations
+default   [   6% ] 0328/2500 VUs  01m18.7s/22m00.0s
+
+running (01m19.7s), 0332/2500 VUs, 1529 complete and 0 interrupted iterations
+default   [   6% ] 0332/2500 VUs  01m19.7s/22m00.0s
+
+running (01m20.7s), 0336/2500 VUs, 1560 complete and 0 interrupted iterations
+default   [   6% ] 0336/2500 VUs  01m20.7s/22m00.0s
+
+running (01m21.7s), 0340/2500 VUs, 1601 complete and 0 interrupted iterations
+default   [   6% ] 0340/2500 VUs  01m21.7s/22m00.0s
+
+running (01m22.7s), 0344/2500 VUs, 1640 complete and 0 interrupted iterations
+default   [   6% ] 0344/2500 VUs  01m22.7s/22m00.0s
+
+running (01m23.7s), 0349/2500 VUs, 1695 complete and 0 interrupted iterations
+default   [   6% ] 0349/2500 VUs  01m23.7s/22m00.0s
+
+running (01m24.7s), 0353/2500 VUs, 1739 complete and 0 interrupted iterations
+default   [   6% ] 0353/2500 VUs  01m24.7s/22m00.0s
+
+running (01m25.7s), 0357/2500 VUs, 1790 complete and 0 interrupted iterations
+default   [   6% ] 0357/2500 VUs  01m25.7s/22m00.0s
+
+running (01m26.7s), 0361/2500 VUs, 1832 complete and 0 interrupted iterations
+default   [   7% ] 0361/2500 VUs  01m26.7s/22m00.0s
+
+running (01m27.7s), 0365/2500 VUs, 1872 complete and 0 interrupted iterations
+default   [   7% ] 0365/2500 VUs  01m27.7s/22m00.0s
+
+running (01m28.7s), 0369/2500 VUs, 1911 complete and 0 interrupted iterations
+default   [   7% ] 0369/2500 VUs  01m28.7s/22m00.0s
+
+running (01m29.7s), 0374/2500 VUs, 1955 complete and 0 interrupted iterations
+default   [   7% ] 0374/2500 VUs  01m29.7s/22m00.0s
+
+running (01m30.7s), 0378/2500 VUs, 2003 complete and 0 interrupted iterations
+default   [   7% ] 0378/2500 VUs  01m30.7s/22m00.0s
+
+running (01m31.7s), 0382/2500 VUs, 2062 complete and 0 interrupted iterations
+default   [   7% ] 0382/2500 VUs  01m31.7s/22m00.0s
+
+running (01m32.7s), 0386/2500 VUs, 2115 complete and 0 interrupted iterations
+default   [   7% ] 0386/2500 VUs  01m32.7s/22m00.0s
+
+running (01m33.7s), 0390/2500 VUs, 2158 complete and 0 interrupted iterations
+default   [   7% ] 0390/2500 VUs  01m33.7s/22m00.0s
+
+running (01m34.7s), 0394/2500 VUs, 2202 complete and 0 interrupted iterations
+default   [   7% ] 0394/2500 VUs  01m34.7s/22m00.0s
+
+running (01m35.7s), 0398/2500 VUs, 2251 complete and 0 interrupted iterations
+default   [   7% ] 0398/2500 VUs  01m35.7s/22m00.0s
+
+running (01m36.7s), 0403/2500 VUs, 2305 complete and 0 interrupted iterations
+default   [   7% ] 0403/2500 VUs  01m36.7s/22m00.0s
+
+running (01m37.7s), 0407/2500 VUs, 2352 complete and 0 interrupted iterations
+default   [   7% ] 0407/2500 VUs  01m37.7s/22m00.0s
+
+running (01m38.7s), 0411/2500 VUs, 2401 complete and 0 interrupted iterations
+default   [   7% ] 0411/2500 VUs  01m38.7s/22m00.0s
+
+running (01m39.7s), 0415/2500 VUs, 2448 complete and 0 interrupted iterations
+default   [   8% ] 0415/2500 VUs  01m39.7s/22m00.0s
+
+running (01m40.7s), 0419/2500 VUs, 2499 complete and 0 interrupted iterations
+default   [   8% ] 0419/2500 VUs  01m40.7s/22m00.0s
+
+running (01m41.7s), 0423/2500 VUs, 2553 complete and 0 interrupted iterations
+default   [   8% ] 0423/2500 VUs  01m41.7s/22m00.0s
+
+running (01m42.7s), 0428/2500 VUs, 2609 complete and 0 interrupted iterations
+default   [   8% ] 0428/2500 VUs  01m42.7s/22m00.0s
+
+running (01m43.7s), 0432/2500 VUs, 2663 complete and 0 interrupted iterations
+default   [   8% ] 0432/2500 VUs  01m43.7s/22m00.0s
+
+running (01m44.7s), 0436/2500 VUs, 2705 complete and 0 interrupted iterations
+default   [   8% ] 0436/2500 VUs  01m44.7s/22m00.0s
+
+running (01m45.7s), 0440/2500 VUs, 2756 complete and 0 interrupted iterations
+default   [   8% ] 0440/2500 VUs  01m45.7s/22m00.0s
+
+running (01m46.7s), 0444/2500 VUs, 2819 complete and 0 interrupted iterations
+default   [   8% ] 0444/2500 VUs  01m46.7s/22m00.0s
+
+running (01m47.7s), 0448/2500 VUs, 2875 complete and 0 interrupted iterations
+default   [   8% ] 0448/2500 VUs  01m47.7s/22m00.0s
+
+running (01m48.7s), 0453/2500 VUs, 2930 complete and 0 interrupted iterations
+default   [   8% ] 0453/2500 VUs  01m48.7s/22m00.0s
+
+running (01m49.7s), 0457/2500 VUs, 2990 complete and 0 interrupted iterations
+default   [   8% ] 0457/2500 VUs  01m49.7s/22m00.0s
+
+running (01m50.7s), 0461/2500 VUs, 3049 complete and 0 interrupted iterations
+default   [   8% ] 0461/2500 VUs  01m50.7s/22m00.0s
+
+running (01m51.7s), 0465/2500 VUs, 3112 complete and 0 interrupted iterations
+default   [   8% ] 0465/2500 VUs  01m51.7s/22m00.0s
+
+running (01m52.7s), 0469/2500 VUs, 3162 complete and 0 interrupted iterations
+default   [   9% ] 0469/2500 VUs  01m52.7s/22m00.0s
+
+running (01m53.7s), 0473/2500 VUs, 3207 complete and 0 interrupted iterations
+default   [   9% ] 0473/2500 VUs  01m53.7s/22m00.0s
+
+running (01m54.7s), 0477/2500 VUs, 3283 complete and 0 interrupted iterations
+default   [   9% ] 0477/2500 VUs  01m54.7s/22m00.0s
+
+running (01m55.7s), 0482/2500 VUs, 3350 complete and 0 interrupted iterations
+default   [   9% ] 0482/2500 VUs  01m55.7s/22m00.0s
+
+running (01m56.7s), 0486/2500 VUs, 3403 complete and 0 interrupted iterations
+default   [   9% ] 0486/2500 VUs  01m56.7s/22m00.0s
+
+running (01m57.7s), 0490/2500 VUs, 3463 complete and 0 interrupted iterations
+default   [   9% ] 0490/2500 VUs  01m57.7s/22m00.0s
+
+running (01m58.7s), 0494/2500 VUs, 3532 complete and 0 interrupted iterations
+default   [   9% ] 0494/2500 VUs  01m58.7s/22m00.0s
+
+running (01m59.7s), 0498/2500 VUs, 3585 complete and 0 interrupted iterations
+default   [   9% ] 0498/2500 VUs  01m59.7s/22m00.0s
+
+running (02m00.7s), 0503/2500 VUs, 3645 complete and 0 interrupted iterations
+default   [   9% ] 0503/2500 VUs  02m00.7s/22m00.0s
+
+running (02m01.7s), 0509/2500 VUs, 3709 complete and 0 interrupted iterations
+default   [   9% ] 0509/2500 VUs  02m01.7s/22m00.0s
+
+running (02m02.7s), 0515/2500 VUs, 3768 complete and 0 interrupted iterations
+default   [   9% ] 0515/2500 VUs  02m02.7s/22m00.0s
+
+running (02m03.7s), 0520/2500 VUs, 3846 complete and 0 interrupted iterations
+default   [   9% ] 0520/2500 VUs  02m03.7s/22m00.0s
+
+running (02m04.7s), 0526/2500 VUs, 3908 complete and 0 interrupted iterations
+default   [   9% ] 0526/2500 VUs  02m04.7s/22m00.0s
+
+running (02m05.7s), 0531/2500 VUs, 3984 complete and 0 interrupted iterations
+default   [  10% ] 0531/2500 VUs  02m05.7s/22m00.0s
+
+running (02m06.7s), 0537/2500 VUs, 4034 complete and 0 interrupted iterations
+default   [  10% ] 0537/2500 VUs  02m06.7s/22m00.0s
+
+running (02m07.7s), 0542/2500 VUs, 4110 complete and 0 interrupted iterations
+default   [  10% ] 0542/2500 VUs  02m07.7s/22m00.0s
+
+running (02m08.7s), 0548/2500 VUs, 4184 complete and 0 interrupted iterations
+default   [  10% ] 0548/2500 VUs  02m08.7s/22m00.0s
+
+running (02m09.7s), 0553/2500 VUs, 4245 complete and 0 interrupted iterations
+default   [  10% ] 0553/2500 VUs  02m09.7s/22m00.0s
+
+running (02m10.7s), 0559/2500 VUs, 4302 complete and 0 interrupted iterations
+default   [  10% ] 0559/2500 VUs  02m10.7s/22m00.0s
+
+running (02m11.7s), 0565/2500 VUs, 4377 complete and 0 interrupted iterations
+default   [  10% ] 0565/2500 VUs  02m11.7s/22m00.0s
+
+running (02m12.7s), 0570/2500 VUs, 4453 complete and 0 interrupted iterations
+default   [  10% ] 0570/2500 VUs  02m12.7s/22m00.0s
+
+running (02m13.7s), 0576/2500 VUs, 4528 complete and 0 interrupted iterations
+default   [  10% ] 0576/2500 VUs  02m13.7s/22m00.0s
+
+running (02m14.7s), 0581/2500 VUs, 4596 complete and 0 interrupted iterations
+default   [  10% ] 0581/2500 VUs  02m14.7s/22m00.0s
+
+running (02m15.7s), 0587/2500 VUs, 4680 complete and 0 interrupted iterations
+default   [  10% ] 0587/2500 VUs  02m15.7s/22m00.0s
+
+running (02m16.7s), 0592/2500 VUs, 4729 complete and 0 interrupted iterations
+default   [  10% ] 0592/2500 VUs  02m16.7s/22m00.0s
+
+running (02m17.7s), 0598/2500 VUs, 4801 complete and 0 interrupted iterations
+default   [  10% ] 0598/2500 VUs  02m17.7s/22m00.0s
+
+running (02m18.7s), 0603/2500 VUs, 4880 complete and 0 interrupted iterations
+default   [  11% ] 0603/2500 VUs  02m18.7s/22m00.0s
+
+running (02m19.7s), 0609/2500 VUs, 4966 complete and 0 interrupted iterations
+default   [  11% ] 0609/2500 VUs  02m19.7s/22m00.0s
+
+running (02m20.7s), 0615/2500 VUs, 5029 complete and 0 interrupted iterations
+default   [  11% ] 0615/2500 VUs  02m20.7s/22m00.0s
+
+running (02m21.7s), 0620/2500 VUs, 5115 complete and 0 interrupted iterations
+default   [  11% ] 0620/2500 VUs  02m21.7s/22m00.0s
+
+running (02m22.7s), 0626/2500 VUs, 5201 complete and 0 interrupted iterations
+default   [  11% ] 0626/2500 VUs  02m22.7s/22m00.0s
+
+running (02m23.7s), 0631/2500 VUs, 5271 complete and 0 interrupted iterations
+default   [  11% ] 0631/2500 VUs  02m23.7s/22m00.0s
+
+running (02m24.7s), 0637/2500 VUs, 5334 complete and 0 interrupted iterations
+default   [  11% ] 0637/2500 VUs  02m24.7s/22m00.0s
+
+running (02m25.7s), 0642/2500 VUs, 5423 complete and 0 interrupted iterations
+default   [  11% ] 0642/2500 VUs  02m25.7s/22m00.0s
+
+running (02m26.7s), 0648/2500 VUs, 5501 complete and 0 interrupted iterations
+default   [  11% ] 0648/2500 VUs  02m26.7s/22m00.0s
+
+running (02m27.7s), 0653/2500 VUs, 5594 complete and 0 interrupted iterations
+default   [  11% ] 0653/2500 VUs  02m27.7s/22m00.0s
+
+running (02m28.7s), 0659/2500 VUs, 5677 complete and 0 interrupted iterations
+default   [  11% ] 0659/2500 VUs  02m28.7s/22m00.0s
+
+running (02m29.7s), 0665/2500 VUs, 5743 complete and 0 interrupted iterations
+default   [  11% ] 0665/2500 VUs  02m29.7s/22m00.0s
+
+running (02m30.7s), 0670/2500 VUs, 5829 complete and 0 interrupted iterations
+default   [  11% ] 0670/2500 VUs  02m30.7s/22m00.0s
+
+running (02m31.7s), 0676/2500 VUs, 5927 complete and 0 interrupted iterations
+default   [  11% ] 0676/2500 VUs  02m31.7s/22m00.0s
+
+running (02m32.7s), 0681/2500 VUs, 6010 complete and 0 interrupted iterations
+default   [  12% ] 0681/2500 VUs  02m32.7s/22m00.0s
+
+running (02m33.7s), 0687/2500 VUs, 6082 complete and 0 interrupted iterations
+default   [  12% ] 0687/2500 VUs  02m33.7s/22m00.0s
+
+running (02m34.7s), 0692/2500 VUs, 6170 complete and 0 interrupted iterations
+default   [  12% ] 0692/2500 VUs  02m34.7s/22m00.0s
+
+running (02m35.7s), 0698/2500 VUs, 6260 complete and 0 interrupted iterations
+default   [  12% ] 0698/2500 VUs  02m35.7s/22m00.0s
+
+running (02m36.7s), 0703/2500 VUs, 6351 complete and 0 interrupted iterations
+default   [  12% ] 0703/2500 VUs  02m36.7s/22m00.0s
+
+running (02m37.7s), 0709/2500 VUs, 6450 complete and 0 interrupted iterations
+default   [  12% ] 0709/2500 VUs  02m37.7s/22m00.0s
+
+running (02m38.7s), 0715/2500 VUs, 6532 complete and 0 interrupted iterations
+default   [  12% ] 0715/2500 VUs  02m38.7s/22m00.0s
+
+running (02m39.7s), 0720/2500 VUs, 6631 complete and 0 interrupted iterations
+default   [  12% ] 0720/2500 VUs  02m39.7s/22m00.0s
+
+running (02m40.7s), 0726/2500 VUs, 6718 complete and 0 interrupted iterations
+default   [  12% ] 0726/2500 VUs  02m40.7s/22m00.0s
+
+running (02m41.7s), 0731/2500 VUs, 6799 complete and 0 interrupted iterations
+default   [  12% ] 0731/2500 VUs  02m41.7s/22m00.0s
+
+running (02m42.7s), 0737/2500 VUs, 6881 complete and 0 interrupted iterations
+default   [  12% ] 0737/2500 VUs  02m42.7s/22m00.0s
+
+running (02m43.7s), 0742/2500 VUs, 6976 complete and 0 interrupted iterations
+default   [  12% ] 0742/2500 VUs  02m43.7s/22m00.0s
+
+running (02m44.7s), 0748/2500 VUs, 7083 complete and 0 interrupted iterations
+default   [  12% ] 0748/2500 VUs  02m44.7s/22m00.0s
+
+running (02m45.7s), 0753/2500 VUs, 7186 complete and 0 interrupted iterations
+default   [  13% ] 0753/2500 VUs  02m45.7s/22m00.0s
+
+running (02m46.7s), 0759/2500 VUs, 7277 complete and 0 interrupted iterations
+default   [  13% ] 0759/2500 VUs  02m46.7s/22m00.0s
+
+running (02m47.7s), 0765/2500 VUs, 7367 complete and 0 interrupted iterations
+default   [  13% ] 0765/2500 VUs  02m47.7s/22m00.0s
+
+running (02m48.7s), 0770/2500 VUs, 7445 complete and 0 interrupted iterations
+default   [  13% ] 0770/2500 VUs  02m48.7s/22m00.0s
+
+running (02m49.7s), 0776/2500 VUs, 7559 complete and 0 interrupted iterations
+default   [  13% ] 0776/2500 VUs  02m49.7s/22m00.0s
+
+running (02m50.7s), 0781/2500 VUs, 7653 complete and 0 interrupted iterations
+default   [  13% ] 0781/2500 VUs  02m50.7s/22m00.0s
+
+running (02m51.7s), 0787/2500 VUs, 7759 complete and 0 interrupted iterations
+default   [  13% ] 0787/2500 VUs  02m51.7s/22m00.0s
+
+running (02m52.7s), 0792/2500 VUs, 7854 complete and 0 interrupted iterations
+default   [  13% ] 0792/2500 VUs  02m52.7s/22m00.0s
+
+running (02m53.7s), 0798/2500 VUs, 7964 complete and 0 interrupted iterations
+default   [  13% ] 0798/2500 VUs  02m53.7s/22m00.0s
+
+running (02m54.7s), 0803/2500 VUs, 8067 complete and 0 interrupted iterations
+default   [  13% ] 0803/2500 VUs  02m54.7s/22m00.0s
+
+running (02m55.7s), 0809/2500 VUs, 8152 complete and 0 interrupted iterations
+default   [  13% ] 0809/2500 VUs  02m55.7s/22m00.0s
+
+running (02m56.7s), 0815/2500 VUs, 8255 complete and 0 interrupted iterations
+default   [  13% ] 0815/2500 VUs  02m56.7s/22m00.0s
+
+running (02m57.7s), 0820/2500 VUs, 8363 complete and 0 interrupted iterations
+default   [  13% ] 0820/2500 VUs  02m57.7s/22m00.0s
+
+running (02m58.7s), 0826/2500 VUs, 8458 complete and 0 interrupted iterations
+default   [  14% ] 0826/2500 VUs  02m58.7s/22m00.0s
+
+running (02m59.7s), 0831/2500 VUs, 8569 complete and 0 interrupted iterations
+default   [  14% ] 0831/2500 VUs  02m59.7s/22m00.0s
+
+running (03m00.7s), 0837/2500 VUs, 8679 complete and 0 interrupted iterations
+default   [  14% ] 0837/2500 VUs  03m00.7s/22m00.0s
+
+running (03m01.7s), 0842/2500 VUs, 8785 complete and 0 interrupted iterations
+default   [  14% ] 0842/2500 VUs  03m01.7s/22m00.0s
+
+running (03m02.7s), 0848/2500 VUs, 8875 complete and 0 interrupted iterations
+default   [  14% ] 0848/2500 VUs  03m02.7s/22m00.0s
+
+running (03m03.7s), 0853/2500 VUs, 8972 complete and 0 interrupted iterations
+default   [  14% ] 0853/2500 VUs  03m03.7s/22m00.0s
+
+running (03m04.7s), 0859/2500 VUs, 9073 complete and 0 interrupted iterations
+default   [  14% ] 0859/2500 VUs  03m04.7s/22m00.0s
+
+running (03m05.7s), 0865/2500 VUs, 9178 complete and 0 interrupted iterations
+default   [  14% ] 0865/2500 VUs  03m05.7s/22m00.0s
+
+running (03m06.7s), 0870/2500 VUs, 9282 complete and 0 interrupted iterations
+default   [  14% ] 0870/2500 VUs  03m06.7s/22m00.0s
+
+running (03m07.7s), 0876/2500 VUs, 9409 complete and 0 interrupted iterations
+default   [  14% ] 0876/2500 VUs  03m07.7s/22m00.0s
+
+running (03m08.7s), 0881/2500 VUs, 9532 complete and 0 interrupted iterations
+default   [  14% ] 0881/2500 VUs  03m08.7s/22m00.0s
+
+running (03m09.7s), 0887/2500 VUs, 9644 complete and 0 interrupted iterations
+default   [  14% ] 0887/2500 VUs  03m09.7s/22m00.0s
+
+running (03m10.7s), 0892/2500 VUs, 9742 complete and 0 interrupted iterations
+default   [  14% ] 0892/2500 VUs  03m10.7s/22m00.0s
+
+running (03m11.7s), 0898/2500 VUs, 9869 complete and 0 interrupted iterations
+default   [  15% ] 0898/2500 VUs  03m11.7s/22m00.0s
+
+running (03m12.7s), 0903/2500 VUs, 9970 complete and 0 interrupted iterations
+default   [  15% ] 0903/2500 VUs  03m12.7s/22m00.0s
+
+running (03m13.7s), 0909/2500 VUs, 10095 complete and 0 interrupted iterations
+default   [  15% ] 0909/2500 VUs  03m13.7s/22m00.0s
+
+running (03m14.7s), 0915/2500 VUs, 10203 complete and 0 interrupted iterations
+default   [  15% ] 0915/2500 VUs  03m14.7s/22m00.0s
+
+running (03m15.7s), 0920/2500 VUs, 10330 complete and 0 interrupted iterations
+default   [  15% ] 0920/2500 VUs  03m15.7s/22m00.0s
+
+running (03m16.7s), 0926/2500 VUs, 10438 complete and 0 interrupted iterations
+default   [  15% ] 0926/2500 VUs  03m16.7s/22m00.0s
+
+running (03m17.7s), 0931/2500 VUs, 10551 complete and 0 interrupted iterations
+default   [  15% ] 0931/2500 VUs  03m17.7s/22m00.0s
+
+running (03m18.7s), 0937/2500 VUs, 10665 complete and 0 interrupted iterations
+default   [  15% ] 0937/2500 VUs  03m18.7s/22m00.0s
+
+running (03m19.7s), 0942/2500 VUs, 10775 complete and 0 interrupted iterations
+default   [  15% ] 0942/2500 VUs  03m19.7s/22m00.0s
+
+running (03m20.7s), 0948/2500 VUs, 10888 complete and 0 interrupted iterations
+default   [  15% ] 0948/2500 VUs  03m20.7s/22m00.0s
+
+running (03m21.7s), 0953/2500 VUs, 11024 complete and 0 interrupted iterations
+default   [  15% ] 0953/2500 VUs  03m21.7s/22m00.0s
+
+running (03m22.7s), 0959/2500 VUs, 11134 complete and 0 interrupted iterations
+default   [  15% ] 0959/2500 VUs  03m22.7s/22m00.0s
+
+running (03m23.7s), 0965/2500 VUs, 11262 complete and 0 interrupted iterations
+default   [  15% ] 0965/2500 VUs  03m23.7s/22m00.0s
+
+running (03m24.7s), 0970/2500 VUs, 11395 complete and 0 interrupted iterations
+default   [  16% ] 0970/2500 VUs  03m24.7s/22m00.0s
+
+running (03m25.7s), 0976/2500 VUs, 11494 complete and 0 interrupted iterations
+default   [  16% ] 0976/2500 VUs  03m25.7s/22m00.0s
+
+running (03m26.7s), 0981/2500 VUs, 11635 complete and 0 interrupted iterations
+default   [  16% ] 0981/2500 VUs  03m26.7s/22m00.0s
+
+running (03m27.7s), 0987/2500 VUs, 11768 complete and 0 interrupted iterations
+default   [  16% ] 0987/2500 VUs  03m27.7s/22m00.0s
+
+running (03m28.7s), 0992/2500 VUs, 11893 complete and 0 interrupted iterations
+default   [  16% ] 0992/2500 VUs  03m28.7s/22m00.0s
+
+running (03m29.7s), 0998/2500 VUs, 12018 complete and 0 interrupted iterations
+default   [  16% ] 0998/2500 VUs  03m29.7s/22m00.0s
+
+running (03m30.7s), 1003/2500 VUs, 12139 complete and 0 interrupted iterations
+default   [  16% ] 1003/2500 VUs  03m30.7s/22m00.0s
+
+running (03m31.7s), 1009/2500 VUs, 12264 complete and 0 interrupted iterations
+default   [  16% ] 1009/2500 VUs  03m31.7s/22m00.0s
+
+running (03m32.7s), 1015/2500 VUs, 12386 complete and 0 interrupted iterations
+default   [  16% ] 1015/2500 VUs  03m32.7s/22m00.0s
+
+running (03m33.7s), 1020/2500 VUs, 12509 complete and 0 interrupted iterations
+default   [  16% ] 1020/2500 VUs  03m33.7s/22m00.0s
+
+running (03m34.7s), 1026/2500 VUs, 12650 complete and 0 interrupted iterations
+default   [  16% ] 1026/2500 VUs  03m34.7s/22m00.0s
+
+running (03m35.7s), 1031/2500 VUs, 12796 complete and 0 interrupted iterations
+default   [  16% ] 1031/2500 VUs  03m35.7s/22m00.0s
+
+running (03m36.7s), 1037/2500 VUs, 12938 complete and 0 interrupted iterations
+default   [  16% ] 1037/2500 VUs  03m36.7s/22m00.0s
+
+running (03m37.7s), 1042/2500 VUs, 13056 complete and 0 interrupted iterations
+default   [  16% ] 1042/2500 VUs  03m37.7s/22m00.0s
+
+running (03m38.7s), 1048/2500 VUs, 13177 complete and 0 interrupted iterations
+default   [  17% ] 1048/2500 VUs  03m38.7s/22m00.0s
+
+running (03m39.7s), 1053/2500 VUs, 13311 complete and 0 interrupted iterations
+default   [  17% ] 1053/2500 VUs  03m39.7s/22m00.0s
+
+running (03m40.7s), 1059/2500 VUs, 13449 complete and 0 interrupted iterations
+default   [  17% ] 1059/2500 VUs  03m40.7s/22m00.0s
+
+running (03m41.7s), 1065/2500 VUs, 13588 complete and 0 interrupted iterations
+default   [  17% ] 1065/2500 VUs  03m41.7s/22m00.0s
+
+running (03m42.7s), 1070/2500 VUs, 13715 complete and 0 interrupted iterations
+default   [  17% ] 1070/2500 VUs  03m42.7s/22m00.0s
+
+running (03m43.7s), 1076/2500 VUs, 13859 complete and 0 interrupted iterations
+default   [  17% ] 1076/2500 VUs  03m43.7s/22m00.0s
+
+running (03m44.7s), 1081/2500 VUs, 13991 complete and 0 interrupted iterations
+default   [  17% ] 1081/2500 VUs  03m44.7s/22m00.0s
+
+running (03m45.7s), 1087/2500 VUs, 14149 complete and 0 interrupted iterations
+default   [  17% ] 1087/2500 VUs  03m45.7s/22m00.0s
+
+running (03m46.7s), 1092/2500 VUs, 14283 complete and 0 interrupted iterations
+default   [  17% ] 1092/2500 VUs  03m46.7s/22m00.0s
+
+running (03m47.7s), 1098/2500 VUs, 14429 complete and 0 interrupted iterations
+default   [  17% ] 1098/2500 VUs  03m47.7s/22m00.0s
+
+running (03m48.7s), 1103/2500 VUs, 14552 complete and 0 interrupted iterations
+default   [  17% ] 1103/2500 VUs  03m48.7s/22m00.0s
+
+running (03m49.7s), 1109/2500 VUs, 14674 complete and 0 interrupted iterations
+default   [  17% ] 1109/2500 VUs  03m49.7s/22m00.0s
+time="2026-01-16T17:56:05-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (03m50.7s), 1115/2500 VUs, 14809 complete and 0 interrupted iterations
+default   [  17% ] 1115/2500 VUs  03m50.7s/22m00.0s
+time="2026-01-16T17:56:06-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (03m51.7s), 1120/2500 VUs, 14977 complete and 0 interrupted iterations
+default   [  18% ] 1120/2500 VUs  03m51.7s/22m00.0s
+
+running (03m52.7s), 1126/2500 VUs, 15098 complete and 0 interrupted iterations
+default   [  18% ] 1126/2500 VUs  03m52.7s/22m00.0s
+
+running (03m53.7s), 1131/2500 VUs, 15246 complete and 0 interrupted iterations
+default   [  18% ] 1131/2500 VUs  03m53.7s/22m00.0s
+
+running (03m54.7s), 1137/2500 VUs, 15383 complete and 0 interrupted iterations
+default   [  18% ] 1137/2500 VUs  03m54.7s/22m00.0s
+
+running (03m55.7s), 1142/2500 VUs, 15532 complete and 0 interrupted iterations
+default   [  18% ] 1142/2500 VUs  03m55.7s/22m00.0s
+
+running (03m56.7s), 1148/2500 VUs, 15659 complete and 0 interrupted iterations
+default   [  18% ] 1148/2500 VUs  03m56.7s/22m00.0s
+
+running (03m57.7s), 1153/2500 VUs, 15807 complete and 0 interrupted iterations
+default   [  18% ] 1153/2500 VUs  03m57.7s/22m00.0s
+
+running (03m58.7s), 1159/2500 VUs, 15952 complete and 0 interrupted iterations
+default   [  18% ] 1159/2500 VUs  03m58.7s/22m00.0s
+
+running (03m59.7s), 1165/2500 VUs, 16089 complete and 0 interrupted iterations
+default   [  18% ] 1165/2500 VUs  03m59.7s/22m00.0s
+
+running (04m00.7s), 1170/2500 VUs, 16262 complete and 0 interrupted iterations
+default   [  18% ] 1170/2500 VUs  04m00.7s/22m00.0s
+
+running (04m01.7s), 1176/2500 VUs, 16390 complete and 0 interrupted iterations
+default   [  18% ] 1176/2500 VUs  04m01.7s/22m00.0s
+
+running (04m02.7s), 1181/2500 VUs, 16534 complete and 0 interrupted iterations
+default   [  18% ] 1181/2500 VUs  04m02.7s/22m00.0s
+
+running (04m03.7s), 1187/2500 VUs, 16688 complete and 0 interrupted iterations
+default   [  18% ] 1187/2500 VUs  04m03.7s/22m00.0s
+
+running (04m04.7s), 1192/2500 VUs, 16840 complete and 0 interrupted iterations
+default   [  19% ] 1192/2500 VUs  04m04.7s/22m00.0s
+
+running (04m05.7s), 1198/2500 VUs, 16993 complete and 0 interrupted iterations
+default   [  19% ] 1198/2500 VUs  04m05.7s/22m00.0s
+
+running (04m06.7s), 1203/2500 VUs, 17148 complete and 0 interrupted iterations
+default   [  19% ] 1203/2500 VUs  04m06.7s/22m00.0s
+
+running (04m07.7s), 1209/2500 VUs, 17297 complete and 0 interrupted iterations
+default   [  19% ] 1209/2500 VUs  04m07.7s/22m00.0s
+
+running (04m08.7s), 1215/2500 VUs, 17434 complete and 0 interrupted iterations
+default   [  19% ] 1215/2500 VUs  04m08.7s/22m00.0s
+time="2026-01-16T17:56:24-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:24-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T17:56:24-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (04m09.7s), 1220/2500 VUs, 17589 complete and 0 interrupted iterations
+default   [  19% ] 1220/2500 VUs  04m09.7s/22m00.0s
+time="2026-01-16T17:56:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T17:56:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T17:56:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (04m10.7s), 1226/2500 VUs, 17741 complete and 0 interrupted iterations
+default   [  19% ] 1226/2500 VUs  04m10.7s/22m00.0s
+time="2026-01-16T17:56:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T17:56:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (04m11.7s), 1231/2500 VUs, 17889 complete and 0 interrupted iterations
+default   [  19% ] 1231/2500 VUs  04m11.7s/22m00.0s
+time="2026-01-16T17:56:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (04m12.7s), 1237/2500 VUs, 18053 complete and 0 interrupted iterations
+default   [  19% ] 1237/2500 VUs  04m12.7s/22m00.0s
+time="2026-01-16T17:56:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T17:56:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+
+running (04m13.7s), 1242/2500 VUs, 18198 complete and 0 interrupted iterations
+default   [  19% ] 1242/2500 VUs  04m13.7s/22m00.0s
+time="2026-01-16T17:56:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T17:56:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (04m14.7s), 1248/2500 VUs, 18335 complete and 0 interrupted iterations
+default   [  19% ] 1248/2500 VUs  04m14.7s/22m00.0s
+time="2026-01-16T17:56:30-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T17:56:30-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (04m15.7s), 1253/2500 VUs, 18458 complete and 0 interrupted iterations
+default   [  19% ] 1253/2500 VUs  04m15.7s/22m00.0s
+
+running (04m16.7s), 1259/2500 VUs, 18597 complete and 0 interrupted iterations
+default   [  19% ] 1259/2500 VUs  04m16.7s/22m00.0s
+
+running (04m17.7s), 1265/2500 VUs, 18729 complete and 0 interrupted iterations
+default   [  20% ] 1265/2500 VUs  04m17.7s/22m00.0s
+
+running (04m18.7s), 1270/2500 VUs, 18863 complete and 0 interrupted iterations
+default   [  20% ] 1270/2500 VUs  04m18.7s/22m00.0s
+
+running (04m19.7s), 1276/2500 VUs, 19004 complete and 0 interrupted iterations
+default   [  20% ] 1276/2500 VUs  04m19.7s/22m00.0s
+
+running (04m20.7s), 1281/2500 VUs, 19148 complete and 0 interrupted iterations
+default   [  20% ] 1281/2500 VUs  04m20.7s/22m00.0s
+
+running (04m21.7s), 1287/2500 VUs, 19321 complete and 0 interrupted iterations
+default   [  20% ] 1287/2500 VUs  04m21.7s/22m00.0s
+
+running (04m22.7s), 1292/2500 VUs, 19478 complete and 0 interrupted iterations
+default   [  20% ] 1292/2500 VUs  04m22.7s/22m00.0s
+
+running (04m23.7s), 1298/2500 VUs, 19670 complete and 0 interrupted iterations
+default   [  20% ] 1298/2500 VUs  04m23.7s/22m00.0s
+
+running (04m24.7s), 1303/2500 VUs, 19838 complete and 0 interrupted iterations
+default   [  20% ] 1303/2500 VUs  04m24.7s/22m00.0s
+
+running (04m25.7s), 1309/2500 VUs, 19992 complete and 0 interrupted iterations
+default   [  20% ] 1309/2500 VUs  04m25.7s/22m00.0s
+
+running (04m26.7s), 1315/2500 VUs, 20154 complete and 0 interrupted iterations
+default   [  20% ] 1315/2500 VUs  04m26.7s/22m00.0s
+
+running (04m27.7s), 1320/2500 VUs, 20302 complete and 0 interrupted iterations
+default   [  20% ] 1320/2500 VUs  04m27.7s/22m00.0s
+
+running (04m28.7s), 1326/2500 VUs, 20476 complete and 0 interrupted iterations
+default   [  20% ] 1326/2500 VUs  04m28.7s/22m00.0s
+
+running (04m29.7s), 1331/2500 VUs, 20648 complete and 0 interrupted iterations
+default   [  20% ] 1331/2500 VUs  04m29.7s/22m00.0s
+
+running (04m30.7s), 1337/2500 VUs, 20816 complete and 0 interrupted iterations
+default   [  21% ] 1337/2500 VUs  04m30.7s/22m00.0s
+
+running (04m31.7s), 1342/2500 VUs, 20977 complete and 0 interrupted iterations
+default   [  21% ] 1342/2500 VUs  04m31.7s/22m00.0s
+
+running (04m32.7s), 1348/2500 VUs, 21139 complete and 0 interrupted iterations
+default   [  21% ] 1348/2500 VUs  04m32.7s/22m00.0s
+
+running (04m33.7s), 1353/2500 VUs, 21327 complete and 0 interrupted iterations
+default   [  21% ] 1353/2500 VUs  04m33.7s/22m00.0s
+
+running (04m34.7s), 1359/2500 VUs, 21505 complete and 0 interrupted iterations
+default   [  21% ] 1359/2500 VUs  04m34.7s/22m00.0s
+
+running (04m35.7s), 1365/2500 VUs, 21643 complete and 0 interrupted iterations
+default   [  21% ] 1365/2500 VUs  04m35.7s/22m00.0s
+
+running (04m36.7s), 1370/2500 VUs, 21822 complete and 0 interrupted iterations
+default   [  21% ] 1370/2500 VUs  04m36.7s/22m00.0s
+
+running (04m37.7s), 1376/2500 VUs, 21983 complete and 0 interrupted iterations
+default   [  21% ] 1376/2500 VUs  04m37.7s/22m00.0s
+
+running (04m38.7s), 1381/2500 VUs, 22139 complete and 0 interrupted iterations
+default   [  21% ] 1381/2500 VUs  04m38.7s/22m00.0s
+
+running (04m39.7s), 1387/2500 VUs, 22303 complete and 0 interrupted iterations
+default   [  21% ] 1387/2500 VUs  04m39.7s/22m00.0s
+
+running (04m40.7s), 1392/2500 VUs, 22453 complete and 0 interrupted iterations
+default   [  21% ] 1392/2500 VUs  04m40.7s/22m00.0s
+
+running (04m41.7s), 1398/2500 VUs, 22632 complete and 0 interrupted iterations
+default   [  21% ] 1398/2500 VUs  04m41.7s/22m00.0s
+
+running (04m42.7s), 1403/2500 VUs, 22779 complete and 0 interrupted iterations
+default   [  21% ] 1403/2500 VUs  04m42.7s/22m00.0s
+
+running (04m43.7s), 1409/2500 VUs, 22944 complete and 0 interrupted iterations
+default   [  21% ] 1409/2500 VUs  04m43.7s/22m00.0s
+
+running (04m44.7s), 1415/2500 VUs, 23103 complete and 0 interrupted iterations
+default   [  22% ] 1415/2500 VUs  04m44.7s/22m00.0s
+
+running (04m45.7s), 1420/2500 VUs, 23234 complete and 0 interrupted iterations
+default   [  22% ] 1420/2500 VUs  04m45.7s/22m00.0s
+
+running (04m46.7s), 1426/2500 VUs, 23393 complete and 0 interrupted iterations
+default   [  22% ] 1426/2500 VUs  04m46.7s/22m00.0s
+
+running (04m47.7s), 1431/2500 VUs, 23565 complete and 0 interrupted iterations
+default   [  22% ] 1431/2500 VUs  04m47.7s/22m00.0s
+
+running (04m48.7s), 1437/2500 VUs, 23705 complete and 0 interrupted iterations
+default   [  22% ] 1437/2500 VUs  04m48.7s/22m00.0s
+
+running (04m49.7s), 1442/2500 VUs, 23875 complete and 0 interrupted iterations
+default   [  22% ] 1442/2500 VUs  04m49.7s/22m00.0s
+
+running (04m50.7s), 1448/2500 VUs, 24045 complete and 0 interrupted iterations
+default   [  22% ] 1448/2500 VUs  04m50.7s/22m00.0s
+
+running (04m51.7s), 1453/2500 VUs, 24193 complete and 0 interrupted iterations
+default   [  22% ] 1453/2500 VUs  04m51.7s/22m00.0s
+
+running (04m52.7s), 1459/2500 VUs, 24345 complete and 0 interrupted iterations
+default   [  22% ] 1459/2500 VUs  04m52.7s/22m00.0s
+
+running (04m53.7s), 1465/2500 VUs, 24512 complete and 0 interrupted iterations
+default   [  22% ] 1465/2500 VUs  04m53.7s/22m00.0s
+
+running (04m54.7s), 1470/2500 VUs, 24684 complete and 0 interrupted iterations
+default   [  22% ] 1470/2500 VUs  04m54.7s/22m00.0s
+
+running (04m55.7s), 1476/2500 VUs, 24840 complete and 0 interrupted iterations
+default   [  22% ] 1476/2500 VUs  04m55.7s/22m00.0s
+
+running (04m56.7s), 1481/2500 VUs, 25017 complete and 0 interrupted iterations
+default   [  22% ] 1481/2500 VUs  04m56.7s/22m00.0s
+
+running (04m57.7s), 1487/2500 VUs, 25197 complete and 0 interrupted iterations
+default   [  23% ] 1487/2500 VUs  04m57.7s/22m00.0s
+
+running (04m58.7s), 1492/2500 VUs, 25352 complete and 0 interrupted iterations
+default   [  23% ] 1492/2500 VUs  04m58.7s/22m00.0s
+
+running (04m59.7s), 1498/2500 VUs, 25522 complete and 0 interrupted iterations
+default   [  23% ] 1498/2500 VUs  04m59.7s/22m00.0s
+
+running (05m00.7s), 1502/2500 VUs, 25683 complete and 0 interrupted iterations
+default   [  23% ] 1502/2500 VUs  05m00.7s/22m00.0s
+
+running (05m01.7s), 1505/2500 VUs, 25836 complete and 0 interrupted iterations
+default   [  23% ] 1505/2500 VUs  05m01.7s/22m00.0s
+
+running (05m02.7s), 1509/2500 VUs, 25985 complete and 0 interrupted iterations
+default   [  23% ] 1509/2500 VUs  05m02.7s/22m00.0s
+
+running (05m03.7s), 1512/2500 VUs, 26157 complete and 0 interrupted iterations
+default   [  23% ] 1512/2500 VUs  05m03.7s/22m00.0s
+
+running (05m04.7s), 1515/2500 VUs, 26343 complete and 0 interrupted iterations
+default   [  23% ] 1515/2500 VUs  05m04.7s/22m00.0s
+
+running (05m05.7s), 1519/2500 VUs, 26507 complete and 0 interrupted iterations
+default   [  23% ] 1519/2500 VUs  05m05.7s/22m00.0s
+
+running (05m06.7s), 1522/2500 VUs, 26690 complete and 0 interrupted iterations
+default   [  23% ] 1522/2500 VUs  05m06.7s/22m00.0s
+
+running (05m07.7s), 1525/2500 VUs, 26849 complete and 0 interrupted iterations
+default   [  23% ] 1525/2500 VUs  05m07.7s/22m00.0s
+
+running (05m08.7s), 1529/2500 VUs, 27035 complete and 0 interrupted iterations
+default   [  23% ] 1529/2500 VUs  05m08.7s/22m00.0s
+
+running (05m09.7s), 1532/2500 VUs, 27207 complete and 0 interrupted iterations
+default   [  23% ] 1532/2500 VUs  05m09.7s/22m00.0s
+
+running (05m10.7s), 1535/2500 VUs, 27365 complete and 0 interrupted iterations
+default   [  24% ] 1535/2500 VUs  05m10.7s/22m00.0s
+
+running (05m11.7s), 1539/2500 VUs, 27523 complete and 0 interrupted iterations
+default   [  24% ] 1539/2500 VUs  05m11.7s/22m00.0s
+
+running (05m12.7s), 1542/2500 VUs, 27705 complete and 0 interrupted iterations
+default   [  24% ] 1542/2500 VUs  05m12.7s/22m00.0s
+
+running (05m13.7s), 1545/2500 VUs, 27897 complete and 0 interrupted iterations
+default   [  24% ] 1545/2500 VUs  05m13.7s/22m00.0s
+
+running (05m14.7s), 1549/2500 VUs, 28084 complete and 0 interrupted iterations
+default   [  24% ] 1549/2500 VUs  05m14.7s/22m00.0s
+
+running (05m15.7s), 1552/2500 VUs, 28279 complete and 0 interrupted iterations
+default   [  24% ] 1552/2500 VUs  05m15.7s/22m00.0s
+
+running (05m16.7s), 1555/2500 VUs, 28437 complete and 0 interrupted iterations
+default   [  24% ] 1555/2500 VUs  05m16.7s/22m00.0s
+
+running (05m17.7s), 1559/2500 VUs, 28608 complete and 0 interrupted iterations
+default   [  24% ] 1559/2500 VUs  05m17.7s/22m00.0s
+
+running (05m18.7s), 1562/2500 VUs, 28778 complete and 0 interrupted iterations
+default   [  24% ] 1562/2500 VUs  05m18.7s/22m00.0s
+
+running (05m19.7s), 1565/2500 VUs, 28948 complete and 0 interrupted iterations
+default   [  24% ] 1565/2500 VUs  05m19.7s/22m00.0s
+
+running (05m20.7s), 1569/2500 VUs, 29117 complete and 0 interrupted iterations
+default   [  24% ] 1569/2500 VUs  05m20.7s/22m00.0s
+
+running (05m21.7s), 1572/2500 VUs, 29315 complete and 0 interrupted iterations
+default   [  24% ] 1572/2500 VUs  05m21.7s/22m00.0s
+
+running (05m22.7s), 1575/2500 VUs, 29496 complete and 0 interrupted iterations
+default   [  24% ] 1575/2500 VUs  05m22.7s/22m00.0s
+
+running (05m23.7s), 1579/2500 VUs, 29674 complete and 0 interrupted iterations
+default   [  25% ] 1579/2500 VUs  05m23.7s/22m00.0s
+
+running (05m24.7s), 1582/2500 VUs, 29850 complete and 0 interrupted iterations
+default   [  25% ] 1582/2500 VUs  05m24.7s/22m00.0s
+
+running (05m25.7s), 1585/2500 VUs, 30019 complete and 0 interrupted iterations
+default   [  25% ] 1585/2500 VUs  05m25.7s/22m00.0s
+
+running (05m26.7s), 1589/2500 VUs, 30203 complete and 0 interrupted iterations
+default   [  25% ] 1589/2500 VUs  05m26.7s/22m00.0s
+
+running (05m27.7s), 1592/2500 VUs, 30386 complete and 0 interrupted iterations
+default   [  25% ] 1592/2500 VUs  05m27.7s/22m00.0s
+
+running (05m28.7s), 1595/2500 VUs, 30561 complete and 0 interrupted iterations
+default   [  25% ] 1595/2500 VUs  05m28.7s/22m00.0s
+
+running (05m29.7s), 1599/2500 VUs, 30738 complete and 0 interrupted iterations
+default   [  25% ] 1599/2500 VUs  05m29.7s/22m00.0s
+
+running (05m30.7s), 1602/2500 VUs, 30931 complete and 0 interrupted iterations
+default   [  25% ] 1602/2500 VUs  05m30.7s/22m00.0s
+time="2026-01-16T17:57:46-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:46-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:46-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:46-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m31.7s), 1605/2500 VUs, 31121 complete and 0 interrupted iterations
+default   [  25% ] 1605/2500 VUs  05m31.7s/22m00.0s
+time="2026-01-16T17:57:46-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:47-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:47-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:47-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:47-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+
+running (05m32.7s), 1609/2500 VUs, 31308 complete and 0 interrupted iterations
+default   [  25% ] 1609/2500 VUs  05m32.7s/22m00.0s
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:48-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m33.7s), 1612/2500 VUs, 31492 complete and 0 interrupted iterations
+default   [  25% ] 1612/2500 VUs  05m33.7s/22m00.0s
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:49-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m34.7s), 1615/2500 VUs, 31666 complete and 0 interrupted iterations
+default   [  25% ] 1615/2500 VUs  05m34.7s/22m00.0s
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m35.7s), 1619/2500 VUs, 31838 complete and 0 interrupted iterations
+default   [  25% ] 1619/2500 VUs  05m35.7s/22m00.0s
+time="2026-01-16T17:57:50-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m36.7s), 1622/2500 VUs, 32034 complete and 0 interrupted iterations
+default   [  26% ] 1622/2500 VUs  05m36.7s/22m00.0s
+time="2026-01-16T17:57:51-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m37.7s), 1625/2500 VUs, 32215 complete and 0 interrupted iterations
+default   [  26% ] 1625/2500 VUs  05m37.7s/22m00.0s
+time="2026-01-16T17:57:52-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:53-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m38.7s), 1629/2500 VUs, 32388 complete and 0 interrupted iterations
+default   [  26% ] 1629/2500 VUs  05m38.7s/22m00.0s
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:54-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m39.7s), 1632/2500 VUs, 32596 complete and 0 interrupted iterations
+default   [  26% ] 1632/2500 VUs  05m39.7s/22m00.0s
+time="2026-01-16T17:57:55-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:55-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:57:55-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m40.7s), 1635/2500 VUs, 32788 complete and 0 interrupted iterations
+default   [  26% ] 1635/2500 VUs  05m40.7s/22m00.0s
+
+running (05m41.7s), 1639/2500 VUs, 32984 complete and 0 interrupted iterations
+default   [  26% ] 1639/2500 VUs  05m41.7s/22m00.0s
+time="2026-01-16T17:57:57-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m42.7s), 1642/2500 VUs, 33184 complete and 0 interrupted iterations
+default   [  26% ] 1642/2500 VUs  05m42.7s/22m00.0s
+time="2026-01-16T17:57:58-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T17:57:58-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+
+running (05m43.7s), 1645/2500 VUs, 33379 complete and 0 interrupted iterations
+default   [  26% ] 1645/2500 VUs  05m43.7s/22m00.0s
+time="2026-01-16T17:57:59-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m44.7s), 1649/2500 VUs, 33563 complete and 0 interrupted iterations
+default   [  26% ] 1649/2500 VUs  05m44.7s/22m00.0s
+time="2026-01-16T17:58:00-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m45.7s), 1652/2500 VUs, 33768 complete and 0 interrupted iterations
+default   [  26% ] 1652/2500 VUs  05m45.7s/22m00.0s
+
+running (05m46.7s), 1655/2500 VUs, 33961 complete and 0 interrupted iterations
+default   [  26% ] 1655/2500 VUs  05m46.7s/22m00.0s
+time="2026-01-16T17:58:02-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:58:02-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:58:02-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m47.7s), 1659/2500 VUs, 34164 complete and 0 interrupted iterations
+default   [  26% ] 1659/2500 VUs  05m47.7s/22m00.0s
+time="2026-01-16T17:58:02-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m48.7s), 1662/2500 VUs, 34366 complete and 0 interrupted iterations
+default   [  26% ] 1662/2500 VUs  05m48.7s/22m00.0s
+
+running (05m49.7s), 1665/2500 VUs, 34562 complete and 0 interrupted iterations
+default   [  26% ] 1665/2500 VUs  05m49.7s/22m00.0s
+
+running (05m50.7s), 1669/2500 VUs, 34727 complete and 0 interrupted iterations
+default   [  27% ] 1669/2500 VUs  05m50.7s/22m00.0s
+time="2026-01-16T17:58:06-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:58:06-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T17:58:06-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (05m51.7s), 1672/2500 VUs, 34926 complete and 0 interrupted iterations
+default   [  27% ] 1672/2500 VUs  05m51.7s/22m00.0s
+
+running (05m52.7s), 1675/2500 VUs, 35120 complete and 0 interrupted iterations
+default   [  27% ] 1675/2500 VUs  05m52.7s/22m00.0s
+
+running (05m53.7s), 1679/2500 VUs, 35322 complete and 0 interrupted iterations
+default   [  27% ] 1679/2500 VUs  05m53.7s/22m00.0s
+
+running (05m54.7s), 1682/2500 VUs, 35505 complete and 0 interrupted iterations
+default   [  27% ] 1682/2500 VUs  05m54.7s/22m00.0s
+
+running (05m55.7s), 1685/2500 VUs, 35682 complete and 0 interrupted iterations
+default   [  27% ] 1685/2500 VUs  05m55.7s/22m00.0s
+
+running (05m56.7s), 1689/2500 VUs, 35900 complete and 0 interrupted iterations
+default   [  27% ] 1689/2500 VUs  05m56.7s/22m00.0s
+
+running (05m57.7s), 1692/2500 VUs, 36093 complete and 0 interrupted iterations
+default   [  27% ] 1692/2500 VUs  05m57.7s/22m00.0s
+
+running (05m58.7s), 1695/2500 VUs, 36279 complete and 0 interrupted iterations
+default   [  27% ] 1695/2500 VUs  05m58.7s/22m00.0s
+
+running (05m59.7s), 1699/2500 VUs, 36461 complete and 0 interrupted iterations
+default   [  27% ] 1699/2500 VUs  05m59.7s/22m00.0s
+
+running (06m00.7s), 1702/2500 VUs, 36654 complete and 0 interrupted iterations
+default   [  27% ] 1702/2500 VUs  06m00.7s/22m00.0s
+
+running (06m01.7s), 1705/2500 VUs, 36880 complete and 0 interrupted iterations
+default   [  27% ] 1705/2500 VUs  06m01.7s/22m00.0s
+
+running (06m02.7s), 1709/2500 VUs, 37094 complete and 0 interrupted iterations
+default   [  27% ] 1709/2500 VUs  06m02.7s/22m00.0s
+
+running (06m03.7s), 1712/2500 VUs, 37355 complete and 0 interrupted iterations
+default   [  28% ] 1712/2500 VUs  06m03.7s/22m00.0s
+
+running (06m04.7s), 1715/2500 VUs, 37599 complete and 0 interrupted iterations
+default   [  28% ] 1715/2500 VUs  06m04.7s/22m00.0s
+
+running (06m05.7s), 1719/2500 VUs, 37798 complete and 0 interrupted iterations
+default   [  28% ] 1719/2500 VUs  06m05.7s/22m00.0s
+
+running (06m06.7s), 1722/2500 VUs, 37998 complete and 0 interrupted iterations
+default   [  28% ] 1722/2500 VUs  06m06.7s/22m00.0s
+
+running (06m07.7s), 1725/2500 VUs, 38209 complete and 0 interrupted iterations
+default   [  28% ] 1725/2500 VUs  06m07.7s/22m00.0s
+
+running (06m08.7s), 1729/2500 VUs, 38410 complete and 0 interrupted iterations
+default   [  28% ] 1729/2500 VUs  06m08.7s/22m00.0s
+
+running (06m09.7s), 1732/2500 VUs, 38635 complete and 0 interrupted iterations
+default   [  28% ] 1732/2500 VUs  06m09.7s/22m00.0s
+
+running (06m10.7s), 1735/2500 VUs, 38857 complete and 0 interrupted iterations
+default   [  28% ] 1735/2500 VUs  06m10.7s/22m00.0s
+
+running (06m11.7s), 1739/2500 VUs, 39122 complete and 0 interrupted iterations
+default   [  28% ] 1739/2500 VUs  06m11.7s/22m00.0s
+
+running (06m12.7s), 1742/2500 VUs, 39366 complete and 0 interrupted iterations
+default   [  28% ] 1742/2500 VUs  06m12.7s/22m00.0s
+
+running (06m13.7s), 1745/2500 VUs, 39561 complete and 0 interrupted iterations
+default   [  28% ] 1745/2500 VUs  06m13.7s/22m00.0s
+
+running (06m14.7s), 1749/2500 VUs, 39771 complete and 0 interrupted iterations
+default   [  28% ] 1749/2500 VUs  06m14.7s/22m00.0s
+
+running (06m15.7s), 1752/2500 VUs, 39975 complete and 0 interrupted iterations
+default   [  28% ] 1752/2500 VUs  06m15.7s/22m00.0s
+
+running (06m16.7s), 1755/2500 VUs, 40186 complete and 0 interrupted iterations
+default   [  29% ] 1755/2500 VUs  06m16.7s/22m00.0s
+
+running (06m17.7s), 1759/2500 VUs, 40405 complete and 0 interrupted iterations
+default   [  29% ] 1759/2500 VUs  06m17.7s/22m00.0s
+
+running (06m18.7s), 1762/2500 VUs, 40644 complete and 0 interrupted iterations
+default   [  29% ] 1762/2500 VUs  06m18.7s/22m00.0s
+
+running (06m19.7s), 1765/2500 VUs, 40906 complete and 0 interrupted iterations
+default   [  29% ] 1765/2500 VUs  06m19.7s/22m00.0s
+
+running (06m20.7s), 1769/2500 VUs, 41137 complete and 0 interrupted iterations
+default   [  29% ] 1769/2500 VUs  06m20.7s/22m00.0s
+
+running (06m21.7s), 1772/2500 VUs, 41376 complete and 0 interrupted iterations
+default   [  29% ] 1772/2500 VUs  06m21.7s/22m00.0s
+
+running (06m22.7s), 1775/2500 VUs, 41594 complete and 0 interrupted iterations
+default   [  29% ] 1775/2500 VUs  06m22.7s/22m00.0s
+
+running (06m23.7s), 1779/2500 VUs, 41775 complete and 0 interrupted iterations
+default   [  29% ] 1779/2500 VUs  06m23.7s/22m00.0s
+
+running (06m24.7s), 1782/2500 VUs, 41986 complete and 0 interrupted iterations
+default   [  29% ] 1782/2500 VUs  06m24.7s/22m00.0s
+
+running (06m25.7s), 1785/2500 VUs, 42210 complete and 0 interrupted iterations
+default   [  29% ] 1785/2500 VUs  06m25.7s/22m00.0s
+
+running (06m26.7s), 1789/2500 VUs, 42465 complete and 0 interrupted iterations
+default   [  29% ] 1789/2500 VUs  06m26.7s/22m00.0s
+
+running (06m27.7s), 1792/2500 VUs, 42713 complete and 0 interrupted iterations
+default   [  29% ] 1792/2500 VUs  06m27.7s/22m00.0s
+
+running (06m28.7s), 1795/2500 VUs, 42938 complete and 0 interrupted iterations
+default   [  29% ] 1795/2500 VUs  06m28.7s/22m00.0s
+
+running (06m29.7s), 1799/2500 VUs, 43180 complete and 0 interrupted iterations
+default   [  30% ] 1799/2500 VUs  06m29.7s/22m00.0s
+
+running (06m30.7s), 1802/2500 VUs, 43405 complete and 0 interrupted iterations
+default   [  30% ] 1802/2500 VUs  06m30.7s/22m00.0s
+
+running (06m31.7s), 1805/2500 VUs, 43613 complete and 0 interrupted iterations
+default   [  30% ] 1805/2500 VUs  06m31.7s/22m00.0s
+
+running (06m32.7s), 1809/2500 VUs, 43806 complete and 0 interrupted iterations
+default   [  30% ] 1809/2500 VUs  06m32.7s/22m00.0s
+
+running (06m33.7s), 1812/2500 VUs, 43993 complete and 0 interrupted iterations
+default   [  30% ] 1812/2500 VUs  06m33.7s/22m00.0s
+
+running (06m34.7s), 1815/2500 VUs, 44224 complete and 0 interrupted iterations
+default   [  30% ] 1815/2500 VUs  06m34.7s/22m00.0s
+
+running (06m35.7s), 1819/2500 VUs, 44440 complete and 0 interrupted iterations
+default   [  30% ] 1819/2500 VUs  06m35.7s/22m00.0s
+
+running (06m36.7s), 1822/2500 VUs, 44662 complete and 0 interrupted iterations
+default   [  30% ] 1822/2500 VUs  06m36.7s/22m00.0s
+
+running (06m37.7s), 1825/2500 VUs, 44868 complete and 0 interrupted iterations
+default   [  30% ] 1825/2500 VUs  06m37.7s/22m00.0s
+
+running (06m38.7s), 1829/2500 VUs, 45080 complete and 0 interrupted iterations
+default   [  30% ] 1829/2500 VUs  06m38.7s/22m00.0s
+
+running (06m39.7s), 1832/2500 VUs, 45279 complete and 0 interrupted iterations
+default   [  30% ] 1832/2500 VUs  06m39.7s/22m00.0s
+
+running (06m40.7s), 1835/2500 VUs, 45466 complete and 0 interrupted iterations
+default   [  30% ] 1835/2500 VUs  06m40.7s/22m00.0s
+
+running (06m41.7s), 1839/2500 VUs, 45684 complete and 0 interrupted iterations
+default   [  30% ] 1839/2500 VUs  06m41.7s/22m00.0s
+
+running (06m42.7s), 1842/2500 VUs, 45903 complete and 0 interrupted iterations
+default   [  31% ] 1842/2500 VUs  06m42.7s/22m00.0s
+
+running (06m43.7s), 1845/2500 VUs, 46140 complete and 0 interrupted iterations
+default   [  31% ] 1845/2500 VUs  06m43.7s/22m00.0s
+
+running (06m44.7s), 1849/2500 VUs, 46352 complete and 0 interrupted iterations
+default   [  31% ] 1849/2500 VUs  06m44.7s/22m00.0s
+
+running (06m45.7s), 1852/2500 VUs, 46569 complete and 0 interrupted iterations
+default   [  31% ] 1852/2500 VUs  06m45.7s/22m00.0s
+
+running (06m46.7s), 1855/2500 VUs, 46795 complete and 0 interrupted iterations
+default   [  31% ] 1855/2500 VUs  06m46.7s/22m00.0s
+
+running (06m47.7s), 1859/2500 VUs, 46976 complete and 0 interrupted iterations
+default   [  31% ] 1859/2500 VUs  06m47.7s/22m00.0s
+
+running (06m48.7s), 1862/2500 VUs, 47196 complete and 0 interrupted iterations
+default   [  31% ] 1862/2500 VUs  06m48.7s/22m00.0s
+
+running (06m49.7s), 1865/2500 VUs, 47425 complete and 0 interrupted iterations
+default   [  31% ] 1865/2500 VUs  06m49.7s/22m00.0s
+
+running (06m50.7s), 1869/2500 VUs, 47644 complete and 0 interrupted iterations
+default   [  31% ] 1869/2500 VUs  06m50.7s/22m00.0s
+
+running (06m51.7s), 1872/2500 VUs, 47885 complete and 0 interrupted iterations
+default   [  31% ] 1872/2500 VUs  06m51.7s/22m00.0s
+
+running (06m52.7s), 1875/2500 VUs, 48092 complete and 0 interrupted iterations
+default   [  31% ] 1875/2500 VUs  06m52.7s/22m00.0s
+
+running (06m53.7s), 1879/2500 VUs, 48297 complete and 0 interrupted iterations
+default   [  31% ] 1879/2500 VUs  06m53.7s/22m00.0s
+
+running (06m54.7s), 1882/2500 VUs, 48523 complete and 0 interrupted iterations
+default   [  31% ] 1882/2500 VUs  06m54.7s/22m00.0s
+
+running (06m55.7s), 1885/2500 VUs, 48749 complete and 0 interrupted iterations
+default   [  31% ] 1885/2500 VUs  06m55.7s/22m00.0s
+
+running (06m56.7s), 1889/2500 VUs, 48992 complete and 0 interrupted iterations
+default   [  32% ] 1889/2500 VUs  06m56.7s/22m00.0s
+
+running (06m57.7s), 1892/2500 VUs, 49208 complete and 0 interrupted iterations
+default   [  32% ] 1892/2500 VUs  06m57.7s/22m00.0s
+
+running (06m58.7s), 1895/2500 VUs, 49442 complete and 0 interrupted iterations
+default   [  32% ] 1895/2500 VUs  06m58.7s/22m00.0s
+
+running (06m59.7s), 1899/2500 VUs, 49650 complete and 0 interrupted iterations
+default   [  32% ] 1899/2500 VUs  06m59.7s/22m00.0s
+
+running (07m00.7s), 1902/2500 VUs, 49884 complete and 0 interrupted iterations
+default   [  32% ] 1902/2500 VUs  07m00.7s/22m00.0s
+
+running (07m01.7s), 1905/2500 VUs, 50161 complete and 0 interrupted iterations
+default   [  32% ] 1905/2500 VUs  07m01.7s/22m00.0s
+
+running (07m02.7s), 1909/2500 VUs, 50425 complete and 0 interrupted iterations
+default   [  32% ] 1909/2500 VUs  07m02.7s/22m00.0s
+
+running (07m03.7s), 1912/2500 VUs, 50641 complete and 0 interrupted iterations
+default   [  32% ] 1912/2500 VUs  07m03.7s/22m00.0s
+
+running (07m04.7s), 1915/2500 VUs, 50872 complete and 0 interrupted iterations
+default   [  32% ] 1915/2500 VUs  07m04.7s/22m00.0s
+
+running (07m05.7s), 1919/2500 VUs, 51103 complete and 0 interrupted iterations
+default   [  32% ] 1919/2500 VUs  07m05.7s/22m00.0s
+
+running (07m06.7s), 1922/2500 VUs, 51365 complete and 0 interrupted iterations
+default   [  32% ] 1922/2500 VUs  07m06.7s/22m00.0s
+
+running (07m07.7s), 1925/2500 VUs, 51597 complete and 0 interrupted iterations
+default   [  32% ] 1925/2500 VUs  07m07.7s/22m00.0s
+
+running (07m08.7s), 1929/2500 VUs, 51847 complete and 0 interrupted iterations
+default   [  32% ] 1929/2500 VUs  07m08.7s/22m00.0s
+
+running (07m09.7s), 1932/2500 VUs, 52077 complete and 0 interrupted iterations
+default   [  33% ] 1932/2500 VUs  07m09.7s/22m00.0s
+
+running (07m10.7s), 1935/2500 VUs, 52318 complete and 0 interrupted iterations
+default   [  33% ] 1935/2500 VUs  07m10.7s/22m00.0s
+
+running (07m11.7s), 1939/2500 VUs, 52580 complete and 0 interrupted iterations
+default   [  33% ] 1939/2500 VUs  07m11.7s/22m00.0s
+
+running (07m12.7s), 1942/2500 VUs, 52841 complete and 0 interrupted iterations
+default   [  33% ] 1942/2500 VUs  07m12.7s/22m00.0s
+
+running (07m13.7s), 1945/2500 VUs, 53080 complete and 0 interrupted iterations
+default   [  33% ] 1945/2500 VUs  07m13.7s/22m00.0s
+
+running (07m14.7s), 1949/2500 VUs, 53322 complete and 0 interrupted iterations
+default   [  33% ] 1949/2500 VUs  07m14.7s/22m00.0s
+
+running (07m15.7s), 1952/2500 VUs, 53574 complete and 0 interrupted iterations
+default   [  33% ] 1952/2500 VUs  07m15.7s/22m00.0s
+
+running (07m16.7s), 1955/2500 VUs, 53798 complete and 0 interrupted iterations
+default   [  33% ] 1955/2500 VUs  07m16.7s/22m00.0s
+
+running (07m17.7s), 1959/2500 VUs, 54054 complete and 0 interrupted iterations
+default   [  33% ] 1959/2500 VUs  07m17.7s/22m00.0s
+
+running (07m18.7s), 1962/2500 VUs, 54302 complete and 0 interrupted iterations
+default   [  33% ] 1962/2500 VUs  07m18.7s/22m00.0s
+
+running (07m19.7s), 1965/2500 VUs, 54573 complete and 0 interrupted iterations
+default   [  33% ] 1965/2500 VUs  07m19.7s/22m00.0s
+
+running (07m20.7s), 1969/2500 VUs, 54821 complete and 0 interrupted iterations
+default   [  33% ] 1969/2500 VUs  07m20.7s/22m00.0s
+
+running (07m21.7s), 1972/2500 VUs, 55071 complete and 0 interrupted iterations
+default   [  33% ] 1972/2500 VUs  07m21.7s/22m00.0s
+
+running (07m22.7s), 1975/2500 VUs, 55291 complete and 0 interrupted iterations
+default   [  34% ] 1975/2500 VUs  07m22.7s/22m00.0s
+
+running (07m23.7s), 1979/2500 VUs, 55552 complete and 0 interrupted iterations
+default   [  34% ] 1979/2500 VUs  07m23.7s/22m00.0s
+
+running (07m24.7s), 1982/2500 VUs, 55790 complete and 0 interrupted iterations
+default   [  34% ] 1982/2500 VUs  07m24.7s/22m00.0s
+
+running (07m25.7s), 1985/2500 VUs, 56021 complete and 0 interrupted iterations
+default   [  34% ] 1985/2500 VUs  07m25.7s/22m00.0s
+
+running (07m26.7s), 1989/2500 VUs, 56252 complete and 0 interrupted iterations
+default   [  34% ] 1989/2500 VUs  07m26.7s/22m00.0s
+
+running (07m27.7s), 1992/2500 VUs, 56501 complete and 0 interrupted iterations
+default   [  34% ] 1992/2500 VUs  07m27.7s/22m00.0s
+
+running (07m28.7s), 1995/2500 VUs, 56719 complete and 0 interrupted iterations
+default   [  34% ] 1995/2500 VUs  07m28.7s/22m00.0s
+
+running (07m29.7s), 1999/2500 VUs, 56969 complete and 0 interrupted iterations
+default   [  34% ] 1999/2500 VUs  07m29.7s/22m00.0s
+
+running (07m30.7s), 2002/2500 VUs, 57184 complete and 0 interrupted iterations
+default   [  34% ] 2002/2500 VUs  07m30.7s/22m00.0s
+
+running (07m31.7s), 2005/2500 VUs, 57405 complete and 0 interrupted iterations
+default   [  34% ] 2005/2500 VUs  07m31.7s/22m00.0s
+
+running (07m32.7s), 2009/2500 VUs, 57626 complete and 0 interrupted iterations
+default   [  34% ] 2009/2500 VUs  07m32.7s/22m00.0s
+
+running (07m33.7s), 2012/2500 VUs, 57859 complete and 0 interrupted iterations
+default   [  34% ] 2012/2500 VUs  07m33.7s/22m00.0s
+
+running (07m34.7s), 2015/2500 VUs, 58086 complete and 0 interrupted iterations
+default   [  34% ] 2015/2500 VUs  07m34.7s/22m00.0s
+
+running (07m35.7s), 2019/2500 VUs, 58320 complete and 0 interrupted iterations
+default   [  35% ] 2019/2500 VUs  07m35.7s/22m00.0s
+
+running (07m36.7s), 2022/2500 VUs, 58574 complete and 0 interrupted iterations
+default   [  35% ] 2022/2500 VUs  07m36.7s/22m00.0s
+
+running (07m37.7s), 2025/2500 VUs, 58824 complete and 0 interrupted iterations
+default   [  35% ] 2025/2500 VUs  07m37.7s/22m00.0s
+
+running (07m38.7s), 2029/2500 VUs, 59061 complete and 0 interrupted iterations
+default   [  35% ] 2029/2500 VUs  07m38.7s/22m00.0s
+
+running (07m39.7s), 2032/2500 VUs, 59295 complete and 0 interrupted iterations
+default   [  35% ] 2032/2500 VUs  07m39.7s/22m00.0s
+
+running (07m40.7s), 2035/2500 VUs, 59528 complete and 0 interrupted iterations
+default   [  35% ] 2035/2500 VUs  07m40.7s/22m00.0s
+
+running (07m41.7s), 2039/2500 VUs, 59768 complete and 0 interrupted iterations
+default   [  35% ] 2039/2500 VUs  07m41.7s/22m00.0s
+
+running (07m42.7s), 2042/2500 VUs, 60010 complete and 0 interrupted iterations
+default   [  35% ] 2042/2500 VUs  07m42.7s/22m00.0s
+
+running (07m43.7s), 2045/2500 VUs, 60250 complete and 0 interrupted iterations
+default   [  35% ] 2045/2500 VUs  07m43.7s/22m00.0s
+
+running (07m44.7s), 2049/2500 VUs, 60538 complete and 0 interrupted iterations
+default   [  35% ] 2049/2500 VUs  07m44.7s/22m00.0s
+
+running (07m45.7s), 2052/2500 VUs, 60829 complete and 0 interrupted iterations
+default   [  35% ] 2052/2500 VUs  07m45.7s/22m00.0s
+
+running (07m46.7s), 2055/2500 VUs, 61105 complete and 0 interrupted iterations
+default   [  35% ] 2055/2500 VUs  07m46.7s/22m00.0s
+
+running (07m47.7s), 2059/2500 VUs, 61387 complete and 0 interrupted iterations
+default   [  35% ] 2059/2500 VUs  07m47.7s/22m00.0s
+
+running (07m48.7s), 2062/2500 VUs, 61631 complete and 0 interrupted iterations
+default   [  36% ] 2062/2500 VUs  07m48.7s/22m00.0s
+
+running (07m49.7s), 2065/2500 VUs, 61854 complete and 0 interrupted iterations
+default   [  36% ] 2065/2500 VUs  07m49.7s/22m00.0s
+
+running (07m50.7s), 2069/2500 VUs, 62113 complete and 0 interrupted iterations
+default   [  36% ] 2069/2500 VUs  07m50.7s/22m00.0s
+
+running (07m51.7s), 2072/2500 VUs, 62380 complete and 0 interrupted iterations
+default   [  36% ] 2072/2500 VUs  07m51.7s/22m00.0s
+
+running (07m52.7s), 2075/2500 VUs, 62658 complete and 0 interrupted iterations
+default   [  36% ] 2075/2500 VUs  07m52.7s/22m00.0s
+
+running (07m53.7s), 2079/2500 VUs, 62940 complete and 0 interrupted iterations
+default   [  36% ] 2079/2500 VUs  07m53.7s/22m00.0s
+
+running (07m54.7s), 2082/2500 VUs, 63206 complete and 0 interrupted iterations
+default   [  36% ] 2082/2500 VUs  07m54.7s/22m00.0s
+
+running (07m55.7s), 2085/2500 VUs, 63436 complete and 0 interrupted iterations
+default   [  36% ] 2085/2500 VUs  07m55.7s/22m00.0s
+
+running (07m56.7s), 2089/2500 VUs, 63669 complete and 0 interrupted iterations
+default   [  36% ] 2089/2500 VUs  07m56.7s/22m00.0s
+
+running (07m57.7s), 2092/2500 VUs, 63916 complete and 0 interrupted iterations
+default   [  36% ] 2092/2500 VUs  07m57.7s/22m00.0s
+
+running (07m58.7s), 2095/2500 VUs, 64149 complete and 0 interrupted iterations
+default   [  36% ] 2095/2500 VUs  07m58.7s/22m00.0s
+
+running (07m59.7s), 2099/2500 VUs, 64405 complete and 0 interrupted iterations
+default   [  36% ] 2099/2500 VUs  07m59.7s/22m00.0s
+
+running (08m00.7s), 2102/2500 VUs, 64682 complete and 0 interrupted iterations
+default   [  36% ] 2102/2500 VUs  08m00.7s/22m00.0s
+
+running (08m01.7s), 2105/2500 VUs, 64916 complete and 0 interrupted iterations
+default   [  36% ] 2105/2500 VUs  08m01.7s/22m00.0s
+
+running (08m02.7s), 2109/2500 VUs, 65147 complete and 0 interrupted iterations
+default   [  37% ] 2109/2500 VUs  08m02.7s/22m00.0s
+
+running (08m03.7s), 2112/2500 VUs, 65393 complete and 0 interrupted iterations
+default   [  37% ] 2112/2500 VUs  08m03.7s/22m00.0s
+
+running (08m04.7s), 2115/2500 VUs, 65633 complete and 0 interrupted iterations
+default   [  37% ] 2115/2500 VUs  08m04.7s/22m00.0s
+
+running (08m05.7s), 2119/2500 VUs, 65864 complete and 0 interrupted iterations
+default   [  37% ] 2119/2500 VUs  08m05.7s/22m00.0s
+
+running (08m06.7s), 2122/2500 VUs, 66127 complete and 0 interrupted iterations
+default   [  37% ] 2122/2500 VUs  08m06.7s/22m00.0s
+
+running (08m07.7s), 2125/2500 VUs, 66366 complete and 0 interrupted iterations
+default   [  37% ] 2125/2500 VUs  08m07.7s/22m00.0s
+
+running (08m08.7s), 2129/2500 VUs, 66636 complete and 0 interrupted iterations
+default   [  37% ] 2129/2500 VUs  08m08.7s/22m00.0s
+
+running (08m09.7s), 2132/2500 VUs, 66870 complete and 0 interrupted iterations
+default   [  37% ] 2132/2500 VUs  08m09.7s/22m00.0s
+
+running (08m10.7s), 2135/2500 VUs, 67106 complete and 0 interrupted iterations
+default   [  37% ] 2135/2500 VUs  08m10.7s/22m00.0s
+
+running (08m11.7s), 2139/2500 VUs, 67365 complete and 0 interrupted iterations
+default   [  37% ] 2139/2500 VUs  08m11.7s/22m00.0s
+
+running (08m12.7s), 2142/2500 VUs, 67619 complete and 0 interrupted iterations
+default   [  37% ] 2142/2500 VUs  08m12.7s/22m00.0s
+
+running (08m13.7s), 2145/2500 VUs, 67860 complete and 0 interrupted iterations
+default   [  37% ] 2145/2500 VUs  08m13.7s/22m00.0s
+
+running (08m14.7s), 2149/2500 VUs, 68139 complete and 0 interrupted iterations
+default   [  37% ] 2149/2500 VUs  08m14.7s/22m00.0s
+
+running (08m15.7s), 2152/2500 VUs, 68376 complete and 0 interrupted iterations
+default   [  38% ] 2152/2500 VUs  08m15.7s/22m00.0s
+
+running (08m16.7s), 2155/2500 VUs, 68620 complete and 0 interrupted iterations
+default   [  38% ] 2155/2500 VUs  08m16.7s/22m00.0s
+
+running (08m17.7s), 2159/2500 VUs, 68872 complete and 0 interrupted iterations
+default   [  38% ] 2159/2500 VUs  08m17.7s/22m00.0s
+
+running (08m18.7s), 2162/2500 VUs, 69127 complete and 0 interrupted iterations
+default   [  38% ] 2162/2500 VUs  08m18.7s/22m00.0s
+
+running (08m19.7s), 2165/2500 VUs, 69388 complete and 0 interrupted iterations
+default   [  38% ] 2165/2500 VUs  08m19.7s/22m00.0s
+
+running (08m20.7s), 2169/2500 VUs, 69670 complete and 0 interrupted iterations
+default   [  38% ] 2169/2500 VUs  08m20.7s/22m00.0s
+
+running (08m21.7s), 2172/2500 VUs, 69917 complete and 0 interrupted iterations
+default   [  38% ] 2172/2500 VUs  08m21.7s/22m00.0s
+
+running (08m22.7s), 2175/2500 VUs, 70164 complete and 0 interrupted iterations
+default   [  38% ] 2175/2500 VUs  08m22.7s/22m00.0s
+
+running (08m23.7s), 2179/2500 VUs, 70424 complete and 0 interrupted iterations
+default   [  38% ] 2179/2500 VUs  08m23.7s/22m00.0s
+
+running (08m24.7s), 2182/2500 VUs, 70680 complete and 0 interrupted iterations
+default   [  38% ] 2182/2500 VUs  08m24.7s/22m00.0s
+
+running (08m25.7s), 2185/2500 VUs, 70930 complete and 0 interrupted iterations
+default   [  38% ] 2185/2500 VUs  08m25.7s/22m00.0s
+
+running (08m26.7s), 2189/2500 VUs, 71176 complete and 0 interrupted iterations
+default   [  38% ] 2189/2500 VUs  08m26.7s/22m00.0s
+
+running (08m27.7s), 2192/2500 VUs, 71471 complete and 0 interrupted iterations
+default   [  38% ] 2192/2500 VUs  08m27.7s/22m00.0s
+
+running (08m28.7s), 2195/2500 VUs, 71731 complete and 0 interrupted iterations
+default   [  39% ] 2195/2500 VUs  08m28.7s/22m00.0s
+
+running (08m29.7s), 2199/2500 VUs, 71992 complete and 0 interrupted iterations
+default   [  39% ] 2199/2500 VUs  08m29.7s/22m00.0s
+
+running (08m30.7s), 2202/2500 VUs, 72246 complete and 0 interrupted iterations
+default   [  39% ] 2202/2500 VUs  08m30.7s/22m00.0s
+
+running (08m31.7s), 2205/2500 VUs, 72508 complete and 0 interrupted iterations
+default   [  39% ] 2205/2500 VUs  08m31.7s/22m00.0s
+
+running (08m32.7s), 2209/2500 VUs, 72756 complete and 0 interrupted iterations
+default   [  39% ] 2209/2500 VUs  08m32.7s/22m00.0s
+
+running (08m33.7s), 2212/2500 VUs, 73033 complete and 0 interrupted iterations
+default   [  39% ] 2212/2500 VUs  08m33.7s/22m00.0s
+
+running (08m34.7s), 2215/2500 VUs, 73284 complete and 0 interrupted iterations
+default   [  39% ] 2215/2500 VUs  08m34.7s/22m00.0s
+
+running (08m35.7s), 2219/2500 VUs, 73544 complete and 0 interrupted iterations
+default   [  39% ] 2219/2500 VUs  08m35.7s/22m00.0s
+
+running (08m36.7s), 2222/2500 VUs, 73806 complete and 0 interrupted iterations
+default   [  39% ] 2222/2500 VUs  08m36.7s/22m00.0s
+
+running (08m37.7s), 2225/2500 VUs, 74061 complete and 0 interrupted iterations
+default   [  39% ] 2225/2500 VUs  08m37.7s/22m00.0s
+
+running (08m38.7s), 2229/2500 VUs, 74324 complete and 0 interrupted iterations
+default   [  39% ] 2229/2500 VUs  08m38.7s/22m00.0s
+
+running (08m39.7s), 2232/2500 VUs, 74592 complete and 0 interrupted iterations
+default   [  39% ] 2232/2500 VUs  08m39.7s/22m00.0s
+
+running (08m40.7s), 2235/2500 VUs, 74850 complete and 0 interrupted iterations
+default   [  39% ] 2235/2500 VUs  08m40.7s/22m00.0s
+
+running (08m41.7s), 2239/2500 VUs, 75142 complete and 0 interrupted iterations
+default   [  40% ] 2239/2500 VUs  08m41.7s/22m00.0s
+
+running (08m42.7s), 2242/2500 VUs, 75433 complete and 0 interrupted iterations
+default   [  40% ] 2242/2500 VUs  08m42.7s/22m00.0s
+
+running (08m43.7s), 2245/2500 VUs, 75734 complete and 0 interrupted iterations
+default   [  40% ] 2245/2500 VUs  08m43.7s/22m00.0s
+
+running (08m44.7s), 2249/2500 VUs, 76023 complete and 0 interrupted iterations
+default   [  40% ] 2249/2500 VUs  08m44.7s/22m00.0s
+
+running (08m45.7s), 2252/2500 VUs, 76333 complete and 0 interrupted iterations
+default   [  40% ] 2252/2500 VUs  08m45.7s/22m00.0s
+
+running (08m46.7s), 2255/2500 VUs, 76625 complete and 0 interrupted iterations
+default   [  40% ] 2255/2500 VUs  08m46.7s/22m00.0s
+
+running (08m47.7s), 2259/2500 VUs, 76915 complete and 0 interrupted iterations
+default   [  40% ] 2259/2500 VUs  08m47.7s/22m00.0s
+
+running (08m48.7s), 2262/2500 VUs, 77174 complete and 0 interrupted iterations
+default   [  40% ] 2262/2500 VUs  08m48.7s/22m00.0s
+
+running (08m49.7s), 2265/2500 VUs, 77462 complete and 0 interrupted iterations
+default   [  40% ] 2265/2500 VUs  08m49.7s/22m00.0s
+
+running (08m50.7s), 2269/2500 VUs, 77734 complete and 0 interrupted iterations
+default   [  40% ] 2269/2500 VUs  08m50.7s/22m00.0s
+
+running (08m51.7s), 2272/2500 VUs, 78026 complete and 0 interrupted iterations
+default   [  40% ] 2272/2500 VUs  08m51.7s/22m00.0s
+
+running (08m52.7s), 2275/2500 VUs, 78352 complete and 0 interrupted iterations
+default   [  40% ] 2275/2500 VUs  08m52.7s/22m00.0s
+
+running (08m53.7s), 2279/2500 VUs, 78640 complete and 0 interrupted iterations
+default   [  40% ] 2279/2500 VUs  08m53.7s/22m00.0s
+
+running (08m54.7s), 2282/2500 VUs, 78933 complete and 0 interrupted iterations
+default   [  41% ] 2282/2500 VUs  08m54.7s/22m00.0s
+
+running (08m55.7s), 2285/2500 VUs, 79212 complete and 0 interrupted iterations
+default   [  41% ] 2285/2500 VUs  08m55.7s/22m00.0s
+
+running (08m56.7s), 2289/2500 VUs, 79499 complete and 0 interrupted iterations
+default   [  41% ] 2289/2500 VUs  08m56.7s/22m00.0s
+
+running (08m57.7s), 2292/2500 VUs, 79780 complete and 0 interrupted iterations
+default   [  41% ] 2292/2500 VUs  08m57.7s/22m00.0s
+
+running (08m58.7s), 2295/2500 VUs, 80063 complete and 0 interrupted iterations
+default   [  41% ] 2295/2500 VUs  08m58.7s/22m00.0s
+
+running (08m59.7s), 2299/2500 VUs, 80386 complete and 0 interrupted iterations
+default   [  41% ] 2299/2500 VUs  08m59.7s/22m00.0s
+
+running (09m00.7s), 2302/2500 VUs, 80695 complete and 0 interrupted iterations
+default   [  41% ] 2302/2500 VUs  09m00.7s/22m00.0s
+
+running (09m01.7s), 2305/2500 VUs, 80975 complete and 0 interrupted iterations
+default   [  41% ] 2305/2500 VUs  09m01.7s/22m00.0s
+
+running (09m02.7s), 2309/2500 VUs, 81274 complete and 0 interrupted iterations
+default   [  41% ] 2309/2500 VUs  09m02.7s/22m00.0s
+
+running (09m03.7s), 2312/2500 VUs, 81552 complete and 0 interrupted iterations
+default   [  41% ] 2312/2500 VUs  09m03.7s/22m00.0s
+
+running (09m04.7s), 2315/2500 VUs, 81829 complete and 0 interrupted iterations
+default   [  41% ] 2315/2500 VUs  09m04.7s/22m00.0s
+
+running (09m05.7s), 2319/2500 VUs, 82132 complete and 0 interrupted iterations
+default   [  41% ] 2319/2500 VUs  09m05.7s/22m00.0s
+
+running (09m06.7s), 2322/2500 VUs, 82430 complete and 0 interrupted iterations
+default   [  41% ] 2322/2500 VUs  09m06.7s/22m00.0s
+
+running (09m07.7s), 2325/2500 VUs, 82686 complete and 0 interrupted iterations
+default   [  41% ] 2325/2500 VUs  09m07.7s/22m00.0s
+
+running (09m08.7s), 2329/2500 VUs, 82929 complete and 0 interrupted iterations
+default   [  42% ] 2329/2500 VUs  09m08.7s/22m00.0s
+time="2026-01-16T18:01:24-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m09.7s), 2332/2500 VUs, 83210 complete and 0 interrupted iterations
+default   [  42% ] 2332/2500 VUs  09m09.7s/22m00.0s
+time="2026-01-16T18:01:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:25-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m10.7s), 2335/2500 VUs, 83503 complete and 0 interrupted iterations
+default   [  42% ] 2335/2500 VUs  09m10.7s/22m00.0s
+time="2026-01-16T18:01:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T18:01:26-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m11.7s), 2339/2500 VUs, 83827 complete and 0 interrupted iterations
+default   [  42% ] 2339/2500 VUs  09m11.7s/22m00.0s
+time="2026-01-16T18:01:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T18:01:27-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m12.7s), 2342/2500 VUs, 84113 complete and 0 interrupted iterations
+default   [  42% ] 2342/2500 VUs  09m12.7s/22m00.0s
+time="2026-01-16T18:01:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T18:01:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m13.7s), 2345/2500 VUs, 84416 complete and 0 interrupted iterations
+default   [  42% ] 2345/2500 VUs  09m13.7s/22m00.0s
+time="2026-01-16T18:01:28-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T18:01:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:29-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m14.7s), 2349/2500 VUs, 84644 complete and 0 interrupted iterations
+default   [  42% ] 2349/2500 VUs  09m14.7s/22m00.0s
+time="2026-01-16T18:01:30-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:30-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T18:01:30-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+
+running (09m15.7s), 2352/2500 VUs, 84875 complete and 0 interrupted iterations
+default   [  42% ] 2352/2500 VUs  09m15.7s/22m00.0s
+time="2026-01-16T18:01:31-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+time="2026-01-16T18:01:31-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:31-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": EOF"
+
+running (09m16.7s), 2355/2500 VUs, 85134 complete and 0 interrupted iterations
+default   [  42% ] 2355/2500 VUs  09m16.7s/22m00.0s
+time="2026-01-16T18:01:31-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:32-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:32-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:32-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:32-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m17.7s), 2359/2500 VUs, 85408 complete and 0 interrupted iterations
+default   [  42% ] 2359/2500 VUs  09m17.7s/22m00.0s
+time="2026-01-16T18:01:33-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:33-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:33-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:33-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m18.7s), 2362/2500 VUs, 85695 complete and 0 interrupted iterations
+default   [  42% ] 2362/2500 VUs  09m18.7s/22m00.0s
+time="2026-01-16T18:01:34-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:34-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:34-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:34-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:34-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m19.7s), 2365/2500 VUs, 85967 complete and 0 interrupted iterations
+default   [  42% ] 2365/2500 VUs  09m19.7s/22m00.0s
+time="2026-01-16T18:01:34-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:35-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:35-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:01:35-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/appointments.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (09m20.7s), 2369/2500 VUs, 86232 complete and 0 interrupted iterations
+default   [  42% ] 2369/2500 VUs  09m20.7s/22m00.0s
+
+running (09m21.7s), 2372/2500 VUs, 86509 complete and 0 interrupted iterations
+default   [  43% ] 2372/2500 VUs  09m21.7s/22m00.0s
+
+running (09m22.7s), 2375/2500 VUs, 86746 complete and 0 interrupted iterations
+default   [  43% ] 2375/2500 VUs  09m22.7s/22m00.0s
+
+running (09m23.7s), 2379/2500 VUs, 86976 complete and 0 interrupted iterations
+default   [  43% ] 2379/2500 VUs  09m23.7s/22m00.0s
+
+running (09m24.7s), 2382/2500 VUs, 87260 complete and 0 interrupted iterations
+default   [  43% ] 2382/2500 VUs  09m24.7s/22m00.0s
+
+running (09m25.7s), 2385/2500 VUs, 87543 complete and 0 interrupted iterations
+default   [  43% ] 2385/2500 VUs  09m25.7s/22m00.0s
+
+running (09m26.7s), 2389/2500 VUs, 87852 complete and 0 interrupted iterations
+default   [  43% ] 2389/2500 VUs  09m26.7s/22m00.0s
+
+running (09m27.7s), 2392/2500 VUs, 88139 complete and 0 interrupted iterations
+default   [  43% ] 2392/2500 VUs  09m27.7s/22m00.0s
+
+running (09m28.7s), 2395/2500 VUs, 88395 complete and 0 interrupted iterations
+default   [  43% ] 2395/2500 VUs  09m28.7s/22m00.0s
+
+running (09m29.7s), 2399/2500 VUs, 88638 complete and 0 interrupted iterations
+default   [  43% ] 2399/2500 VUs  09m29.7s/22m00.0s
+
+running (09m30.7s), 2402/2500 VUs, 88891 complete and 0 interrupted iterations
+default   [  43% ] 2402/2500 VUs  09m30.7s/22m00.0s
+
+running (09m31.7s), 2405/2500 VUs, 89169 complete and 0 interrupted iterations
+default   [  43% ] 2405/2500 VUs  09m31.7s/22m00.0s
+
+running (09m32.7s), 2409/2500 VUs, 89448 complete and 0 interrupted iterations
+default   [  43% ] 2409/2500 VUs  09m32.7s/22m00.0s
+
+running (09m33.7s), 2412/2500 VUs, 89734 complete and 0 interrupted iterations
+default   [  43% ] 2412/2500 VUs  09m33.7s/22m00.0s
+
+running (09m34.7s), 2415/2500 VUs, 90022 complete and 0 interrupted iterations
+default   [  44% ] 2415/2500 VUs  09m34.7s/22m00.0s
+
+running (09m35.7s), 2419/2500 VUs, 90307 complete and 0 interrupted iterations
+default   [  44% ] 2419/2500 VUs  09m35.7s/22m00.0s
+
+running (09m36.7s), 2422/2500 VUs, 90598 complete and 0 interrupted iterations
+default   [  44% ] 2422/2500 VUs  09m36.7s/22m00.0s
+
+running (09m37.7s), 2425/2500 VUs, 90869 complete and 0 interrupted iterations
+default   [  44% ] 2425/2500 VUs  09m37.7s/22m00.0s
+
+running (09m38.7s), 2429/2500 VUs, 91147 complete and 0 interrupted iterations
+default   [  44% ] 2429/2500 VUs  09m38.7s/22m00.0s
+
+running (09m39.7s), 2432/2500 VUs, 91415 complete and 0 interrupted iterations
+default   [  44% ] 2432/2500 VUs  09m39.7s/22m00.0s
+
+running (09m40.7s), 2435/2500 VUs, 91688 complete and 0 interrupted iterations
+default   [  44% ] 2435/2500 VUs  09m40.7s/22m00.0s
+
+running (09m41.7s), 2439/2500 VUs, 91977 complete and 0 interrupted iterations
+default   [  44% ] 2439/2500 VUs  09m41.7s/22m00.0s
+
+running (09m42.7s), 2442/2500 VUs, 92249 complete and 0 interrupted iterations
+default   [  44% ] 2442/2500 VUs  09m42.7s/22m00.0s
+
+running (09m43.7s), 2445/2500 VUs, 92576 complete and 0 interrupted iterations
+default   [  44% ] 2445/2500 VUs  09m43.7s/22m00.0s
+
+running (09m44.7s), 2449/2500 VUs, 92848 complete and 0 interrupted iterations
+default   [  44% ] 2449/2500 VUs  09m44.7s/22m00.0s
+
+running (09m45.7s), 2452/2500 VUs, 93108 complete and 0 interrupted iterations
+default   [  44% ] 2452/2500 VUs  09m45.7s/22m00.0s
+
+running (09m46.7s), 2455/2500 VUs, 93384 complete and 0 interrupted iterations
+default   [  44% ] 2455/2500 VUs  09m46.7s/22m00.0s
+
+running (09m47.7s), 2459/2500 VUs, 93658 complete and 0 interrupted iterations
+default   [  45% ] 2459/2500 VUs  09m47.7s/22m00.0s
+
+running (09m48.7s), 2462/2500 VUs, 93937 complete and 0 interrupted iterations
+default   [  45% ] 2462/2500 VUs  09m48.7s/22m00.0s
+
+running (09m49.7s), 2465/2500 VUs, 94231 complete and 0 interrupted iterations
+default   [  45% ] 2465/2500 VUs  09m49.7s/22m00.0s
+
+running (09m50.7s), 2469/2500 VUs, 94523 complete and 0 interrupted iterations
+default   [  45% ] 2469/2500 VUs  09m50.7s/22m00.0s
+time="2026-01-16T18:02:06-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": unexpected EOF"
+
+running (09m51.7s), 2472/2500 VUs, 94820 complete and 0 interrupted iterations
+default   [  45% ] 2472/2500 VUs  09m51.7s/22m00.0s
+
+running (09m52.7s), 2475/2500 VUs, 95088 complete and 0 interrupted iterations
+default   [  45% ] 2475/2500 VUs  09m52.7s/22m00.0s
+
+running (09m53.7s), 2479/2500 VUs, 95382 complete and 0 interrupted iterations
+default   [  45% ] 2479/2500 VUs  09m53.7s/22m00.0s
+
+running (09m54.7s), 2482/2500 VUs, 95649 complete and 0 interrupted iterations
+default   [  45% ] 2482/2500 VUs  09m54.7s/22m00.0s
+
+running (09m55.7s), 2485/2500 VUs, 95939 complete and 0 interrupted iterations
+default   [  45% ] 2485/2500 VUs  09m55.7s/22m00.0s
+
+running (09m56.7s), 2489/2500 VUs, 96259 complete and 0 interrupted iterations
+default   [  45% ] 2489/2500 VUs  09m56.7s/22m00.0s
+
+running (09m57.7s), 2492/2500 VUs, 96597 complete and 0 interrupted iterations
+default   [  45% ] 2492/2500 VUs  09m57.7s/22m00.0s
+
+running (09m58.7s), 2495/2500 VUs, 96944 complete and 0 interrupted iterations
+default   [  45% ] 2495/2500 VUs  09m58.7s/22m00.0s
+
+running (09m59.7s), 2499/2500 VUs, 97263 complete and 0 interrupted iterations
+default   [  45% ] 2499/2500 VUs  09m59.7s/22m00.0s
+
+running (10m00.7s), 2500/2500 VUs, 97606 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m00.7s/22m00.0s
+time="2026-01-16T18:02:16-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+
+running (10m01.7s), 2500/2500 VUs, 97930 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m01.7s/22m00.0s
+
+running (10m02.7s), 2500/2500 VUs, 98199 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m02.7s/22m00.0s
+
+running (10m03.7s), 2500/2500 VUs, 98521 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m03.7s/22m00.0s
+time="2026-01-16T18:02:19-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+
+running (10m04.7s), 2500/2500 VUs, 98820 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m04.7s/22m00.0s
+
+running (10m05.7s), 2500/2500 VUs, 99139 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m05.7s/22m00.0s
+
+running (10m06.7s), 2500/2500 VUs, 99515 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m06.7s/22m00.0s
+
+running (10m07.7s), 2500/2500 VUs, 99864 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m07.7s/22m00.0s
+
+running (10m08.7s), 2500/2500 VUs, 100193 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m08.7s/22m00.0s
+
+running (10m09.7s), 2500/2500 VUs, 100506 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m09.7s/22m00.0s
+
+running (10m10.7s), 2500/2500 VUs, 100790 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m10.7s/22m00.0s
+
+running (10m11.7s), 2500/2500 VUs, 101068 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m11.7s/22m00.0s
+
+running (10m12.7s), 2500/2500 VUs, 101354 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m12.7s/22m00.0s
+
+running (10m13.7s), 2500/2500 VUs, 101687 complete and 0 interrupted iterations
+default   [  46% ] 2500/2500 VUs  10m13.7s/22m00.0s
+
+running (10m14.7s), 2500/2500 VUs, 102025 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m14.7s/22m00.0s
+
+running (10m15.7s), 2500/2500 VUs, 102350 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m15.7s/22m00.0s
+
+running (10m16.7s), 2500/2500 VUs, 102731 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m16.7s/22m00.0s
+
+running (10m17.7s), 2500/2500 VUs, 103038 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m17.7s/22m00.0s
+
+running (10m18.7s), 2500/2500 VUs, 103339 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m18.7s/22m00.0s
+
+running (10m19.7s), 2500/2500 VUs, 103617 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m19.7s/22m00.0s
+
+running (10m20.7s), 2500/2500 VUs, 103947 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m20.7s/22m00.0s
+
+running (10m21.7s), 2500/2500 VUs, 104261 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m21.7s/22m00.0s
+
+running (10m22.7s), 2500/2500 VUs, 104647 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m22.7s/22m00.0s
+
+running (10m23.7s), 2500/2500 VUs, 104940 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m23.7s/22m00.0s
+
+running (10m24.7s), 2500/2500 VUs, 105255 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m24.7s/22m00.0s
+
+running (10m25.7s), 2500/2500 VUs, 105574 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m25.7s/22m00.0s
+
+running (10m26.7s), 2500/2500 VUs, 105893 complete and 0 interrupted iterations
+default   [  47% ] 2500/2500 VUs  10m26.7s/22m00.0s
+
+running (10m27.7s), 2500/2500 VUs, 106189 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m27.7s/22m00.0s
+
+running (10m28.7s), 2500/2500 VUs, 106500 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m28.7s/22m00.0s
+
+running (10m29.7s), 2500/2500 VUs, 106819 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m29.7s/22m00.0s
+
+running (10m30.7s), 2500/2500 VUs, 107103 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m30.7s/22m00.0s
+
+running (10m31.7s), 2500/2500 VUs, 107405 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m31.7s/22m00.0s
+
+running (10m32.7s), 2500/2500 VUs, 107704 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m32.7s/22m00.0s
+
+running (10m33.7s), 2500/2500 VUs, 107979 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m33.7s/22m00.0s
+
+running (10m34.7s), 2500/2500 VUs, 108278 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m34.7s/22m00.0s
+
+running (10m35.7s), 2500/2500 VUs, 108543 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m35.7s/22m00.0s
+
+running (10m36.7s), 2500/2500 VUs, 108832 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m36.7s/22m00.0s
+
+running (10m37.7s), 2500/2500 VUs, 109134 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m37.7s/22m00.0s
+
+running (10m38.7s), 2500/2500 VUs, 109407 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m38.7s/22m00.0s
+
+running (10m39.7s), 2500/2500 VUs, 109686 complete and 0 interrupted iterations
+default   [  48% ] 2500/2500 VUs  10m39.7s/22m00.0s
+
+running (10m40.7s), 2500/2500 VUs, 109967 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m40.7s/22m00.0s
+
+running (10m41.7s), 2500/2500 VUs, 110286 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m41.7s/22m00.0s
+
+running (10m42.7s), 2500/2500 VUs, 110552 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m42.7s/22m00.0s
+
+running (10m43.7s), 2500/2500 VUs, 110810 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m43.7s/22m00.0s
+
+running (10m44.7s), 2500/2500 VUs, 111083 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m44.7s/22m00.0s
+
+running (10m45.7s), 2500/2500 VUs, 111360 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m45.7s/22m00.0s
+
+running (10m46.7s), 2500/2500 VUs, 111643 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m46.7s/22m00.0s
+
+running (10m47.7s), 2500/2500 VUs, 111926 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m47.7s/22m00.0s
+
+running (10m48.7s), 2500/2500 VUs, 112231 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m48.7s/22m00.0s
+
+running (10m49.7s), 2500/2500 VUs, 112522 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m49.7s/22m00.0s
+
+running (10m50.7s), 2500/2500 VUs, 112820 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m50.7s/22m00.0s
+
+running (10m51.7s), 2500/2500 VUs, 113143 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m51.7s/22m00.0s
+
+running (10m52.7s), 2500/2500 VUs, 113506 complete and 0 interrupted iterations
+default   [  49% ] 2500/2500 VUs  10m52.7s/22m00.0s
+
+running (10m53.7s), 2500/2500 VUs, 113848 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  10m53.7s/22m00.0s
+
+running (10m54.7s), 2500/2500 VUs, 114182 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  10m54.7s/22m00.0s
+
+running (10m55.7s), 2500/2500 VUs, 114499 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  10m55.7s/22m00.0s
+
+running (10m56.7s), 2500/2500 VUs, 114821 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  10m56.7s/22m00.0s
+
+running (10m57.7s), 2500/2500 VUs, 115109 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  10m57.7s/22m00.0s
+
+running (10m58.7s), 2500/2500 VUs, 115408 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  10m58.7s/22m00.0s
+
+running (10m59.7s), 2500/2500 VUs, 115720 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  10m59.7s/22m00.0s
+
+running (11m00.7s), 2500/2500 VUs, 116037 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  11m00.7s/22m00.0s
+
+running (11m01.7s), 2500/2500 VUs, 116379 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  11m01.7s/22m00.0s
+
+running (11m02.7s), 2500/2500 VUs, 116671 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  11m02.7s/22m00.0s
+
+running (11m03.7s), 2500/2500 VUs, 116958 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  11m03.7s/22m00.0s
+
+running (11m04.7s), 2500/2500 VUs, 117246 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  11m04.7s/22m00.0s
+
+running (11m05.7s), 2500/2500 VUs, 117529 complete and 0 interrupted iterations
+default   [  50% ] 2500/2500 VUs  11m05.7s/22m00.0s
+
+running (11m06.7s), 2500/2500 VUs, 117786 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m06.7s/22m00.0s
+
+running (11m07.7s), 2500/2500 VUs, 118076 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m07.7s/22m00.0s
+
+running (11m08.7s), 2500/2500 VUs, 118367 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m08.7s/22m00.0s
+
+running (11m09.7s), 2500/2500 VUs, 118690 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m09.7s/22m00.0s
+
+running (11m10.7s), 2500/2500 VUs, 118983 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m10.7s/22m00.0s
+
+running (11m11.7s), 2500/2500 VUs, 119259 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m11.7s/22m00.0s
+
+running (11m12.7s), 2500/2500 VUs, 119539 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m12.7s/22m00.0s
+
+running (11m13.7s), 2500/2500 VUs, 119820 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m13.7s/22m00.0s
+
+running (11m14.7s), 2500/2500 VUs, 120103 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m14.7s/22m00.0s
+
+running (11m15.7s), 2500/2500 VUs, 120400 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m15.7s/22m00.0s
+
+running (11m16.7s), 2500/2500 VUs, 120675 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m16.7s/22m00.0s
+
+running (11m17.7s), 2500/2500 VUs, 120955 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m17.7s/22m00.0s
+
+running (11m18.7s), 2500/2500 VUs, 121282 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m18.7s/22m00.0s
+
+running (11m19.7s), 2500/2500 VUs, 121567 complete and 0 interrupted iterations
+default   [  51% ] 2500/2500 VUs  11m19.7s/22m00.0s
+
+running (11m20.7s), 2500/2500 VUs, 121865 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m20.7s/22m00.0s
+
+running (11m21.7s), 2500/2500 VUs, 122141 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m21.7s/22m00.0s
+
+running (11m22.7s), 2500/2500 VUs, 122425 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m22.7s/22m00.0s
+
+running (11m23.7s), 2500/2500 VUs, 122734 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m23.7s/22m00.0s
+
+running (11m24.7s), 2500/2500 VUs, 123090 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m24.7s/22m00.0s
+
+running (11m25.7s), 2500/2500 VUs, 123405 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m25.7s/22m00.0s
+
+running (11m26.7s), 2500/2500 VUs, 123728 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m26.7s/22m00.0s
+
+running (11m27.7s), 2500/2500 VUs, 124069 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m27.7s/22m00.0s
+
+running (11m28.7s), 2500/2500 VUs, 124409 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m28.7s/22m00.0s
+
+running (11m29.7s), 2500/2500 VUs, 124715 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m29.7s/22m00.0s
+
+running (11m30.7s), 2500/2500 VUs, 125016 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m30.7s/22m00.0s
+
+running (11m31.7s), 2500/2500 VUs, 125328 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m31.7s/22m00.0s
+
+running (11m32.7s), 2500/2500 VUs, 125641 complete and 0 interrupted iterations
+default   [  52% ] 2500/2500 VUs  11m32.7s/22m00.0s
+
+running (11m33.7s), 2500/2500 VUs, 125966 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m33.7s/22m00.0s
+
+running (11m34.7s), 2500/2500 VUs, 126346 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m34.7s/22m00.0s
+
+running (11m35.7s), 2500/2500 VUs, 126658 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m35.7s/22m00.0s
+
+running (11m36.7s), 2500/2500 VUs, 126951 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m36.7s/22m00.0s
+
+running (11m37.7s), 2500/2500 VUs, 127253 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m37.7s/22m00.0s
+
+running (11m38.7s), 2500/2500 VUs, 127560 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m38.7s/22m00.0s
+
+running (11m39.7s), 2500/2500 VUs, 127891 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m39.7s/22m00.0s
+
+running (11m40.7s), 2500/2500 VUs, 128218 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m40.7s/22m00.0s
+
+running (11m41.7s), 2500/2500 VUs, 128555 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m41.7s/22m00.0s
+
+running (11m42.7s), 2500/2500 VUs, 128848 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m42.7s/22m00.0s
+
+running (11m43.7s), 2500/2500 VUs, 129165 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m43.7s/22m00.0s
+
+running (11m44.7s), 2500/2500 VUs, 129467 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m44.7s/22m00.0s
+
+running (11m45.7s), 2500/2500 VUs, 129766 complete and 0 interrupted iterations
+default   [  53% ] 2500/2500 VUs  11m45.7s/22m00.0s
+
+running (11m46.7s), 2500/2500 VUs, 130095 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m46.7s/22m00.0s
+
+running (11m47.7s), 2500/2500 VUs, 130423 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m47.7s/22m00.0s
+
+running (11m48.7s), 2500/2500 VUs, 130732 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m48.7s/22m00.0s
+
+running (11m49.7s), 2500/2500 VUs, 131060 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m49.7s/22m00.0s
+
+running (11m50.7s), 2500/2500 VUs, 131397 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m50.7s/22m00.0s
+
+running (11m51.7s), 2500/2500 VUs, 131725 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m51.7s/22m00.0s
+
+running (11m52.7s), 2500/2500 VUs, 132052 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m52.7s/22m00.0s
+
+running (11m53.7s), 2500/2500 VUs, 132362 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m53.7s/22m00.0s
+
+running (11m54.7s), 2500/2500 VUs, 132667 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m54.7s/22m00.0s
+
+running (11m55.7s), 2500/2500 VUs, 132983 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m55.7s/22m00.0s
+
+running (11m56.7s), 2500/2500 VUs, 133290 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m56.7s/22m00.0s
+
+running (11m57.7s), 2500/2500 VUs, 133613 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m57.7s/22m00.0s
+
+running (11m58.7s), 2500/2500 VUs, 133946 complete and 0 interrupted iterations
+default   [  54% ] 2500/2500 VUs  11m58.7s/22m00.0s
+
+running (11m59.7s), 2500/2500 VUs, 134279 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  11m59.7s/22m00.0s
+
+running (12m00.7s), 2500/2500 VUs, 134608 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m00.7s/22m00.0s
+
+running (12m01.7s), 2500/2500 VUs, 134941 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m01.7s/22m00.0s
+
+running (12m02.7s), 2500/2500 VUs, 135274 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m02.7s/22m00.0s
+
+running (12m03.7s), 2500/2500 VUs, 135572 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m03.7s/22m00.0s
+
+running (12m04.7s), 2500/2500 VUs, 135867 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m04.7s/22m00.0s
+
+running (12m05.7s), 2500/2500 VUs, 136170 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m05.7s/22m00.0s
+
+running (12m06.7s), 2500/2500 VUs, 136518 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m06.7s/22m00.0s
+
+running (12m07.7s), 2500/2500 VUs, 136849 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m07.7s/22m00.0s
+
+running (12m08.7s), 2500/2500 VUs, 137171 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m08.7s/22m00.0s
+
+running (12m09.7s), 2500/2500 VUs, 137500 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m09.7s/22m00.0s
+
+running (12m10.7s), 2500/2500 VUs, 137802 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m10.7s/22m00.0s
+
+running (12m11.7s), 2500/2500 VUs, 138107 complete and 0 interrupted iterations
+default   [  55% ] 2500/2500 VUs  12m11.7s/22m00.0s
+
+running (12m12.7s), 2500/2500 VUs, 138409 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m12.7s/22m00.0s
+
+running (12m13.7s), 2500/2500 VUs, 138725 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m13.7s/22m00.0s
+
+running (12m14.7s), 2500/2500 VUs, 139052 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m14.7s/22m00.0s
+
+running (12m15.7s), 2500/2500 VUs, 139375 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m15.7s/22m00.0s
+
+running (12m16.7s), 2500/2500 VUs, 139706 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m16.7s/22m00.0s
+
+running (12m17.7s), 2500/2500 VUs, 140030 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m17.7s/22m00.0s
+
+running (12m18.7s), 2500/2500 VUs, 140340 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m18.7s/22m00.0s
+
+running (12m19.7s), 2500/2500 VUs, 140685 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m19.7s/22m00.0s
+
+running (12m20.7s), 2500/2500 VUs, 140977 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m20.7s/22m00.0s
+
+running (12m21.7s), 2500/2500 VUs, 141273 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m21.7s/22m00.0s
+
+running (12m22.7s), 2500/2500 VUs, 141621 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m22.7s/22m00.0s
+
+running (12m23.7s), 2500/2500 VUs, 141941 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m23.7s/22m00.0s
+
+running (12m24.7s), 2500/2500 VUs, 142279 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m24.7s/22m00.0s
+
+running (12m25.7s), 2500/2500 VUs, 142606 complete and 0 interrupted iterations
+default   [  56% ] 2500/2500 VUs  12m25.7s/22m00.0s
+
+running (12m26.7s), 2500/2500 VUs, 142933 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m26.7s/22m00.0s
+
+running (12m27.7s), 2500/2500 VUs, 143235 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m27.7s/22m00.0s
+
+running (12m28.7s), 2500/2500 VUs, 143540 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m28.7s/22m00.0s
+
+running (12m29.7s), 2500/2500 VUs, 143845 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m29.7s/22m00.0s
+
+running (12m30.7s), 2500/2500 VUs, 144190 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m30.7s/22m00.0s
+
+running (12m31.7s), 2500/2500 VUs, 144499 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m31.7s/22m00.0s
+
+running (12m32.7s), 2500/2500 VUs, 144813 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m32.7s/22m00.0s
+
+running (12m33.7s), 2500/2500 VUs, 145151 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m33.7s/22m00.0s
+
+running (12m34.7s), 2500/2500 VUs, 145473 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m34.7s/22m00.0s
+
+running (12m35.7s), 2500/2500 VUs, 145793 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m35.7s/22m00.0s
+
+running (12m36.7s), 2500/2500 VUs, 146105 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m36.7s/22m00.0s
+
+running (12m37.7s), 2500/2500 VUs, 146411 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m37.7s/22m00.0s
+
+running (12m38.7s), 2500/2500 VUs, 146750 complete and 0 interrupted iterations
+default   [  57% ] 2500/2500 VUs  12m38.7s/22m00.0s
+
+running (12m39.7s), 2500/2500 VUs, 147093 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m39.7s/22m00.0s
+
+running (12m40.7s), 2500/2500 VUs, 147422 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m40.7s/22m00.0s
+
+running (12m41.7s), 2500/2500 VUs, 147703 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m41.7s/22m00.0s
+
+running (12m42.7s), 2500/2500 VUs, 148028 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m42.7s/22m00.0s
+
+running (12m43.7s), 2500/2500 VUs, 148355 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m43.7s/22m00.0s
+
+running (12m44.7s), 2500/2500 VUs, 148686 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m44.7s/22m00.0s
+
+running (12m45.7s), 2500/2500 VUs, 148992 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m45.7s/22m00.0s
+
+running (12m46.7s), 2500/2500 VUs, 149295 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m46.7s/22m00.0s
+
+running (12m47.7s), 2500/2500 VUs, 149618 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m47.7s/22m00.0s
+
+running (12m48.7s), 2500/2500 VUs, 149915 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m48.7s/22m00.0s
+
+running (12m49.7s), 2500/2500 VUs, 150245 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m49.7s/22m00.0s
+
+running (12m50.7s), 2500/2500 VUs, 150576 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m50.7s/22m00.0s
+
+running (12m51.7s), 2500/2500 VUs, 150913 complete and 0 interrupted iterations
+default   [  58% ] 2500/2500 VUs  12m51.7s/22m00.0s
+
+running (12m52.7s), 2500/2500 VUs, 151234 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m52.7s/22m00.0s
+
+running (12m53.7s), 2500/2500 VUs, 151566 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m53.7s/22m00.0s
+
+running (12m54.7s), 2500/2500 VUs, 151880 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m54.7s/22m00.0s
+
+running (12m55.7s), 2500/2500 VUs, 152181 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m55.7s/22m00.0s
+
+running (12m56.7s), 2500/2500 VUs, 152481 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m56.7s/22m00.0s
+
+running (12m57.7s), 2500/2500 VUs, 152830 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m57.7s/22m00.0s
+
+running (12m58.7s), 2500/2500 VUs, 153143 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m58.7s/22m00.0s
+
+running (12m59.7s), 2500/2500 VUs, 153466 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  12m59.7s/22m00.0s
+
+running (13m00.7s), 2500/2500 VUs, 153796 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  13m00.7s/22m00.0s
+
+running (13m01.7s), 2500/2500 VUs, 154118 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  13m01.7s/22m00.0s
+
+running (13m02.7s), 2500/2500 VUs, 154412 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  13m02.7s/22m00.0s
+
+running (13m03.7s), 2500/2500 VUs, 154750 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  13m03.7s/22m00.0s
+
+running (13m04.7s), 2500/2500 VUs, 155074 complete and 0 interrupted iterations
+default   [  59% ] 2500/2500 VUs  13m04.7s/22m00.0s
+
+running (13m05.7s), 2500/2500 VUs, 155398 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m05.7s/22m00.0s
+
+running (13m06.7s), 2500/2500 VUs, 155718 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m06.7s/22m00.0s
+
+running (13m07.7s), 2500/2500 VUs, 156048 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m07.7s/22m00.0s
+
+running (13m08.7s), 2500/2500 VUs, 156343 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m08.7s/22m00.0s
+
+running (13m09.7s), 2500/2500 VUs, 156670 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m09.7s/22m00.0s
+
+running (13m10.7s), 2500/2500 VUs, 157000 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m10.7s/22m00.0s
+
+running (13m11.7s), 2500/2500 VUs, 157323 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m11.7s/22m00.0s
+
+running (13m12.7s), 2500/2500 VUs, 157666 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m12.7s/22m00.0s
+
+running (13m13.7s), 2500/2500 VUs, 157977 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m13.7s/22m00.0s
+
+running (13m14.7s), 2500/2500 VUs, 158288 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m14.7s/22m00.0s
+
+running (13m15.7s), 2500/2500 VUs, 158571 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m15.7s/22m00.0s
+
+running (13m16.7s), 2500/2500 VUs, 158912 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m16.7s/22m00.0s
+
+running (13m17.7s), 2500/2500 VUs, 159217 complete and 0 interrupted iterations
+default   [  60% ] 2500/2500 VUs  13m17.7s/22m00.0s
+
+running (13m18.7s), 2500/2500 VUs, 159537 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m18.7s/22m00.0s
+
+running (13m19.7s), 2500/2500 VUs, 159853 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m19.7s/22m00.0s
+
+running (13m20.7s), 2500/2500 VUs, 160171 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m20.7s/22m00.0s
+
+running (13m21.7s), 2500/2500 VUs, 160516 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m21.7s/22m00.0s
+
+running (13m22.7s), 2500/2500 VUs, 160826 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m22.7s/22m00.0s
+
+running (13m23.7s), 2500/2500 VUs, 161160 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m23.7s/22m00.0s
+
+running (13m24.7s), 2500/2500 VUs, 161468 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m24.7s/22m00.0s
+
+running (13m25.7s), 2500/2500 VUs, 161781 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m25.7s/22m00.0s
+
+running (13m26.7s), 2500/2500 VUs, 162106 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m26.7s/22m00.0s
+
+running (13m27.7s), 2500/2500 VUs, 162425 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m27.7s/22m00.0s
+
+running (13m28.7s), 2500/2500 VUs, 162734 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m28.7s/22m00.0s
+
+running (13m29.7s), 2500/2500 VUs, 163041 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m29.7s/22m00.0s
+
+running (13m30.7s), 2500/2500 VUs, 163372 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m30.7s/22m00.0s
+
+running (13m31.7s), 2500/2500 VUs, 163688 complete and 0 interrupted iterations
+default   [  61% ] 2500/2500 VUs  13m31.7s/22m00.0s
+
+running (13m32.7s), 2500/2500 VUs, 164045 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m32.7s/22m00.0s
+
+running (13m33.7s), 2500/2500 VUs, 164346 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m33.7s/22m00.0s
+
+running (13m34.7s), 2500/2500 VUs, 164669 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m34.7s/22m00.0s
+
+running (13m35.7s), 2500/2500 VUs, 164952 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m35.7s/22m00.0s
+
+running (13m36.7s), 2500/2500 VUs, 165295 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m36.7s/22m00.0s
+
+running (13m37.7s), 2500/2500 VUs, 165617 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m37.7s/22m00.0s
+
+running (13m38.7s), 2500/2500 VUs, 165955 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m38.7s/22m00.0s
+
+running (13m39.7s), 2500/2500 VUs, 166297 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m39.7s/22m00.0s
+
+running (13m40.7s), 2500/2500 VUs, 166597 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m40.7s/22m00.0s
+
+running (13m41.7s), 2500/2500 VUs, 166912 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m41.7s/22m00.0s
+
+running (13m42.7s), 2500/2500 VUs, 167232 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m42.7s/22m00.0s
+
+running (13m43.7s), 2500/2500 VUs, 167522 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m43.7s/22m00.0s
+
+running (13m44.7s), 2500/2500 VUs, 167862 complete and 0 interrupted iterations
+default   [  62% ] 2500/2500 VUs  13m44.7s/22m00.0s
+
+running (13m45.7s), 2500/2500 VUs, 168194 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m45.7s/22m00.0s
+
+running (13m46.7s), 2500/2500 VUs, 168506 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m46.7s/22m00.0s
+
+running (13m47.7s), 2500/2500 VUs, 168837 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m47.7s/22m00.0s
+
+running (13m48.7s), 2500/2500 VUs, 169156 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m48.7s/22m00.0s
+
+running (13m49.7s), 2500/2500 VUs, 169463 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m49.7s/22m00.0s
+
+running (13m50.7s), 2500/2500 VUs, 169812 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m50.7s/22m00.0s
+
+running (13m51.7s), 2500/2500 VUs, 170130 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m51.7s/22m00.0s
+
+running (13m52.7s), 2500/2500 VUs, 170415 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m52.7s/22m00.0s
+
+running (13m53.7s), 2500/2500 VUs, 170739 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m53.7s/22m00.0s
+
+running (13m54.7s), 2500/2500 VUs, 171085 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m54.7s/22m00.0s
+
+running (13m55.7s), 2500/2500 VUs, 171405 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m55.7s/22m00.0s
+
+running (13m56.7s), 2500/2500 VUs, 171725 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m56.7s/22m00.0s
+
+running (13m57.7s), 2500/2500 VUs, 172044 complete and 0 interrupted iterations
+default   [  63% ] 2500/2500 VUs  13m57.7s/22m00.0s
+
+running (13m58.7s), 2500/2500 VUs, 172354 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  13m58.7s/22m00.0s
+
+running (13m59.7s), 2500/2500 VUs, 172678 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  13m59.7s/22m00.0s
+
+running (14m00.7s), 2500/2500 VUs, 173012 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m00.7s/22m00.0s
+
+running (14m01.7s), 2500/2500 VUs, 173335 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m01.7s/22m00.0s
+
+running (14m02.7s), 2500/2500 VUs, 173660 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m02.7s/22m00.0s
+
+running (14m03.7s), 2500/2500 VUs, 173970 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m03.7s/22m00.0s
+
+running (14m04.7s), 2500/2500 VUs, 174289 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m04.7s/22m00.0s
+
+running (14m05.7s), 2500/2500 VUs, 174588 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m05.7s/22m00.0s
+
+running (14m06.7s), 2500/2500 VUs, 174920 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m06.7s/22m00.0s
+
+running (14m07.7s), 2500/2500 VUs, 175241 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m07.7s/22m00.0s
+
+running (14m08.7s), 2500/2500 VUs, 175553 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m08.7s/22m00.0s
+
+running (14m09.7s), 2500/2500 VUs, 175878 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m09.7s/22m00.0s
+
+running (14m10.7s), 2500/2500 VUs, 176216 complete and 0 interrupted iterations
+default   [  64% ] 2500/2500 VUs  14m10.7s/22m00.0s
+
+running (14m11.7s), 2500/2500 VUs, 176532 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m11.7s/22m00.0s
+
+running (14m12.7s), 2500/2500 VUs, 176866 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m12.7s/22m00.0s
+
+running (14m13.7s), 2500/2500 VUs, 177141 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m13.7s/22m00.0s
+
+running (14m14.7s), 2500/2500 VUs, 177455 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m14.7s/22m00.0s
+
+running (14m15.7s), 2500/2500 VUs, 177776 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m15.7s/22m00.0s
+
+running (14m16.7s), 2500/2500 VUs, 178114 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m16.7s/22m00.0s
+
+running (14m17.7s), 2500/2500 VUs, 178443 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m17.7s/22m00.0s
+
+running (14m18.7s), 2500/2500 VUs, 178766 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m18.7s/22m00.0s
+
+running (14m19.7s), 2500/2500 VUs, 179072 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m19.7s/22m00.0s
+
+running (14m20.7s), 2500/2500 VUs, 179390 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m20.7s/22m00.0s
+
+running (14m21.7s), 2500/2500 VUs, 179705 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m21.7s/22m00.0s
+
+running (14m22.7s), 2500/2500 VUs, 180023 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m22.7s/22m00.0s
+
+running (14m23.7s), 2500/2500 VUs, 180330 complete and 0 interrupted iterations
+default   [  65% ] 2500/2500 VUs  14m23.7s/22m00.0s
+
+running (14m24.7s), 2500/2500 VUs, 180667 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m24.7s/22m00.0s
+
+running (14m25.7s), 2500/2500 VUs, 180995 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m25.7s/22m00.0s
+
+running (14m26.7s), 2500/2500 VUs, 181321 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m26.7s/22m00.0s
+
+running (14m27.7s), 2500/2500 VUs, 181622 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m27.7s/22m00.0s
+
+running (14m28.7s), 2500/2500 VUs, 181956 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m28.7s/22m00.0s
+
+running (14m29.7s), 2500/2500 VUs, 182290 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m29.7s/22m00.0s
+
+running (14m30.7s), 2500/2500 VUs, 182595 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m30.7s/22m00.0s
+
+running (14m31.7s), 2500/2500 VUs, 182919 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m31.7s/22m00.0s
+
+running (14m32.7s), 2500/2500 VUs, 183232 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m32.7s/22m00.0s
+
+running (14m33.7s), 2500/2500 VUs, 183558 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m33.7s/22m00.0s
+
+running (14m34.7s), 2500/2500 VUs, 183888 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m34.7s/22m00.0s
+
+running (14m35.7s), 2500/2500 VUs, 184222 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m35.7s/22m00.0s
+
+running (14m36.7s), 2500/2500 VUs, 184520 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m36.7s/22m00.0s
+
+running (14m37.7s), 2500/2500 VUs, 184825 complete and 0 interrupted iterations
+default   [  66% ] 2500/2500 VUs  14m37.7s/22m00.0s
+
+running (14m38.7s), 2500/2500 VUs, 185148 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m38.7s/22m00.0s
+
+running (14m39.7s), 2500/2500 VUs, 185481 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m39.7s/22m00.0s
+
+running (14m40.7s), 2500/2500 VUs, 185799 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m40.7s/22m00.0s
+
+running (14m41.7s), 2500/2500 VUs, 186133 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m41.7s/22m00.0s
+
+running (14m42.7s), 2500/2500 VUs, 186464 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m42.7s/22m00.0s
+
+running (14m43.7s), 2500/2500 VUs, 186782 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m43.7s/22m00.0s
+
+running (14m44.7s), 2500/2500 VUs, 187078 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m44.7s/22m00.0s
+
+running (14m45.7s), 2500/2500 VUs, 187398 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m45.7s/22m00.0s
+
+running (14m46.7s), 2500/2500 VUs, 187669 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m46.7s/22m00.0s
+
+running (14m47.7s), 2500/2500 VUs, 188019 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m47.7s/22m00.0s
+
+running (14m48.7s), 2500/2500 VUs, 188375 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m48.7s/22m00.0s
+
+running (14m49.7s), 2500/2500 VUs, 188678 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m49.7s/22m00.0s
+
+running (14m50.7s), 2500/2500 VUs, 189015 complete and 0 interrupted iterations
+default   [  67% ] 2500/2500 VUs  14m50.7s/22m00.0s
+
+running (14m51.7s), 2500/2500 VUs, 189342 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m51.7s/22m00.0s
+
+running (14m52.7s), 2500/2500 VUs, 189633 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m52.7s/22m00.0s
+
+running (14m53.7s), 2500/2500 VUs, 189957 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m53.7s/22m00.0s
+
+running (14m54.7s), 2500/2500 VUs, 190284 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m54.7s/22m00.0s
+
+running (14m55.7s), 2500/2500 VUs, 190605 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m55.7s/22m00.0s
+
+running (14m56.7s), 2500/2500 VUs, 190942 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m56.7s/22m00.0s
+
+running (14m57.7s), 2500/2500 VUs, 191268 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m57.7s/22m00.0s
+
+running (14m58.7s), 2500/2500 VUs, 191560 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m58.7s/22m00.0s
+
+running (14m59.7s), 2500/2500 VUs, 191904 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  14m59.7s/22m00.0s
+
+running (15m00.7s), 2500/2500 VUs, 192244 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  15m00.7s/22m00.0s
+
+running (15m01.7s), 2500/2500 VUs, 192545 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  15m01.7s/22m00.0s
+
+running (15m02.7s), 2500/2500 VUs, 192870 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  15m02.7s/22m00.0s
+
+running (15m03.7s), 2500/2500 VUs, 193171 complete and 0 interrupted iterations
+default   [  68% ] 2500/2500 VUs  15m03.7s/22m00.0s
+
+running (15m04.7s), 2500/2500 VUs, 193510 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m04.7s/22m00.0s
+
+running (15m05.7s), 2500/2500 VUs, 193848 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m05.7s/22m00.0s
+
+running (15m06.7s), 2500/2500 VUs, 194160 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m06.7s/22m00.0s
+
+running (15m07.7s), 2500/2500 VUs, 194460 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m07.7s/22m00.0s
+
+running (15m08.7s), 2500/2500 VUs, 194757 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m08.7s/22m00.0s
+
+running (15m09.7s), 2500/2500 VUs, 195035 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m09.7s/22m00.0s
+
+running (15m10.7s), 2500/2500 VUs, 195344 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m10.7s/22m00.0s
+
+running (15m11.7s), 2500/2500 VUs, 195631 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m11.7s/22m00.0s
+
+running (15m12.7s), 2500/2500 VUs, 195944 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m12.7s/22m00.0s
+
+running (15m13.7s), 2500/2500 VUs, 196219 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m13.7s/22m00.0s
+
+running (15m14.7s), 2500/2500 VUs, 196494 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m14.7s/22m00.0s
+
+running (15m15.7s), 2500/2500 VUs, 196763 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m15.7s/22m00.0s
+
+running (15m16.7s), 2500/2500 VUs, 197049 complete and 0 interrupted iterations
+default   [  69% ] 2500/2500 VUs  15m16.7s/22m00.0s
+
+running (15m17.7s), 2500/2500 VUs, 197329 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m17.7s/22m00.0s
+
+running (15m18.7s), 2500/2500 VUs, 197621 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m18.7s/22m00.0s
+
+running (15m19.7s), 2500/2500 VUs, 197892 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m19.7s/22m00.0s
+
+running (15m20.7s), 2500/2500 VUs, 198174 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m20.7s/22m00.0s
+
+running (15m21.7s), 2500/2500 VUs, 198456 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m21.7s/22m00.0s
+
+running (15m22.7s), 2500/2500 VUs, 198765 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m22.7s/22m00.0s
+
+running (15m23.7s), 2500/2500 VUs, 199056 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m23.7s/22m00.0s
+
+running (15m24.7s), 2500/2500 VUs, 199348 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m24.7s/22m00.0s
+
+running (15m25.7s), 2500/2500 VUs, 199629 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m25.7s/22m00.0s
+
+running (15m26.7s), 2500/2500 VUs, 199928 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m26.7s/22m00.0s
+
+running (15m27.7s), 2500/2500 VUs, 200190 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m27.7s/22m00.0s
+
+running (15m28.7s), 2500/2500 VUs, 200484 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m28.7s/22m00.0s
+
+running (15m29.7s), 2500/2500 VUs, 200735 complete and 0 interrupted iterations
+default   [  70% ] 2500/2500 VUs  15m29.7s/22m00.0s
+
+running (15m30.7s), 2500/2500 VUs, 201015 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m30.7s/22m00.0s
+
+running (15m31.7s), 2500/2500 VUs, 201316 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m31.7s/22m00.0s
+
+running (15m32.7s), 2500/2500 VUs, 201610 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m32.7s/22m00.0s
+
+running (15m33.7s), 2500/2500 VUs, 201917 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m33.7s/22m00.0s
+
+running (15m34.7s), 2500/2500 VUs, 202255 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m34.7s/22m00.0s
+
+running (15m35.7s), 2500/2500 VUs, 202568 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m35.7s/22m00.0s
+
+running (15m36.7s), 2500/2500 VUs, 202918 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m36.7s/22m00.0s
+
+running (15m37.7s), 2500/2500 VUs, 203221 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m37.7s/22m00.0s
+
+running (15m38.7s), 2500/2500 VUs, 203564 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m38.7s/22m00.0s
+
+running (15m39.7s), 2500/2500 VUs, 203876 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m39.7s/22m00.0s
+
+running (15m40.7s), 2500/2500 VUs, 204181 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m40.7s/22m00.0s
+
+running (15m41.7s), 2500/2500 VUs, 204489 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m41.7s/22m00.0s
+
+running (15m42.7s), 2500/2500 VUs, 204837 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m42.7s/22m00.0s
+time="2026-01-16T18:07:58-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": EOF"
+
+running (15m43.7s), 2500/2500 VUs, 205150 complete and 0 interrupted iterations
+default   [  71% ] 2500/2500 VUs  15m43.7s/22m00.0s
+
+running (15m44.7s), 2500/2500 VUs, 205448 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m44.7s/22m00.0s
+
+running (15m45.7s), 2500/2500 VUs, 205769 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m45.7s/22m00.0s
+
+running (15m46.7s), 2500/2500 VUs, 206045 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m46.7s/22m00.0s
+
+running (15m47.7s), 2500/2500 VUs, 206375 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m47.7s/22m00.0s
+
+running (15m48.7s), 2500/2500 VUs, 206653 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m48.7s/22m00.0s
+
+running (15m49.7s), 2500/2500 VUs, 206959 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m49.7s/22m00.0s
+
+running (15m50.7s), 2500/2500 VUs, 207286 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m50.7s/22m00.0s
+
+running (15m51.7s), 2500/2500 VUs, 207577 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m51.7s/22m00.0s
+
+running (15m52.7s), 2500/2500 VUs, 207823 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m52.7s/22m00.0s
+
+running (15m53.7s), 2500/2500 VUs, 208082 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m53.7s/22m00.0s
+
+running (15m54.7s), 2500/2500 VUs, 208343 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m54.7s/22m00.0s
+
+running (15m55.7s), 2500/2500 VUs, 208648 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m55.7s/22m00.0s
+
+running (15m56.7s), 2500/2500 VUs, 208972 complete and 0 interrupted iterations
+default   [  72% ] 2500/2500 VUs  15m56.7s/22m00.0s
+
+running (15m57.7s), 2500/2500 VUs, 209296 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  15m57.7s/22m00.0s
+
+running (15m58.7s), 2500/2500 VUs, 209587 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  15m58.7s/22m00.0s
+
+running (15m59.7s), 2500/2500 VUs, 209921 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  15m59.7s/22m00.0s
+
+running (16m00.7s), 2500/2500 VUs, 210227 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m00.7s/22m00.0s
+
+running (16m01.7s), 2500/2500 VUs, 210533 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m01.7s/22m00.0s
+
+running (16m02.7s), 2500/2500 VUs, 210830 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m02.7s/22m00.0s
+
+running (16m03.7s), 2500/2500 VUs, 211159 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m03.7s/22m00.0s
+
+running (16m04.7s), 2500/2500 VUs, 211487 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m04.7s/22m00.0s
+
+running (16m05.7s), 2500/2500 VUs, 211805 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m05.7s/22m00.0s
+
+running (16m06.7s), 2500/2500 VUs, 212110 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m06.7s/22m00.0s
+
+running (16m07.7s), 2500/2500 VUs, 212418 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m07.7s/22m00.0s
+
+running (16m08.7s), 2500/2500 VUs, 212708 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m08.7s/22m00.0s
+
+running (16m09.7s), 2500/2500 VUs, 212972 complete and 0 interrupted iterations
+default   [  73% ] 2500/2500 VUs  16m09.7s/22m00.0s
+
+running (16m10.7s), 2500/2500 VUs, 213244 complete and 0 interrupted iterations
+default   [  74% ] 2500/2500 VUs  16m10.7s/22m00.0s
+
+running (16m11.7s), 2500/2500 VUs, 213537 complete and 0 interrupted iterations
+default   [  74% ] 2500/2500 VUs  16m11.7s/22m00.0s
+
+running (16m12.7s), 2500/2500 VUs, 213848 complete and 0 interrupted iterations
+default   [  74% ] 2500/2500 VUs  16m12.7s/22m00.0s
+
+running (16m13.7s), 2500/2500 VUs, 214106 complete and 0 interrupted iterations
+default   [  74% ] 2500/2500 VUs  16m13.7s/22m00.0s
+
+running (9h38m36.7s), 0039/2500 VUs, 304758 complete and 0 interrupted iterations
+default ✓ [ 100% ] 0039/2500 VUs  22m0s
+time="2026-01-16T18:09:10-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:09:11-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:09:11-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/clients.list?input=%7B%22limit%22%3A30%7D\": EOF"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:09:18-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": read tcp 169.254.0.21:43704->216.150.1.193:443: read: connection reset by peer"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/services.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/auth.me\": request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-16T18:10:57-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="request timeout"
+time="2026-01-16T18:10:56-05:00" level=warning msg="Request Failed" error="Get \"https://pianoemotion.com/api/trpc/pianos.list?input=%7B%22limit%22%3A30%7D\": request timeout"
+time="2026-01-17T03:30:51-05:00" level=info msg="✅ Prueba de estrés completada" source=console
+time="2026-01-17T03:30:51-05:00" level=info msg="📊 Revisa los resultados arriba para ver el rendimiento del sistema" source=console
+
+running (9h38m36.7s), 0000/2500 VUs, 304758 complete and 39 interrupted iterations
+default ✓ [ 100% ] 0039/2500 VUs  22m0s
+
+
+  █ THRESHOLDS 
+
+    errors
+    ✗ 'rate<0.05' rate=7.608736/s
+
+    http_req_duration
+    ✓ 'p(95)<1000' p(95)=503.6ms
+    ✓ 'p(99)<2000' p(99)=1.68s
+
+    http_req_failed
+    ✗ 'rate<0.05' rate=84.22%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 731436 21.068725/s
+    checks_succeeded...: 57.23% 418627 out of 731436
+    checks_failed......: 42.76% 312809 out of 731436
+
+    ✗ auth status is 200
+      ↳  23% — ✓ 14534 / ✗ 46426
+    ✗ response time < 1000ms
+      ↳  98% — ✓ 360931 / ✗ 4787
+    ✗ pianos status is 200
+      ↳  23% — ✓ 14354 / ✗ 46458
+    ✗ services status is 200
+      ↳  23% — ✓ 14358 / ✗ 46555
+    ✗ appointments status is 200
+      ↳  23% — ✓ 14450 / ✗ 46594
+    ✗ clients status is 200
+      ↳  0% — ✓ 0 / ✗ 121989
+
+    CUSTOM
+    errors.........................: 264150 7.608736/s
+
+    HTTP
+    http_req_duration..............: avg=320.9ms min=0s       med=22.13ms  max=1m0s   p(90)=191.81ms p(95)=503.6ms
+      { expected_response:true }...: avg=1.31s   min=173.03ms med=189.38ms max=59.97s p(90)=699.6ms  p(95)=1.33s  
+    http_req_failed................: 84.22% 308061 out of 365757
+    http_reqs......................: 365757 10.535486/s
+
+    EXECUTION
+    iteration_duration.............: avg=8.07s   min=5s       med=7.82s    max=1m31s  p(90)=9.84s    p(95)=10.25s 
+    iterations.....................: 304758 8.778434/s
+    vus............................: 39     min=3                max=2500
+    vus_max........................: 2500   min=2500             max=2500
+
+    NETWORK
+    data_received..................: 856 MB 25 kB/s
+    data_sent......................: 21 MB  605 B/s
+
+
+
+
+running (9h38m36.7s), 0000/2500 VUs, 304758 complete and 39 interrupted iterations
+default ✓ [ 100% ] 0039/2500 VUs  22m0s
+time="2026-01-17T03:30:52-05:00" level=error msg="thresholds on metrics 'errors, http_req_failed' have been crossed"

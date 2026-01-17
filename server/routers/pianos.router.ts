@@ -16,6 +16,7 @@ import {
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
 import { withCache, invalidatePath, invalidateUserCache } from "../lib/cache.middleware.js";
+import { withQueue } from "../lib/queue.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -139,18 +140,18 @@ export const pianosRouter = router({
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
 
       const offset = cursor || 0;
-      const items = await database
+      const items = await withQueue(() => database
         .select()
         .from(pianos)
         .where(and(...whereClauses))
         .orderBy(orderByClause)
         .limit(limit)
-        .offset(offset);
+        .offset(offset));
 
-      const [{ total }] = await database
+      const [{ total }] = await withQueue(() => database
         .select({ total: count() })
         .from(pianos)
-        .where(and(...whereClauses));
+        .where(and(...whereClauses)));
 
       let nextCursor: number | undefined = undefined;
       if (items.length === limit) {

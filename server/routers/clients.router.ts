@@ -18,6 +18,7 @@ import {
 } from "../utils/multi-tenant.js";
 import { withOrganizationContext } from "../middleware/organization-context.js";
 import { withCache, invalidatePath, invalidateUserCache } from "../lib/cache.middleware.js";
+import { withQueue } from "../lib/queue.js";
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -188,20 +189,20 @@ export const clientsRouter = router({
       console.log('[clients.list] Using partnerId:', partnerId, 'for filter');
       
       try {
-        const items = await database
+        const items = await withQueue(() => database
           .select()
           .from(clients)
           .where(and(...whereClauses))
           .orderBy(orderByClause)
           .limit(limit)
-          .offset(offset);
+          .offset(offset));
 
         console.log('[clients.list] Query returned:', items.length, 'items');
         
-        const [{ total }] = await database
+        const [{ total }] = await withQueue(() => database
           .select({ total: count() })
           .from(clients)
-          .where(and(...whereClauses));
+          .where(and(...whereClauses)));
         
         console.log('[clients.list] Total count:', total);
 
