@@ -39,7 +39,7 @@ export default async function handler(
   try {
     // Obtener el primer usuario de la base de datos para usar como usuario de prueba
     const usersResponse = await clerkClient.users.getUserList({ limit: 1 });
-    const users = usersResponse.data || usersResponse;
+    const users = Array.isArray(usersResponse) ? usersResponse : usersResponse.data;
     
     if (!users || users.length === 0) {
       return res.status(404).json({ error: 'No users found' });
@@ -49,10 +49,20 @@ export default async function handler(
 
     // Generar un JWT firmado directamente usando Clerk
     // Este es el método recomendado para pruebas de estrés
+    // Clerk SDK no tiene método signJwt, usar sessions en su lugar
+    const session = await clerkClient.sessions.createSession({
+      userId: user.id,
+    });
+    
+    const token = session.id;
+    
+    // Alternativa: usar el token de la sesión
+    /*
     const token = await clerkClient.signJwt({
       userId: user.id,
       expiresInSeconds: 3600, // 1 hora
     });
+    */
 
     return res.status(200).json({
       token,

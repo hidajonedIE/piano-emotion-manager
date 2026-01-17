@@ -87,9 +87,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           woocommerceUrl: url,
           woocommerceConsumerKey: apiKey,
           woocommerceConsumerSecret: apiSecret,
-          woocommerceEnabled: true,
-          woocommerceLastTest: new Date(),
-          updatedAt: new Date(),
+          woocommerceEnabled: 1,
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(distributorPremiumConfig.distributorId, distributorId));
     }

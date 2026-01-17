@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       address: 'Calle Mayor 15, Madrid',
       ownerId,
     });
-    const client1Id = Number(client1Result.insertId);
+    const client1Id = Number(client1Result[0].insertId);
 
     const client2Result = await db.insert(clients).values({
       name: 'Juan Martínez',
@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       address: 'Avenida Diagonal 123, Barcelona',
       ownerId,
     });
-    const client2Id = Number(client2Result.insertId);
+    const client2Id = Number(client2Result[0].insertId);
 
     // Insert test pianos
     const piano1Result = await db.insert(pianos).values({
@@ -49,7 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       clientId: client1Id,
       ownerId,
     });
-    const piano1Id = Number(piano1Result.insertId);
+    const piano1Id = Number(piano1Result[0].insertId);
 
     const piano2Result = await db.insert(pianos).values({
       brand: 'Kawai',
@@ -60,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       clientId: client2Id,
       ownerId,
     });
-    const piano2Id = Number(piano2Result.insertId);
+    const piano2Id = Number(piano2Result[0].insertId);
 
     // Insert test services - one URGENT and one PENDING
     // Urgent: last service was 14 months ago
@@ -70,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await db.insert(services).values({
       pianoId: piano1Id,
       serviceType: 'afinacion',
-      date: urgentDate,
+      date: urgentDate.toISOString(),
       notes: 'Afinación realizada hace 14 meses - URGENTE',
       cost: 80,
       ownerId,
@@ -83,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await db.insert(services).values({
       pianoId: piano2Id,
       serviceType: 'afinacion',
-      date: pendingDate,
+      date: pendingDate.toISOString(),
       notes: 'Afinación realizada hace 11 meses - PENDIENTE',
       cost: 85,
       ownerId,
