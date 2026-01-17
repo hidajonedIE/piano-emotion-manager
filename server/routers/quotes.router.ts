@@ -470,11 +470,11 @@ export const quotesRouter = router({
       }
       
       if (dateFrom) {
-        whereClauses.push(gte(quotes.date, new Date(dateFrom)));
+        whereClauses.push(gte(quotes.date, new Date(dateFrom).toISOString()));
       }
       
       if (dateTo) {
-        whereClauses.push(lte(quotes.date, new Date(dateTo)));
+        whereClauses.push(lte(quotes.date, new Date(dateTo).toISOString()));
       }
 
       // Construir ORDER BY
@@ -646,8 +646,8 @@ export const quotesRouter = router({
           pianoDescription: input.pianoDescription,
           title: input.title,
           description: input.description,
-          date: new Date(input.date),
-          validUntil: new Date(input.validUntil),
+          date: new Date(input.date).toISOString(),
+          validUntil: new Date(input.validUntil).toISOString(),
           status: input.status,
           items: input.items,
           subtotal: input.subtotal.toString(),
@@ -921,7 +921,7 @@ export const quotesRouter = router({
           clientName: quote.clientName,
           clientEmail: quote.clientEmail,
           clientAddress: quote.clientAddress,
-          date: new Date(),
+          date: new Date().toISOString(),
           status: "draft",
           items: items.map(item => ({
             description: item.name + (item.description ? ` - ${item.description}` : ""),
@@ -1020,7 +1020,7 @@ export const quotesRouter = router({
           pianoDescription: original.pianoDescription,
           title: original.title,
           description: original.description,
-          date: new Date(),
+          date: new Date().toISOString(),
           validUntil,
           status: "draft",
           items: original.items,
@@ -1112,7 +1112,7 @@ export const quotesRouter = router({
           pianoId: input.pianoId,
           pianoDescription: input.pianoDescription,
           title: template.title,
-          date: new Date(),
+          date: new Date().toISOString(),
           validUntil,
           status: "draft",
           items: template.items,
@@ -1183,11 +1183,11 @@ export const quotesRouter = router({
       ];
 
       if (input?.dateFrom) {
-        whereClauses.push(gte(quotes.date, new Date(input.dateFrom)));
+        whereClauses.push(gte(quotes.date, new Date(input.dateFrom).toISOString()));
       }
 
       if (input?.dateTo) {
-        whereClauses.push(lte(quotes.date, new Date(input.dateTo)));
+        whereClauses.push(lte(quotes.date, new Date(input.dateTo).toISOString()));
       }
 
       const items = await database

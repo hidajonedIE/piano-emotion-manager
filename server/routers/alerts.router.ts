@@ -243,7 +243,7 @@ export const alertsRouter = router({
                 title: 'Afinación requerida',
                 message,
                 pianoId: piano.id,
-                date: new Date(piano.createdAt),
+                date: new Date(piano.createdAt).toISOString(),
                 actionUrl: `/piano/${piano.id}`,
               });
             }
@@ -269,7 +269,7 @@ export const alertsRouter = router({
                 title: 'Afinación requerida',
                 message,
                 pianoId: piano.id,
-                date: new Date(lastTuning.date),
+                date: new Date(lastTuning.date).toISOString(),
                 actionUrl: `/piano/${piano.id}`,
               });
             }
@@ -291,7 +291,7 @@ export const alertsRouter = router({
                 title: 'Regulación recomendada',
                 message: `El piano ${piano.brand} ${piano.model} no tiene registro de regulación. Se recomienda una regulación para optimizar el mecanismo.`,
                 pianoId: piano.id,
-                date: new Date(piano.createdAt),
+                date: new Date(piano.createdAt).toISOString(),
                 actionUrl: `/piano/${piano.id}`,
               });
             }
@@ -306,7 +306,7 @@ export const alertsRouter = router({
                 title: 'Regulación recomendada',
                 message: `El piano ${piano.brand} ${piano.model}: Hace ${formatTimePeriod(daysSinceLastRegulation)} desde la última regulación. Se recomienda programar una regulación.`,
                 pianoId: piano.id,
-                date: new Date(lastRegulation.date),
+                date: new Date(lastRegulation.date).toISOString(),
                 actionUrl: `/piano/${piano.id}`,
               });
             } else if (daysSinceLastRegulation > settings.regulationPendingDays) {
@@ -317,7 +317,7 @@ export const alertsRouter = router({
                 title: 'Regulación recomendada',
                 message: `El piano ${piano.brand} ${piano.model}: Hace ${formatTimePeriod(daysSinceLastRegulation)} desde la última regulación. Considerar programar una regulación próximamente.`,
                 pianoId: piano.id,
-                date: new Date(lastRegulation.date),
+                date: new Date(lastRegulation.date).toISOString(),
                 actionUrl: `/piano/${piano.id}`,
               });
             }

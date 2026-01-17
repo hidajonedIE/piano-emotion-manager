@@ -58,7 +58,7 @@ const reminderBaseSchema = z.object({
   dueDate: z.string().or(z.date()),
   title: z.string().min(1, "El título es obligatorio").max(255),
   notes: z.string().max(2000).optional().nullable(),
-  isCompleted: z.boolean().default(false),
+  isCompleted: z.number().int().min(0).max(1).default(0),
   completedAt: z.string().or(z.date()).optional().nullable(),
 });
 
@@ -452,11 +452,11 @@ export const remindersRouter = router({
           clientId: input.clientId,
           pianoId: input.pianoId,
           reminderType: input.reminderType,
-          dueDate: new Date(input.dueDate),
+          dueDate: new Date(input.dueDate).toISOString(),
           title: input.title,
           notes: input.notes,
           isCompleted: input.isCompleted,
-          completedAt: input.completedAt ? new Date(input.completedAt) : null,
+          completedAt: input.completedAt ? new Date(input.completedAt).toISOString() : null,
         },
         ctx.orgContext,
         "reminders"
@@ -503,11 +503,11 @@ export const remindersRouter = router({
       if (data.clientId !== undefined) updateData.clientId = data.clientId;
       if (data.pianoId !== undefined) updateData.pianoId = data.pianoId;
       if (data.reminderType !== undefined) updateData.reminderType = data.reminderType;
-      if (data.dueDate !== undefined) updateData.dueDate = new Date(data.dueDate);
+      if (data.dueDate !== undefined) updateData.dueDate = new Date(data.dueDate).toISOString();
       if (data.title !== undefined) updateData.title = data.title;
       if (data.notes !== undefined) updateData.notes = data.notes;
       if (data.isCompleted !== undefined) updateData.isCompleted = data.isCompleted;
-      if (data.completedAt !== undefined) updateData.completedAt = data.completedAt ? new Date(data.completedAt) : null;
+      if (data.completedAt !== undefined) updateData.completedAt = data.completedAt ? new Date(data.completedAt).toISOString() : null;
 
       await database
         .update(reminders)
@@ -548,8 +548,8 @@ export const remindersRouter = router({
       await database
         .update(reminders)
         .set({
-          isCompleted: true,
-          completedAt: new Date(),
+          isCompleted: 1,
+          completedAt: new Date().toISOString(),
         })
         .where(eq(reminders.id, input.id));
       
@@ -587,7 +587,7 @@ export const remindersRouter = router({
       await database
         .update(reminders)
         .set({
-          isCompleted: false,
+          isCompleted: 0,
           completedAt: null,
         })
         .where(eq(reminders.id, input.id));

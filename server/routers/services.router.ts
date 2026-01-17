@@ -147,8 +147,8 @@ export const servicesRouter = router({
       if (status) whereClauses.push(eq(services.status, status));
       if (clientId) whereClauses.push(eq(services.clientId, clientId));
       if (pianoId) whereClauses.push(eq(services.pianoId, pianoId));
-      if (dateFrom) whereClauses.push(gte(services.date, new Date(dateFrom)));
-      if (dateTo) whereClauses.push(lte(services.date, new Date(dateTo)));
+      if (dateFrom) whereClauses.push(gte(services.date, new Date(dateFrom).toISOString()));
+      if (dateTo) whereClauses.push(lte(services.date, new Date(dateTo).toISOString()));
 
       const sortColumn = services[sortBy as keyof typeof services] || services.date;
       const orderByClause = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn);
@@ -422,8 +422,8 @@ export const servicesRouter = router({
         eq(services.odId, ctx.user.email)
       ];
 
-      if (input?.dateFrom) whereClauses.push(gte(services.date, new Date(input.dateFrom)));
-      if (input?.dateTo) whereClauses.push(lte(services.date, new Date(input.dateTo)));
+      if (input?.dateFrom) whereClauses.push(gte(services.date, new Date(input.dateFrom).toISOString()));
+      if (input?.dateTo) whereClauses.push(lte(services.date, new Date(input.dateTo).toISOString()));
 
       const [{ total, totalRevenue }] = await database
         .select({

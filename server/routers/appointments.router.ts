@@ -348,11 +348,11 @@ export const appointmentsRouter = router({
       ];
       
       if (dateFrom) {
-        whereClauses.push(gte(appointments.date, new Date(dateFrom)));
+        whereClauses.push(gte(appointments.date, new Date(dateFrom).toISOString()));
       }
       
       if (dateTo) {
-        whereClauses.push(lte(appointments.date, new Date(dateTo)));
+        whereClauses.push(lte(appointments.date, new Date(dateTo).toISOString()));
       }
       
       if (status) {
@@ -799,7 +799,7 @@ export const appointmentsRouter = router({
             clientId: apt.clientId,
             pianoId: apt.pianoId,
             title: apt.title,
-            date: apt.date,
+            date: apt.date instanceof Date ? apt.date.toISOString() : new Date(apt.date).toISOString(),
             duration: apt.duration,
             serviceType: apt.serviceType,
             status: apt.status,
@@ -1007,11 +1007,11 @@ export const appointmentsRouter = router({
       ];
 
       if (input?.dateFrom) {
-        whereClauses.push(gte(appointments.date, new Date(input.dateFrom)));
+        whereClauses.push(gte(appointments.date, new Date(input.dateFrom).toISOString()));
       }
 
       if (input?.dateTo) {
-        whereClauses.push(lte(appointments.date, new Date(input.dateTo)));
+        whereClauses.push(lte(appointments.date, new Date(input.dateTo).toISOString()));
       }
 
       const items = await database

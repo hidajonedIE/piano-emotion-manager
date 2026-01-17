@@ -220,11 +220,11 @@ export const invoicesRouter = router({
       }
       
       if (dateFrom) {
-        whereClauses.push(gte(invoices.date, new Date(dateFrom)));
+        whereClauses.push(gte(invoices.date, new Date(dateFrom).toISOString()));
       }
       
       if (dateTo) {
-        whereClauses.push(lte(invoices.date, new Date(dateTo)));
+        whereClauses.push(lte(invoices.date, new Date(dateTo).toISOString()));
       }
 
       // Construir ORDER BY
@@ -389,8 +389,8 @@ export const invoicesRouter = router({
           clientName: input.clientName,
           clientEmail: input.clientEmail,
           clientAddress: input.clientAddress,
-          date: new Date(input.date),
-          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+          date: new Date(input.date).toISOString(),
+          dueDate: input.dueDate ? new Date(input.dueDate).toISOString() : null,
           status: input.status,
           items: input.items,
           subtotal: input.subtotal.toString(),
@@ -450,8 +450,8 @@ export const invoicesRouter = router({
       if (data.clientName !== undefined) updateData.clientName = data.clientName;
       if (data.clientEmail !== undefined) updateData.clientEmail = data.clientEmail;
       if (data.clientAddress !== undefined) updateData.clientAddress = data.clientAddress;
-      if (data.date !== undefined) updateData.date = new Date(data.date);
-      if (data.dueDate !== undefined) updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
+      if (data.date !== undefined) updateData.date = new Date(data.date).toISOString();
+      if (data.dueDate !== undefined) updateData.dueDate = data.dueDate ? new Date(data.dueDate).toISOString() : null;
       if (data.status !== undefined) updateData.status = data.status;
       if (data.items !== undefined) updateData.items = data.items;
       if (data.subtotal !== undefined) updateData.subtotal = data.subtotal.toString();
@@ -566,11 +566,11 @@ export const invoicesRouter = router({
       ];
 
       if (input?.dateFrom) {
-        whereClauses.push(gte(invoices.date, new Date(input.dateFrom)));
+        whereClauses.push(gte(invoices.date, new Date(input.dateFrom).toISOString()));
       }
 
       if (input?.dateTo) {
-        whereClauses.push(lte(invoices.date, new Date(input.dateTo)));
+        whereClauses.push(lte(invoices.date, new Date(input.dateTo).toISOString()));
       }
 
       const items = await database
