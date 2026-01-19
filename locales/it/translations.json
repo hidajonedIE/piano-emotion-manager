@@ -258,7 +258,67 @@
     "selectCategory": "Seleziona Categoria",
     "selectSupplier": "Seleziona Fornitore",
     "orderMaterial": "Ordine per",
-    "nameRequired": "Il nome del materiale è obbligatorio"
+    "nameRequired": "Il nome del materiale è obbligatorio",
+    "dashboard": "Pannello di controllo dell'inventario",
+    "dashboardSubtitle": "Gestione del prodotto e del magazzino",
+    "totalProducts": "Prodotti totali",
+    "active": "Attività",
+    "inventoryValue": "Valore dell'inventario",
+    "warehouses": "Magazzini",
+    "vehicles": "Veicoli",
+    "alerts": "Avvisi",
+    "addProduct": "Aggiungi prodotto",
+    "newOrder": "Nuovo ordine",
+    "stockStatus": "Stato delle scorte",
+    "lowStock": "Scorte basse",
+    "products": "Prodotti",
+    "purchaseOrders": "Ordini di acquisto",
+    "addWarehouse": "Aggiungi magazzino",
+    "editWarehouse": "Modifica magazzino",
+    "warehouseName": "Nome del magazzino",
+    "warehouseNamePlaceholder": "Esempio: magazzino principale",
+    "warehouseCode": "Codice magazzino",
+    "warehouseType": "Tipologia di magazzino",
+    "warehouseTypes": {
+      "warehouse": "Negozio",
+      "store": "Negozio",
+      "vehicle": "Veicolo",
+      "workshop": "Officina"
+    },
+    "warehouseDetails": "Dettagli del magazzino",
+    "warehouseCreated": "Magazzino creato con successo",
+    "noWarehouses": "Non ci sono magazzini",
+    "noWarehousesDescription": "Aggiungi il tuo primo magazzino per gestire l'inventario",
+    "setAsDefault": "Imposta come predefinito",
+    "setAsDefaultDescription": "Questo magazzino verrà utilizzato per impostazione predefinita per i nuovi prodotti",
+    "default": "Predeterminato",
+    "basicInfo": "Informazioni di base",
+    "requiredFields": "Si prega di completare tutti i campi obbligatori",
+    "productName": "Nome del prodotto",
+    "productNamePlaceholder": "Esempio: Macillo Renner",
+    "productDetails": "Dettagli del prodotto",
+    "productCreated": "Prodotto creato con successo",
+    "productNotFound": "Prodotto non trovato",
+    "editProduct": "Modifica prodotto",
+    "createProduct": "Crea prodotto",
+    "createProductWithBarcode": "Crea prodotto con codice a barre",
+    "descriptionPlaceholder": "Descrizione del prodotto...",
+    "classification": "Classificazione",
+    "type": "Tipo",
+    "sku": "SKU",
+    "barcode": "Codice a barre",
+    "pricing": "Prezzi",
+    "taxRate": "Aliquota IVA",
+    "stockSettings": "Impostazioni delle scorte",
+    "reorderPoint": "Punto di rifornimento",
+    "reorderQuantity": "Quantità sostitutiva",
+    "totalValue": "Valore totale",
+    "categoryDistribution": "Distribuzione per categoria",
+    "valueByWarehouse": "Valore per magazzino",
+    "recentAlerts": "Avvisi recenti",
+    "productsNeedReorder": "i prodotti devono essere sostituiti",
+    "tapToCreateOrder": "Tocca per creare l'ordine",
+    "critical": "recensioni"
   },
   "invoices": {
     "title": "Fatture",
@@ -467,28 +527,172 @@
     "members": "Membri",
     "assignments": "Assegnazioni",
     "zones": "Zone",
-    "absences": "Assenze"
+    "absences": "Assenze",
+    "active": "Attività",
+    "today": "Oggi",
+    "unassigned": "Non assegnato",
+    "inviteMember": "Invita membro",
+    "assignWork": "Assegnare il lavoro",
+    "assignTechnician": "Assegnare il tecnico",
+    "addZone": "Aggiungi zona",
+    "approve": "Approvare",
+    "reject": "Declino",
+    "roles": {
+      "owner": "Proprietario",
+      "admin": "Amministratore",
+      "manager": "Manager",
+      "senior_tech": "Tecnico Maggiore",
+      "technician": "Tecnico",
+      "apprentice": "Apprendista",
+      "receptionist": "Receptionist",
+      "accountant": "Contabile",
+      "viewer": "Mirino"
+    },
+    "memberStatus": {
+      "active": "Risorsa",
+      "pending_invitation": "Invito in sospeso",
+      "suspended": "Sospeso",
+      "inactive": "Oziare"
+    },
+    "assignmentStatus": {
+      "unassigned": "Non assegnato",
+      "assigned": "Assegnato",
+      "accepted": "Accettato",
+      "in_progress": "In corso",
+      "completed": "Riempito",
+      "cancelled": "Annullato"
+    },
+    "priority": {
+      "low": "Basso",
+      "normal": "Normale",
+      "high": "Alto",
+      "urgent": "Urgente"
+    },
+    "absenceTypes": {
+      "vacation": "Vacanza",
+      "sick_leave": "congedo medico",
+      "personal": "Questioni personali",
+      "training": "Formazione",
+      "other": "Altro"
+    },
+    "absenceStatus": {
+      "pending": "Orecchino",
+      "approved": "Approvato",
+      "rejected": "Respinto"
+    }
   },
   "quotes": {
     "title": "Preventivi",
     "newQuote": "Nuovo Preventivo",
     "noQuotes": "Nessun preventivo",
-    "addFirstQuote": "Crea il tuo primo preventivo"
+    "addFirstQuote": "Crea il tuo primo preventivo",
+    "editQuote": "Modifica bilancio",
+    "quoteDetails": "Dettagli sul bilancio",
+    "quoteNumber": "Numero di bilancio",
+    "validUntil": "Valido fino al",
+    "status": "Stato",
+    "statuses": {
+      "draft": "Bozza",
+      "sent": "Inviato",
+      "accepted": "Accettato",
+      "rejected": "Rifiutato",
+      "expired": "Scaduto"
+    },
+    "convertToInvoice": "Converti in fattura",
+    "sendToClient": "Invia al cliente",
+    "duplicate": "Raddoppiare",
+    "termsAndConditions": "Termini e Condizioni"
   },
   "reminders": {
-    "title": "Promemoria"
+    "title": "Promemoria",
+    "types": {
+      "maintenance": "Manutenzione",
+      "follow_up": "Seguito",
+      "warranty_expiry": "Scadenza della garanzia",
+      "appointment": "Appuntamento",
+      "payment_due": "Pagamento in sospeso",
+      "contract_renewal": "Rinnovo contrattuale"
+    },
+    "newReminder": "Nuovo promemoria",
+    "automatic": "Automatico",
+    "manual": "Manuali",
+    "maintenanceReminder": "Promemoria di manutenzione",
+    "followUpReminder": "Promemoria di monitoraggio",
+    "warrantyExpiry": "Scadenza della garanzia",
+    "appointmentReminder": "Promemoria appuntamento",
+    "daysBeforeService": "Giorni prima del servizio",
+    "daysAfterService": "Giorni dopo il servizio",
+    "enabled": "Attivato",
+    "disabled": "Disabilitato"
   },
   "workflows": {
-    "title": "Automazioni"
+    "title": "Automazioni",
+    "newWorkflow": "Nuova automazione",
+    "trigger": "Grilletto",
+    "action": "Azione",
+    "condition": "Condizione",
+    "triggers": {
+      "newClient": "Nuovo cliente",
+      "newAppointment": "Nuovo appuntamento",
+      "serviceCompleted": "Servizio completato",
+      "invoicePaid": "Fattura pagata",
+      "lowStock": "Scorte basse"
+    },
+    "actions": {
+      "sendEmail": "Invia e-mail",
+      "sendSms": "Invia SMS",
+      "sendWhatsapp": "Invia WhatsApp",
+      "createTask": "Crea attività",
+      "updateField": "Aggiorna campo"
+    }
   },
   "contracts": {
-    "title": "Contratti di Manutenzione"
+    "title": "Contratti di Manutenzione",
+    "newContract": "Nuovo contratto",
+    "contractDetails": "Dettagli del contratto",
+    "startDate": "Data di inizio",
+    "endDate": "Data di fine",
+    "renewalDate": "Data di rinnovo",
+    "frequency": "Frequenza",
+    "frequencies": {
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
+      "biannual": "Semestrale",
+      "annual": "Annuale"
+    },
+    "status": "Stato",
+    "statuses": {
+      "active": "Risorsa",
+      "pending": "Orecchino",
+      "expired": "Scaduto",
+      "cancelled": "Annullato"
+    },
+    "autoRenewal": "Rinnovo automatico",
+    "servicesIncluded": "Servizi inclusi",
+    "noContracts": "Non ci sono contratti",
+    "addFirstContract": "Crea il tuo primo contratto"
   },
   "payments": {
-    "title": "Pagamenti"
+    "title": "Pagamenti",
+    "payNow": "Paga adesso",
+    "paymentLink": "collegamento di pagamento",
+    "stripe": "Banda",
+    "paypal": "PayPal",
+    "bankTransfer": "Bonifico bancario",
+    "paymentReceived": "Pagamento ricevuto",
+    "paymentPending": "Pagamento in sospeso",
+    "paymentFailed": "Pagamento non riuscito",
+    "refund": "Rimborso"
   },
   "analytics": {
-    "predictions": "Previsioni"
+    "predictions": "Previsioni",
+    "title": "Analitica",
+    "demandForecast": "Previsione della domanda",
+    "revenueProjection": "Proiezione del reddito",
+    "busyPeriods": "Periodi di domanda elevata",
+    "slowPeriods": "Periodi di bassa domanda",
+    "recommendations": "Raccomandazioni",
+    "trends": "Tendenze"
   },
   "partners": {
     "title": "Partner",
@@ -753,12 +957,43 @@
     "today": "Oggi",
     "week": "Settimana",
     "month": "Mese",
-    "year": "Anno"
+    "year": "Anno",
+    "settings": "Impostazioni del calendario",
+    "view": {
+      "day": "Giorno",
+      "week": "Settimana",
+      "month": "Mese"
+    }
   },
   "modules": {
     "title": "Moduli",
     "enabled": "Abilitato",
-    "disabled": "Disabilitato"
+    "disabled": "Disabilitato",
+    "currentPlan": "Piano attuale",
+    "changePlan": "Cambia piano",
+    "upgrade": "Migliorare",
+    "resourceUsage": "Utilizzo delle risorse",
+    "users": "Utenti",
+    "clients": "Clienti",
+    "pianos": "Pianoforti",
+    "invoicesMonth": "Fatture/mese",
+    "storage": "Magazzinaggio",
+    "coreModules": "Moduli principali",
+    "coreModulesDesc": "Funzionalità essenziali incluse in tutti i piani",
+    "freeModules": "Moduli gratuiti",
+    "freeModulesDesc": "Funzionalità aggiuntive senza alcun costo",
+    "premiumModules": "Moduli premium",
+    "premiumModulesDesc": "Funzionalità avanzate per i professionisti",
+    "addons": "Accessori",
+    "addonsDesc": "Estensioni opzionali per la tua attività",
+    "alwaysActive": "Sempre attivo",
+    "active": "Risorsa",
+    "inactive": "Oziare",
+    "activate": "Attivare",
+    "deactivate": "Disattivare",
+    "included": "Compreso",
+    "notIncluded": "Non incluso",
+    "requiresPremium": "Richiede un piano premium"
   },
   "team": {
     "title": "Gestione Team",

@@ -258,7 +258,67 @@
     "selectCategory": "Vælg Kategori",
     "selectSupplier": "Vælg Leverandør",
     "orderMaterial": "Bestilling af",
-    "nameRequired": "Materialenavn er påkrævet"
+    "nameRequired": "Materialenavn er påkrævet",
+    "dashboard": "Inventory Dashboard",
+    "dashboardSubtitle": "Produkt- og lagerstyring",
+    "totalProducts": "Samlede produkter",
+    "active": "Aktiver",
+    "inventoryValue": "Lagerværdi",
+    "warehouses": "Lagerbygninger",
+    "vehicles": "Køretøjer",
+    "alerts": "Advarsler",
+    "addProduct": "Tilføj produkt",
+    "newOrder": "Ny ordre",
+    "stockStatus": "Lagerstatus",
+    "lowStock": "Lavt lager",
+    "products": "Produkter",
+    "purchaseOrders": "Indkøbsordrer",
+    "addWarehouse": "Tilføj lager",
+    "editWarehouse": "Rediger lager",
+    "warehouseName": "Lagernavn",
+    "warehouseNamePlaceholder": "Eks: Hovedlager",
+    "warehouseCode": "Lagerkode",
+    "warehouseType": "Lagertype",
+    "warehouseTypes": {
+      "warehouse": "Butik",
+      "store": "Butik",
+      "vehicle": "Køretøj",
+      "workshop": "Værksted"
+    },
+    "warehouseDetails": "Lagerdetaljer",
+    "warehouseCreated": "Lageret blev oprettet",
+    "noWarehouses": "Der er ingen lagre",
+    "noWarehousesDescription": "Tilføj dit første lager for at administrere lagerbeholdningen",
+    "setAsDefault": "Indstil som standard",
+    "setAsDefaultDescription": "Dette lager vil som standard blive brugt til nye produkter",
+    "default": "Forudbestemt",
+    "basicInfo": "Grundlæggende information",
+    "requiredFields": "Udfyld venligst alle obligatoriske felter",
+    "productName": "Produktnavn",
+    "productNamePlaceholder": "Eks: Macillo Renner",
+    "productDetails": "Produktdetaljer",
+    "productCreated": "Produktet er oprettet med succes",
+    "productNotFound": "Produkt ikke fundet",
+    "editProduct": "Rediger produkt",
+    "createProduct": "Opret produkt",
+    "createProductWithBarcode": "Opret produkt med stregkode",
+    "descriptionPlaceholder": "Produktbeskrivelse...",
+    "classification": "Klassifikation",
+    "type": "Fyr",
+    "sku": "SKU",
+    "barcode": "Stregkode",
+    "pricing": "Priser",
+    "taxRate": "momssats",
+    "stockSettings": "Lagerindstillinger",
+    "reorderPoint": "Genopfyldningspunkt",
+    "reorderQuantity": "Udskiftningsmængde",
+    "totalValue": "Samlet værdi",
+    "categoryDistribution": "Fordeling efter kategori",
+    "valueByWarehouse": "Værdi pr. lager",
+    "recentAlerts": "Seneste advarsler",
+    "productsNeedReorder": "produkter skal udskiftes",
+    "tapToCreateOrder": "Tryk for at oprette ordre",
+    "critical": "anmeldelser"
   },
   "invoices": {
     "title": "Fakturaer",
@@ -467,28 +527,172 @@
     "members": "Medlemmer",
     "assignments": "Tildelinger",
     "zones": "Zoner",
-    "absences": "Fravær"
+    "absences": "Fravær",
+    "active": "Aktiver",
+    "today": "I dag",
+    "unassigned": "Ikke tildelt",
+    "inviteMember": "Inviter medlem",
+    "assignWork": "Tildel arbejde",
+    "assignTechnician": "Tildel tekniker",
+    "addZone": "Tilføj zone",
+    "approve": "Godkende",
+    "reject": "Nedgang",
+    "roles": {
+      "owner": "Ejer",
+      "admin": "Administrator",
+      "manager": "Manager",
+      "senior_tech": "Senior tekniker",
+      "technician": "Teknisk",
+      "apprentice": "Lærling",
+      "receptionist": "Receptionist",
+      "accountant": "Revisor",
+      "viewer": "Søger"
+    },
+    "memberStatus": {
+      "active": "Aktiv",
+      "pending_invitation": "Afventer invitation",
+      "suspended": "Suspenderet",
+      "inactive": "Ledig"
+    },
+    "assignmentStatus": {
+      "unassigned": "Ikke tildelt",
+      "assigned": "Tildelt",
+      "accepted": "Accepteret",
+      "in_progress": "I gang",
+      "completed": "Fyldt",
+      "cancelled": "Annulleret"
+    },
+    "priority": {
+      "low": "Lav",
+      "normal": "Normal",
+      "high": "Høj",
+      "urgent": "Presserende"
+    },
+    "absenceTypes": {
+      "vacation": "Ferie",
+      "sick_leave": "sygeorlov",
+      "personal": "Personlige forhold",
+      "training": "Uddannelse",
+      "other": "Andre"
+    },
+    "absenceStatus": {
+      "pending": "Ørering",
+      "approved": "Godkendt",
+      "rejected": "Afvist"
+    }
   },
   "quotes": {
     "title": "Tilbud",
     "newQuote": "Nyt Tilbud",
     "noQuotes": "Ingen tilbud",
-    "addFirstQuote": "Opret dit første tilbud"
+    "addFirstQuote": "Opret dit første tilbud",
+    "editQuote": "Rediger budget",
+    "quoteDetails": "Budget detaljer",
+    "quoteNumber": "Budgetnummer",
+    "validUntil": "Gælder indtil kl",
+    "status": "Tilstand",
+    "statuses": {
+      "draft": "Udkast",
+      "sent": "Sendt",
+      "accepted": "Accepteret",
+      "rejected": "Afviste",
+      "expired": "Udløbet"
+    },
+    "convertToInvoice": "Konverter til faktura",
+    "sendToClient": "Send til klient",
+    "duplicate": "Dobbelt",
+    "termsAndConditions": "Vilkår og betingelser"
   },
   "reminders": {
-    "title": "Påmindelser"
+    "title": "Påmindelser",
+    "types": {
+      "maintenance": "Opretholdelse",
+      "follow_up": "Opfølgning",
+      "warranty_expiry": "Garanti udløb",
+      "appointment": "Udnævnelse",
+      "payment_due": "Afventer betaling",
+      "contract_renewal": "Kontraktfornyelse"
+    },
+    "newReminder": "Ny påmindelse",
+    "automatic": "Automatisk",
+    "manual": "Manualer",
+    "maintenanceReminder": "Påmindelse om vedligeholdelse",
+    "followUpReminder": "Sporingspåmindelse",
+    "warrantyExpiry": "Garanti udløb",
+    "appointmentReminder": "Påmindelse om aftale",
+    "daysBeforeService": "Dage før service",
+    "daysAfterService": "Dage efter gudstjenesten",
+    "enabled": "Aktiveret",
+    "disabled": "Handicappet"
   },
   "workflows": {
-    "title": "Automatiseringer"
+    "title": "Automatiseringer",
+    "newWorkflow": "Ny automatisering",
+    "trigger": "Udløser",
+    "action": "Handling",
+    "condition": "Tilstand",
+    "triggers": {
+      "newClient": "Ny klient",
+      "newAppointment": "Ny aftale",
+      "serviceCompleted": "Service afsluttet",
+      "invoicePaid": "Faktura betalt",
+      "lowStock": "Lavt lager"
+    },
+    "actions": {
+      "sendEmail": "Send e-mail",
+      "sendSms": "Send SMS",
+      "sendWhatsapp": "Send WhatsApp",
+      "createTask": "Opret opgave",
+      "updateField": "Opdateringsfelt"
+    }
   },
   "contracts": {
-    "title": "Vedligeholdelseskontrakter"
+    "title": "Vedligeholdelseskontrakter",
+    "newContract": "Ny kontrakt",
+    "contractDetails": "Kontraktdetaljer",
+    "startDate": "Startdato",
+    "endDate": "Slutdato",
+    "renewalDate": "Fornyelsesdato",
+    "frequency": "Frekvens",
+    "frequencies": {
+      "monthly": "Månedlig",
+      "quarterly": "Kvartalsvis",
+      "biannual": "Halvårligt",
+      "annual": "Årlig"
+    },
+    "status": "Tilstand",
+    "statuses": {
+      "active": "Aktiv",
+      "pending": "Ørering",
+      "expired": "Udløbet",
+      "cancelled": "Annulleret"
+    },
+    "autoRenewal": "Automatisk fornyelse",
+    "servicesIncluded": "Services inkluderet",
+    "noContracts": "Der er ingen kontrakter",
+    "addFirstContract": "Opret din første kontrakt"
   },
   "payments": {
-    "title": "Betalinger"
+    "title": "Betalinger",
+    "payNow": "Betal nu",
+    "paymentLink": "betalingslink",
+    "stripe": "Stribe",
+    "paypal": "PayPal",
+    "bankTransfer": "Bankoverførsel",
+    "paymentReceived": "Betaling modtaget",
+    "paymentPending": "Afventer betaling",
+    "paymentFailed": "Mislykket betaling",
+    "refund": "Tilbagebetale"
   },
   "analytics": {
-    "predictions": "Forudsigelser"
+    "predictions": "Forudsigelser",
+    "title": "Analytics",
+    "demandForecast": "Efterspørgselsprognose",
+    "revenueProjection": "Fremskrivning af indkomst",
+    "busyPeriods": "Perioder med høj efterspørgsel",
+    "slowPeriods": "Perioder med lav efterspørgsel",
+    "recommendations": "Anbefalinger",
+    "trends": "Tendenser"
   },
   "partners": {
     "title": "Partnere",
@@ -753,12 +957,43 @@
     "today": "I dag",
     "week": "Uge",
     "month": "Måned",
-    "year": "År"
+    "year": "År",
+    "settings": "Kalenderindstillinger",
+    "view": {
+      "day": "Dag",
+      "week": "Uge",
+      "month": "Måned"
+    }
   },
   "modules": {
     "title": "Moduler",
     "enabled": "Aktiveret",
-    "disabled": "Deaktiveret"
+    "disabled": "Deaktiveret",
+    "currentPlan": "Nuværende plan",
+    "changePlan": "Skift plan",
+    "upgrade": "Forbedre",
+    "resourceUsage": "Ressourceforbrug",
+    "users": "Brugere",
+    "clients": "Kunder",
+    "pianos": "Klaverer",
+    "invoicesMonth": "Fakturaer/måned",
+    "storage": "Opbevaring",
+    "coreModules": "Hovedmoduler",
+    "coreModulesDesc": "Væsentlige funktioner inkluderet i alle planer",
+    "freeModules": "Gratis moduler",
+    "freeModulesDesc": "Yderligere funktioner uden omkostninger",
+    "premiumModules": "Premium moduler",
+    "premiumModulesDesc": "Avancerede funktioner til professionelle",
+    "addons": "Tilbehør",
+    "addonsDesc": "Valgfri udvidelser til din virksomhed",
+    "alwaysActive": "Altid aktiv",
+    "active": "Aktiv",
+    "inactive": "Ledig",
+    "activate": "Aktiver",
+    "deactivate": "Deaktiver",
+    "included": "Inklusive",
+    "notIncluded": "Ikke inkluderet",
+    "requiresPremium": "Kræver premium-plan"
   },
   "team": {
     "title": "Teamstyring",

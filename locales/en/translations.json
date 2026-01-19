@@ -363,7 +363,9 @@
     "mtdStatus": "MTD Status",
     "deleteConfirm": "Are you sure you want to delete this invoice?",
     "noInvoices": "No invoices registered",
-    "addFirstInvoice": "Create your first invoice"
+    "addFirstInvoice": "Create your first invoice",
+    "verifactu": "Verifactu",
+    "verifactuStatus": "Verifactu Status"
   },
   "settings": {
     "title": "Settings",
@@ -407,7 +409,8 @@
     "erasureRight": "Right to erasure",
     "portabilityRight": "Right to data portability",
     "contact": "Privacy contact",
-    "dpo": "Data Protection Officer"
+    "dpo": "Data Protection Officer",
+    "rectificationRight": "Right to rectification"
   },
   "notifications": {
     "title": "Notifications",
@@ -653,7 +656,15 @@
     "daysBeforeService": "Days before service",
     "daysAfterService": "Days after service",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "types": {
+      "maintenance": "Maintenance",
+      "follow_up": "Follow-up",
+      "warranty_expiry": "Warranty Expiration",
+      "appointment": "Appointment",
+      "payment_due": "Pending Payment",
+      "contract_renewal": "Contract Renewal"
+    }
   },
   "workflows": {
     "title": "Automations",
@@ -987,11 +998,42 @@
     "today": "Today",
     "week": "Week",
     "month": "Month",
-    "year": "Year"
+    "year": "Year",
+    "settings": "Calendar Settings",
+    "view": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    }
   },
   "modules": {
     "title": "Modules",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "currentPlan": "Current plan",
+    "changePlan": "Change plan",
+    "upgrade": "Improve",
+    "resourceUsage": "Resource usage",
+    "users": "Users",
+    "clients": "Customers",
+    "pianos": "Pianos",
+    "invoicesMonth": "Invoices/month",
+    "storage": "Storage",
+    "coreModules": "Main modules",
+    "coreModulesDesc": "Essential features included in all plans",
+    "freeModules": "Free modules",
+    "freeModulesDesc": "Additional features at no cost",
+    "premiumModules": "Premium modules",
+    "premiumModulesDesc": "Advanced features for professionals",
+    "addons": "Accessories",
+    "addonsDesc": "Optional extensions for your business",
+    "alwaysActive": "Always active",
+    "active": "Asset",
+    "inactive": "Idle",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "included": "Including",
+    "notIncluded": "Not included",
+    "requiresPremium": "Requires premium plan"
   }
 }

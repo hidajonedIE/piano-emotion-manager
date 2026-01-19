@@ -258,7 +258,67 @@
     "selectCategory": "Kategorie auswählen",
     "selectSupplier": "Lieferant auswählen",
     "orderMaterial": "Bestellung für",
-    "nameRequired": "Materialname ist erforderlich"
+    "nameRequired": "Materialname ist erforderlich",
+    "dashboard": "Inventar-Dashboard",
+    "dashboardSubtitle": "Produkt- und Lagerverwaltung",
+    "totalProducts": "Gesamtprodukte",
+    "active": "Vermögenswerte",
+    "inventoryValue": "Inventarwert",
+    "warehouses": "Lagerhäuser",
+    "vehicles": "Fahrzeuge",
+    "alerts": "Warnungen",
+    "addProduct": "Produkt hinzufügen",
+    "newOrder": "Neue Ordnung",
+    "stockStatus": "Lagerstatus",
+    "lowStock": "Geringer Lagerbestand",
+    "products": "Produkte",
+    "purchaseOrders": "Bestellungen",
+    "addWarehouse": "Lager hinzufügen",
+    "editWarehouse": "Lager bearbeiten",
+    "warehouseName": "Lagername",
+    "warehouseNamePlaceholder": "Beispiel: Hauptlager",
+    "warehouseCode": "Lagercode",
+    "warehouseType": "Lagertyp",
+    "warehouseTypes": {
+      "warehouse": "Speichern",
+      "store": "Speichern",
+      "vehicle": "Fahrzeug",
+      "workshop": "Werkstatt"
+    },
+    "warehouseDetails": "Lagerdetails",
+    "warehouseCreated": "Lager erfolgreich erstellt",
+    "noWarehouses": "Es gibt keine Lagerhallen",
+    "noWarehousesDescription": "Fügen Sie Ihr erstes Lager hinzu, um den Lagerbestand zu verwalten",
+    "setAsDefault": "Als Standard festlegen",
+    "setAsDefaultDescription": "Dieses Lager wird standardmäßig für neue Produkte verwendet",
+    "default": "Vorbestimmt",
+    "basicInfo": "Grundlegende Informationen",
+    "requiredFields": "Bitte füllen Sie alle Pflichtfelder aus",
+    "productName": "Produktname",
+    "productNamePlaceholder": "Ex: Macillo Renner",
+    "productDetails": "Produktdetails",
+    "productCreated": "Produkt erfolgreich erstellt",
+    "productNotFound": "Produkt nicht gefunden",
+    "editProduct": "Produkt bearbeiten",
+    "createProduct": "Produkt erstellen",
+    "createProductWithBarcode": "Produkt mit Barcode erstellen",
+    "descriptionPlaceholder": "Produktbeschreibung...",
+    "classification": "Einstufung",
+    "type": "Kerl",
+    "sku": "Artikelnummer",
+    "barcode": "Barcode",
+    "pricing": "Preise",
+    "taxRate": "Mehrwertsteuersatz",
+    "stockSettings": "Lagereinstellungen",
+    "reorderPoint": "Nachschubpunkt",
+    "reorderQuantity": "Ersatzmenge",
+    "totalValue": "Gesamtwert",
+    "categoryDistribution": "Verteilung nach Kategorie",
+    "valueByWarehouse": "Wert pro Lager",
+    "recentAlerts": "Aktuelle Warnungen",
+    "productsNeedReorder": "Produkte müssen ersetzt werden",
+    "tapToCreateOrder": "Tippen Sie, um eine Bestellung zu erstellen",
+    "critical": "Bewertungen"
   },
   "invoices": {
     "title": "Rechnungen",
@@ -470,33 +530,169 @@
     "absences": "Abwesenheiten",
     "active": "Aktiv",
     "today": "Heute",
-    "unassigned": "Nicht zugewiesen"
+    "unassigned": "Nicht zugewiesen",
+    "inviteMember": "Mitglied einladen",
+    "assignWork": "Arbeit zuweisen",
+    "assignTechnician": "Techniker beauftragen",
+    "addZone": "Zone hinzufügen",
+    "approve": "Genehmigen",
+    "reject": "Abfall",
+    "roles": {
+      "owner": "Eigentümer",
+      "admin": "Administrator",
+      "manager": "Manager",
+      "senior_tech": "Leitender Techniker",
+      "technician": "Technisch",
+      "apprentice": "Lehrling",
+      "receptionist": "Rezeptionistin",
+      "accountant": "Buchhalter",
+      "viewer": "Sucher"
+    },
+    "memberStatus": {
+      "active": "Vermögenswert",
+      "pending_invitation": "Ausstehende Einladung",
+      "suspended": "Ausgesetzt",
+      "inactive": "Leerlauf"
+    },
+    "assignmentStatus": {
+      "unassigned": "Nicht zugewiesen",
+      "assigned": "Zugewiesen",
+      "accepted": "Akzeptiert",
+      "in_progress": "Im Gange",
+      "completed": "Gefüllt",
+      "cancelled": "Abgesagt"
+    },
+    "priority": {
+      "low": "Niedrig",
+      "normal": "Normal",
+      "high": "Hoch",
+      "urgent": "Dringend"
+    },
+    "absenceTypes": {
+      "vacation": "Urlaub",
+      "sick_leave": "Krankenurlaub",
+      "personal": "Persönliche Angelegenheiten",
+      "training": "Ausbildung",
+      "other": "Andere"
+    },
+    "absenceStatus": {
+      "pending": "Ohrring",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt"
+    }
   },
   "quotes": {
     "title": "Angebote",
     "newQuote": "Neues Angebot",
     "noQuotes": "Keine Angebote",
-    "addFirstQuote": "Erstellen Sie Ihr erstes Angebot"
+    "addFirstQuote": "Erstellen Sie Ihr erstes Angebot",
+    "editQuote": "Budget bearbeiten",
+    "quoteDetails": "Budgetdetails",
+    "quoteNumber": "Budgetnummer",
+    "validUntil": "Gültig bis",
+    "status": "Zustand",
+    "statuses": {
+      "draft": "Entwurf",
+      "sent": "Gesendet",
+      "accepted": "Akzeptiert",
+      "rejected": "Abgelehnt",
+      "expired": "Abgelaufen"
+    },
+    "convertToInvoice": "In Rechnung umwandeln",
+    "sendToClient": "An den Kunden senden",
+    "duplicate": "Doppelt",
+    "termsAndConditions": "Geschäftsbedingungen"
   },
   "reminders": {
     "title": "Erinnerungen",
     "automatic": "Automatisch",
-    "manual": "Manuell"
+    "manual": "Manuell",
+    "types": {
+      "maintenance": "Wartung",
+      "follow_up": "Nachverfolgen",
+      "warranty_expiry": "Garantieablauf",
+      "appointment": "Termin",
+      "payment_due": "Ausstehende Zahlung",
+      "contract_renewal": "Vertragsverlängerung"
+    },
+    "newReminder": "Neue Erinnerung",
+    "maintenanceReminder": "Wartungserinnerung",
+    "followUpReminder": "Tracking-Erinnerung",
+    "warrantyExpiry": "Garantieablauf",
+    "appointmentReminder": "Terminerinnerung",
+    "daysBeforeService": "Tage vor dem Gottesdienst",
+    "daysAfterService": "Tage nach dem Service",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert"
   },
   "workflows": {
     "title": "Automatisierungen",
-    "newWorkflow": "Neue Automatisierung"
+    "newWorkflow": "Neue Automatisierung",
+    "trigger": "Auslösen",
+    "action": "Aktion",
+    "condition": "Zustand",
+    "triggers": {
+      "newClient": "Neuer Kunde",
+      "newAppointment": "Neuer Termin",
+      "serviceCompleted": "Service abgeschlossen",
+      "invoicePaid": "Rechnung bezahlt",
+      "lowStock": "Geringer Lagerbestand"
+    },
+    "actions": {
+      "sendEmail": "E-Mail senden",
+      "sendSms": "SMS senden",
+      "sendWhatsapp": "WhatsApp senden",
+      "createTask": "Aufgabe erstellen",
+      "updateField": "Feld aktualisieren"
+    }
   },
   "contracts": {
     "title": "Wartungsverträge",
-    "newContract": "Neuer Vertrag"
+    "newContract": "Neuer Vertrag",
+    "contractDetails": "Vertragsdetails",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "renewalDate": "Verlängerungsdatum",
+    "frequency": "Frequenz",
+    "frequencies": {
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "biannual": "Halbjährlich",
+      "annual": "Jährlich"
+    },
+    "status": "Zustand",
+    "statuses": {
+      "active": "Vermögenswert",
+      "pending": "Ohrring",
+      "expired": "Abgelaufen",
+      "cancelled": "Abgesagt"
+    },
+    "autoRenewal": "Automatische Verlängerung",
+    "servicesIncluded": "Inklusivleistungen",
+    "noContracts": "Es gibt keine Verträge",
+    "addFirstContract": "Erstellen Sie Ihren ersten Vertrag"
   },
   "payments": {
     "title": "Zahlungen",
-    "payNow": "Jetzt bezahlen"
+    "payNow": "Jetzt bezahlen",
+    "paymentLink": "Zahlungslink",
+    "stripe": "Streifen",
+    "paypal": "PayPal",
+    "bankTransfer": "Banküberweisung",
+    "paymentReceived": "Zahlung erhalten",
+    "paymentPending": "Ausstehende Zahlung",
+    "paymentFailed": "Zahlung fehlgeschlagen",
+    "refund": "Erstattung"
   },
   "analytics": {
-    "predictions": "Vorhersagen"
+    "predictions": "Vorhersagen",
+    "title": "Analytik",
+    "demandForecast": "Nachfrageprognose",
+    "revenueProjection": "Einkommensprognose",
+    "busyPeriods": "Zeiten mit hoher Nachfrage",
+    "slowPeriods": "Zeiten mit geringer Nachfrage",
+    "recommendations": "Empfehlungen",
+    "trends": "Tendenzen"
   },
   "partners": {
     "title": "Partner",
@@ -761,12 +957,43 @@
     "today": "Heute",
     "week": "Woche",
     "month": "Monat",
-    "year": "Jahr"
+    "year": "Jahr",
+    "settings": "Kalendereinstellungen",
+    "view": {
+      "day": "Tag",
+      "week": "Woche",
+      "month": "Monat"
+    }
   },
   "modules": {
     "title": "Module",
     "enabled": "Aktiviert",
-    "disabled": "Deaktiviert"
+    "disabled": "Deaktiviert",
+    "currentPlan": "Aktueller Plan",
+    "changePlan": "Plan ändern",
+    "upgrade": "Verbessern",
+    "resourceUsage": "Ressourcennutzung",
+    "users": "Benutzer",
+    "clients": "Kunden",
+    "pianos": "Klaviere",
+    "invoicesMonth": "Rechnungen/Monat",
+    "storage": "Lagerung",
+    "coreModules": "Hauptmodule",
+    "coreModulesDesc": "Wesentliche Funktionen sind in allen Plänen enthalten",
+    "freeModules": "Kostenlose Module",
+    "freeModulesDesc": "Zusätzliche Funktionen ohne Kosten",
+    "premiumModules": "Premium-Module",
+    "premiumModulesDesc": "Erweiterte Funktionen für Profis",
+    "addons": "Zubehör",
+    "addonsDesc": "Optionale Erweiterungen für Ihr Unternehmen",
+    "alwaysActive": "Immer aktiv",
+    "active": "Vermögenswert",
+    "inactive": "Leerlauf",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "included": "Einschließlich",
+    "notIncluded": "Nicht im Lieferumfang enthalten",
+    "requiresPremium": "Erfordert einen Premium-Plan"
   },
   "team": {
     "title": "Teamverwaltung",
