@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Espacio para el botón flotante
+    paddingBottom: 72, // Espacio para el botón flotante (10% menos)
   },
 
   // Barra de alertas - Compacta y elegante
@@ -438,8 +438,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10, // Compacta: solo 10px vertical
+    paddingHorizontal: 11,
+    paddingVertical: 7, // Compacta: 10% menos
     ...Platform.select({
       web: {
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -460,35 +460,35 @@ const styles = StyleSheet.create({
   },
   alertText: {
     color: COLORS.white,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   alertLink: {
     color: COLORS.white,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
 
   // Contenido principal
   mainContent: {
-    padding: 16,
+    padding: 11,
   },
 
   // Sección superior
   topSection: {
-    gap: 16,
-    marginBottom: 16,
+    gap: 11,
+    marginBottom: 11,
   },
   topSectionDesktop: {
     flexDirection: 'row',
-    gap: 20,
+    gap: 14,
   },
 
   // Este Mes
   thisMonthContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 9,
+    padding: 11,
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -511,10 +511,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 11,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.textPrimary,
   },
@@ -547,12 +547,12 @@ const styles = StyleSheet.create({
   metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 9,
   },
   metricCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 9,
+    padding: 11,
     alignItems: 'center',
     width: 'calc(50% - 6px)', // 2 columnas con gap
     minWidth: 140,
@@ -575,22 +575,22 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   metricValue: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     color: COLORS.textPrimary,
-    marginTop: 8,
+    marginTop: 5,
   },
   metricLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.textSecondary,
-    marginTop: 4,
+    marginTop: 3,
   },
 
   // Predicciones IA
   aiPredictionsContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 9,
+    padding: 11,
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -613,54 +613,54 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   linkText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.primary,
   },
   predictionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    gap: 12,
+    gap: 7,
   },
   circularIndicator: {
     alignItems: 'center',
     flex: 1,
   },
   circle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 63,
+    height: 63,
+    borderRadius: 32,
     borderWidth: 3,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.white,
   },
   circleValue: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '700',
-    marginTop: 4,
+    marginTop: 3,
   },
   circleLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: COLORS.textSecondary,
-    marginTop: 8,
+    marginTop: 5,
     textAlign: 'center',
   },
 
   // Sección inferior
   bottomSection: {
-    gap: 16,
+    gap: 11,
   },
   bottomSectionDesktop: {
     flexDirection: 'row',
-    gap: 20,
+    gap: 14,
   },
 
   // Próximas citas
   appointmentsContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 9,
+    padding: 11,
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
   appointmentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 9,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
@@ -692,41 +692,41 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   appointmentTimeText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.textPrimary,
   },
   appointmentDateText: {
-    fontSize: 12,
+    fontSize: 10,
     color: COLORS.textSecondary,
   },
   appointmentDetails: {
     flex: 1,
   },
   appointmentTitle: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.textPrimary,
   },
   appointmentClient: {
-    fontSize: 13,
+    fontSize: 11,
     color: COLORS.textSecondary,
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 22,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    marginTop: 8,
+    marginTop: 7,
   },
 
   // Acciones rápidas
   quickActionsContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 9,
+    padding: 11,
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -746,18 +746,18 @@ const styles = StyleSheet.create({
   actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 12,
+    gap: 9,
+    marginTop: 7,
   },
   actionButton: {
     backgroundColor: COLORS.accent, // Terracota
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 9,
+    padding: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 'calc(50% - 6px)', // 2 columnas
-    minWidth: 140,
-    minHeight: 80,
+    width: 'calc(50% - 4.5px)', // 2 columnas
+    minWidth: 117,
+    minHeight: 63,
     ...Platform.select({
       web: {
         boxShadow: '0 2px 6px rgba(224, 122, 95, 0.3)',
@@ -776,20 +776,20 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: COLORS.white,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    marginTop: 8,
+    marginTop: 5,
     textAlign: 'center',
   },
 
   // Botón flotante IA
   floatingButton: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    bottom: 18,
+    right: 18,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: COLORS.accent, // Terracota
     justifyContent: 'center',
     alignItems: 'center',
