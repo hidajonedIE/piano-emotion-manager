@@ -27,27 +27,27 @@ const MENU_SECTIONS: MenuSection[] = [
   {
     title: 'MAIN',
     items: [
-      { id: 'inicio', label: 'Inicio', icon: 'home-outline', route: '/(tabs)' },
-      { id: 'agenda', label: 'Agenda', icon: 'calendar-outline', route: '/(tabs)/agenda' },
-      { id: 'clientes', label: 'Clientes', icon: 'people-outline', route: '/(tabs)/clients' },
-      { id: 'servicios', label: 'Servicios', icon: 'construct-outline', route: '/(tabs)/services' },
-      { id: 'facturacion', label: 'Facturación', icon: 'receipt-outline', route: '/invoices' },
-      { id: 'inventario', label: 'Inventario', icon: 'cube-outline', route: '/(tabs)/inventory' },
+      { id: 'inicio', label: 'Inicio', icon: 'home-outline', route: '/(drawer)' },
+      { id: 'agenda', label: 'Agenda', icon: 'calendar-outline', route: '/(drawer)/agenda' },
+      { id: 'clientes', label: 'Clientes', icon: 'people-outline', route: '/(drawer)/clients' },
+      { id: 'servicios', label: 'Servicios', icon: 'construct-outline', route: '/(drawer)/services' },
+      { id: 'facturacion', label: 'Facturación', icon: 'receipt-outline', route: '/(drawer)/invoices' },
+      { id: 'inventario', label: 'Inventario', icon: 'cube-outline', route: '/(drawer)/inventory' },
     ],
   },
   {
     title: 'COMERCIAL',
     items: [
-      { id: 'store', label: 'Store', icon: 'storefront-outline', route: '/service-catalog' },
-      { id: 'reportes', label: 'Reportes', icon: 'stats-chart-outline', route: '/stats' },
+      { id: 'store', label: 'Store', icon: 'storefront-outline', route: '/(drawer)/store' },
+      { id: 'reportes', label: 'Reportes', icon: 'stats-chart-outline', route: '/(drawer)/reports' },
     ],
   },
   {
     title: 'HERRAMIENTAS',
     items: [
-      { id: 'accesos', label: 'Accesos Rápidos', icon: 'flash-outline', route: '/dashboard' },
-      { id: 'herramientas', label: 'Herramientas Avanzadas', icon: 'settings-outline', route: '/settings' },
-      { id: 'configuracion', label: 'Configuración', icon: 'cog-outline', route: '/settings' },
+      { id: 'accesos', label: 'Accesos Rápidos', icon: 'flash-outline', route: '/(drawer)/quick-access' },
+      { id: 'herramientas', label: 'Herramientas Avanzadas', icon: 'construct-outline', route: '/(drawer)/advanced-tools' },
+      { id: 'configuracion', label: 'Configuración', icon: 'cog-outline', route: '/(drawer)/settings' },
     ],
   },
 ];
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   menuItemActive: {
-    backgroundColor: COLORS.gray,
+    // Solo línea azul + texto azul, sin fondo
   },
   menuItemPressed: {
     backgroundColor: '#f0f0f0',
