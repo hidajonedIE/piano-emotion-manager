@@ -3,7 +3,7 @@ import { View, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import CustomSidebar from './CustomSidebar';
 import CustomHeader from './CustomHeader';
 
-const SIDEBAR_WIDTH = 260;
+const SIDEBAR_WIDTH = 247; // 260 - 5% = 247
 const TABLET_BREAKPOINT = 768;
 
 interface ResponsiveLayoutProps {

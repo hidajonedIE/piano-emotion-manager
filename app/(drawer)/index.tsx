@@ -489,6 +489,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 9,
     padding: 11,
+    maxWidth: '95%',
+    alignSelf: 'center',
+    width: '100%',
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -554,8 +557,8 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     padding: 11,
     alignItems: 'center',
-    width: 'calc(50% - 6px)', // 2 columnas con gap
-    minWidth: 140,
+    width: 'calc(50% - 5.7px)', // 2 columnas con gap (5% menos)
+    minWidth: 133,
     borderWidth: 1,
     borderColor: '#e5e7eb',
     ...Platform.select({
@@ -591,6 +594,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 9,
     padding: 11,
+    maxWidth: '95%',
+    alignSelf: 'center',
+    width: '100%',
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -661,6 +667,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 9,
     padding: 11,
+    maxWidth: '95%',
+    alignSelf: 'center',
+    width: '100%',
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -727,6 +736,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 9,
     padding: 11,
+    maxWidth: '95%',
+    alignSelf: 'center',
+    width: '100%',
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
