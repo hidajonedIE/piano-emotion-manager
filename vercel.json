@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd portal && pnpm install && pnpm run build",
+  "buildCommand": "cd portal && pnpm install --prod=false && pnpm run build",
   "installCommand": "pnpm install",
   "outputDirectory": "portal/dist",
   "framework": null,
