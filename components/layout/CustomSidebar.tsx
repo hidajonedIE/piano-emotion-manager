@@ -68,8 +68,11 @@ export default function CustomSidebar() {
     <View style={styles.container}>
       {/* Logo/Brand */}
       <View style={styles.header}>
-        <Ionicons name="musical-notes" size={32} color={COLORS.primary} />
-        <Text style={styles.brandText}>Piano Emotion{'\n'}Manager</Text>
+        <Ionicons name="musical-note" size={36} color={COLORS.primary} />
+        <View>
+          <Text style={styles.brandText}>Piano Emotion</Text>
+          <Text style={styles.brandText}>Manager</Text>
+        </View>
       </View>
 
       {/* Menu Sections */}
@@ -119,17 +122,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: Platform.OS === 'web' ? 20 : 50,
+    padding: 16,
+    paddingTop: Platform.OS === 'web' ? 16 : 50,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    gap: 12,
   },
   brandText: {
-    marginLeft: 12,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: COLORS.primary,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   menuContainer: {
     flex: 1,
@@ -150,8 +153,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
     position: 'relative',
+    overflow: 'visible',
   },
   menuItemActive: {
     // Solo línea azul + texto azul, sin fondo
@@ -166,6 +171,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 4,
     backgroundColor: COLORS.primary,
+    zIndex: 10,
   },
   menuIcon: {
     marginRight: 12,
