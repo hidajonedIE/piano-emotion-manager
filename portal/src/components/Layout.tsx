@@ -42,3 +42,4 @@ export default function Layout({ children }: LayoutProps) {
     </AppLayout>
   );
 }
+// Deployment trigger: Mon Jan 19 07:17:38 EST 2026
