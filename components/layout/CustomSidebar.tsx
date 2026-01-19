@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Platform, Image } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -68,7 +68,11 @@ export default function CustomSidebar() {
     <View style={styles.container}>
       {/* Logo/Brand */}
       <View style={styles.header}>
-        <Ionicons name="musical-note" size={36} color={COLORS.primary} />
+        <Image 
+          source={require('@/assets/images/icon.png')} 
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <View>
           <Text style={styles.brandText}>Piano Emotion</Text>
           <Text style={styles.brandText}>Manager</Text>
@@ -127,6 +131,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     gap: 12,
+  },
+  logo: {
+    width: 40,
+    height: 40,
   },
   brandText: {
     fontSize: 18,
