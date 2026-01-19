@@ -506,7 +506,8 @@ const styles = StyleSheet.create({
     }),
   },
   thisMonthDesktop: {
-    flex: 1.4,
+    flex: 1,
+    alignSelf: 'stretch',
   },
 
   // Header de sección
@@ -612,6 +613,7 @@ const styles = StyleSheet.create({
   },
   aiPredictionsDesktop: {
     flex: 1,
+    alignSelf: 'stretch',
   },
   aiHeaderLeft: {
     flexDirection: 'row',
@@ -686,6 +688,7 @@ const styles = StyleSheet.create({
   },
   appointmentsDesktop: {
     flex: 1,
+    alignSelf: 'stretch',
   },
   appointmentRow: {
     flexDirection: 'row',
@@ -755,6 +758,7 @@ const styles = StyleSheet.create({
   },
   quickActionsDesktop: {
     flex: 1,
+    alignSelf: 'stretch',
   },
   actionsGrid: {
     flexDirection: 'row',
