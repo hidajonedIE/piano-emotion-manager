@@ -1,3 +1,4 @@
+// Force recompile - v2
 import React from 'react';
 import { Calendar, DollarSign, Wrench, Users, TrendingUp, AlertTriangle, Brain, X, HelpCircle, Bell, Settings, User, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
