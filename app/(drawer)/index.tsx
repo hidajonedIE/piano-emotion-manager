@@ -634,6 +634,7 @@ const styles = StyleSheet.create({
   },
   circularIndicator: {
     alignItems: 'center',
+    justifyContent: 'center',
     flex: 1,
   },
   circle: {
