@@ -15,7 +15,7 @@ export const DashboardHeader = memo(function DashboardHeader() {
 
   return (
     <LinearGradient
-      colors={['#7A8B99', '#8E9DAA', '#A2B1BD']}
+      colors={['#003a8c', '#004ba8', '#005bc4']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={[styles.headerGradient, isMobile && styles.headerGradientMobile]}
