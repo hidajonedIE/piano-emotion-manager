@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   periodButtonActive: {
-    backgroundColor: '#2D5A27',
+    backgroundColor: '#003a8c',
   },
   periodButtonText: {
     fontSize: 13,
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   },
   kpiCardLarge: {
     minWidth: '100%',
-    backgroundColor: '#2D5A27',
+    backgroundColor: '#003a8c',
   },
   kpiLabel: {
     fontSize: 12,
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   kpiValue: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#2D5A27',
+    color: '#003a8c',
   },
   kpiValueLarge: {
     fontSize: 32,
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     width: '100%',
-    backgroundColor: '#2D5A27',
+    backgroundColor: '#003a8c',
     borderRadius: 4,
     minHeight: 4,
   },
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
   },
   statBar: {
     height: '100%',
-    backgroundColor: '#2D5A27',
+    backgroundColor: '#003a8c',
     borderRadius: 10,
     minWidth: 4,
   },
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#2D5A27',
+    backgroundColor: '#003a8c',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
   topClientRevenue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#2D5A27',
+    color: '#003a8c',
   },
   actionsRow: {
     flexDirection: 'row',
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#2D5A27',
+    backgroundColor: '#003a8c',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
   actionButtonSecondary: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#2D5A27',
+    borderColor: '#003a8c',
   },
   actionButtonText: {
     color: '#fff',
@@ -614,6 +614,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actionButtonTextSecondary: {
-    color: '#2D5A27',
+    color: '#003a8c',
   },
 });
