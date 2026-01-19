@@ -14,6 +14,18 @@ import Citas from '@/pages/Citas';
 import NuevaCita from '@/pages/NuevaCita';
 import Mensajes from '@/pages/Mensajes';
 
+// Nuevas páginas con diseño actualizado
+import DashboardPage from '@/pages/DashboardPage';
+import ClientesPage from '@/pages/ClientesPage';
+import ServiciosPage from '@/pages/ServiciosPage';
+import InventarioPage from '@/pages/InventarioPage';
+import FacturacionPage from '@/pages/FacturacionPage';
+import StorePage from '@/pages/StorePage';
+import AccesosRapidosPage from '@/pages/AccesosRapidosPage';
+import HerramientasPage from '@/pages/HerramientasPage';
+import AgendaPage from '@/pages/AgendaPage';
+import ConfiguracionPage from '@/pages/ConfiguracionPage';
+
 // Componente para rutas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -75,15 +87,23 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route index element={<DashboardPage />} />
         <Route path="pianos" element={<Pianos />} />
         <Route path="pianos/:id" element={<PianoDetail />} />
-        <Route path="servicios" element={<Servicios />} />
+        <Route path="servicios" element={<ServiciosPage />} />
         <Route path="servicios/:id" element={<ServicioDetail />} />
-        <Route path="facturas" element={<Facturas />} />
+        <Route path="facturas" element={<FacturacionPage />} />
+        <Route path="facturacion" element={<FacturacionPage />} />
         <Route path="citas" element={<Citas />} />
+        <Route path="agenda" element={<AgendaPage />} />
         <Route path="citas/nueva" element={<NuevaCita />} />
         <Route path="mensajes" element={<Mensajes />} />
+        <Route path="clientes" element={<ClientesPage />} />
+        <Route path="inventario" element={<InventarioPage />} />
+        <Route path="store" element={<StorePage />} />
+        <Route path="accesos-rapidos" element={<AccesosRapidosPage />} />
+        <Route path="herramientas" element={<HerramientasPage />} />
+        <Route path="configuracion" element={<ConfiguracionPage />} />
       </Route>
 
       {/* Ruta por defecto */}
