@@ -478,6 +478,7 @@ const styles = StyleSheet.create({
   topSection: {
     gap: 11,
     marginBottom: 11,
+    flexDirection: 'column',
   },
   topSectionDesktop: {
     flexDirection: 'row',
@@ -659,6 +660,7 @@ const styles = StyleSheet.create({
   // Sección inferior
   bottomSection: {
     gap: 11,
+    flexDirection: 'column',
   },
   bottomSectionDesktop: {
     flexDirection: 'row',
