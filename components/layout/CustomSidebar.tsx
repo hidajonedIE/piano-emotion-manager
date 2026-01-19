@@ -16,6 +16,7 @@ interface MenuItem {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   route: string;
+  useArkhip?: boolean;
 }
 
 interface MenuSection {
@@ -27,7 +28,7 @@ const MENU_SECTIONS: MenuSection[] = [
   {
     title: 'MAIN',
     items: [
-      { id: 'inicio', label: 'Inicio', icon: 'home-outline', route: '/(drawer)' },
+      { id: 'inicio', label: 'Inicio', icon: 'home-outline', route: '/(drawer)', useArkhip: true },
       { id: 'agenda', label: 'Agenda', icon: 'calendar-outline', route: '/(drawer)/agenda' },
       { id: 'clientes', label: 'Clientes', icon: 'people-outline', route: '/(drawer)/clients' },
       { id: 'servicios', label: 'Servicios', icon: 'construct-outline', route: '/(drawer)/services' },
@@ -91,18 +92,22 @@ export default function CustomSidebar() {
                   key={item.id}
                   style={({ pressed }) => [
                     styles.menuItem,
-                    active && styles.menuItemActive,
                     pressed && styles.menuItemPressed,
                   ]}
                   onPress={() => handleNavigation(item.route)}
                 >
+                  {active && <View style={styles.activeIndicator} />}
                   <Ionicons
                     name={item.icon}
                     size={20}
                     color={active ? COLORS.primary : COLORS.textGray}
                     style={styles.menuIcon}
                   />
-                  <Text style={[styles.menuLabel, active && styles.menuLabelActive]}>
+                  <Text style={[
+                    styles.menuLabel, 
+                    active && styles.menuLabelActive,
+                    item.useArkhip && { fontFamily: 'Arkhip' }
+                  ]}>
                     {item.label}
                   </Text>
                 </Pressable>
@@ -132,14 +137,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   logo: {
-    width: 36,
-    height: 36,
+    width: 48,
+    height: 48,
+    tintColor: COLORS.primary, // Azul cobalto
   },
   brandText: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.primary,
     lineHeight: 22,
+    fontFamily: 'Arkhip',
   },
   menuContainer: {
     flex: 1,
@@ -163,12 +170,19 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     position: 'relative',
-    overflow: 'visible',
   },
-  menuItemActive: {
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.primary,
-    paddingLeft: 16, // Compensar el borde
+  activeIndicator: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: COLORS.primary,
+    ...Platform.select({
+      web: {
+        zIndex: 10,
+      },
+    }),
   },
   menuItemPressed: {
     backgroundColor: '#f0f0f0',
