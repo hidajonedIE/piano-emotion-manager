@@ -636,6 +636,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    gap: 4,
   },
   circle: {
     width: 63,
@@ -645,6 +646,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.white,
+    flexDirection: 'column',
   },
   circleValue: {
     fontSize: 13,
@@ -706,6 +708,8 @@ const styles = StyleSheet.create({
   appointmentTime: {
     width: 70,
     marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   appointmentTimeText: {
     fontSize: 14,
