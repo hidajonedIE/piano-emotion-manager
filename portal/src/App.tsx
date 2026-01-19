@@ -15,7 +15,7 @@ import NuevaCita from '@/pages/NuevaCita';
 import Mensajes from '@/pages/Mensajes';
 
 // Nuevas páginas con diseño actualizado
-import DashboardPage from '@/pages/DashboardPage';
+import Home from '@/pages/Home';
 import ClientesPage from '@/pages/ClientesPage';
 import ServiciosPage from '@/pages/ServiciosPage';
 import InventarioPage from '@/pages/InventarioPage';
@@ -87,7 +87,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
+        <Route index element={<Home />} />
         <Route path="pianos" element={<Pianos />} />
         <Route path="pianos/:id" element={<PianoDetail />} />
         <Route path="servicios" element={<ServiciosPage />} />
