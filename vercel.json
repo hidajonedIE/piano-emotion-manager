@@ -1,7 +1,7 @@
 {
-  "buildCommand": "pnpm run build && npx expo export --platform web --output-dir web-build",
+  "buildCommand": "cd portal && pnpm run build",
   "installCommand": "pnpm install",
-  "outputDirectory": "web-build",
+  "outputDirectory": "portal/dist",
   "framework": null,
   "functions": {
     "api/**/*.ts": {
