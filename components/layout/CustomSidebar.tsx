@@ -69,7 +69,7 @@ export default function CustomSidebar() {
       {/* Logo/Brand */}
       <View style={styles.header}>
         <Image 
-          source={require('@/assets/images/icon.png')} 
+          source={require('../../assets/images/favicon.png')} 
           style={styles.logo}
           resizeMode="contain"
         />
@@ -96,7 +96,6 @@ export default function CustomSidebar() {
                   ]}
                   onPress={() => handleNavigation(item.route)}
                 >
-                  {active && <View style={styles.activeIndicator} />}
                   <Ionicons
                     name={item.icon}
                     size={20}
@@ -133,8 +132,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
   },
   brandText: {
     fontSize: 18,
@@ -167,20 +166,14 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   menuItemActive: {
-    // Solo línea azul + texto azul, sin fondo
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+    paddingLeft: 16, // Compensar el borde
   },
   menuItemPressed: {
     backgroundColor: '#f0f0f0',
   },
-  activeIndicator: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    backgroundColor: COLORS.primary,
-    zIndex: 10,
-  },
+
   menuIcon: {
     marginRight: 12,
   },
