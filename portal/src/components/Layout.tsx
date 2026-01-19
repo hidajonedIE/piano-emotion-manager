@@ -1,10 +1,6 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import AppLayout from './AppLayout';
-
-interface LayoutProps {
-  children: React.ReactNode;
-}
 
 // Mapeo de rutas a títulos de página
 const routeTitles: Record<string, string> = {
@@ -24,7 +20,7 @@ const routeTitles: Record<string, string> = {
   '/configuracion': 'Configuración',
 };
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout() {
   const location = useLocation();
   
   // Obtener el título basado en la ruta actual
@@ -38,8 +34,7 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <AppLayout title={title}>
-      {children}
+      <Outlet />
     </AppLayout>
   );
 }
-// Deployment trigger: Mon Jan 19 07:17:38 EST 2026
