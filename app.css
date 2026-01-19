@@ -1,3 +1,11 @@
+/* Definir fuentes personalizadas */
+@font-face {
+  font-family: 'Arkhip';
+  src: url('/fonts/Arkhip_font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* Estilos globales para prevenir selección de texto no deseada */
 * {
   -webkit-user-select: none;

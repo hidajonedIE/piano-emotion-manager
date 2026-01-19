@@ -3,6 +3,7 @@ import { Platform, View, ActivityIndicator, StyleSheet, Text } from "react-nativ
 import { useRouter, usePathname } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useAuth, useUser } from "@clerk/clerk-expo";
+import { DEMO_MODE } from "@/DEMO_MODE";
 
 type AuthGuardProps = {
   children: React.ReactNode;
@@ -26,6 +27,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const { user } = useUser();
 
   useEffect(() => {
+    // En modo demo, permitir acceso sin autenticación
+    if (DEMO_MODE) return;
+
     // No hacer nada mientras carga
     if (!isLoaded) return;
 
