@@ -1,10 +1,22 @@
 import React from 'react';
-import AppLayout from '@/components/AppLayout';
 import { Calendar, DollarSign, Wrench, Users, TrendingUp, AlertTriangle } from 'lucide-react';
+import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
+import FloatingAIButton from '@/components/FloatingAIButton';
 
 export default function Dashboard() {
   return (
-    <AppLayout title="Dashboard">
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Contenido principal */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <Header title="Dashboard" />
+
+        {/* Contenido de la página */}
+        <main className="flex-1 p-8">
       {/* Banner de Alertas */}
       <div className="bg-red-500 text-white px-6 py-4 rounded-lg mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -185,7 +197,12 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </AppLayout>
+        </main>
+      </div>
+
+      {/* Botón flotante de IA */}
+      <FloatingAIButton />
+    </div>
   );
 }
 
