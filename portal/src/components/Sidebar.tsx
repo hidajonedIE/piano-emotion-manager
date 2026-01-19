@@ -11,7 +11,6 @@ import {
   BarChart,
   Zap,
   Settings,
-  Tool
 } from 'lucide-react';
 
 const navigation = {
@@ -29,7 +28,7 @@ const navigation = {
   ],
   herramientas: [
     { name: 'Accesos Rápidos', href: '/accesos-rapidos', icon: Zap },
-    { name: 'Herramientas Avanzadas', href: '/herramientas', icon: Tool },
+    { name: 'Herramientas Avanzadas', href: '/herramientas', icon: Wrench },
     { name: 'Configuración', href: '/configuracion', icon: Settings },
   ],
 };
