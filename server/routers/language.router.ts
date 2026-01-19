@@ -17,7 +17,7 @@ import { TRPCError } from "@trpc/server";
  * Idiomas soportados por la aplicación
  * Debe coincidir con los idiomas en /locales
  */
-export const SUPPORTED_LANGUAGES = ['es', 'pt', 'it', 'fr', 'de', 'da', 'en'] as const;
+export const SUPPORTED_LANGUAGES = ['es', 'pt', 'it', 'fr', 'de', 'da', 'en', 'no', 'sv'] as const;
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
 
 /**
@@ -31,6 +31,8 @@ export const LANGUAGE_INFO: Record<SupportedLanguage, { name: string; nativeName
   de: { name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
   da: { name: 'Danish', nativeName: 'Dansk', flag: '🇩🇰' },
   en: { name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  no: { name: 'Norwegian', nativeName: 'Norsk', flag: '🇳🇴' },
+  sv: { name: 'Swedish', nativeName: 'Svenska', flag: '🇸🇪' },
 };
 
 /**
@@ -293,7 +295,7 @@ export const languageRouter = router({
    * Actualizar idiomas soportados por el partner
    * Solo para administradores
    */
-  updatePartnerSupportedLanguages: adminProcedure
+  updatePartnerSupportedLanguages: protectedProcedure
     .input(z.object({ 
       languages: languageArraySchema,
       enableAll: z.boolean().optional(),

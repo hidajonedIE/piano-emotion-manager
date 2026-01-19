@@ -1053,7 +1053,7 @@ export default function SettingsIndexScreen() {
               <View style={styles.settingContent}>
                 <ThemedText style={styles.settingLabel}>Idioma</ThemedText>
               </View>
-              <LanguageSelector />
+              <Pressable onPress={() => router.push("/settings/languages")}><ThemedText>Manage Languages</ThemedText></Pressable>
             </View>
           </View>
         </Accordion>
