@@ -43,6 +43,13 @@ const DEFAULT_COMPRESSION: CompressionOptions = {
 
 let s3Client: S3Client | null = null;
 
+// Type assertion para asegurar que el cliente tiene el método send
+type S3ClientWithSend = S3Client & {
+  send<InputType extends any, OutputType extends any>(
+    command: any
+  ): Promise<OutputType>;
+};
+
 function getR2Config(): R2Config {
   const config: R2Config = {
     accountId: ENV.r2AccountId,
@@ -61,7 +68,7 @@ function getR2Config(): R2Config {
   return config;
 }
 
-function getS3Client(): S3Client {
+function getS3Client(): S3ClientWithSend {
   if (s3Client) return s3Client;
   
   const config = getR2Config();
@@ -75,7 +82,7 @@ function getS3Client(): S3Client {
     },
   });
   
-  return s3Client;
+  return s3Client as S3ClientWithSend;
 }
 
 /**
