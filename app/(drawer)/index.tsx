@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     }),
   },
   thisMonthDesktop: {
-    flex: 2,
+    flex: 1.4,
   },
 
   // Header de sección
@@ -626,6 +626,7 @@ const styles = StyleSheet.create({
   predictionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
     gap: 7,
   },
   circularIndicator: {
