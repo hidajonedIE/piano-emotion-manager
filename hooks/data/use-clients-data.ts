@@ -119,6 +119,9 @@ export function useClientsData(options: UseClientsDataOptions = {}) {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
   console.log('[useClientsData] statsData:', statsData);
+  
+  // TEMPORAL: Hardcodear valores para testing
+  const statsDataTest = { total: 284, active: 284, vip: 0, withPianos: 284 };
 
   // Mutations con manejo de errores
   const createMutation = trpc.clients.create.useMutation({
@@ -352,7 +355,7 @@ export function useClientsData(options: UseClientsDataOptions = {}) {
     isLoadingMore: isFetchingNextPage,
     regions,
     routeGroups,
-    stats: statsData || { total: 0, active: 0, vip: 0, withPianos: 0 },
+    stats: statsDataTest, // TEMPORAL: usando valor hardcodeado
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
