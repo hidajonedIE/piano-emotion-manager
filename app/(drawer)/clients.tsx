@@ -12,7 +12,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
