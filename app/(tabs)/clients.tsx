@@ -49,6 +49,7 @@ export default function ClientsScreen() {
     isLoadingMore,
     regions,
     routeGroups,
+    stats,
   } = useClientsData({
     search: debouncedSearch,
     region: selectedRegion,
@@ -56,7 +57,7 @@ export default function ClientsScreen() {
     pageSize: 30,
   });
 
-  // Obtener pianos para estadísticas
+  // Obtener pianos para mostrar el conteo en cada tarjeta
   const { pianos } = usePianosData();
 
   const accent = useThemeColor({}, 'accent');
@@ -65,22 +66,6 @@ export default function ClientsScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
-
-  // Estadísticas completas
-  const stats = useMemo(() => {
-    const active = clients.filter(c => c.status === 'active').length;
-    const vip = clients.filter(c => c.isVIP).length;
-    const withPianos = clients.filter(c => 
-      pianos.some(p => p.clientId === c.id)
-    ).length;
-    
-    return { 
-      total: totalClients, 
-      active, 
-      vip, 
-      withPianos 
-    };
-  }, [clients, pianos, totalClients]);
 
   const handleClientPress = useCallback((client: Client) => {
     router.push({
@@ -191,8 +176,8 @@ export default function ClientsScreen() {
             <SearchBar
               value={search}
               onChangeText={setSearch}
-              placeholder="Buscar clientes..."
-              accessibilityLabel="Buscar clientes"
+              placeholder={t('clients.search')}
+              accessibilityLabel={t('clients.search')}
             />
           </View>
           <Pressable

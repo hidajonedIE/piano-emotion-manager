@@ -474,4 +474,79 @@ export const clientsRouter = router({
         .where(and(...whereClauses))
         .limit(10);
     }),
+  
+  getStats: orgProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return { total: 0, active: 0, vip: 0, withPianos: 0 };
+
+    const { pianos } = await import("../../drizzle/schema.js");
+
+    // Total de clientes
+    const [{ total }] = await database
+      .select({ total: count() })
+      .from(clients)
+      .where(
+        filterByPartnerAndOrganization(
+          clients,
+          ctx.partnerId,
+          ctx.orgContext,
+          "clients"
+        )
+      );
+
+    // Clientes activos (status = 'active')
+    const [{ active }] = await database
+      .select({ active: count() })
+      .from(clients)
+      .where(
+        and(
+          filterByPartnerAndOrganization(
+            clients,
+            ctx.partnerId,
+            ctx.orgContext,
+            "clients"
+          ),
+          eq(clients.status, 'active')
+        )
+      );
+
+    // Clientes VIP (isVIP = true o 1)
+    const [{ vip }] = await database
+      .select({ vip: count() })
+      .from(clients)
+      .where(
+        and(
+          filterByPartnerAndOrganization(
+            clients,
+            ctx.partnerId,
+            ctx.orgContext,
+            "clients"
+          ),
+          eq(clients.isVIP, 1)
+        )
+      );
+
+    // Clientes con pianos (DISTINCT clientId en tabla pianos)
+    const [{ withPianos }] = await database
+      .select({ withPianos: sql<number>`COUNT(DISTINCT ${pianos.clientId})` })
+      .from(pianos)
+      .where(
+        and(
+          filterByPartnerAndOrganization(
+            pianos,
+            ctx.partnerId,
+            ctx.orgContext,
+            "pianos"
+          ),
+          isNotNull(pianos.clientId)
+        )
+      );
+
+    return {
+      total: Number(total),
+      active: Number(active),
+      vip: Number(vip),
+      withPianos: Number(withPianos)
+    };
+  }),
 });

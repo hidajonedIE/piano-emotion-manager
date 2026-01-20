@@ -114,6 +114,11 @@ export function useClientsData(options: UseClientsDataOptions = {}) {
     staleTime: 60 * 60 * 1000, // 1 hora
   });
 
+  // Query para estadísticas globales
+  const { data: statsData } = trpc.clients.getStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
   // Mutations con manejo de errores
   const createMutation = trpc.clients.create.useMutation({
     onSuccess: () => {
@@ -346,6 +351,7 @@ export function useClientsData(options: UseClientsDataOptions = {}) {
     isLoadingMore: isFetchingNextPage,
     regions,
     routeGroups,
+    stats: statsData || { total: 0, active: 0, vip: 0, withPianos: 0 },
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
