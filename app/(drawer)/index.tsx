@@ -625,6 +625,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     gap: 7,
+    minHeight: 120,
+    paddingVertical: 16,
   },
   circularIndicator: {
     alignItems: 'center',
@@ -692,7 +694,8 @@ const styles = StyleSheet.create({
   appointmentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 9,
+    paddingVertical: 16,
+    minHeight: 70,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
