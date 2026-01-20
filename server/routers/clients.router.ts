@@ -189,8 +189,12 @@ export const clientsRouter = router({
       console.log('[clients.list] Using partnerId:', partnerId, 'for filter');
       
       try {
+        // Obtener clientes con conteo de pianos
         const items = await withQueue(() => database
-          .select()
+          .select({
+            ...clients,
+            pianoCount: sql<number>`(SELECT COUNT(*) FROM pianos WHERE pianos.clientId = clients.id)`,
+          })
           .from(clients)
           .where(and(...whereClauses))
           .orderBy(orderByClause)

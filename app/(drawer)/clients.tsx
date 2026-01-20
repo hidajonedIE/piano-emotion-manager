@@ -43,7 +43,6 @@ export default function ClientsScreen() {
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
   const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData({ pageSize: 50 });
-  const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -107,16 +106,15 @@ export default function ClientsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Client }) => {
-      const clientPianos = pianos.filter(p => p.clientId === item.id);
       return (
         <ClientCard
           client={item}
-          pianoCount={clientPianos.length}
+          pianoCount={(item as any).pianoCount || 0}
           onPress={() => handleClientPress(item)}
         />
       );
     },
-    [pianos]
+    []
   );
 
   // Mostrar animación de carga inicial
