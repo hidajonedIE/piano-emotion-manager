@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
+import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { PianoCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
-import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
 import { ThemedText } from '@/components/themed-text';
 import { useClientsData, usePianosData } from '@/hooks/data';
@@ -21,6 +21,7 @@ type FilterType = 'all' | PianoCategory;
 export default function PianosScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { setHeaderConfig } = useHeader();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
@@ -47,6 +48,16 @@ export default function PianosScreen() {
   const { getClient } = useClientsData();
 
   const accent = useThemeColor({}, 'accent');
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: t('navigation.pianos'),
+      subtitle: `${totalPianos} ${totalPianos === 1 ? 'piano' : 'pianos'}`,
+      icon: 'pianokeys',
+      showBackButton: false,
+    });
+  }, [totalPianos, t, setHeaderConfig]);
   const textSecondary = useThemeColor({}, 'textSecondary');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -118,11 +129,6 @@ export default function PianosScreen() {
         end={{ x: 0.5, y: 1 }}
         style={styles.container}
       >
-        <ScreenHeader 
-          title={t('navigation.pianos')} 
-          icon="pianokeys"
-          showBackButton={false}
-        />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="pianos" />
         </View>
@@ -137,12 +143,7 @@ export default function PianosScreen() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <ScreenHeader 
-        title={t('navigation.pianos')} 
-        subtitle={`${totalPianos} ${totalPianos === 1 ? 'piano' : 'pianos'}`}
-        icon="pianokeys"
-        showBackButton={false}
-      />
+
 
       <View style={styles.searchContainer}>
         <SearchBar

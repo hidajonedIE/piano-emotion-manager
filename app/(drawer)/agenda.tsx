@@ -206,42 +206,7 @@ export default function AgendaScreen() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <ScreenHeader 
-        title="Agenda" 
-        subtitle={`${pendingCount} ${pendingCount === 1 ? 'cita pendiente' : 'citas pendientes'}`}
-        icon="calendar"
-        showBackButton={true}
-        rightAction={
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/settings/calendar-settings' as any);
-              }}
-              style={[styles.toggleButton, { backgroundColor: `${accent}15` }]}
-            >
-              <IconSymbol
-                name="gearshape.fill"
-                size={20}
-                color={accent}
-              />
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setShowCalendar(!showCalendar);
-              }}
-              style={[styles.toggleButton, { backgroundColor: `${accent}15` }]}
-            >
-              <IconSymbol
-                name={showCalendar ? 'list.bullet' : 'calendar'}
-                size={20}
-                color={accent}
-              />
-            </Pressable>
-          </View>
-        }
-      />
+
 
       <ScrollView
         style={styles.scrollView}
