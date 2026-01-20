@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { useCallback, useState, useMemo } from 'react';
+import { FlatList, RefreshControl, StyleSheet, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ClientCard, EmptyState } from '@/components/cards';
@@ -8,15 +8,23 @@ import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
-import { useClientsData } from '@/hooks/data';
+import { useClientsData, usePianosData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
-import { Spacing } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
 import { Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { BorderRadius } from '@/constants/theme';
 import { useDebounce } from '@/hooks/use-debounce';
+
+// Paleta profesional
+const COLORS = {
+  primary: '#003a8c',
+  surface: '#f8f9fa',
+  border: '#e5e7eb',
+  textPrimary: '#1a1a1a',
+  textSecondary: '#6b7280',
+};
 
 export default function ClientsScreen() {
   const router = useRouter();
@@ -48,12 +56,31 @@ export default function ClientsScreen() {
     pageSize: 30,
   });
 
+  // Obtener pianos para estadísticas
+  const { pianos } = usePianosData();
+
   const accent = useThemeColor({}, 'accent');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
+
+  // Estadísticas completas
+  const stats = useMemo(() => {
+    const active = clients.filter(c => c.status === 'active').length;
+    const vip = clients.filter(c => c.isVIP).length;
+    const withPianos = clients.filter(c => 
+      pianos.some(p => p.clientId === c.id)
+    ).length;
+    
+    return { 
+      total: totalClients, 
+      active, 
+      vip, 
+      withPianos 
+    };
+  }, [clients, pianos, totalClients]);
 
   const handleClientPress = useCallback((client: Client) => {
     router.push({
@@ -81,14 +108,17 @@ export default function ClientsScreen() {
   }, [hasMore, isLoadingMore, loadMore]);
 
   const renderItem = useCallback(
-    ({ item }: { item: Client }) => (
-      <ClientCard
-        client={item}
-        pianoCount={0} // Se puede optimizar después con un endpoint específico
-        onPress={() => handleClientPress(item)}
-      />
-    ),
-    [handleClientPress]
+    ({ item }: { item: Client }) => {
+      const clientPianos = pianos.filter(p => p.clientId === item.id);
+      return (
+        <ClientCard
+          client={item}
+          pianoCount={clientPianos.length}
+          onPress={() => handleClientPress(item)}
+        />
+      );
+    },
+    [handleClientPress, pianos]
   );
 
   const renderFooter = useCallback(() => {
@@ -111,7 +141,8 @@ export default function ClientsScreen() {
       >
         <ScreenHeader 
           title={t('navigation.clients')} 
-          icon="person.2.fill" showBackButton={true}
+          icon="person.2.fill" 
+          showBackButton={true}
         />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="clients" />
@@ -129,9 +160,30 @@ export default function ClientsScreen() {
     >
       <ScreenHeader 
         title={t('navigation.clients')} 
-        subtitle={`${totalClients} ${totalClients === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`}
-        icon="person.2.fill" showBackButton={true}
+        subtitle={`${totalClients} ${totalClients === 1 ? 'cliente' : 'clientes'}`}
+        icon="person.2.fill" 
+        showBackButton={true}
       />
+
+      {/* Estadísticas minimalistas */}
+      <View style={styles.statsSection}>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.total}</Text>
+          <Text style={styles.statLabel}>TOTAL</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.active}</Text>
+          <Text style={styles.statLabel}>ACTIVOS</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.vip}</Text>
+          <Text style={styles.statLabel}>VIP</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.withPianos}</Text>
+          <Text style={styles.statLabel}>CON PIANOS</Text>
+        </View>
+      </View>
 
       <View style={styles.searchContainer}>
         <View style={styles.searchRow}>
@@ -139,8 +191,8 @@ export default function ClientsScreen() {
             <SearchBar
               value={search}
               onChangeText={setSearch}
-              placeholder={t('common.search') + '...'}
-              accessibilityLabel={t('common.search') + ' ' + t('navigation.clients').toLowerCase()}
+              placeholder="Buscar clientes..."
+              accessibilityLabel="Buscar clientes"
             />
           </View>
           <Pressable
@@ -210,12 +262,12 @@ export default function ClientsScreen() {
 
       {clients.length === 0 ? (
         <EmptyState
-          icon="person.2.fill" showBackButton={true}
-          title={search ? t('common.noResults') : t('clients.noClients')}
+          icon="person.2.fill"
+          title={search ? 'No se encontraron resultados' : 'No hay clientes'}
           message={
             search
-              ? t('clients.noClients')
-              : t('clients.addFirstClient')
+              ? 'Intenta con otros términos de búsqueda'
+              : 'Añade tu primer cliente para comenzar'
           }
         />
       ) : (
@@ -233,7 +285,7 @@ export default function ClientsScreen() {
               refreshing={refreshing}
               onRefresh={handleRefresh}
               tintColor="#7A8B99"
-              title={t('common.loading')}
+              title="Cargando..."
               titleColor="#7A8B99"
             />
           }
@@ -242,8 +294,8 @@ export default function ClientsScreen() {
 
       <FAB 
         onPress={handleAddClient} 
-        accessibilityLabel={t('clients.newClient')}
-        accessibilityHint={t('clients.addFirstClient')}
+        accessibilityLabel="Añadir nuevo cliente"
+        accessibilityHint="Crear un nuevo cliente"
       />
     </LinearGradient>
   );
@@ -252,6 +304,37 @@ export default function ClientsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  // Estadísticas
+  statsSection: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: Spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 70,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   searchContainer: {
     paddingHorizontal: Spacing.md,

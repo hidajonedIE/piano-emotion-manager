@@ -7,7 +7,7 @@ import { Platform } from "react-native";
 
 // Colores principales
 const primaryDark = "#1A1A2E"; // Azul oscuro profundo (teclas negras)
-const accent = "#C9A227"; // Dorado/Bronce (cuerdas del piano)
+const accent = "#e07a5f"; // Terracota (diseño profesional moderno)
 const success = "#10B981"; // Verde para estados positivos
 const warning = "#F59E0B"; // Ámbar para alertas
 const error = "#EF4444"; // Rojo para errores
