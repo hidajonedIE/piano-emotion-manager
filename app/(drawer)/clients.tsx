@@ -134,14 +134,8 @@ export default function ClientsScreen() {
   }, [clients, search, selectedProvince, selectedCity, selectedRouteGroup]);
   
   // Calcular paginación
-  const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
-  console.log('DEBUG PAGINACION:', { 
-    totalClients: filteredClients.length, 
-    itemsPerPage: ITEMS_PER_PAGE, 
-    totalPages, 
-    currentPage,
-    showPagination: totalPages > 1 
-  });
+  // Usar stats.total para el cálculo total (sin filtros) ya que filteredClients puede estar limitado por el backend
+  const totalPages = Math.ceil((stats?.total || 0) / ITEMS_PER_PAGE);
   const paginatedClients = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
