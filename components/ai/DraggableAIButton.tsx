@@ -21,12 +21,12 @@ interface DraggableAIButtonProps {
   onPress: () => void;
 }
 
-const BUTTON_SIZE = 40;
+const BUTTON_SIZE = 50;
 const MARGIN = 10;
 
 export function DraggableAIButton({ onPress }: DraggableAIButtonProps) {
   const { preferences, setAIIconPosition } = useDashboardPreferences();
-  const accent = useThemeColor({}, 'accent');
+  const accent = '#e07a5f'; // Terracota fijo
   
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
   const [isDragging, setIsDragging] = useState(false);
@@ -162,7 +162,7 @@ export function DraggableAIButton({ onPress }: DraggableAIButtonProps) {
       {...panResponder.panHandlers}
     >
       <View style={styles.button}>
-        <IconSymbol name="brain" size={22} color="#FFFFFF" />
+        <IconSymbol name="brain" size={28} color="#FFFFFF" />
       </View>
       {isDragging && (
         <View style={[styles.dragIndicator, { borderColor: accent }]} />

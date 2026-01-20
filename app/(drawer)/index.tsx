@@ -303,13 +303,7 @@ export default function DashboardScreen() {
         </View>
       </ScrollView>
 
-      {/* 4. BOTÓN FLOTANTE IA */}
-      <Pressable
-        style={styles.floatingButton}
-        onPress={() => router.push('/ai-assistant')}
-      >
-        <Ionicons name="bulb" size={28} color={COLORS.white} />
-      </Pressable>
+
     </View>
   );
 }
@@ -806,28 +800,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Botón flotante IA
-  floatingButton: {
-    position: 'absolute',
-    bottom: 18,
-    right: 18,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: COLORS.accent, // Terracota
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Platform.select({
-      web: {
-        boxShadow: '0 4px 12px rgba(224, 122, 95, 0.4)',
-      },
-      default: {
-        shadowColor: COLORS.accent,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
-        elevation: 8,
-      },
-    }),
-  },
+
 });
