@@ -90,7 +90,8 @@
     "deleteConfirm": "Er du sikker på, at du vil slette denne kunde?",
     "deleteWarning": "Alle tilknyttede klaverer, tjenester og fakturaer vil også blive slettet.",
     "noClients": "Ingen kunder registreret",
-    "addFirstClient": "Tilføj din første kunde"
+    "addFirstClient": "Tilføj din første kunde",
+    "search": "Søg klienter..."
   },
   "pianos": {
     "title": "Klaverer",

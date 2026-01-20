@@ -90,7 +90,8 @@
     "deleteConfirm": "Are you sure you want to delete this client?",
     "deleteWarning": "All associated pianos, services and invoices will also be deleted.",
     "noClients": "No clients registered",
-    "addFirstClient": "Add your first client"
+    "addFirstClient": "Add your first client",
+    "search": "Search clients..."
   },
   "pianos": {
     "title": "Pianos",

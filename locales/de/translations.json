@@ -90,7 +90,8 @@
     "deleteConfirm": "Sind Sie sicher, dass Sie diesen Kunden löschen möchten?",
     "deleteWarning": "Alle zugehörigen Klaviere, Dienstleistungen und Rechnungen werden ebenfalls gelöscht.",
     "noClients": "Keine Kunden registriert",
-    "addFirstClient": "Fügen Sie Ihren ersten Kunden hinzu"
+    "addFirstClient": "Fügen Sie Ihren ersten Kunden hinzu",
+    "search": "Kunden suchen..."
   },
   "pianos": {
     "title": "Klaviere",

@@ -90,7 +90,8 @@
     "deleteConfirm": "Är du säker på att du vill radera denna kund?",
     "deleteWarning": "Alla tillhörande pianon, tjänster och fakturor kommer också att raderas.",
     "noClients": "Inga kunder registrerade",
-    "addFirstClient": "Lägg till din första kund"
+    "addFirstClient": "Lägg till din första kund",
+    "search": "Sök klienter..."
   },
   "pianos": {
     "title": "Pianon",

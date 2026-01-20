@@ -90,7 +90,8 @@
     "deleteConfirm": "Er du sikker på at du vil slette denne klienten?",
     "deleteWarning": "Alle tilknyttede pianoer, tjenester og fakturaer vil også bli slettet.",
     "noClients": "Ingen klienter registrert",
-    "addFirstClient": "Legg til din første klient"
+    "addFirstClient": "Legg til din første klient",
+    "search": "Søk klienter..."
   },
   "pianos": {
     "title": "Pianoer",

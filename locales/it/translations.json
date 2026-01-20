@@ -90,7 +90,8 @@
     "deleteConfirm": "Sei sicuro di voler eliminare questo cliente?",
     "deleteWarning": "Verranno eliminati anche tutti i pianoforti, servizi e fatture associati.",
     "noClients": "Nessun cliente registrato",
-    "addFirstClient": "Aggiungi il tuo primo cliente"
+    "addFirstClient": "Aggiungi il tuo primo cliente",
+    "search": "Cerca clienti..."
   },
   "pianos": {
     "title": "Pianoforti",
