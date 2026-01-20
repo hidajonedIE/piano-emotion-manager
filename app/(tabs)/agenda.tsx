@@ -201,7 +201,7 @@ export default function AgendaScreen() {
 
   return (
     <LinearGradient
-      colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
+      colors={['#003a8c', '#001d4a']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
