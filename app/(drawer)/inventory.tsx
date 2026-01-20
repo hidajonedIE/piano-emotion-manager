@@ -1,6 +1,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -27,6 +28,7 @@ type FilterType = 'all' | 'low_stock' | MaterialCategory;
 export default function InventoryScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { setHeaderConfig } = useHeader();
   const insets = useSafeAreaInsets();
   const { materials: items, loading, lowStockItems } = useInventoryData();
   const { suppliers } = useSuppliers();
@@ -41,6 +43,16 @@ export default function InventoryScreen() {
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');
   const success = useThemeColor({}, 'success');
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: t('navigation.inventory'),
+      subtitle: `${items.length} ${items.length === 1 ? 'artículo' : 'artículos'}`,
+      icon: 'shippingbox.fill',
+      showBackButton: false,
+    });
+  }, [items.length, t, setHeaderConfig]);
 
   // Filtrar items
   const filteredItems = useMemo(() => {

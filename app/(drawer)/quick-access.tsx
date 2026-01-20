@@ -3,13 +3,13 @@
  * Piano Emotion Manager
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
+import { useHeader } from '@/contexts/HeaderContext';
 import { AnimatedCard } from '@/components/animated-card';
-import { ScreenHeader } from '@/components/screen-header';
 import { Spacing } from '@/constants/theme';
 import { useDashboardPreferences, type AccessShortcutModule } from '@/hooks/use-dashboard-preferences';
 
@@ -67,7 +67,18 @@ const ROUTE_MAP: Record<string, string> = {
 
 export default function QuickAccessScreen() {
   const router = useRouter();
+  const { setHeaderConfig } = useHeader();
   const { visibleShortcuts } = useDashboardPreferences();
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Accesos Rápidos',
+      subtitle: 'Accede rápidamente a las funciones principales',
+      icon: 'square.grid.2x2.fill',
+      showBackButton: false,
+    });
+  }, [setHeaderConfig]);
 
   const handleAction = (action: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -96,13 +107,6 @@ export default function QuickAccessScreen() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <ScreenHeader 
-        title="Accesos Rápidos" 
-        subtitle="Accede rápidamente a las funciones principales"
-        icon="square.grid.2x2.fill"
-        showBackButton={false}
-      />
-      
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.content}

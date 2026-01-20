@@ -3,11 +3,24 @@
  * Piano Emotion Manager
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useHeader } from '@/contexts/HeaderContext';
 import { ShopView } from '@/components/shop';
 
 export default function StoreScreen() {
+  const { setHeaderConfig } = useHeader();
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Store',
+      subtitle: 'Tienda de pianos y accesorios',
+      icon: 'cart.fill',
+      showBackButton: false,
+    });
+  }, [setHeaderConfig]);
+
   return (
     <View style={styles.container}>
       <ShopView />

@@ -1,6 +1,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useHeader } from '@/contexts/HeaderContext';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,7 +11,6 @@ import { CalendarView } from '@/components/calendar-view';
 import { EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { RouteOptimizer } from '@/components/route-optimizer';
-import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -22,6 +22,7 @@ import { formatDate, getClientFullName } from '@/types';
 export default function AgendaScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { setHeaderConfig } = useHeader();
   const insets = useSafeAreaInsets();
   const { appointments, loading } = useAppointmentsData();
   const { getClient } = useClientsData();
@@ -86,6 +87,38 @@ export default function AgendaScreen() {
   }, [appointments]);
 
   const [showCalendar, setShowCalendar] = useState(true);
+
+  // Configurar header con acciones
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Agenda',
+      subtitle: `${pendingCount} ${pendingCount === 1 ? 'cita pendiente' : 'citas pendientes'}`,
+      icon: 'calendar',
+      showBackButton: false,
+      rightAction: (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/settings/calendar-settings' as any);
+            }}
+            style={[{ padding: 8, borderRadius: 8, backgroundColor: `${accent}15` }]}
+          >
+            <IconSymbol name="gearshape.fill" size={20} color={accent} />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowCalendar(!showCalendar);
+            }}
+            style={[{ padding: 8, borderRadius: 8, backgroundColor: `${accent}15` }]}
+          >
+            <IconSymbol name={showCalendar ? 'list.bullet' : 'calendar'} size={20} color={accent} />
+          </Pressable>
+        </View>
+      ),
+    });
+  }, [pendingCount, showCalendar, accent, router, setHeaderConfig]);
 
   // Convertir citas a eventos para el calendario
   const calendarEvents = useMemo(() => {

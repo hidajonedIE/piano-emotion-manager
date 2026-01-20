@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
+import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ClientCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
-import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
 import { useClientsData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
@@ -21,6 +21,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 export default function ClientsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { setHeaderConfig } = useHeader();
   const [search, setSearch] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
@@ -54,6 +55,16 @@ export default function ClientsScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: t('navigation.clients'),
+      subtitle: `${totalClients} ${totalClients === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`,
+      icon: 'person.2.fill',
+      showBackButton: false,
+    });
+  }, [totalClients, t, setHeaderConfig]);
 
   const handleClientPress = useCallback((client: Client) => {
     router.push({
@@ -109,10 +120,6 @@ export default function ClientsScreen() {
         end={{ x: 0.5, y: 1 }}
         style={styles.container}
       >
-        <ScreenHeader 
-          title={t('navigation.clients')} 
-          icon="person.2.fill" showBackButton={true}
-        />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="clients" />
         </View>
@@ -127,12 +134,6 @@ export default function ClientsScreen() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <ScreenHeader 
-        title={t('navigation.clients')} 
-        subtitle={`${totalClients} ${totalClients === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`}
-        icon="person.2.fill" showBackButton={true}
-      />
-
       <View style={styles.searchContainer}>
         <View style={styles.searchRow}>
           <View style={{ flex: 1 }}>

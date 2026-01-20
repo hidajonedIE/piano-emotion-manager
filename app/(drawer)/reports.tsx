@@ -3,13 +3,25 @@
  * Piano Emotion Manager
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useHeader } from '@/contexts/HeaderContext';
 import { AnalyticsDashboard } from '@/components/reports';
 
 export default function ReportsScreen() {
   const router = useRouter();
+  const { setHeaderConfig } = useHeader();
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Reportes',
+      subtitle: 'Análisis y estadísticas del negocio',
+      icon: 'chart.bar.fill',
+      showBackButton: false,
+    });
+  }, [setHeaderConfig]);
 
   return (
     <View style={styles.container}>

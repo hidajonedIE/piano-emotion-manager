@@ -11,7 +11,8 @@
  * - Botón flotante IA
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useHeader } from '@/contexts/HeaderContext';
 import {
   ScrollView,
   View,
@@ -28,6 +29,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 // Hooks y datos
 import { useClientsData, usePianosData, useServicesData, useAppointmentsData } from '@/hooks/data';
+import { useTranslation } from '@/hooks/use-translation';
 import { useAlertsOptimized } from '@/hooks/use-alerts-optimized';
 
 // Colores del diseño Elegant Professional
@@ -57,8 +59,20 @@ const COLORS = {
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Inicio',
+      subtitle: 'Panel de control principal',
+      icon: 'house.fill',
+      showBackButton: false,
+    });
+  }, [setHeaderConfig]);
 
   // Datos
   const { clients } = useClientsData();

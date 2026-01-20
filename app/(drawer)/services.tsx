@@ -1,13 +1,13 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ServiceCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
-import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
 import { ThemedText } from '@/components/themed-text';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
@@ -20,6 +20,7 @@ type FilterType = 'all' | ServiceType;
 export default function ServicesScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { setHeaderConfig } = useHeader();
   const { services, loading, refresh } = useServicesData();
   const { getPiano } = usePianosData();
   const { getClient } = useClientsData();
@@ -31,6 +32,16 @@ export default function ServicesScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: t('navigation.services'),
+      subtitle: `${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`,
+      icon: 'wrench.and.screwdriver.fill',
+      showBackButton: false,
+    });
+  }, [services.length, t, setHeaderConfig]);
 
   // Filtrar servicios
   const filteredServices = useMemo(() => {
@@ -125,10 +136,6 @@ export default function ServicesScreen() {
         end={{ x: 0.5, y: 1 }}
         style={styles.container}
       >
-        <ScreenHeader 
-          title={t('navigation.services')} 
-          icon="wrench.fill" showBackButton={true}
-        />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="services" />
         </View>
@@ -143,12 +150,6 @@ export default function ServicesScreen() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <ScreenHeader 
-        title={t('navigation.services')} 
-        subtitle={`${filteredServices.length} ${filteredServices.length === 1 ? t('services.title').toLowerCase().slice(0, -1) : t('services.title').toLowerCase()}${totalCost > 0 ? ` · €${totalCost.toFixed(0)}` : ''}`}
-        icon="wrench.fill" showBackButton={true}
-      />
-
       <View style={styles.searchContainer}>
         <SearchBar
           value={search}

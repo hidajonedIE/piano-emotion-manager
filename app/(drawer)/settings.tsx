@@ -3,11 +3,10 @@
  * Piano Emotion Manager
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useHeader } from '@/contexts/HeaderContext';
 import { AnimatedCard } from '@/components/animated-card';
 import { Spacing } from '@/constants/theme';
 
@@ -23,16 +22,21 @@ const SETTINGS_SECTIONS = [
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { setHeaderConfig } = useHeader();
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Configuración',
+      subtitle: 'Ajustes del sistema',
+      icon: 'gearshape.fill',
+      showBackButton: false,
+    });
+  }, [setHeaderConfig]);
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <IconSymbol name="gearshape.fill" size={32} color="#64748B" />
-          <ThemedText style={styles.title}>Configuración</ThemedText>
-          <ThemedText style={styles.subtitle}>Ajustes del sistema</ThemedText>
-        </View>
-
         <View style={styles.grid}>
           {SETTINGS_SECTIONS.map((section) => (
             <AnimatedCard
@@ -57,21 +61,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: Spacing.lg,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: Spacing.sm,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: Spacing.xs,
   },
   grid: {
     flexDirection: 'row',

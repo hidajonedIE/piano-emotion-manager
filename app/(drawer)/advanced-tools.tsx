@@ -3,13 +3,13 @@
  * Piano Emotion Manager
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Modal, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
+import { useHeader } from '@/contexts/HeaderContext';
 import { AnimatedCard } from '@/components/animated-card';
-import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Spacing, BorderRadius } from '@/constants/theme';
@@ -95,8 +95,19 @@ const PLAN_INFO = {
 
 export default function AdvancedToolsScreen() {
   const router = useRouter();
+  const { setHeaderConfig } = useHeader();
   const { tier: tierFromHook, isLoading } = useUserTier();
   const userTier = tierFromHook;
+
+  // Configurar header
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Herramientas Avanzadas',
+      subtitle: 'Funciones premium y avanzadas',
+      icon: 'star.fill',
+      showBackButton: false,
+    });
+  }, [setHeaderConfig]);
   
   const [upgradeModal, setUpgradeModal] = useState<{ visible: boolean; tier: 'pro' | 'premium' | null }>({
     visible: false,
@@ -157,13 +168,6 @@ export default function AdvancedToolsScreen() {
         end={{ x: 0.5, y: 1 }}
         style={styles.container}
       >
-        <ScreenHeader 
-          title="Herramientas Avanzadas" 
-          subtitle="Funciones premium y avanzadas"
-          icon="star.fill"
-          showBackButton={false}
-        />
-        
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.content}
