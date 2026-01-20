@@ -6,7 +6,7 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
 import * as db from "../db.js";
-import { clients, users } from "../../drizzle/schema.js";
+import { clients, users, pianos } from "../../drizzle/schema.js";
 import { getDb } from "../db.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
 import { 
@@ -189,14 +189,16 @@ export const clientsRouter = router({
       console.log('[clients.list] Using partnerId:', partnerId, 'for filter');
       
       try {
-        // Obtener clientes con conteo de pianos
+        // Obtener clientes con conteo de pianos usando LEFT JOIN
         const items = await withQueue(() => database
           .select({
             ...clients,
-            pianoCount: sql<number>`(SELECT COUNT(*) FROM pianos WHERE pianos.clientId = clients.id)`,
+            pianoCount: sql<number>`COALESCE(COUNT(DISTINCT ${pianos.id}), 0)`,
           })
           .from(clients)
+          .leftJoin(pianos, eq(pianos.clientId, clients.id))
           .where(and(...whereClauses))
+          .groupBy(clients.id)
           .orderBy(orderByClause)
           .limit(limit)
           .offset(offset));
