@@ -150,6 +150,11 @@ export default function ClientsScreen() {
         showBackButton={true}
       />
 
+      {/* DEBUG: Mostrar stats */}
+      <View style={{ padding: 10, backgroundColor: '#ffeb3b' }}>
+        <Text>DEBUG stats: {JSON.stringify(stats)}</Text>
+      </View>
+
       {/* Estadísticas minimalistas */}
       <View style={styles.statsSection}>
         <View style={styles.statCard}>
