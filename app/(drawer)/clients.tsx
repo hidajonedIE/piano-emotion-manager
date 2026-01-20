@@ -45,6 +45,11 @@ export default function ClientsScreen() {
   const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData({ pageSize: 50 });
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Estados para filtros
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedRouteGroup, setSelectedRouteGroup] = useState<string>('');
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
@@ -157,6 +162,39 @@ export default function ClientsScreen() {
           onChangeText={setSearch}
           placeholder={t('clients.search')}
         />
+      </View>
+
+      {/* Filtros */}
+      <View style={[styles.filtersSection, isDesktop && styles.filtersSectionDesktop]}>
+        <View style={styles.filterItem}>
+          <Text style={styles.filterLabel}>PROVINCIA</Text>
+          <Pressable style={styles.filterButton}>
+            <Text style={styles.filterButtonText}>
+              {selectedProvince || 'Todas'}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+          </Pressable>
+        </View>
+        
+        <View style={styles.filterItem}>
+          <Text style={styles.filterLabel}>CIUDAD</Text>
+          <Pressable style={styles.filterButton}>
+            <Text style={styles.filterButtonText}>
+              {selectedCity || 'Todas'}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+          </Pressable>
+        </View>
+        
+        <View style={styles.filterItem}>
+          <Text style={styles.filterLabel}>GRUPO DE RUTA</Text>
+          <Pressable style={styles.filterButton}>
+            <Text style={styles.filterButtonText}>
+              {selectedRouteGroup || 'Todos'}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+          </Pressable>
+        </View>
       </View>
 
       {/* Lista de clientes */}
@@ -272,6 +310,45 @@ const styles = StyleSheet.create({
   },
   searchSectionDesktop: {
     paddingHorizontal: Spacing.xl,
+  },
+  
+  // Filtros
+  filtersSection: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  filtersSectionDesktop: {
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.md,
+  },
+  filterItem: {
+    flex: 1,
+  },
+  filterLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: COLORS.textTertiary,
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    minHeight: 36,
+  },
+  filterButtonText: {
+    fontSize: 13,
+    color: COLORS.textPrimary,
+    fontWeight: '500',
   },
   
   // Lista
