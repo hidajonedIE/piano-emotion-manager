@@ -494,37 +494,11 @@ export const clientsRouter = router({
         )
       );
 
-    // Clientes activos (status = 'active')
-    const [{ active }] = await database
-      .select({ active: count() })
-      .from(clients)
-      .where(
-        and(
-          filterByPartnerAndOrganization(
-            clients,
-            ctx.partnerId,
-            ctx.orgContext,
-            "clients"
-          ),
-          eq(clients.status, 'active')
-        )
-      );
+    // Por ahora, activos = total (no existe columna status)
+    const active = total;
 
-    // Clientes VIP (isVIP = true o 1)
-    const [{ vip }] = await database
-      .select({ vip: count() })
-      .from(clients)
-      .where(
-        and(
-          filterByPartnerAndOrganization(
-            clients,
-            ctx.partnerId,
-            ctx.orgContext,
-            "clients"
-          ),
-          eq(clients.isVIP, 1)
-        )
-      );
+    // Por ahora, VIP = 0 (no existe columna isVIP)
+    const vip = 0;
 
     // Clientes con pianos (DISTINCT clientId en tabla pianos)
     const [{ withPianos }] = await database
