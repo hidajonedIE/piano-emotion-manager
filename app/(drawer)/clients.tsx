@@ -50,6 +50,10 @@ export default function ClientsScreen() {
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [selectedRouteGroup, setSelectedRouteGroup] = useState<string>('');
+  
+  // Estado para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 50;
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
@@ -128,6 +132,19 @@ export default function ClientsScreen() {
       return true;
     });
   }, [clients, search, selectedProvince, selectedCity, selectedRouteGroup]);
+  
+  // Calcular paginación
+  const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
+  const paginatedClients = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredClients.slice(startIndex, endIndex);
+  }, [filteredClients, currentPage]);
+  
+  // Resetear a la primera página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedProvince, selectedCity, selectedRouteGroup]);
 
   const handleClientPress = (client: Client) => {
     router.push({
@@ -253,7 +270,7 @@ export default function ClientsScreen() {
 
       {/* Lista de clientes */}
       <FlatList
-        data={filteredClients}
+        data={paginatedClients}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
@@ -274,18 +291,52 @@ export default function ClientsScreen() {
           />
         }
         ListFooterComponent={
-          isLoadingMore ? (
-            <View style={styles.loadingMore}>
-              <LoadingSpinner size="small" />
+          totalPages > 1 ? (
+            <View style={styles.paginationContainer}>
+              <Pressable
+                style={[
+                  styles.paginationButton,
+                  currentPage === 1 && styles.paginationButtonDisabled,
+                ]}
+                onPress={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <Ionicons 
+                  name="chevron-back" 
+                  size={20} 
+                  color={currentPage === 1 ? COLORS.textTertiary : COLORS.primary} 
+                />
+                <Text style={[
+                  styles.paginationButtonText,
+                  currentPage === 1 && styles.paginationButtonTextDisabled,
+                ]}>Anterior</Text>
+              </Pressable>
+              
+              <Text style={styles.paginationInfo}>
+                Página {currentPage} de {totalPages}
+              </Text>
+              
+              <Pressable
+                style={[
+                  styles.paginationButton,
+                  currentPage === totalPages && styles.paginationButtonDisabled,
+                ]}
+                onPress={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <Text style={[
+                  styles.paginationButtonText,
+                  currentPage === totalPages && styles.paginationButtonTextDisabled,
+                ]}>Siguiente</Text>
+                <Ionicons 
+                  name="chevron-forward" 
+                  size={20} 
+                  color={currentPage === totalPages ? COLORS.textTertiary : COLORS.primary} 
+                />
+              </Pressable>
             </View>
           ) : null
         }
-        onEndReached={() => {
-          if (hasMore && !isLoadingMore && !search) {
-            loadMore();
-          }
-        }}
-        onEndReachedThreshold={0.5}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
@@ -426,6 +477,46 @@ const styles = StyleSheet.create({
   },
   listContentDesktop: {
     paddingHorizontal: Spacing.xl,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    marginTop: Spacing.md,
+    backgroundColor: COLORS.surface,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  paginationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: COLORS.background,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  paginationButtonDisabled: {
+    borderColor: COLORS.border,
+    opacity: 0.5,
+  },
+  paginationButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  paginationButtonTextDisabled: {
+    color: COLORS.textTertiary,
+  },
+  paginationInfo: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
   },
   
   // Acciones
