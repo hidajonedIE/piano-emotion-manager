@@ -593,6 +593,7 @@ const styles = StyleSheet.create({
     maxWidth: '95%',
     alignSelf: 'center',
     width: '100%',
+    minHeight: 160,
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -674,6 +675,7 @@ const styles = StyleSheet.create({
     maxWidth: '95%',
     alignSelf: 'center',
     width: '100%',
+    minHeight: 250,
     ...Platform.select({
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
