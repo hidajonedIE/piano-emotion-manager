@@ -118,6 +118,7 @@ export function useClientsData(options: UseClientsDataOptions = {}) {
   const { data: statsData } = trpc.clients.getStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
+  console.log('[useClientsData] statsData:', statsData);
 
   // Mutations con manejo de errores
   const createMutation = trpc.clients.create.useMutation({
