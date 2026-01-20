@@ -73,6 +73,8 @@
   "clients.lastName": "Apellidos",
   "clients.newClient": "Nuevo Cliente",
   "clients.noClients": "No hay clientes registrados",
+  "clients.empty": "No hay clientes",
+  "clients.emptyMessage": "Agrega tu primer cliente para comenzar",
   "clients.notes": "Notas",
   "clients.phone": "Teléfono",
   "clients.pianos": "Pianos",
