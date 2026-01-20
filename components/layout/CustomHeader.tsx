@@ -105,6 +105,55 @@ export default function CustomHeader({
           </Pressable>
         </View>
       </View>
+
+      {/* Header con gradiente gris (estilo ScreenHeader) */}
+      <LinearGradient
+        colors={['#7A8B99', '#8E9DAA', '#A2B1BD']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerRow}>
+          {showBackButton && (
+            <Pressable 
+              onPress={handleBack} 
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel="Volver atrás"
+              accessibilityHint="Pulsa para volver a la pantalla anterior"
+            >
+              <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
+            </Pressable>
+          )}
+          {icon && (
+            <View style={styles.iconContainer}>
+              <IconSymbol name={icon as any} size={32} color={iconColor} />
+            </View>
+          )}
+          <View style={styles.headerText}>
+            <ThemedText 
+              type="title" 
+              style={[
+                styles.headerTitle, 
+                { color: '#FFFFFF' },
+                Platform.OS === 'web' && { fontSize: 32 }
+              ]}
+            >
+              {title}
+            </ThemedText>
+            {subtitle && (
+              <ThemedText style={styles.subtitle}>
+                {subtitle}
+              </ThemedText>
+            )}
+          </View>
+          {rightAction && (
+            <View style={styles.rightActionContainer}>
+              {rightAction}
+            </View>
+          )}
+        </View>
+      </LinearGradient>
     </View>
   );
 }
