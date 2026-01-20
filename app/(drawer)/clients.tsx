@@ -12,7 +12,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
-import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -143,40 +143,6 @@ export default function ClientsScreen() {
     });
   };
 
-  // Handlers para los filtros
-  const handleProvincePress = () => {
-    Alert.alert(
-      'Seleccionar Provincia',
-      '',
-      uniqueProvinces.map(province => ({
-        text: province,
-        onPress: () => setSelectedProvince(province === 'Todas' ? '' : province),
-      }))
-    );
-  };
-
-  const handleCityPress = () => {
-    Alert.alert(
-      'Seleccionar Ciudad',
-      '',
-      uniqueCities.map(city => ({
-        text: city,
-        onPress: () => setSelectedCity(city === 'Todas' ? '' : city),
-      }))
-    );
-  };
-
-  const handleRouteGroupPress = () => {
-    Alert.alert(
-      'Seleccionar Grupo de Ruta',
-      '',
-      uniqueRouteGroups.map(group => ({
-        text: group,
-        onPress: () => setSelectedRouteGroup(group === 'Todos' ? '' : group),
-      }))
-    );
-  };
-
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     if (refresh) {
@@ -244,32 +210,77 @@ export default function ClientsScreen() {
       <View style={[styles.filtersSection, isDesktop && styles.filtersSectionDesktop]}>
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>PROVINCIA</Text>
-          <Pressable style={styles.filterButton} onPress={handleProvincePress}>
-            <Text style={styles.filterButtonText}>
-              {selectedProvince || 'Todas'}
-            </Text>
-            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
-          </Pressable>
+          <select 
+            value={selectedProvince || ''}
+            onChange={(e: any) => setSelectedProvince(e.target.value)}
+            style={{
+              flex: 1,
+              height: 36,
+              backgroundColor: COLORS.surface,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+              borderRadius: BorderRadius.sm,
+              paddingHorizontal: Spacing.sm,
+              fontSize: 13,
+              color: COLORS.textPrimary,
+              fontWeight: '500',
+            } as any}
+          >
+            <option value="">Todas</option>
+            {uniqueProvinces.filter(p => p !== 'Todas').map(province => (
+              <option key={province} value={province}>{province}</option>
+            ))}
+          </select>
         </View>
         
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>CIUDAD</Text>
-          <Pressable style={styles.filterButton} onPress={handleCityPress}>
-            <Text style={styles.filterButtonText}>
-              {selectedCity || 'Todas'}
-            </Text>
-            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
-          </Pressable>
+          <select 
+            value={selectedCity || ''}
+            onChange={(e: any) => setSelectedCity(e.target.value)}
+            style={{
+              flex: 1,
+              height: 36,
+              backgroundColor: COLORS.surface,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+              borderRadius: BorderRadius.sm,
+              paddingHorizontal: Spacing.sm,
+              fontSize: 13,
+              color: COLORS.textPrimary,
+              fontWeight: '500',
+            } as any}
+          >
+            <option value="">Todas</option>
+            {uniqueCities.filter(c => c !== 'Todas').map(city => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
         </View>
         
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>GRUPO DE RUTA</Text>
-          <Pressable style={styles.filterButton} onPress={handleRouteGroupPress}>
-            <Text style={styles.filterButtonText}>
-              {selectedRouteGroup || 'Todos'}
-            </Text>
-            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
-          </Pressable>
+          <select 
+            value={selectedRouteGroup || ''}
+            onChange={(e: any) => setSelectedRouteGroup(e.target.value)}
+            style={{
+              flex: 1,
+              height: 36,
+              backgroundColor: COLORS.surface,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+              borderRadius: BorderRadius.sm,
+              paddingHorizontal: Spacing.sm,
+              fontSize: 13,
+              color: COLORS.textPrimary,
+              fontWeight: '500',
+            } as any}
+          >
+            <option value="">Todos</option>
+            {uniqueRouteGroups.filter(g => g !== 'Todos').map(group => (
+              <option key={group} value={group}>{group}</option>
+            ))}
+          </select>
         </View>
       </View>
 
