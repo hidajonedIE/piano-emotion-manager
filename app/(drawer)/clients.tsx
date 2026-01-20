@@ -1,37 +1,70 @@
+/**
+ * Clients Screen - Elegant Professional Design
+ * Piano Emotion Manager
+ * 
+ * Diseño siguiendo el patrón del Dashboard:
+ * - Header configurado con useHeader
+ * - Búsqueda y filtros elegantes
+ * - Grid de estadísticas por región/ruta
+ * - Lista de clientes con cards profesionales
+ * - Acciones rápidas
+ * - FAB para añadir cliente
+ */
+
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { useCallback, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 
+// Hooks y componentes
+import { useClientsData } from '@/hooks/data';
+import { useTranslation } from '@/hooks/use-translation';
 import { ClientCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
-import { useClientsData } from '@/hooks/data';
-import { useTranslation } from '@/hooks/use-translation';
-import { Spacing } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
-import { Pressable, ScrollView, ActivityIndicator } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { BorderRadius } from '@/constants/theme';
 import { useDebounce } from '@/hooks/use-debounce';
+import { BorderRadius, Spacing } from '@/constants/theme';
+
+// Colores del diseño Elegant Professional
+const COLORS = {
+  primary: '#003a8c',      // Azul Cobalto
+  accent: '#e07a5f',       // Terracota
+  white: '#ffffff',
+  background: '#f5f5f5',
+  textPrimary: '#1a1a1a',
+  textSecondary: '#666666',
+  cardBg: '#ffffff',
+  border: '#e5e7eb',
+};
 
 export default function ClientsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
+  const { width } = useWindowDimensions();
   const [search, setSearch] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Debounce search para evitar demasiadas peticiones
+  // Debounce search
   const debouncedSearch = useDebounce(search, 300);
 
-  // Hook con filtrado en backend
+  // Hook con filtrado
   const { 
     clients, 
     totalClients,
@@ -41,262 +74,275 @@ export default function ClientsScreen() {
     hasMore,
     isLoadingMore,
     regions,
-    routeGroups,
   } = useClientsData({
     search: debouncedSearch,
     region: selectedRegion,
-    routeGroup: selectedRoute,
     pageSize: 30,
   });
 
-  const accent = useThemeColor({}, 'accent');
-  const cardBg = useThemeColor({}, 'cardBackground');
-  const borderColor = useThemeColor({}, 'border');
-  const textSecondary = useThemeColor({}, 'textSecondary');
-
-  const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
+  // Determinar si es móvil, tablet o desktop
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
+  const isDesktop = width >= 1024;
 
   // Configurar header
   useEffect(() => {
     setHeaderConfig({
-      title: t('navigation.clients'),
-      subtitle: `${totalClients} ${totalClients === 1 ? t('clients.title').toLowerCase().slice(0, -1) : t('clients.title').toLowerCase()}`,
+      title: 'Clientes',
+      subtitle: `${totalClients} ${totalClients === 1 ? 'cliente' : 'clientes'}`,
       icon: 'person.2.fill',
       showBackButton: false,
     });
-  }, [totalClients, t, setHeaderConfig]);
+  }, [totalClients, setHeaderConfig]);
 
-  const handleClientPress = useCallback((client: Client) => {
-    router.push({
-      pathname: '/client/[id]',
-      params: { id: client.id },
-    });
-  }, [router]);
+  // Estadísticas por región
+  const stats = useMemo(() => {
+    const regionCounts = regions.map(region => ({
+      region,
+      count: clients.filter(c => c.region === region).length,
+    })).sort((a, b) => b.count - a.count);
 
-  const handleAddClient = useCallback(() => {
-    router.push('/client/new');
-  }, [router]);
+    return regionCounts.slice(0, 4); // Top 4 regiones
+  }, [clients, regions]);
 
-  const handleRefresh = useCallback(async () => {
+  // Filtrar clientes
+  const filteredClients = useMemo(() => {
+    return clients;
+  }, [clients]);
+
+  // Refresh handler
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    if (refresh) {
-      await refresh();
-    }
+    await refresh();
     setRefreshing(false);
   }, [refresh]);
 
-  const handleEndReached = useCallback(() => {
-    if (hasMore && !isLoadingMore) {
-      loadMore();
+  // Navegación
+  const handleAddClient = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-  }, [hasMore, isLoadingMore, loadMore]);
+    router.push('/clients/new');
+  }, [router]);
 
-  const renderItem = useCallback(
-    ({ item }: { item: Client }) => (
-      <ClientCard
-        client={item}
-        pianoCount={0} // Se puede optimizar después con un endpoint específico
-        onPress={() => handleClientPress(item)}
-      />
-    ),
-    [handleClientPress]
-  );
+  const handleClientPress = useCallback((client: Client) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push(`/clients/${client.id}`);
+  }, [router]);
 
-  const renderFooter = useCallback(() => {
-    if (!isLoadingMore) return null;
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={accent} />
-      </View>
-    );
-  }, [isLoadingMore, accent]);
+  // Colores para las cards de estadísticas
+  const statColors = ['#7c3aed', '#0891b2', '#10b981', '#f59e0b'];
 
-  // Mostrar animación de carga inicial
+  // Render de loading inicial
   if (loading && clients.length === 0) {
     return (
-      <LinearGradient
-        colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.container}
-      >
+      <View style={styles.container}>
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="clients" />
         </View>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.container}
-    >
-      <View style={styles.searchContainer}>
-        <View style={styles.searchRow}>
-          <View style={{ flex: 1 }}>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Contenedor principal con padding */}
+        <View style={styles.mainContent}>
+          {/* Estadísticas por región */}
+          {stats.length > 0 && (
+            <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
+              {stats.map((stat, index) => (
+                <View 
+                  key={stat.region} 
+                  style={[styles.statCard, { backgroundColor: statColors[index] }]}
+                >
+                  <Ionicons name="location" size={24} color={COLORS.white} />
+                  <Text style={styles.statNumber}>{stat.count}</Text>
+                  <Text style={styles.statLabel} numberOfLines={1}>
+                    {stat.region || 'Sin región'}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Búsqueda */}
+          <View style={styles.searchSection}>
             <SearchBar
               value={search}
               onChangeText={setSearch}
-              placeholder={t('common.search') + '...'}
-              accessibilityLabel={t('common.search') + ' ' + t('navigation.clients').toLowerCase()}
+              placeholder="Buscar clientes..."
             />
           </View>
-          <Pressable
-            style={[styles.filterButton, { backgroundColor: cardBg, borderColor }, activeFiltersCount > 0 && { backgroundColor: accent }]}
-            onPress={() => setShowFilters(!showFilters)}
-          >
-            <ThemedText style={{ color: activeFiltersCount > 0 ? '#FFFFFF' : textSecondary }}>
-              {activeFiltersCount > 0 ? activeFiltersCount : ''} ⚙️
-            </ThemedText>
-          </Pressable>
+
+          {/* Filtros de región */}
+          {regions.length > 0 && (
+            <View style={styles.filtersSection}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filtersContent}
+              >
+                <Pressable
+                  style={[
+                    styles.filterButton,
+                    selectedRegion === null && styles.filterButtonActive,
+                  ]}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    setSelectedRegion(null);
+                  }}
+                >
+                  <Ionicons
+                    name="apps"
+                    size={18}
+                    color={selectedRegion === null ? COLORS.white : COLORS.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.filterButtonText,
+                      selectedRegion === null && styles.filterButtonTextActive,
+                    ]}
+                  >
+                    Todas las regiones
+                  </Text>
+                </Pressable>
+                {regions.map((region) => (
+                  <Pressable
+                    key={region}
+                    style={[
+                      styles.filterButton,
+                      selectedRegion === region && styles.filterButtonActive,
+                    ]}
+                    onPress={() => {
+                      if (Platform.OS !== 'web') {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                      setSelectedRegion(region);
+                    }}
+                  >
+                    <Ionicons
+                      name="location"
+                      size={18}
+                      color={selectedRegion === region ? COLORS.white : COLORS.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.filterButtonText,
+                        selectedRegion === region && styles.filterButtonTextActive,
+                      ]}
+                    >
+                      {region}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Lista de clientes */}
+          <View style={styles.clientsSection}>
+            {filteredClients.length === 0 ? (
+              <EmptyState
+                icon="people-outline"
+                title="No hay clientes"
+                message="Añade tu primer cliente para comenzar"
+                actionLabel="Añadir Cliente"
+                onAction={handleAddClient}
+              />
+            ) : (
+              <FlatList
+                data={filteredClients}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <ClientCard
+                    client={item}
+                    onPress={() => handleClientPress(item)}
+                  />
+                )}
+                contentContainerStyle={styles.clientsList}
+                scrollEnabled={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={COLORS.primary}
+                  />
+                }
+                onEndReached={loadMore}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                  isLoadingMore ? (
+                    <View style={styles.loadingMore}>
+                      <LoadingSpinner size="small" />
+                    </View>
+                  ) : null
+                }
+              />
+            )}
+          </View>
+
+          {/* Acciones rápidas */}
+          <View style={styles.actionsSection}>
+            <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+            <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push('/clients/import');
+                }}
+              >
+                <Ionicons name="cloud-upload-outline" size={24} color={COLORS.white} />
+                <Text style={styles.actionButtonText}>Importar Clientes</Text>
+              </Pressable>
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push('/clients/export');
+                }}
+              >
+                <Ionicons name="cloud-download-outline" size={24} color={COLORS.white} />
+                <Text style={styles.actionButtonText}>Exportar Lista</Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
-        
-        {showFilters && (regions.length > 0 || routeGroups.length > 0) && (
-          <View style={[styles.filtersContainer, { backgroundColor: cardBg, borderColor }]}>
-            {regions.length > 0 && (
-              <View style={styles.filterSection}>
-                <ThemedText style={[styles.filterLabel, { color: textSecondary }]}>Región:</ThemedText>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={styles.filterChips}>
-                    <Pressable
-                      style={[styles.filterChip, { borderColor }, !selectedRegion && { backgroundColor: accent }]}
-                      onPress={() => setSelectedRegion(null)}
-                    >
-                      <ThemedText style={{ color: !selectedRegion ? '#FFFFFF' : textSecondary, fontSize: 12 }}>Todas</ThemedText>
-                    </Pressable>
-                    {regions.map(region => (
-                      <Pressable
-                        key={region}
-                        style={[styles.filterChip, { borderColor }, selectedRegion === region && { backgroundColor: accent }]}
-                        onPress={() => setSelectedRegion(selectedRegion === region ? null : region)}
-                      >
-                        <ThemedText style={{ color: selectedRegion === region ? '#FFFFFF' : textSecondary, fontSize: 12 }}>{region}</ThemedText>
-                      </Pressable>
-                    ))}
-                  </View>
-                </ScrollView>
-              </View>
-            )}
-            
-            {routeGroups.length > 0 && (
-              <View style={styles.filterSection}>
-                <ThemedText style={[styles.filterLabel, { color: textSecondary }]}>Ruta:</ThemedText>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={styles.filterChips}>
-                    <Pressable
-                      style={[styles.filterChip, { borderColor }, !selectedRoute && { backgroundColor: accent }]}
-                      onPress={() => setSelectedRoute(null)}
-                    >
-                      <ThemedText style={{ color: !selectedRoute ? '#FFFFFF' : textSecondary, fontSize: 12 }}>Todas</ThemedText>
-                    </Pressable>
-                    {routeGroups.map(route => (
-                      <Pressable
-                        key={route}
-                        style={[styles.filterChip, { borderColor }, selectedRoute === route && { backgroundColor: accent }]}
-                        onPress={() => setSelectedRoute(selectedRoute === route ? null : route)}
-                      >
-                        <ThemedText style={{ color: selectedRoute === route ? '#FFFFFF' : textSecondary, fontSize: 12 }}>{route}</ThemedText>
-                      </Pressable>
-                    ))}
-                  </View>
-                </ScrollView>
-              </View>
-            )}
-          </View>
-        )}
-      </View>
+      </ScrollView>
 
-      {clients.length === 0 ? (
-        <EmptyState
-          icon="person.2.fill" showBackButton={true}
-          title={search ? t('common.noResults') : t('clients.noClients')}
-          message={
-            search
-              ? t('clients.noClients')
-              : t('clients.addFirstClient')
-          }
-        />
-      ) : (
-        <FlatList
-          data={clients}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor="#7A8B99"
-              title={t('common.loading')}
-              titleColor="#7A8B99"
-            />
-          }
-        />
-      )}
-
+      {/* FAB para añadir cliente */}
       <FAB 
         onPress={handleAddClient} 
-        accessibilityLabel={t('clients.newClient')}
-        accessibilityHint={t('clients.addFirstClient')}
+        accessibilityLabel="Añadir cliente"
+        accessibilityHint="Añade un nuevo cliente"
       />
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
-  searchContainer: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
+  scrollView: {
+    flex: 1,
   },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  filterButton: {
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    minWidth: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  filtersContainer: {
-    marginTop: Spacing.sm,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    gap: Spacing.sm,
-  },
-  filterSection: {
-    gap: 4,
-  },
-  filterLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  filterChips: {
-    flexDirection: 'row',
-    gap: Spacing.xs,
-  },
-  filterChip: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  list: {
-    paddingHorizontal: Spacing.md,
+  scrollContent: {
     paddingBottom: 100,
   },
   loadingState: {
@@ -304,8 +350,119 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  footerLoader: {
-    paddingVertical: Spacing.md,
+  mainContent: {
+    padding: Spacing.lg,
+  },
+  
+  // Estadísticas
+  statsSection: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+    flexWrap: 'wrap',
+  },
+  statsSectionDesktop: {
+    maxWidth: 1000,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: 140,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
     alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.white,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.white,
+    opacity: 0.9,
+    textAlign: 'center',
+  },
+
+  // Búsqueda
+  searchSection: {
+    marginBottom: Spacing.md,
+  },
+
+  // Filtros
+  filtersSection: {
+    marginBottom: Spacing.lg,
+  },
+  filtersContent: {
+    gap: Spacing.sm,
+    paddingHorizontal: 2,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  filterButtonActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  filterButtonTextActive: {
+    color: COLORS.white,
+  },
+
+  // Lista de clientes
+  clientsSection: {
+    marginBottom: Spacing.xl,
+  },
+  clientsList: {
+    gap: Spacing.md,
+  },
+  loadingMore: {
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
+  },
+
+  // Acciones rápidas
+  actionsSection: {
+    marginTop: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: Spacing.md,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  actionsGridDesktop: {
+    maxWidth: 600,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: COLORS.accent,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });
