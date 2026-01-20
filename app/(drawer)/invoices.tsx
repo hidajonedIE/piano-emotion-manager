@@ -1,16 +1,16 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+/**
+ * Página Principal de Facturación
+ * Piano Emotion Manager
+ */
+
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { AccountingDashboard } from '@/components/accounting';
 
 export default function InvoicesScreen() {
-  const router = useRouter();
-
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.content}>
-        <Text style={styles.title}>Facturación</Text>
-        <Text style={styles.subtitle}>Gestión de facturas y pagos</Text>
-        {/* TODO: Implementar contenido de facturación */}
-      </ScrollView>
+      <AccountingDashboard />
     </View>
   );
 }
@@ -18,20 +18,6 @@ export default function InvoicesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666666',
+    backgroundColor: '#f9fafb',
   },
 });

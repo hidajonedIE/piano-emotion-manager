@@ -1,15 +1,17 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+/**
+ * Página de Herramientas Avanzadas
+ * Piano Emotion Manager
+ */
+
+import React from 'react';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { DashboardAdvancedTools } from '@/components/dashboard/dashboard-advanced-tools';
 
 export default function AdvancedToolsScreen() {
-  const router = useRouter();
-
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>Herramientas Avanzadas</Text>
-        <Text style={styles.subtitle}>Funciones avanzadas del sistema</Text>
-        {/* TODO: Implementar contenido de herramientas avanzadas */}
+        <DashboardAdvancedTools />
       </ScrollView>
     </View>
   );
@@ -18,20 +20,10 @@ export default function AdvancedToolsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9fafb',
   },
   content: {
     flex: 1,
     padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666666',
   },
 });
