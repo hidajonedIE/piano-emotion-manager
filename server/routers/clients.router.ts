@@ -226,7 +226,7 @@ export const clientsRouter = router({
         throw error;
       }
     },
-    { ttl: 900, prefix: 'clients', includeUser: true, procedurePath: 'clients.list' }
+    { ttl: 900, prefix: 'clients-v2', includeUser: true, procedurePath: 'clients.list' }
   )),
   
   listAll: orgProcedure.query(withCache(
