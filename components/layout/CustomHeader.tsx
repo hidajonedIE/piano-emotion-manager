@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Pressable, StyleSheet, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -45,98 +44,43 @@ export default function CustomHeader({
   };
 
   return (
-    <View style={[styles.outerContainer, { paddingTop: Platform.OS === 'web' ? 0 : Math.max(insets.top, 0) }]}>
-      {/* Barra superior azul con iconos de navegación */}
-      <View style={styles.topBar}>
+    <View style={[styles.container, { paddingTop: Platform.OS === 'web' ? 0 : Math.max(insets.top, 0) }]}>
+      {/* Barra azul única con todo el contenido */}
+      <View style={styles.headerBar}>
+        {/* Sección izquierda: Menú (si aplica) + Icono + Título/Subtítulo */}
         <View style={styles.leftSection}>
           {showMenuButton && (
             <Pressable
-              style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+              style={({ pressed }) => [styles.menuButton, pressed && styles.buttonPressed]}
               onPress={onMenuPress}
             >
               <Ionicons name="menu" size={24} color={COLORS.white} />
             </Pressable>
           )}
-        </View>
-
-        <View style={styles.rightSection}>
-          {/* Help Button */}
-          <Pressable
-            style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/help');
-            }}
-          >
-            <Ionicons name="help-circle-outline" size={24} color={COLORS.white} />
-          </Pressable>
-
-          {/* Notifications Button */}
-          <Pressable
-            style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/alerts');
-            }}
-          >
-            <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
-          </Pressable>
-
-          {/* Settings Button */}
-          <Pressable
-            style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/settings');
-            }}
-          >
-            <Ionicons name="settings-outline" size={24} color={COLORS.white} />
-          </Pressable>
-
-          {/* User Avatar */}
-          <Pressable
-            style={({ pressed }) => [styles.avatar, pressed && styles.iconButtonPressed]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/settings');
-            }}
-          >
-            <Ionicons name="person" size={20} color={COLORS.primary} />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Header con gradiente gris (estilo ScreenHeader) */}
-      <LinearGradient
-        colors={['#7A8B99', '#8E9DAA', '#A2B1BD']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.headerGradient}
-      >
-        <View style={styles.headerRow}>
+          
           {showBackButton && (
-            <Pressable 
-              onPress={handleBack} 
-              style={styles.backButton}
+            <Pressable
+              style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+              onPress={handleBack}
               accessibilityRole="button"
               accessibilityLabel="Volver atrás"
-              accessibilityHint="Pulsa para volver a la pantalla anterior"
             >
-              <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
+              <IconSymbol name="chevron.left" size={24} color={COLORS.white} />
             </Pressable>
           )}
+
           {icon && (
             <View style={styles.iconContainer}>
               <IconSymbol name={icon as any} size={32} color={iconColor} />
             </View>
           )}
-          <View style={styles.headerText}>
+
+          <View style={styles.titleContainer}>
             <ThemedText 
               type="title" 
               style={[
-                styles.headerTitle, 
-                { color: '#FFFFFF' },
-                Platform.OS === 'web' && { fontSize: 32 }
+                styles.title,
+                Platform.OS === 'web' && { fontSize: 24 }
               ]}
             >
               {title}
@@ -147,113 +91,134 @@ export default function CustomHeader({
               </ThemedText>
             )}
           </View>
-          {rightAction && (
-            <View style={styles.rightActionContainer}>
-              {rightAction}
-            </View>
-          )}
         </View>
-      </LinearGradient>
+
+        {/* Sección derecha: Iconos de navegación */}
+        <View style={styles.rightSection}>
+          {rightAction}
+          
+          {/* Help Button */}
+          <Pressable
+            style={({ pressed }) => [styles.iconButton, pressed && styles.buttonPressed]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/help');
+            }}
+          >
+            <Ionicons name="help-circle-outline" size={24} color={COLORS.white} />
+          </Pressable>
+
+          {/* Notifications Button */}
+          <Pressable
+            style={({ pressed }) => [styles.iconButton, pressed && styles.buttonPressed]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/alerts');
+            }}
+          >
+            <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
+          </Pressable>
+
+          {/* Settings Button */}
+          <Pressable
+            style={({ pressed }) => [styles.iconButton, pressed && styles.buttonPressed]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/settings');
+            }}
+          >
+            <Ionicons name="settings-outline" size={24} color={COLORS.white} />
+          </Pressable>
+
+          {/* User Avatar */}
+          <Pressable
+            style={({ pressed }) => [styles.avatar, pressed && styles.buttonPressed]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/settings');
+            }}
+          >
+            <Ionicons name="person" size={20} color={COLORS.primary} />
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  outerContainer: {
+  container: {
     backgroundColor: COLORS.primary,
-    ...Platform.select({
-      web: {
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      },
-    }),
   },
-  topBar: {
+  headerBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    minHeight: 80,
   },
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: Spacing.sm,
+  },
+  menuButton: {
+    padding: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+  backButton: {
+    padding: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleContainer: {
+    flex: 1,
+    marginLeft: Spacing.sm,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.white,
+    textTransform: 'uppercase',
+    fontFamily: Platform.select({
+      ios: 'System',
+      android: 'sans-serif-medium',
+      web: 'Arkhip, system-ui, -apple-system, sans-serif',
+    }),
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
   },
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.sm,
   },
   iconButton: {
-    padding: 8,
-    borderRadius: 8,
-  },
-  iconButtonPressed: {
-    opacity: 0.7,
+    padding: Spacing.xs,
+    borderRadius: BorderRadius.sm,
   },
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: COLORS.white,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
   },
-  headerGradient: {
-    marginHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerText: {
-    flex: 1,
-  },
-  rightActionContainer: {
-    marginLeft: Spacing.sm,
-  },
-  headerTitle: {
-    fontFamily: 'Arkhip',
-    fontSize: 24,
-    lineHeight: 32,
-    textTransform: 'uppercase',
-  },
-  subtitle: {
-    color: 'rgba(255,255,255,0.85)',
-    marginTop: 4,
-    fontSize: 14,
+  buttonPressed: {
+    opacity: 0.7,
   },
 });
