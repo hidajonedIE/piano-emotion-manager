@@ -1,7 +1,17 @@
+/**
+ * Services Screen - Professional Minimalist Design
+ * Piano Emotion Manager
+ * 
+ * Diseño profesional y minimalista:
+ * - Estadísticas limpias y sobrias
+ * - Paleta neutra con acentos azules
+ * - Sin colorines infantiles
+ * - Tipografía limpia y espaciado generoso
+ */
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ServiceCard, EmptyState } from '@/components/cards';
@@ -17,6 +27,15 @@ import { Service, ServiceType, getClientFullName } from '@/types';
 
 type FilterType = 'all' | ServiceType;
 
+// Paleta profesional minimalista
+const COLORS = {
+  primary: '#003a8c',
+  surface: '#f8f9fa',
+  border: '#e5e7eb',
+  textPrimary: '#1a1a1a',
+  textSecondary: '#6b7280',
+};
+
 export default function ServicesScreen() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -31,6 +50,22 @@ export default function ServicesScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
+
+  // Estadísticas por tipo
+  const stats = useMemo(() => {
+    const tuning = services.filter(s => s.type === 'tuning').length;
+    const maintenance = services.filter(s => s.type === 'maintenance').length;
+    const repair = services.filter(s => s.type === 'repair').length;
+    const regulation = services.filter(s => s.type === 'regulation').length;
+    
+    return { 
+      total: services.length,
+      tuning,
+      maintenance,
+      repair,
+      regulation
+    };
+  }, [services]);
 
   // Filtrar servicios
   const filteredServices = useMemo(() => {
@@ -62,7 +97,7 @@ export default function ServicesScreen() {
     // Agregar flag isPast para determinar el color del borde
     return result.map(s => ({
       ...s,
-      isPast: new Date(s.date) < now // true = completado (verde), false = pendiente (rojo)
+      isPast: new Date(s.date) < now
     }));
   }, [services, filter, search, getPiano, getClient]);
 
@@ -106,11 +141,11 @@ export default function ServicesScreen() {
   );
 
   const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: t('common.all') },
-    { key: 'tuning', label: t('services.types.tuning') },
-    { key: 'repair', label: t('services.types.repair') },
-    { key: 'maintenance', label: t('services.types.cleaning') },
-    { key: 'regulation', label: t('services.types.regulation') },
+    { key: 'all', label: 'Todos' },
+    { key: 'tuning', label: 'Afinación' },
+    { key: 'repair', label: 'Reparación' },
+    { key: 'maintenance', label: 'Limpieza' },
+    { key: 'regulation', label: 'Regulación' },
   ];
 
   // Calcular estadísticas
@@ -126,8 +161,9 @@ export default function ServicesScreen() {
         style={styles.container}
       >
         <ScreenHeader 
-          title={t('navigation.services')} 
-          icon="wrench.fill" showBackButton={true}
+          title="Servicios" 
+          icon="wrench.fill" 
+          showBackButton={true}
         />
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="services" />
@@ -144,21 +180,42 @@ export default function ServicesScreen() {
       style={styles.container}
     >
       <ScreenHeader 
-        title={t('navigation.services')} 
-        subtitle={`${filteredServices.length} ${filteredServices.length === 1 ? t('services.title').toLowerCase().slice(0, -1) : t('services.title').toLowerCase()}${totalCost > 0 ? ` · €${totalCost.toFixed(0)}` : ''}`}
-        icon="wrench.fill" showBackButton={true}
+        title="Servicios" 
+        subtitle={`${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`}
+        icon="wrench.fill" 
+        showBackButton={true}
       />
+
+      {/* Estadísticas minimalistas */}
+      <View style={styles.statsSection}>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.total}</Text>
+          <Text style={styles.statLabel}>TOTAL</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.tuning}</Text>
+          <Text style={styles.statLabel}>AFINACIONES</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.repair}</Text>
+          <Text style={styles.statLabel}>REPARACIONES</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.maintenance}</Text>
+          <Text style={styles.statLabel}>LIMPIEZAS</Text>
+        </View>
+      </View>
 
       <View style={styles.searchContainer}>
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder={t('common.search') + '...'}
-          accessibilityLabel={t('common.search') + ' ' + t('navigation.services').toLowerCase()}
+          placeholder="Buscar servicios..."
+          accessibilityLabel="Buscar servicios"
         />
       </View>
 
-      {/* Filtros */}
+      {/* Filtros minimalistas */}
       <View style={styles.filtersWrapper}>
         <FlatList
           horizontal
@@ -191,12 +248,12 @@ export default function ServicesScreen() {
 
       {filteredServices.length === 0 ? (
         <EmptyState
-          icon="wrench.fill" showBackButton={true}
-          title={search || filter !== 'all' ? t('common.noResults') : t('services.noServices')}
+          icon="wrench.fill"
+          title={search || filter !== 'all' ? 'No se encontraron resultados' : 'No hay servicios'}
           message={
             search || filter !== 'all'
-              ? t('common.noResults')
-              : t('services.addFirstService')
+              ? 'Intenta con otros términos de búsqueda'
+              : 'Añade tu primer servicio para comenzar'
           }
         />
       ) : (
@@ -211,7 +268,7 @@ export default function ServicesScreen() {
               refreshing={refreshing}
               onRefresh={handleRefresh}
               tintColor="#7A8B99"
-              title={t('common.loading')}
+              title="Cargando..."
               titleColor="#7A8B99"
             />
           }
@@ -220,8 +277,8 @@ export default function ServicesScreen() {
 
       <FAB 
         onPress={handleAddService} 
-        accessibilityLabel={t('services.newService')}
-        accessibilityHint={t('services.addFirstService')}
+        accessibilityLabel="Añadir nuevo servicio"
+        accessibilityHint="Crear un nuevo servicio"
       />
     </LinearGradient>
   );
@@ -230,6 +287,38 @@ export default function ServicesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  // Estadísticas
+  statsSection: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: Spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 70,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    textAlign: 'center',
   },
   searchContainer: {
     paddingHorizontal: Spacing.md,
@@ -248,7 +337,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     height: 34,
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     marginRight: Spacing.sm,
   },
