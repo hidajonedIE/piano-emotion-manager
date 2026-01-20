@@ -8,8 +8,6 @@ import { PianoCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
-import PageWithHeader from '@/components/layout/PageWithHeader';
-import { useNavigation } from '@react-navigation/native';
 import { ThemedText } from '@/components/themed-text';
 import { useClientsData, usePianosData } from '@/hooks/data';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -122,12 +120,9 @@ export default function PianosScreen() {
     { key: 'digital', label: t('pianos.categories.digital') },
   ];
 
-  const navigation = useNavigation();
-
   // Mostrar animación de carga inicial
   if (loading && pianos.length === 0) {
     return (
-      <PageWithHeader onMenuPress={() => (navigation as any).toggleDrawer?.()}>
         <LinearGradient
           colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
           start={{ x: 0, y: 0 }}
@@ -138,12 +133,10 @@ export default function PianosScreen() {
             <LoadingSpinner size="large" messageType="pianos" />
           </View>
         </LinearGradient>
-      </PageWithHeader>
     );
   }
 
   return (
-    <PageWithHeader onMenuPress={() => (navigation as any).toggleDrawer?.()}>
       <LinearGradient
         colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
         start={{ x: 0, y: 0 }}
@@ -227,7 +220,6 @@ export default function PianosScreen() {
         accessibilityHint={t('pianos.addFirstPiano')}
       />
     </LinearGradient>
-    </PageWithHeader>
   );
 }
 
