@@ -42,7 +42,7 @@ export default function ClientsScreen() {
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
-  const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData();
+  const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData({ pageSize: 50 });
   const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
