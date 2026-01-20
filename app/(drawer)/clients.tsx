@@ -213,18 +213,7 @@ export default function ClientsScreen() {
           <select 
             value={selectedProvince || ''}
             onChange={(e: any) => setSelectedProvince(e.target.value)}
-            style={{
-              flex: 1,
-              height: 36,
-              backgroundColor: COLORS.surface,
-              borderWidth: 1,
-              borderColor: COLORS.border,
-              borderRadius: BorderRadius.sm,
-              paddingHorizontal: Spacing.sm,
-              fontSize: 13,
-              color: COLORS.textPrimary,
-              fontWeight: '500',
-            } as any}
+            style={styles.filterSelect as any}
           >
             <option value="">Todas</option>
             {uniqueProvinces.filter(p => p !== 'Todas').map(province => (
@@ -238,18 +227,7 @@ export default function ClientsScreen() {
           <select 
             value={selectedCity || ''}
             onChange={(e: any) => setSelectedCity(e.target.value)}
-            style={{
-              flex: 1,
-              height: 36,
-              backgroundColor: COLORS.surface,
-              borderWidth: 1,
-              borderColor: COLORS.border,
-              borderRadius: BorderRadius.sm,
-              paddingHorizontal: Spacing.sm,
-              fontSize: 13,
-              color: COLORS.textPrimary,
-              fontWeight: '500',
-            } as any}
+            style={styles.filterSelect as any}
           >
             <option value="">Todas</option>
             {uniqueCities.filter(c => c !== 'Todas').map(city => (
@@ -263,18 +241,7 @@ export default function ClientsScreen() {
           <select 
             value={selectedRouteGroup || ''}
             onChange={(e: any) => setSelectedRouteGroup(e.target.value)}
-            style={{
-              flex: 1,
-              height: 36,
-              backgroundColor: COLORS.surface,
-              borderWidth: 1,
-              borderColor: COLORS.border,
-              borderRadius: BorderRadius.sm,
-              paddingHorizontal: Spacing.sm,
-              fontSize: 13,
-              color: COLORS.textPrimary,
-              fontWeight: '500',
-            } as any}
+            style={styles.filterSelect as any}
           >
             <option value="">Todos</option>
             {uniqueRouteGroups.filter(g => g !== 'Todos').map(group => (
@@ -414,11 +381,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
-    color: COLORS.textTertiary,
-    marginBottom: 4,
+    color: COLORS.textSecondary,
+    marginBottom: 6,
     letterSpacing: 0.5,
+  },
+  filterSelect: {
+    flex: 1,
+    minHeight: 40,
+    height: 40,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    fontWeight: '500',
   },
   filterButton: {
     flexDirection: 'row',
