@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 import { PianoCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
@@ -22,6 +23,7 @@ export default function PianosScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
+  const { width } = useWindowDimensions();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
@@ -58,9 +60,23 @@ export default function PianosScreen() {
       showBackButton: false,
     });
   }, [totalPianos, t, setHeaderConfig]);
+  
   const textSecondary = useThemeColor({}, 'textSecondary');
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
+
+  // Determinar si es móvil, tablet o desktop
+  const isMobile = width < 768;
+  const isDesktop = width >= 1024;
+
+  // Estadísticas por categoría
+  const stats = useMemo(() => {
+    const upright = pianos.filter(p => p.category === 'vertical').length;
+    const grand = pianos.filter(p => p.category === 'cola').length;
+    const digital = pianos.filter(p => p.category === 'digital').length;
+    
+    return { upright, grand, digital };
+  }, [pianos]);
 
   const handlePianoPress = useCallback((piano: Piano) => {
     router.push({
@@ -116,7 +132,7 @@ export default function PianosScreen() {
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: t('common.all') },
     { key: 'vertical', label: t('pianos.categories.upright') },
-    { key: 'grand', label: t('pianos.categories.grand') },
+    { key: 'cola', label: t('pianos.categories.grand') },
     { key: 'digital', label: t('pianos.categories.digital') },
   ];
 
@@ -143,7 +159,24 @@ export default function PianosScreen() {
         end={{ x: 0.5, y: 1 }}
         style={styles.container}
       >
-
+      {/* Grid de estadísticas por categoría */}
+      <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
+        <View style={[styles.statCard, { backgroundColor: '#7c3aed' }]}>
+          <Ionicons name="square" size={24} color="#ffffff" />
+          <Text style={styles.statNumber}>{stats.upright}</Text>
+          <Text style={styles.statLabel}>Verticales</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: '#0891b2' }]}>
+          <Ionicons name="triangle" size={24} color="#ffffff" />
+          <Text style={styles.statNumber}>{stats.grand}</Text>
+          <Text style={styles.statLabel}>De Cola</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: '#10b981' }]}>
+          <Ionicons name="hardware-chip" size={24} color="#ffffff" />
+          <Text style={styles.statNumber}>{stats.digital}</Text>
+          <Text style={styles.statLabel}>Digitales</Text>
+        </View>
+      </View>
 
       <View style={styles.searchContainer}>
         <SearchBar
@@ -214,6 +247,22 @@ export default function PianosScreen() {
         />
       )}
 
+      {/* Acciones rápidas */}
+      {pianos.length > 0 && (
+        <View style={styles.actionsSection}>
+          <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
+            <Pressable style={styles.actionButton}>
+              <Ionicons name="download" size={20} color="#ffffff" />
+              <Text style={styles.actionButtonText}>Importar</Text>
+            </Pressable>
+            <Pressable style={styles.actionButton}>
+              <Ionicons name="share" size={20} color="#ffffff" />
+              <Text style={styles.actionButtonText}>Exportar</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       <FAB 
         onPress={handleAddPiano} 
         accessibilityLabel={t('pianos.newPiano')}
@@ -227,6 +276,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  // Grid de estadísticas
+  statsSection: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  statsSectionDesktop: {
+    maxWidth: 600,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  statCard: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#ffffff',
+    opacity: 0.9,
+  },
+
   searchContainer: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
@@ -240,7 +327,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
   filterText: {
@@ -250,14 +337,43 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: Spacing.md,
     paddingBottom: 100,
-  },
-  loadingState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: Spacing.md,
   },
   footerLoader: {
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
     alignItems: 'center',
+  },
+
+  // Acciones rápidas
+  actionsSection: {
+    position: 'absolute',
+    bottom: 80,
+    left: 0,
+    right: 0,
+    paddingHorizontal: Spacing.md,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  actionsGridDesktop: {
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    backgroundColor: '#e07a5f',
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ffffff',
   },
 });

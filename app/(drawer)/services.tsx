@@ -2,8 +2,9 @@ import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ServiceCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
@@ -21,6 +22,7 @@ export default function ServicesScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
+  const { width } = useWindowDimensions();
   const { services, loading, refresh } = useServicesData();
   const { getPiano } = usePianosData();
   const { getClient } = useClientsData();
@@ -33,6 +35,10 @@ export default function ServicesScreen() {
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
 
+  // Determinar si es móvil, tablet o desktop
+  const isMobile = width < 768;
+  const isDesktop = width >= 1024;
+
   // Configurar header
   useEffect(() => {
     setHeaderConfig({
@@ -42,6 +48,16 @@ export default function ServicesScreen() {
       showBackButton: false,
     });
   }, [services.length, t, setHeaderConfig]);
+
+  // Estadísticas por tipo
+  const stats = useMemo(() => {
+    const tuning = services.filter(s => s.type === 'tuning').length;
+    const cleaning = services.filter(s => s.type === 'maintenance').length;
+    const repair = services.filter(s => s.type === 'repair').length;
+    const regulation = services.filter(s => s.type === 'regulation').length;
+    
+    return { tuning, cleaning, repair, regulation };
+  }, [services]);
 
   // Filtrar servicios
   const filteredServices = useMemo(() => {
@@ -150,6 +166,30 @@ export default function ServicesScreen() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
+      {/* Grid de estadísticas por tipo */}
+      <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
+        <View style={[styles.statCard, { backgroundColor: '#f59e0b' }]}>
+          <Ionicons name="musical-notes" size={20} color="#ffffff" />
+          <Text style={styles.statNumber}>{stats.tuning}</Text>
+          <Text style={styles.statLabel}>Afinaciones</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: '#3b82f6' }]}>
+          <Ionicons name="sparkles" size={20} color="#ffffff" />
+          <Text style={styles.statNumber}>{stats.cleaning}</Text>
+          <Text style={styles.statLabel}>Limpiezas</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: '#ef4444' }]}>
+          <Ionicons name="construct" size={20} color="#ffffff" />
+          <Text style={styles.statNumber}>{stats.repair}</Text>
+          <Text style={styles.statLabel}>Reparaciones</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: '#8b5cf6' }]}>
+          <Ionicons name="settings" size={20} color="#ffffff" />
+          <Text style={styles.statNumber}>{stats.regulation}</Text>
+          <Text style={styles.statLabel}>Regulaciones</Text>
+        </View>
+      </View>
+
       <View style={styles.searchContainer}>
         <SearchBar
           value={search}
@@ -219,6 +259,22 @@ export default function ServicesScreen() {
         />
       )}
 
+      {/* Acciones rápidas */}
+      {filteredServices.length > 0 && (
+        <View style={styles.actionsSection}>
+          <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
+            <Pressable style={styles.actionButton}>
+              <Ionicons name="calendar" size={18} color="#ffffff" />
+              <Text style={styles.actionButtonText}>Calendario</Text>
+            </Pressable>
+            <Pressable style={styles.actionButton}>
+              <Ionicons name="share" size={18} color="#ffffff" />
+              <Text style={styles.actionButtonText}>Exportar</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       <FAB 
         onPress={handleAddService} 
         accessibilityLabel={t('services.newService')}
@@ -232,6 +288,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Grid de estadísticas
+  statsSection: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  statsSectionDesktop: {
+    maxWidth: 800,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  statCard: {
+    flex: 1,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    gap: 4,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#ffffff',
+    opacity: 0.9,
+    textAlign: 'center',
+  },
+
   searchContainer: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
@@ -249,7 +344,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     height: 34,
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     marginRight: Spacing.sm,
   },
@@ -261,9 +356,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingBottom: 100,
   },
-  loadingState: {
+
+  // Acciones rápidas
+  actionsSection: {
+    position: 'absolute',
+    bottom: 80,
+    left: 0,
+    right: 0,
+    paddingHorizontal: Spacing.md,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  actionsGridDesktop: {
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  actionButton: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    backgroundColor: '#e07a5f',
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ffffff',
   },
 });
