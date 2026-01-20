@@ -42,7 +42,7 @@ export default function ClientsScreen() {
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
-  const { clients, loading, refresh, stats } = useClientsData();
+  const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData();
   const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -55,11 +55,11 @@ export default function ClientsScreen() {
   useEffect(() => {
     setHeaderConfig({
       title: t('navigation.clients'),
-      subtitle: `${clients.length} ${clients.length === 1 ? 'cliente' : 'clientes'}`,
+      subtitle: `${stats?.total || 0} ${(stats?.total || 0) === 1 ? 'cliente' : 'clientes'}`,
       icon: 'person.2.fill',
       showBackButton: false,
     });
-  }, [clients.length, t, setHeaderConfig]);
+  }, [stats?.total, t, setHeaderConfig]);
 
   // Estadísticas desde el backend (getStats endpoint)
 
@@ -183,6 +183,19 @@ export default function ClientsScreen() {
             onAction={search ? undefined : handleAddClient}
           />
         }
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={styles.loadingMore}>
+              <LoadingSpinner size="small" />
+            </View>
+          ) : null
+        }
+        onEndReached={() => {
+          if (hasMore && !isLoadingMore && !search) {
+            loadMore();
+          }
+        }}
+        onEndReachedThreshold={0.5}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
@@ -306,5 +319,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textSecondary,
+  },
+  loadingMore: {
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
   },
 });
