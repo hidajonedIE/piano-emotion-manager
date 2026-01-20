@@ -202,6 +202,7 @@ export const clientsRouter = router({
           .offset(offset));
 
         console.log('[clients.list] Query returned:', items.length, 'items');
+        console.log('[clients.list] First item pianoCount:', items[0]?.pianoCount);
         
         const [{ total }] = await withQueue(() => database
           .select({ total: count() })
