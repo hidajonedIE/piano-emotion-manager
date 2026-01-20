@@ -25,6 +25,7 @@ type ServerClient = {
   region?: string | null;
   postalCode?: string | null;
   routeGroup?: string | null;
+  pianoCount?: number; // Número de pianos del cliente
   createdAt: Date;
   updatedAt: Date;
 };
@@ -57,13 +58,14 @@ function serverToLocalClient(server: ServerClient): Client {
     region: server.region || undefined,
     routeGroup: server.routeGroup || undefined,
     notes: server.notes || undefined,
+    pianoCount: server.pianoCount || 0, // Agregar pianoCount
     createdAt: server.createdAt instanceof Date 
       ? server.createdAt.toISOString() 
       : String(server.createdAt),
     updatedAt: server.updatedAt instanceof Date 
       ? server.updatedAt.toISOString() 
       : String(server.updatedAt),
-  };
+  } as any; // Cast temporal para incluir pianoCount
 }
 
 interface UseClientsDataOptions {
