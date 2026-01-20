@@ -138,9 +138,7 @@ export const clientsRouter = router({
           sortOrder: z.enum(["asc", "desc"]).default("asc"),
         })
       )
-     .query(
-      // TEMPORAL: Cache deshabilitado para debugging pianoCount
-      // withCache(
+     .query(withCache(
       async ({ ctx, input }) => {
       const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
       const database = await db.getDb();
@@ -227,10 +225,9 @@ export const clientsRouter = router({
         console.error('[clients.list] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
         throw error;
       }
-    }
-    // TEMPORAL: Cache deshabilitado para debugging pianoCount
-    // , { ttl: 900, prefix: 'clients-v2', includeUser: true, procedurePath: 'clients.list' }
-  ),
+    },
+    { ttl: 900, prefix: 'clients-v2', includeUser: true, procedurePath: 'clients.list' }
+  )),
   
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
