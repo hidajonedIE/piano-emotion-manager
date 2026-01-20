@@ -42,7 +42,7 @@ export default function ClientsScreen() {
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
-  const { clients, loading, refresh } = useClientsData();
+  const { clients, loading, refresh, stats } = useClientsData();
   const { pianos } = usePianosData();
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -61,17 +61,7 @@ export default function ClientsScreen() {
     });
   }, [clients.length, t, setHeaderConfig]);
 
-  // Estadísticas simples
-  const stats = useMemo(() => {
-    const active = clients.filter(c => c.status === 'active').length;
-    const inactive = clients.filter(c => c.status === 'inactive').length;
-    const vip = clients.filter(c => c.isVIP).length;
-    const withPianos = clients.filter(c => 
-      pianos.some(p => p.clientId === c.id)
-    ).length;
-    
-    return { active, inactive, vip, withPianos, total: clients.length };
-  }, [clients, pianos]);
+  // Estadísticas desde el backend (getStats endpoint)
 
   // Filtrar clientes
   const filteredClients = useMemo(() => {
