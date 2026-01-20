@@ -34,6 +34,7 @@ const MENU_SECTIONS: MenuSection[] = [
       { id: 'servicios', label: 'Servicios', icon: 'construct-outline', route: '/(drawer)/services' },
       { id: 'facturacion', label: 'Facturación', icon: 'receipt-outline', route: '/(drawer)/invoices' },
       { id: 'inventario', label: 'Inventario', icon: 'cube-outline', route: '/(drawer)/inventory' },
+      { id: 'pianos', label: 'Pianos', icon: 'musical-notes-outline', route: '/(tabs)/pianos' },
     ],
   },
   {
@@ -47,7 +48,7 @@ const MENU_SECTIONS: MenuSection[] = [
     title: 'HERRAMIENTAS',
     items: [
       { id: 'accesos', label: 'Accesos Rápidos', icon: 'flash-outline', route: '/(drawer)/quick-access' },
-      { id: 'herramientas', label: 'Herramientas Avanzadas', icon: 'construct-outline', route: '/(drawer)/advanced-tools' },
+      { id: 'herramientas', label: 'Herramientas Avanzadas', icon: 'build-outline', route: '/(drawer)/advanced-tools' },
       { id: 'configuracion', label: 'Configuración', icon: 'cog-outline', route: '/(drawer)/settings' },
     ],
   },
