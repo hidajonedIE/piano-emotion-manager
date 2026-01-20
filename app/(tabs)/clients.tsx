@@ -49,7 +49,6 @@ export default function ClientsScreen() {
     isLoadingMore,
     regions,
     routeGroups,
-    stats,
   } = useClientsData({
     search: debouncedSearch,
     region: selectedRegion,
@@ -66,6 +65,22 @@ export default function ClientsScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
+
+  // Estadísticas calculadas en el frontend
+  const stats = useMemo(() => {
+    const active = clients.filter(c => c.status === 'active').length;
+    const vip = clients.filter(c => c.isVIP).length;
+    const withPianos = clients.filter(c => 
+      pianos.some(p => p.clientId === c.id)
+    ).length;
+    
+    return { 
+      total: totalClients, 
+      active, 
+      vip, 
+      withPianos 
+    };
+  }, [clients, pianos, totalClients]);
 
   const handleClientPress = useCallback((client: Client) => {
     router.push({
