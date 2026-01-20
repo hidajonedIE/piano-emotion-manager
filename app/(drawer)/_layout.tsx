@@ -31,7 +31,19 @@ function DrawerContent() {
         },
         // Sidebar permanente en tablet/desktop, deslizable en móvil
         drawerType: isTabletOrDesktop ? 'permanent' : 'slide',
-        headerShown: false,
+        header: () => (
+          <CustomHeader
+            title={headerConfig.title}
+            subtitle={headerConfig.subtitle}
+            icon={headerConfig.icon}
+            iconColor={headerConfig.iconColor}
+            showBackButton={headerConfig.showBackButton}
+            rightAction={headerConfig.rightAction}
+            onMenuPress={() => navigation.toggleDrawer()}
+            showMenuButton={!isTabletOrDesktop}
+          />
+        ),
+        headerShown: true,
         // Swipe solo habilitado en móvil
         swipeEnabled: !isTabletOrDesktop,
         swipeEdgeWidth: 50,

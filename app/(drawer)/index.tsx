@@ -13,8 +13,6 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
-import PageWithHeader from '@/components/layout/PageWithHeader';
-import { useNavigation } from '@react-navigation/native';
 import {
   ScrollView,
   View,
@@ -150,10 +148,8 @@ export default function DashboardScreen() {
   // Determinar estado de alertas
   const hasAlerts = (alertStats?.urgent || 0) + (alertStats?.warning || 0) > 0;
   const alertCount = (alertStats?.urgent || 0) + (alertStats?.warning || 0);
-  const navigation = useNavigation();
 
   return (
-    <PageWithHeader onMenuPress={() => (navigation as any).toggleDrawer?.()}>
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
@@ -323,7 +319,6 @@ export default function DashboardScreen() {
 
 
     </View>
-    </PageWithHeader>
   );
 }
 
