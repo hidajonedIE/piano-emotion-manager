@@ -238,7 +238,7 @@ export default function DashboardScreen() {
                   <Ionicons name="bulb-outline" size={22} color={COLORS.pianos} />
                   <Text style={styles.sectionTitle}>Predicciones IA</Text>
                 </View>
-                <Pressable onPress={() => router.push('/analytics')}>
+                <Pressable onPress={() => router.push('/predictions')}>
                   <Text style={styles.linkText}>Ver todo →</Text>
                 </Pressable>
               </View>
