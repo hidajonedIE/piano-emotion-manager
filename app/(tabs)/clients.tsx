@@ -49,7 +49,6 @@ export default function ClientsScreen() {
     isLoadingMore,
     regions,
     routeGroups,
-    stats,
   } = useClientsData({
     search: debouncedSearch,
     region: selectedRegion,
@@ -57,7 +56,7 @@ export default function ClientsScreen() {
     pageSize: 30,
   });
 
-  // Obtener pianos para mostrar el conteo en cada tarjeta
+  // Obtener pianos para estadísticas
   const { pianos } = usePianosData();
 
   const accent = useThemeColor({}, 'accent');
@@ -66,6 +65,22 @@ export default function ClientsScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   const activeFiltersCount = (selectedRegion ? 1 : 0) + (selectedRoute ? 1 : 0);
+
+  // Estadísticas completas
+  const stats = useMemo(() => {
+    const active = clients.filter(c => c.status === 'active').length;
+    const vip = clients.filter(c => c.isVIP).length;
+    const withPianos = clients.filter(c => 
+      pianos.some(p => p.clientId === c.id)
+    ).length;
+    
+    return { 
+      total: totalClients, 
+      active, 
+      vip, 
+      withPianos 
+    };
+  }, [clients, pianos, totalClients]);
 
   const handleClientPress = useCallback((client: Client) => {
     router.push({
@@ -149,11 +164,6 @@ export default function ClientsScreen() {
         icon="person.2.fill" 
         showBackButton={true}
       />
-
-      {/* DEBUG: Mostrar stats */}
-      <View style={{ padding: 10, backgroundColor: '#ffeb3b' }}>
-        <Text>DEBUG stats: {JSON.stringify(stats)}</Text>
-      </View>
 
       {/* Estadísticas minimalistas */}
       <View style={styles.statsSection}>
