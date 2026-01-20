@@ -212,7 +212,7 @@ export default function ClientsScreen() {
       </View>
 
       {/* FAB */}
-      <FAB icon="add" onPress={handleAddClient} label={t('clients.add')} />
+      <FAB icon="plus" onPress={handleAddClient} label={t('clients.add')} />
     </View>
   );
 }
