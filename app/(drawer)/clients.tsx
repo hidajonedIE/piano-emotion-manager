@@ -343,18 +343,6 @@ export default function ClientsScreen() {
         }
       />
 
-      {/* Botones de acción */}
-      <View style={[styles.actionsSection, isDesktop && styles.actionsSectionDesktop]}>
-        <Pressable style={styles.actionButton} onPress={() => {}}>
-          <Ionicons name="cloud-upload-outline" size={18} color={COLORS.textSecondary} />
-          <Text style={styles.actionButtonText}>Importar</Text>
-        </Pressable>
-        <Pressable style={styles.actionButton} onPress={() => {}}>
-          <Ionicons name="cloud-download-outline" size={18} color={COLORS.textSecondary} />
-          <Text style={styles.actionButtonText}>Exportar</Text>
-        </Pressable>
-      </View>
-
       {/* FAB */}
       <FAB icon="plus" onPress={handleAddClient} label={t('clients.add')} />
     </View>
@@ -519,42 +507,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textPrimary,
   },
-  
-  // Acciones
-  actionsSection: {
-    position: 'absolute',
-    bottom: 80,
-    left: Spacing.md,
-    right: Spacing.md,
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    backgroundColor: COLORS.background,
-    paddingVertical: Spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  actionsSectionDesktop: {
-    left: Spacing.xl,
-    right: Spacing.xl,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    backgroundColor: COLORS.surface,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
+
   loadingMore: {
     paddingVertical: Spacing.lg,
     alignItems: 'center',
