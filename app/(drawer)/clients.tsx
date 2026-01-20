@@ -146,6 +146,14 @@ export default function ClientsScreen() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, selectedProvince, selectedCity, selectedRouteGroup]);
+  
+  // Cargar más clientes automáticamente si la página actual necesita más datos
+  useEffect(() => {
+    const clientsNeeded = currentPage * ITEMS_PER_PAGE;
+    if (filteredClients.length < clientsNeeded && hasMore && !isLoadingMore) {
+      loadMore();
+    }
+  }, [currentPage, filteredClients.length, hasMore, isLoadingMore, loadMore]);
 
   const handleClientPress = (client: Client) => {
     router.push({
