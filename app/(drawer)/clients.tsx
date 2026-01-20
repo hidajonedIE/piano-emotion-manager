@@ -1,4 +1,14 @@
-import { useTranslation } from '@/hooks/use-translation';
+/**
+ * Clients Screen - Professional Minimalist Design
+ * Piano Emotion Manager
+ * 
+ * Diseño profesional y minimalista:
+ * - Sin colorines infantiles
+ * - Paleta neutra con acentos azules
+ * - Estadísticas sobrias y elegantes
+ * - Tipografía limpia y espaciado generoso
+ */
+
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
@@ -11,8 +21,21 @@ import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
 import { useClientsData, usePianosData } from '@/hooks/data';
+import { useTranslation } from '@/hooks/use-translation';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Client, getClientFullName } from '@/types';
+
+// Paleta profesional minimalista
+const COLORS = {
+  primary: '#003a8c',       // Azul corporativo
+  background: '#ffffff',    // Blanco puro
+  surface: '#f8f9fa',       // Gris muy claro
+  border: '#e5e7eb',        // Gris claro para bordes
+  textPrimary: '#1a1a1a',   // Negro casi puro
+  textSecondary: '#6b7280', // Gris medio
+  textTertiary: '#9ca3af',  // Gris claro
+  accent: '#e07a5f',        // Terracota (solo para acciones)
+};
 
 export default function ClientsScreen() {
   const router = useRouter();
@@ -47,7 +70,7 @@ export default function ClientsScreen() {
       pianos.some(p => p.clientId === c.id)
     ).length;
     
-    return { active, inactive, vip, withPianos };
+    return { active, inactive, vip, withPianos, total: clients.length };
   }, [clients, pianos]);
 
   // Filtrar clientes
@@ -109,196 +132,189 @@ export default function ClientsScreen() {
   // Mostrar animación de carga inicial
   if (loading && clients.length === 0) {
     return (
-      <LinearGradient
-        colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.container}
-      >
+      <View style={styles.container}>
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="clients" />
         </View>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.container}
-    >
-      {/* Grid de estadísticas */}
+    <View style={styles.container}>
+      {/* Estadísticas minimalistas */}
       <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
-        <View style={[styles.statCard, { backgroundColor: '#10b981' }]}>
-          <Ionicons name="checkmark-circle" size={20} color="#ffffff" />
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.total}</Text>
+          <Text style={styles.statLabel}>Total</Text>
+        </View>
+        <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.active}</Text>
           <Text style={styles.statLabel}>Activos</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#f59e0b' }]}>
-          <Ionicons name="star" size={20} color="#ffffff" />
+        <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.vip}</Text>
           <Text style={styles.statLabel}>VIP</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#7c3aed' }]}>
-          <Ionicons name="musical-notes" size={20} color="#ffffff" />
+        <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.withPianos}</Text>
           <Text style={styles.statLabel}>Con Pianos</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#64748b' }]}>
-          <Ionicons name="pause-circle" size={20} color="#ffffff" />
-          <Text style={styles.statNumber}>{stats.inactive}</Text>
-          <Text style={styles.statLabel}>Inactivos</Text>
-        </View>
       </View>
 
-      <View style={styles.searchContainer}>
+      {/* Barra de búsqueda */}
+      <View style={[styles.searchSection, isDesktop && styles.searchSectionDesktop]}>
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder={t('common.search') + '...'}
-          accessibilityLabel={t('common.search') + ' ' + t('navigation.clients').toLowerCase()}
+          placeholder={t('clients.search')}
         />
       </View>
 
-      {filteredClients.length === 0 ? (
-        <EmptyState
-          icon="person.2.fill"
-          showBackButton={true}
-          title={search ? t('common.noResults') : t('clients.noClients')}
-          message={
-            search
-              ? t('common.noResults')
-              : t('clients.addFirstClient')
-          }
-        />
-      ) : (
-        <FlatList
-          data={filteredClients}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor="#7A8B99"
-              title={t('common.loading')}
-              titleColor="#7A8B99"
-            />
-          }
-        />
-      )}
-
-      {/* Acciones rápidas */}
-      {filteredClients.length > 0 && (
-        <View style={styles.actionsSection}>
-          <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
-            <Pressable style={styles.actionButton}>
-              <Ionicons name="cloud-upload" size={18} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Importar</Text>
-            </Pressable>
-            <Pressable style={styles.actionButton}>
-              <Ionicons name="share" size={18} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Exportar</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-
-      <FAB 
-        onPress={handleAddClient} 
-        accessibilityLabel={t('clients.newClient')}
-        accessibilityHint={t('clients.addFirstClient')}
+      {/* Lista de clientes */}
+      <FlatList
+        data={filteredClients}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={[
+          styles.listContent,
+          isDesktop && styles.listContentDesktop,
+        ]}
+        ListEmptyComponent={
+          <EmptyState
+            icon="person-add"
+            title={search ? t('clients.noResults') : t('clients.empty')}
+            message={
+              search
+                ? t('clients.noResultsMessage')
+                : t('clients.emptyMessage')
+            }
+            actionLabel={search ? undefined : t('clients.addFirst')}
+            onAction={search ? undefined : handleAddClient}
+          />
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       />
-    </LinearGradient>
+
+      {/* Botones de acción */}
+      <View style={[styles.actionsSection, isDesktop && styles.actionsSectionDesktop]}>
+        <Pressable style={styles.actionButton} onPress={() => {}}>
+          <Ionicons name="cloud-upload-outline" size={18} color={COLORS.textSecondary} />
+          <Text style={styles.actionButtonText}>Importar</Text>
+        </Pressable>
+        <Pressable style={styles.actionButton} onPress={() => {}}>
+          <Ionicons name="cloud-download-outline" size={18} color={COLORS.textSecondary} />
+          <Text style={styles.actionButtonText}>Exportar</Text>
+        </Pressable>
+      </View>
+
+      {/* FAB */}
+      <FAB icon="add" onPress={handleAddClient} label={t('clients.add')} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   loadingState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-  // Grid de estadísticas
+  
+  // Estadísticas minimalistas
   statsSection: {
     flexDirection: 'row',
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
   statsSectionDesktop: {
-    maxWidth: 800,
-    alignSelf: 'center',
-    width: '100%',
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.md,
   },
   statCard: {
     flex: 1,
-    padding: Spacing.sm,
+    backgroundColor: COLORS.surface,
     borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: Spacing.md,
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    minHeight: 80,
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
+    color: COLORS.primary,
+    marginBottom: 4,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
-    color: '#ffffff',
-    opacity: 0.9,
-    textAlign: 'center',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-
-  searchContainer: {
+  
+  // Búsqueda
+  searchSection: {
     paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.sm,
+    paddingVertical: Spacing.sm,
   },
-  list: {
+  searchSectionDesktop: {
+    paddingHorizontal: Spacing.xl,
+  },
+  
+  // Lista
+  listContent: {
     paddingHorizontal: Spacing.md,
     paddingBottom: 100,
   },
-
-  // Acciones rápidas
+  listContentDesktop: {
+    paddingHorizontal: Spacing.xl,
+  },
+  
+  // Acciones
   actionsSection: {
     position: 'absolute',
     bottom: 80,
-    left: 0,
-    right: 0,
-    paddingHorizontal: Spacing.md,
-  },
-  actionsGrid: {
+    left: Spacing.md,
+    right: Spacing.md,
     flexDirection: 'row',
     gap: Spacing.sm,
+    backgroundColor: COLORS.background,
+    paddingVertical: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
-  actionsGridDesktop: {
-    maxWidth: 400,
-    alignSelf: 'center',
-    width: '100%',
+  actionsSectionDesktop: {
+    left: Spacing.xl,
+    right: Spacing.xl,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.xs,
-    padding: Spacing.sm,
+    gap: 8,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: COLORS.surface,
     borderRadius: BorderRadius.md,
-    backgroundColor: '#e07a5f',
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   actionButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: COLORS.textSecondary,
   },
 });

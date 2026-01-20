@@ -1,15 +1,12 @@
 /**
- * Agenda Screen - Elegant Professional Design
+ * Agenda Screen - Professional Minimalist Design
  * Piano Emotion Manager
  * 
- * Diseño siguiendo el patrón del Dashboard:
- * - Header configurado con useHeader
- * - Grid de estadísticas de citas
- * - Vista de calendario
- * - Lista de próximas citas
- * - Optimizador de rutas
- * - Acciones rápidas
- * - FAB para añadir cita
+ * Diseño profesional y minimalista:
+ * - Sin colorines infantiles
+ * - Paleta neutra con acentos azules
+ * - Calendario limpio y funcional
+ * - Lista de citas sobria
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
@@ -26,32 +23,29 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 
 // Hooks y componentes
 import { useClientsData, usePianosData, useAppointmentsData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
 import { CalendarView } from '@/components/calendar-view';
-import { RouteOptimizer } from '@/components/route-optimizer';
 import { EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Appointment, APPOINTMENT_STATUS_LABELS, formatDate, getClientFullName } from '@/types';
 import { BorderRadius, Spacing } from '@/constants/theme';
 
-// Colores del diseño Elegant Professional
+// Paleta profesional minimalista
 const COLORS = {
-  primary: '#003a8c',      // Azul Cobalto
-  accent: '#e07a5f',       // Terracota
-  white: '#ffffff',
-  background: '#f5f5f5',
-  textPrimary: '#1a1a1a',
-  textSecondary: '#666666',
-  cardBg: '#ffffff',
-  border: '#e5e7eb',
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ff4d4f',
+  primary: '#003a8c',       // Azul corporativo
+  background: '#ffffff',    // Blanco puro
+  surface: '#f8f9fa',       // Gris muy claro
+  border: '#e5e7eb',        // Gris claro para bordes
+  textPrimary: '#1a1a1a',   // Negro casi puro
+  textSecondary: '#6b7280', // Gris medio
+  textTertiary: '#9ca3af',  // Gris claro
+  accent: '#e07a5f',        // Terracota (solo para acciones)
+  success: '#10b981',       // Verde para confirmado
+  warning: '#f59e0b',       // Ámbar para pendiente
 };
 
 export default function AgendaScreen() {
@@ -60,156 +54,169 @@ export default function AgendaScreen() {
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showRouteOptimizer, setShowRouteOptimizer] = useState(false);
 
   // Datos
+  const { clients } = useClientsData();
+  const { pianos } = usePianosData();
   const { appointments, loading } = useAppointmentsData();
-  const { getClient } = useClientsData();
-  const { getPiano } = usePianosData();
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
-
-  // Estadísticas de citas
-  const stats = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const pending = appointments.filter(a => a.status === 'pending' && a.date >= today).length;
-    const confirmed = appointments.filter(a => a.status === 'confirmed' && a.date >= today).length;
-    const completed = appointments.filter(a => a.status === 'completed').length;
-    const cancelled = appointments.filter(a => a.status === 'cancelled').length;
-    
-    return { pending, confirmed, completed, cancelled };
-  }, [appointments]);
 
   // Configurar header
   useEffect(() => {
     setHeaderConfig({
       title: 'Agenda',
-      subtitle: `${stats.pending + stats.confirmed} citas pendientes`,
-      icon: 'calendar',
+      subtitle: 'Gestión de citas y calendario',
+      icon: 'calendar.fill',
       showBackButton: false,
     });
-  }, [stats.pending, stats.confirmed, setHeaderConfig]);
+  }, [setHeaderConfig]);
 
-  // Próximas citas (hoy y futuras)
-  const upcomingAppointments = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return appointments
-      .filter(a => a.date >= today && a.status !== 'cancelled')
-      .sort((a, b) => {
-        const dateCompare = a.date.localeCompare(b.date);
-        if (dateCompare !== 0) return dateCompare;
-        return a.startTime.localeCompare(b.startTime);
-      })
-      .slice(0, 5); // Mostrar solo las próximas 5
+  // Estadísticas de citas
+  const stats = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todayAppointments = appointments.filter(a => {
+      const appDate = new Date(a.date);
+      appDate.setHours(0, 0, 0, 0);
+      return appDate.getTime() === today.getTime();
+    });
+    
+    const pending = appointments.filter(a => a.status === 'pending').length;
+    const confirmed = appointments.filter(a => a.status === 'confirmed').length;
+    const completed = appointments.filter(a => a.status === 'completed').length;
+    
+    return {
+      total: appointments.length,
+      today: todayAppointments.length,
+      pending,
+      confirmed,
+      completed,
+    };
   }, [appointments]);
 
-  // Navegación
-  const handleAddAppointment = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-    router.push('/appointments/new');
-  }, [router]);
+  // Citas del día seleccionado
+  const dayAppointments = useMemo(() => {
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    
+    return appointments
+      .filter(a => {
+        const appDate = new Date(a.date);
+        appDate.setHours(0, 0, 0, 0);
+        return appDate.getTime() === selected.getTime();
+      })
+      .sort((a, b) => {
+        const timeA = a.startTime || '00:00';
+        const timeB = b.startTime || '00:00';
+        return timeA.localeCompare(timeB);
+      });
+  }, [appointments, selectedDate]);
 
-  const handleAppointmentPress = useCallback((appointment: Appointment) => {
+  // Helpers
+  const getClient = useCallback((clientId: string) => {
+    return clients.find(c => c.id === clientId);
+  }, [clients]);
+
+  const getPiano = useCallback((pianoId: string) => {
+    return pianos.find(p => p.id === pianoId);
+  }, [pianos]);
+
+  // Handlers
+  const handleAddAppointment = () => {
+    router.push({
+      pathname: '/appointment/[id]' as any,
+      params: { id: 'new' },
+    });
+  };
+
+  const handleAppointmentPress = (appointment: Appointment) => {
+    router.push({
+      pathname: '/appointment/[id]' as any,
+      params: { id: appointment.id },
+    });
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    router.push(`/appointments/${appointment.id}`);
-  }, [router]);
+  };
 
-  // Render de loading inicial
+  // Mostrar animación de carga inicial
   if (loading && appointments.length === 0) {
     return (
-      <LinearGradient
-        colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.container}
-      >
+      <View style={styles.container}>
         <View style={styles.loadingState}>
           <LoadingSpinner size="large" messageType="appointments" />
         </View>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isDesktop && styles.scrollContentDesktop,
+        ]}
       >
-        {/* Estadísticas de citas */}
+        {/* Estadísticas minimalistas */}
         <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
-          <View style={[styles.statCard, { backgroundColor: '#f59e0b' }]}>
-            <Ionicons name="time" size={20} color={COLORS.white} />
-            <Text style={styles.statNumber}>{stats.pending}</Text>
-            <Text style={styles.statLabel}>Pendientes</Text>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.total}</Text>
+            <Text style={styles.statLabel}>Total</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: '#10b981' }]}>
-            <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.today}</Text>
+            <Text style={styles.statLabel}>Hoy</Text>
+          </View>
+          <View style={styles.statCard}>
             <Text style={styles.statNumber}>{stats.confirmed}</Text>
             <Text style={styles.statLabel}>Confirmadas</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: '#0891b2' }]}>
-            <Ionicons name="checkmark-done" size={20} color={COLORS.white} />
-            <Text style={styles.statNumber}>{stats.completed}</Text>
-            <Text style={styles.statLabel}>Completadas</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#ff4d4f' }]}>
-            <Ionicons name="close-circle" size={20} color={COLORS.white} />
-            <Text style={styles.statNumber}>{stats.cancelled}</Text>
-            <Text style={styles.statLabel}>Canceladas</Text>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.pending}</Text>
+            <Text style={styles.statLabel}>Pendientes</Text>
           </View>
         </View>
 
-        {/* Vista de calendario */}
+        {/* Calendario */}
         <View style={styles.calendarSection}>
-          <CalendarView
-            appointments={appointments}
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-            onAppointmentPress={handleAppointmentPress}
-          />
+          <Text style={styles.sectionTitle}>Calendario</Text>
+          <View style={styles.calendarContainer}>
+            <CalendarView
+              selectedDate={selectedDate}
+              onSelectDate={handleDateSelect}
+              appointments={appointments}
+            />
+          </View>
         </View>
 
-        {/* Próximas citas */}
-        <View style={styles.upcomingSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Próximas Citas</Text>
-            <Pressable
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                router.push('/appointments');
-              }}
-            >
-              <Text style={styles.seeAllText}>Ver todo →</Text>
-            </Pressable>
-          </View>
-
-          {upcomingAppointments.length === 0 ? (
-            <EmptyState
-              icon="calendar-outline"
-              title="No hay citas próximas"
-              message="Añade una cita para comenzar"
-              actionLabel="Añadir Cita"
-              onAction={handleAddAppointment}
-            />
+        {/* Citas del día seleccionado */}
+        <View style={styles.appointmentsSection}>
+          <Text style={styles.sectionTitle}>
+            Citas del {formatDate(selectedDate, 'dd/MM/yyyy')}
+          </Text>
+          
+          {dayAppointments.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <EmptyState
+                icon="calendar-outline"
+                title="No hay citas"
+                message="No hay citas programadas para este día"
+                actionLabel="Añadir Cita"
+                onAction={handleAddAppointment}
+              />
+            </View>
           ) : (
             <View style={styles.appointmentsList}>
-              {upcomingAppointments.map((appointment) => {
+              {dayAppointments.map((appointment) => {
                 const client = appointment.clientId ? getClient(appointment.clientId) : null;
                 const piano = appointment.pianoId ? getPiano(appointment.pianoId) : null;
                 
@@ -219,30 +226,47 @@ export default function AgendaScreen() {
                     style={styles.appointmentCard}
                     onPress={() => handleAppointmentPress(appointment)}
                   >
-                    <View style={styles.appointmentTime}>
-                      <Text style={styles.timeText}>{appointment.startTime}</Text>
+                    <View style={styles.appointmentHeader}>
+                      <View style={styles.appointmentTime}>
+                        <Ionicons name="time-outline" size={16} color={COLORS.textSecondary} />
+                        <Text style={styles.timeText}>{appointment.startTime || '00:00'}</Text>
+                      </View>
                       <View style={[
                         styles.statusBadge,
-                        { backgroundColor: appointment.status === 'confirmed' ? COLORS.success : COLORS.warning }
+                        { 
+                          backgroundColor: appointment.status === 'confirmed' 
+                            ? COLORS.success 
+                            : appointment.status === 'completed'
+                            ? COLORS.primary
+                            : COLORS.warning 
+                        }
                       ]}>
                         <Text style={styles.statusText}>
-                          {APPOINTMENT_STATUS_LABELS[appointment.status]}
+                          {APPOINTMENT_STATUS_LABELS[appointment.status] || 'Pendiente'}
                         </Text>
                       </View>
                     </View>
-                    <View style={styles.appointmentInfo}>
-                      <Text style={styles.appointmentTitle}>{appointment.title}</Text>
+                    
+                    <View style={styles.appointmentBody}>
+                      <Text style={styles.appointmentTitle}>{appointment.title || 'Sin título'}</Text>
                       {client && (
-                        <Text style={styles.appointmentClient}>
-                          {getClientFullName(client)}
-                        </Text>
+                        <View style={styles.appointmentDetail}>
+                          <Ionicons name="person-outline" size={14} color={COLORS.textSecondary} />
+                          <Text style={styles.appointmentDetailText}>
+                            {getClientFullName(client)}
+                          </Text>
+                        </View>
                       )}
                       {piano && (
-                        <Text style={styles.appointmentPiano}>
-                          {piano.brand} {piano.model}
-                        </Text>
+                        <View style={styles.appointmentDetail}>
+                          <Ionicons name="musical-notes-outline" size={14} color={COLORS.textSecondary} />
+                          <Text style={styles.appointmentDetailText}>
+                            {piano.brand} {piano.model}
+                          </Text>
+                        </View>
                       )}
                     </View>
+                    
                     <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
                   </Pressable>
                 );
@@ -250,32 +274,6 @@ export default function AgendaScreen() {
             </View>
           )}
         </View>
-
-        {/* Optimizador de rutas */}
-        {upcomingAppointments.length > 1 && (
-          <View style={styles.optimizerSection}>
-            <Pressable
-              style={styles.optimizerButton}
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                setShowRouteOptimizer(!showRouteOptimizer);
-              }}
-            >
-              <Ionicons name="map" size={20} color={COLORS.white} />
-              <Text style={styles.optimizerButtonText}>
-                {showRouteOptimizer ? 'Ocultar' : 'Optimizar'} Ruta del Día
-              </Text>
-            </Pressable>
-            
-            {showRouteOptimizer && (
-              <View style={styles.optimizerContainer}>
-                <RouteOptimizer appointments={upcomingAppointments} />
-              </View>
-            )}
-          </View>
-        )}
 
         {/* Acciones rápidas */}
         <View style={styles.actionsSection}>
@@ -287,11 +285,11 @@ export default function AgendaScreen() {
                 if (Platform.OS !== 'web') {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }
-                router.push('/appointments/calendar');
+                setSelectedDate(new Date());
               }}
             >
-              <Ionicons name="calendar-outline" size={18} color={COLORS.white} />
-              <Text style={styles.actionButtonText}>Vista Mensual</Text>
+              <Ionicons name="today-outline" size={18} color={COLORS.textSecondary} />
+              <Text style={styles.actionButtonText}>Hoy</Text>
             </Pressable>
             <Pressable
               style={styles.actionButton}
@@ -299,40 +297,37 @@ export default function AgendaScreen() {
                 if (Platform.OS !== 'web') {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }
-                router.push('/appointments/export');
+                // Filtrar pendientes
               }}
             >
-              <Ionicons name="cloud-download-outline" size={18} color={COLORS.white} />
-              <Text style={styles.actionButtonText}>Exportar Agenda</Text>
+              <Ionicons name="list-outline" size={18} color={COLORS.textSecondary} />
+              <Text style={styles.actionButtonText}>Pendientes</Text>
             </Pressable>
           </View>
         </View>
       </ScrollView>
 
-      {/* FAB para añadir cita */}
-      <FAB 
-        onPress={handleAddAppointment} 
-        accessibilityLabel="Añadir cita"
-        accessibilityHint="Añade una nueva cita a la agenda"
-      />
-    </LinearGradient>
+      {/* FAB */}
+      <FAB icon="add" onPress={handleAddAppointment} label="Nueva Cita" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100,
+    backgroundColor: COLORS.background,
   },
   loadingState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  scrollContentDesktop: {
+    paddingHorizontal: Spacing.xl,
   },
   
   // Estadísticas
@@ -341,159 +336,151 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
   statsSectionDesktop: {
-    maxWidth: 800,
-    alignSelf: 'center',
-    width: '100%',
+    paddingHorizontal: 0,
+    gap: Spacing.md,
   },
   statCard: {
     flex: 1,
-    padding: Spacing.sm,
+    backgroundColor: COLORS.surface,
     borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: Spacing.md,
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    minHeight: 80,
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: '700',
-    color: COLORS.white,
+    color: COLORS.primary,
+    marginBottom: 4,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
-    color: COLORS.white,
-    opacity: 0.9,
-    textAlign: 'center',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-
+  
+  // Secciones
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: Spacing.sm,
+  },
+  
   // Calendario
   calendarSection: {
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
+    paddingVertical: Spacing.md,
   },
-
-  // Próximas citas
-  upcomingSection: {
+  calendarContainer: {
+    backgroundColor: COLORS.surface,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: 'hidden',
+  },
+  
+  // Citas
+  appointmentsSection: {
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
+    paddingVertical: Spacing.md,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  seeAllText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.primary,
+  emptyContainer: {
+    paddingVertical: Spacing.xl,
   },
   appointmentsList: {
     gap: Spacing.sm,
   },
   appointmentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderRadius: BorderRadius.md,
-    gap: Spacing.sm,
     borderWidth: 1,
     borderColor: COLORS.border,
+    padding: Spacing.md,
+    flexDirection: 'column',
+    gap: Spacing.sm,
+  },
+  appointmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   appointmentTime: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   timeText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textPrimary,
   },
   statusBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
   },
   statusText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '600',
-    color: COLORS.white,
+    color: COLORS.background,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  appointmentInfo: {
-    flex: 1,
-    gap: 2,
+  appointmentBody: {
+    gap: 6,
   },
   appointmentTitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
     color: COLORS.textPrimary,
   },
-  appointmentClient: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  appointmentPiano: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-
-  // Optimizador
-  optimizerSection: {
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  optimizerButton: {
+  appointmentDetail: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    padding: Spacing.sm,
-    backgroundColor: COLORS.primary,
-    borderRadius: BorderRadius.md,
+    gap: 6,
   },
-  optimizerButtonText: {
+  appointmentDetailText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.white,
+    color: COLORS.textSecondary,
   },
-  optimizerContainer: {
-    marginTop: Spacing.sm,
-  },
-
-  // Acciones rápidas
+  
+  // Acciones
   actionsSection: {
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
+    paddingVertical: Spacing.md,
   },
   actionsGrid: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    marginTop: Spacing.sm,
   },
   actionsGridDesktop: {
-    maxWidth: 600,
+    maxWidth: 400,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.xs,
-    padding: Spacing.sm,
+    gap: 8,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: COLORS.surface,
     borderRadius: BorderRadius.md,
-    backgroundColor: COLORS.accent,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   actionButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: COLORS.white,
+    color: COLORS.textSecondary,
   },
 });
