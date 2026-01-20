@@ -65,9 +65,13 @@ export default function CustomSidebar() {
   const isActive = (route: string) => {
     // Para la ruta principal del drawer, considerar tanto '/(drawer)' como '/'
     if (route === '/(drawer)') {
-      return pathname === '/(drawer)' || pathname === '/' || pathname === '';
+      return pathname === '/(drawer)' || pathname === '/' || pathname === '' || pathname === '/index';
     }
-    return pathname === route || pathname.startsWith(route + '/');
+    // Normalizar pathname eliminando trailing slashes
+    const normalizedPathname = pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname;
+    const normalizedRoute = route.endsWith('/') && route !== '/' ? route.slice(0, -1) : route;
+    
+    return normalizedPathname === normalizedRoute || normalizedPathname.startsWith(normalizedRoute + '/');
   };
 
   return (
