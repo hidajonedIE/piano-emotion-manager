@@ -12,7 +12,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -55,6 +55,28 @@ export default function ClientsScreen() {
   const isMobile = width < 768;
   const isDesktop = width >= 1024;
 
+  // Calcular listas únicas para los filtros
+  const uniqueProvinces = useMemo(() => {
+    const provinces = clients
+      .map(c => c.region)
+      .filter((r): r is string => !!r);
+    return ['Todas', ...Array.from(new Set(provinces)).sort()];
+  }, [clients]);
+
+  const uniqueCities = useMemo(() => {
+    const cities = clients
+      .map(c => c.city)
+      .filter((c): c is string => !!c);
+    return ['Todas', ...Array.from(new Set(cities)).sort()];
+  }, [clients]);
+
+  const uniqueRouteGroups = useMemo(() => {
+    const groups = clients
+      .map(c => c.routeGroup)
+      .filter((g): g is string => !!g);
+    return ['Todos', ...Array.from(new Set(groups)).sort()];
+  }, [clients]);
+
   // Configurar header
   useEffect(() => {
     setHeaderConfig({
@@ -69,23 +91,43 @@ export default function ClientsScreen() {
 
   // Filtrar clientes
   const filteredClients = useMemo(() => {
-    if (!search.trim()) return clients;
-
-    const searchLower = search.toLowerCase();
     return clients.filter((c) => {
-      const fullName = getClientFullName(c).toLowerCase();
-      const email = c.email?.toLowerCase() || '';
-      const phone = c.phone?.toLowerCase() || '';
-      const address = c.address?.toLowerCase() || '';
+      // Filtro de búsqueda
+      if (search.trim()) {
+        const searchLower = search.toLowerCase();
+        const fullName = getClientFullName(c).toLowerCase();
+        const email = c.email?.toLowerCase() || '';
+        const phone = c.phone?.toLowerCase() || '';
+        const address = c.address?.toLowerCase() || '';
+        
+        const matchesSearch = (
+          fullName.includes(searchLower) ||
+          email.includes(searchLower) ||
+          phone.includes(searchLower) ||
+          address.includes(searchLower)
+        );
+        
+        if (!matchesSearch) return false;
+      }
       
-      return (
-        fullName.includes(searchLower) ||
-        email.includes(searchLower) ||
-        phone.includes(searchLower) ||
-        address.includes(searchLower)
-      );
+      // Filtro de provincia
+      if (selectedProvince && selectedProvince !== 'Todas') {
+        if (c.region !== selectedProvince) return false;
+      }
+      
+      // Filtro de ciudad
+      if (selectedCity && selectedCity !== 'Todas') {
+        if (c.city !== selectedCity) return false;
+      }
+      
+      // Filtro de grupo de ruta
+      if (selectedRouteGroup && selectedRouteGroup !== 'Todos') {
+        if (c.routeGroup !== selectedRouteGroup) return false;
+      }
+      
+      return true;
     });
-  }, [clients, search]);
+  }, [clients, search, selectedProvince, selectedCity, selectedRouteGroup]);
 
   const handleClientPress = (client: Client) => {
     router.push({
@@ -99,6 +141,40 @@ export default function ClientsScreen() {
       pathname: '/client/[id]' as any,
       params: { id: 'new' },
     });
+  };
+
+  // Handlers para los filtros
+  const handleProvincePress = () => {
+    Alert.alert(
+      'Seleccionar Provincia',
+      '',
+      uniqueProvinces.map(province => ({
+        text: province,
+        onPress: () => setSelectedProvince(province === 'Todas' ? '' : province),
+      }))
+    );
+  };
+
+  const handleCityPress = () => {
+    Alert.alert(
+      'Seleccionar Ciudad',
+      '',
+      uniqueCities.map(city => ({
+        text: city,
+        onPress: () => setSelectedCity(city === 'Todas' ? '' : city),
+      }))
+    );
+  };
+
+  const handleRouteGroupPress = () => {
+    Alert.alert(
+      'Seleccionar Grupo de Ruta',
+      '',
+      uniqueRouteGroups.map(group => ({
+        text: group,
+        onPress: () => setSelectedRouteGroup(group === 'Todos' ? '' : group),
+      }))
+    );
   };
 
   const handleRefresh = useCallback(async () => {
@@ -168,7 +244,7 @@ export default function ClientsScreen() {
       <View style={[styles.filtersSection, isDesktop && styles.filtersSectionDesktop]}>
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>PROVINCIA</Text>
-          <Pressable style={styles.filterButton}>
+          <Pressable style={styles.filterButton} onPress={handleProvincePress}>
             <Text style={styles.filterButtonText}>
               {selectedProvince || 'Todas'}
             </Text>
@@ -178,7 +254,7 @@ export default function ClientsScreen() {
         
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>CIUDAD</Text>
-          <Pressable style={styles.filterButton}>
+          <Pressable style={styles.filterButton} onPress={handleCityPress}>
             <Text style={styles.filterButtonText}>
               {selectedCity || 'Todas'}
             </Text>
@@ -188,7 +264,7 @@ export default function ClientsScreen() {
         
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>GRUPO DE RUTA</Text>
-          <Pressable style={styles.filterButton}>
+          <Pressable style={styles.filterButton} onPress={handleRouteGroupPress}>
             <Text style={styles.filterButtonText}>
               {selectedRouteGroup || 'Todos'}
             </Text>
