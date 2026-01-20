@@ -209,7 +209,7 @@ export default function ClientsScreen() {
       {/* Filtros */}
       <View style={[styles.filtersSection, isDesktop && styles.filtersSectionDesktop]}>
         <View style={styles.filterItem}>
-          <Text style={styles.filterLabel}>PROVINCIA</Text>
+          <Text style={styles.filterLabel}>COMUNIDAD</Text>
           <select 
             value={selectedProvince || ''}
             onChange={(e: any) => setSelectedProvince(e.target.value)}
