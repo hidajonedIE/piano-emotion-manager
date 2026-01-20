@@ -434,6 +434,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 11,
     paddingVertical: 7, // Compacta: 10% menos
+    marginTop: 12,
     ...Platform.select({
       web: {
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
