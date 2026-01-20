@@ -111,7 +111,7 @@ export default function ClientsScreen() {
       return (
         <ClientCard
           client={item}
-          pianosCount={clientPianos.length}
+          pianoCount={clientPianos.length}
           onPress={() => handleClientPress(item)}
         />
       );
