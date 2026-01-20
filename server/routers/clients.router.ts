@@ -476,6 +476,7 @@ export const clientsRouter = router({
     }),
   
   getStats: orgProcedure.query(async ({ ctx }) => {
+    console.log('[getStats] partnerId:', ctx.partnerId, 'orgContext:', ctx.orgContext);
     const database = await db.getDb();
     if (!database) return { total: 0, active: 0, vip: 0, withPianos: 0 };
 
@@ -516,11 +517,13 @@ export const clientsRouter = router({
         )
       );
 
-    return {
+    const result = {
       total: Number(total),
       active: Number(active),
       vip: Number(vip),
       withPianos: Number(withPianos)
     };
+    console.log('[getStats] result:', result);
+    return result;
   }),
 });
