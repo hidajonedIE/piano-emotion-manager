@@ -183,7 +183,7 @@ export const clientsRouter = router({
 
       const offset = cursor || 0;
       
-      // DEBUG: Log the WHERE clause
+      // DEBUG: Log the WHERE clause (v2 with LEFT JOIN for pianoCount)
       console.log('[clients.list] WHERE clauses count:', whereClauses.length);
       console.log('[clients.list] Offset:', offset, 'Limit:', limit);
       console.log('[clients.list] Using partnerId:', partnerId, 'for filter');
