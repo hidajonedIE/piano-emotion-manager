@@ -62,6 +62,10 @@ export default function CustomSidebar() {
   };
 
   const isActive = (route: string) => {
+    // Para la ruta principal del drawer, considerar tanto '/(drawer)' como '/'
+    if (route === '/(drawer)') {
+      return pathname === '/(drawer)' || pathname === '/' || pathname === '';
+    }
     return pathname === route || pathname.startsWith(route + '/');
   };
 
@@ -178,6 +182,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 4,
     backgroundColor: COLORS.primary,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
     ...Platform.select({
       web: {
         zIndex: 10,
@@ -198,6 +204,6 @@ const styles = StyleSheet.create({
   },
   menuLabelActive: {
     color: COLORS.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
