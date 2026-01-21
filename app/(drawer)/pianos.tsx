@@ -60,6 +60,7 @@ export default function PianosScreen() {
     loadMore,
     hasMore,
     isLoadingMore,
+    stats,
   } = usePianosData({
     search: debouncedSearch,
     category: filter !== 'all' ? filter : undefined,
@@ -84,13 +85,7 @@ export default function PianosScreen() {
     }, [totalPianos, t, setHeaderConfig])
   );
 
-  // Estadísticas por categoría
-  const stats = useMemo(() => {
-    const upright = pianos.filter(p => p.category === 'vertical').length;
-    const grand = pianos.filter(p => p.category === 'grand').length;
-    
-    return { upright, grand };
-  }, [pianos]);
+  // Estadísticas vienen del hook (calculadas en backend)
 
   const handlePianoPress = useCallback((piano: Piano) => {
     router.push({
@@ -165,7 +160,7 @@ export default function PianosScreen() {
       {/* Estadísticas minimalistas */}
       <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.upright}</Text>
+          <Text style={styles.statNumber}>{stats.vertical}</Text>
           <Text style={styles.statLabel}>Verticales</Text>
         </View>
         <View style={styles.statCard}>
