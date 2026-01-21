@@ -104,7 +104,7 @@ export default function AgendaScreen() {
             }}
             style={[{ padding: 8, borderRadius: 8, backgroundColor: `${accent}15` }]}
           >
-            <IconSymbol name="gearshape.fill" size={20} color={accent} />
+            <IconSymbol name="gearshape.fill" size={20} color="#ffffff" />
           </Pressable>
           <Pressable
             onPress={() => {
@@ -113,7 +113,7 @@ export default function AgendaScreen() {
             }}
             style={[{ padding: 8, borderRadius: 8, backgroundColor: `${accent}15` }]}
           >
-            <IconSymbol name={showCalendar ? 'list.bullet' : 'calendar'} size={20} color={accent} />
+            <IconSymbol name={showCalendar ? 'list.bullet' : 'calendar'} size={20} color="#ffffff" />
           </Pressable>
         </View>
       ),
