@@ -83,7 +83,7 @@ export default function CustomHeader({
                 Platform.OS === 'web' && { fontSize: 24 }
               ]}
             >
-              {title}
+              {title.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}
             </ThemedText>
             {subtitle && (
               <ThemedText style={styles.subtitle}>
@@ -97,16 +97,7 @@ export default function CustomHeader({
         <View style={styles.rightSection}>
           {rightAction}
           
-          {/* Help Button */}
-          <Pressable
-            style={({ pressed }) => [styles.iconButton, pressed && styles.buttonPressed]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/help');
-            }}
-          >
-            <Ionicons name="help-circle-outline" size={24} color={COLORS.white} />
-          </Pressable>
+
 
           {/* Notifications Button */}
           <Pressable
