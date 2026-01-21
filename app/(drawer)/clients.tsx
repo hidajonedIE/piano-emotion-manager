@@ -10,7 +10,7 @@
  */
 
 import { useRouter, usePathname } from 'expo-router';
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState, useEffect, useLayoutEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -82,8 +82,8 @@ export default function ClientsScreen() {
     return ['Todos', ...Array.from(new Set(groups)).sort()];
   }, [clients]);
 
-  // Configurar header
-  useEffect(() => {
+  // Configurar header - useLayoutEffect para actualización inmediata
+  useLayoutEffect(() => {
     setHeaderConfig({
       title: t('navigation.clients'),
       subtitle: `${stats?.total || 0} ${(stats?.total || 0) === 1 ? 'cliente' : 'clientes'}`,

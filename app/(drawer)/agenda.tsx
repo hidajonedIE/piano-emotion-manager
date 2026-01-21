@@ -1,6 +1,6 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter, usePathname } from 'expo-router';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useLayoutEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -89,8 +89,8 @@ export default function AgendaScreen() {
 
   const [showCalendar, setShowCalendar] = useState(true);
 
-  // Configurar header con acciones
-  useEffect(() => {
+  // Configurar header con acciones - useLayoutEffect para actualización inmediata
+  useLayoutEffect(() => {
     setHeaderConfig({
       title: 'Agenda',
       subtitle: `${pendingCount} ${pendingCount === 1 ? 'cita pendiente' : 'citas pendientes'}`,
