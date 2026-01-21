@@ -185,15 +185,14 @@ export default function ClientsScreen() {
     setCurrentPage(1);
   }, [search, selectedProvince, selectedCity, selectedRouteGroup]);
   
-  // Cargar más clientes del backend automáticamente si es necesario
+  // Cargar todos los clientes del backend automáticamente
   useEffect(() => {
-    // Calcular cuántos clientes necesitamos para la página actual
-    const clientsNeeded = currentPage * ITEMS_PER_PAGE;
-    // Si no tenemos suficientes clientes cargados y hay más disponibles, cargar
-    if (clients.length < clientsNeeded && hasMore && !isLoadingMore) {
+    // Si hay más clientes disponibles y no estamos cargando, cargar más
+    if (hasMore && !isLoadingMore && !loading) {
+      console.log('[Clients Debug] Loading more clients automatically...');
       loadMore();
     }
-  }, [currentPage, clients.length, hasMore, isLoadingMore, loadMore]);
+  }, [hasMore, isLoadingMore, loading, loadMore]);
 
   const handleClientPress = (client: Client) => {
     router.push({
