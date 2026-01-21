@@ -204,25 +204,23 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
         <IconSymbol name="wrench.fill" size={20} color={maintenanceColor} />
       </View>
       <View style={styles.cardContent}>
-        <ThemedText type="defaultSemiBold">
-          {SERVICE_TYPE_LABELS[service.type]}
-        </ThemedText>
-        {(service.maintenanceLevel || statusBadge) && (
-          <View style={styles.badgesRow}>
-            {service.maintenanceLevel && (
-              <View style={[styles.levelBadge, { backgroundColor: `${maintenanceColor}20` }]}>
-                <ThemedText style={[styles.levelText, { color: maintenanceColor }]}>
-                  {MAINTENANCE_LEVEL_LABELS[service.maintenanceLevel]}
-                </ThemedText>
-              </View>
-            )}
-            {statusBadge && (
-              <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
-                <ThemedText style={[styles.statusBadgeText, { color: statusBadge.textColor }]}>
-                  {statusBadge.label}
-                </ThemedText>
-              </View>
-            )}
+        <View style={styles.titleRow}>
+          <ThemedText type="defaultSemiBold">
+            {SERVICE_TYPE_LABELS[service.type]}
+          </ThemedText>
+          {statusBadge && (
+            <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
+              <ThemedText style={[styles.statusBadgeText, { color: statusBadge.textColor }]}>
+                {statusBadge.label}
+              </ThemedText>
+            </View>
+          )}
+        </View>
+        {service.maintenanceLevel && (
+          <View style={[styles.levelBadge, { backgroundColor: `${maintenanceColor}20`, alignSelf: 'flex-start', marginTop: 6 }]}>
+            <ThemedText style={[styles.levelText, { color: maintenanceColor }]}>
+              {MAINTENANCE_LEVEL_LABELS[service.maintenanceLevel]}
+            </ThemedText>
           </View>
         )}
         <View style={styles.cardRow}>
@@ -370,6 +368,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -391,9 +394,9 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   statusBadgeText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   emptyState: {
