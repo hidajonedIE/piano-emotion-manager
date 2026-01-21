@@ -67,11 +67,21 @@ export default function CustomSidebar() {
     if (route === '/(drawer)') {
       return pathname === '/(drawer)' || pathname === '/' || pathname === '' || pathname === '/index';
     }
-    // Normalizar pathname eliminando trailing slashes
+    
+    // Normalizar pathname y route eliminando trailing slashes
     const normalizedPathname = pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname;
     const normalizedRoute = route.endsWith('/') && route !== '/' ? route.slice(0, -1) : route;
     
-    return normalizedPathname === normalizedRoute || normalizedPathname.startsWith(normalizedRoute + '/');
+    // Extraer el nombre de la ruta sin el prefijo (drawer) o (tabs)
+    const getRouteName = (r: string) => {
+      // Eliminar prefijos como /(drawer)/ o /(tabs)/
+      return r.replace(/^\/(drawer|tabs)\//, '/');
+    };
+    
+    const pathName = getRouteName(normalizedPathname);
+    const routeName = getRouteName(normalizedRoute);
+    
+    return pathName === routeName || pathName.startsWith(routeName + '/');
   };
 
   return (
