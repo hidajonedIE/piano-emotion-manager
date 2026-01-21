@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
   },
   badgesRow: {
     flexDirection: 'row',
@@ -389,9 +389,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   statusBadge: {
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 0,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
   },
   statusBadgeText: {
     fontSize: 8,
