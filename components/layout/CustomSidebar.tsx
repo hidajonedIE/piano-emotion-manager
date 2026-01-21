@@ -80,7 +80,7 @@ export default function CustomSidebar() {
     
     // Comparar pathname con route sin el prefijo /(drawer)/ o /(tabs)/
     // Por ejemplo: pathname='/agenda' y route='/(drawer)/agenda'
-    const routeWithoutPrefix = route.replace(/^\/(drawer|tabs)/, '');
+    const routeWithoutPrefix = route.replace(/^\/\((drawer|tabs)\)/, '');
     const result = pathname === routeWithoutPrefix || pathname.startsWith(routeWithoutPrefix + '/');
     console.log('  → Prefix removed:', { routeWithoutPrefix, result });
     return result;
