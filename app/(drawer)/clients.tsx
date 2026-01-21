@@ -160,13 +160,25 @@ export default function ClientsScreen() {
     });
   }, [clients, search, selectedProvince, selectedCity, selectedRouteGroup]);
   
+  // Debugging filtros
+  console.log('[Clients Debug] Filtered clients:', filteredClients.length);
+  console.log('[Clients Debug] Search:', search);
+  console.log('[Clients Debug] Selected province:', selectedProvince);
+  console.log('[Clients Debug] Selected city:', selectedCity);
+  console.log('[Clients Debug] Selected route group:', selectedRouteGroup);
+  
   // Calcular paginación basada en filteredClients
   const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
   const paginatedClients = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredClients.slice(startIndex, endIndex);
-  }, [filteredClients, currentPage]);
+    const result = filteredClients.slice(startIndex, endIndex);
+    console.log('[Clients Debug] Current page:', currentPage);
+    console.log('[Clients Debug] Total pages:', totalPages);
+    console.log('[Clients Debug] Start index:', startIndex, 'End index:', endIndex);
+    console.log('[Clients Debug] Paginated clients:', result.length);
+    return result;
+  }, [filteredClients, currentPage, totalPages]);
   
   // Resetear a la primera página cuando cambian los filtros
   useEffect(() => {
