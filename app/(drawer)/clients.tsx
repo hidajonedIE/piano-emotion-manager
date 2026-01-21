@@ -317,8 +317,10 @@ export default function ClientsScreen() {
         </View>
       </View>
 
-      {/* Lista de cliente      <FlatList<Client>
-        data={paginatedClients}       renderItem={renderItem}
+      {/* Lista de clientes */}
+      <FlatList<Client>
+        data={paginatedClients}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.listContent,
