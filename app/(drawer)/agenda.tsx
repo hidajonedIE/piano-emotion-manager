@@ -104,6 +104,7 @@ export default function AgendaScreen() {
     selected.setHours(0, 0, 0, 0);
     
     return appointments
+      .filter(a => a && a.date)  // Validar que el appointment existe y tiene fecha
       .filter(a => {
         const appDate = new Date(a.date);
         appDate.setHours(0, 0, 0, 0);
