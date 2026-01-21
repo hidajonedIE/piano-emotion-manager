@@ -1,41 +1,54 @@
 /**
- * Services Screen - Professional Minimalist Design
+ * Services Screen - Elegant Professional Design
  * Piano Emotion Manager
  * 
- * Diseño profesional y minimalista:
- * - Sin colorines infantiles
- * - Paleta neutra con acentos azules
- * - Estadísticas sobrias y elegantes
- * - Tipografía limpia y espaciado generoso
+ * Diseño siguiendo el patrón del Dashboard:
+ * - Header configurado con useHeader
+ * - Búsqueda y filtros elegantes
+ * - Grid de estadísticas por tipo de servicio
+ * - Lista de servicios con cards profesionales
+ * - Acciones rápidas
+ * - FAB para añadir servicio
  */
 
-import React from 'react';
-import { useTranslation } from '@/hooks/use-translation';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions, ActivityIndicator } from 'react-native';
+import {
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 
+// Hooks y componentes
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
+import { useTranslation } from '@/hooks/use-translation';
 import { ServiceCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
-import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
-import { BorderRadius, Spacing } from '@/constants/theme';
 import { Service, ServiceType, getClientFullName } from '@/types';
-import { useDebounce } from '@/hooks/use-debounce';
+import { BorderRadius, Spacing } from '@/constants/theme';
 
-// Paleta profesional minimalista
+// Colores del diseño Elegant Professional
 const COLORS = {
-  primary: '#003a8c',       // Azul corporativo
-  background: '#ffffff',    // Blanco puro
-  surface: '#f8f9fa',       // Gris muy claro
-  border: '#e5e7eb',        // Gris claro para bordes
-  textPrimary: '#1a1a1a',   // Negro casi puro
-  textSecondary: '#6b7280', // Gris medio
-  textTertiary: '#9ca3af',  // Gris claro
-  accent: '#e07a5f',        // Terracota (solo para acciones)
+  primary: '#003a8c',      // Azul Cobalto
+  accent: '#e07a5f',       // Terracota
+  white: '#ffffff',
+  background: '#f5f5f5',
+  textPrimary: '#1a1a1a',
+  textSecondary: '#666666',
+  cardBg: '#ffffff',
+  border: '#e5e7eb',
 };
 
 type FilterType = 'all' | ServiceType;
@@ -49,237 +62,268 @@ export default function ServicesScreen() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Debounce search
-  const debouncedSearch = useDebounce(search, 300);
-
-  const { services, loading, refresh, stats: backendStats } = useServicesData();
+  // Datos
+  const { services, loading, refresh } = useServicesData();
   const { getPiano } = usePianosData();
   const { getClient } = useClientsData();
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
   // Configurar header
-  useFocusEffect(
-    React.useCallback(() => {
-      setHeaderConfig({
-        title: t('navigation.services'),
-        subtitle: `${backendStats?.total || services.length} ${(backendStats?.total || services.length) === 1 ? 'servicio' : 'servicios'}`,
-        icon: 'wrench.and.screwdriver.fill',
-        showBackButton: false,
-      });
-    }, [backendStats?.total, services.length, t, setHeaderConfig])
-  );
+  useEffect(() => {
+    setHeaderConfig({
+      title: 'Servicios',
+      subtitle: `${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`,
+      icon: 'wrench.and.screwdriver.fill',
+      showBackButton: false,
+    });
+  }, [services.length, setHeaderConfig]);
 
-  // Estadísticas por tipo desde el backend
+  // Estadísticas por tipo
   const stats = useMemo(() => {
-    if (!backendStats?.byType) {
-      return { tuning: 0, maintenance: 0, repair: 0, regulation: 0 };
-    }
+    const tuning = services.filter(s => s.type === 'afinacion').length;
+    const cleaning = services.filter(s => s.type === 'limpieza').length;
+    const repair = services.filter(s => s.type === 'reparacion').length;
+    const regulation = services.filter(s => s.type === 'regulacion').length;
     
-    const tuning = backendStats.byType.find(t => t.serviceType === 'tuning')?.count || 0;
-    const maintenance = backendStats.byType.filter(t => 
-      t.serviceType === 'maintenance_basic' || 
-      t.serviceType === 'maintenance_complete' || 
-      t.serviceType === 'maintenance_premium'
-    ).reduce((sum, t) => sum + (t.count || 0), 0);
-    const repair = backendStats.byType.find(t => t.serviceType === 'repair')?.count || 0;
-    const regulation = backendStats.byType.find(t => t.serviceType === 'regulation')?.count || 0;
-    
-    return { tuning, maintenance, repair, regulation };
-  }, [backendStats]);
+    return { tuning, cleaning, repair, regulation };
+  }, [services]);
 
   // Filtrar servicios
   const filteredServices = useMemo(() => {
-    const now = new Date();
     let result = [...services].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
-    // Filtrar por tipo
     if (filter !== 'all') {
-      result = result.filter((s) => s.type === filter);
+      result = result.filter(s => s.type === filter);
     }
 
-    // Filtrar por búsqueda
-    if (debouncedSearch.trim()) {
-      const searchLower = debouncedSearch.toLowerCase();
-      result = result.filter((s) => {
-        const piano = getPiano(s.pianoId);
-        const client = getClient(s.clientId);
-        return (
-          piano?.brand.toLowerCase().includes(searchLower) ||
-          piano?.model.toLowerCase().includes(searchLower) ||
-          (client ? getClientFullName(client).toLowerCase().includes(searchLower) : false) ||
-          s.notes?.toLowerCase().includes(searchLower)
-        );
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(s => {
+        const client = s.clientId ? getClient(s.clientId) : null;
+        const clientName = client ? getClientFullName(client).toLowerCase() : '';
+        const piano = s.pianoId ? getPiano(s.pianoId) : null;
+        const pianoInfo = piano ? `${piano.brand} ${piano.model}`.toLowerCase() : '';
+        
+        return clientName.includes(searchLower) || pianoInfo.includes(searchLower);
       });
     }
 
-    // Agregar flag isPast para determinar el color del borde
-    return result.map(s => ({
-      ...s,
-      isPast: new Date(s.date) < now
-    }));
-  }, [services, filter, debouncedSearch, getPiano, getClient]);
+    return result;
+  }, [services, filter, search, getClient, getPiano]);
 
-  const handleServicePress = (service: Service) => {
-    router.push({
-      pathname: '/service/[id]' as any,
-      params: { id: service.id },
-    });
-  };
-
-  const handleAddService = () => {
-    router.push({
-      pathname: '/service/[id]' as any,
-      params: { id: 'new' },
-    });
-  };
-
-  const handleRefresh = useCallback(async () => {
+  // Refresh handler
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    if (refresh) {
-      await refresh();
-    }
+    await refresh();
     setRefreshing(false);
   }, [refresh]);
 
-  const renderItem = useCallback(
-    ({ item }: { item: Service }) => {
-      const piano = getPiano(item.pianoId);
-      const client = getClient(item.clientId);
-      return (
-        <ServiceCard
-          service={item}
-          pianoInfo={piano ? `${piano.brand} ${piano.model}` : undefined}
-          clientName={client ? getClientFullName(client) : undefined}
-          onPress={() => handleServicePress(item)}
-          isPast={(item as any).isPast}
-        />
-      );
-    },
-    [getPiano, getClient]
-  );
+  // Navegación
+  const handleAddService = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    router.push('/services/new');
+  }, [router]);
 
-  const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: 'Todos' },
-    { key: 'tuning', label: 'Afinación' },
-    { key: 'maintenance', label: 'Mantenimiento' },
-    { key: 'repair', label: 'Reparación' },
-    { key: 'regulation', label: 'Regulación' },
+  const handleServicePress = useCallback((service: Service) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push(`/services/${service.id}`);
+  }, [router]);
+
+  // Filtros de tipo
+  const typeFilters: { key: FilterType; label: string; icon: string }[] = [
+    { key: 'all', label: 'Todos', icon: 'apps' },
+    { key: 'afinacion', label: 'Afinación', icon: 'musical-notes' },
+    { key: 'limpieza', label: 'Limpieza', icon: 'water' },
+    { key: 'reparacion', label: 'Reparación', icon: 'construct' },
+    { key: 'regulacion', label: 'Regulación', icon: 'settings' },
   ];
 
-  // Mostrar animación de carga inicial
+  // Render de loading inicial
   if (loading && services.length === 0) {
     return (
-      <View style={[styles.container, { backgroundColor: COLORS.background }]}>
+      <View style={styles.container}>
         <View style={styles.loadingState}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <LoadingSpinner size="large" messageType="services" />
         </View>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: COLORS.background }]}>
-      {/* Grid de estadísticas por tipo - Diseño profesional */}
-      <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
-        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
-          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.tuning}</Text>
-          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Afinaciones</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
-          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.maintenance}</Text>
-          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Mantenimiento</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
-          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.repair}</Text>
-          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Reparaciones</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
-          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.regulation}</Text>
-          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Regulaciones</Text>
-        </View>
-      </View>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Contenedor principal con padding */}
+        <View style={styles.mainContent}>
+          {/* Estadísticas por tipo */}
+          <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
+            <View style={[styles.statCard, { backgroundColor: '#7c3aed' }]}>
+              <Ionicons name="musical-notes" size={24} color={COLORS.white} />
+              <Text style={styles.statNumber}>{stats.tuning}</Text>
+              <Text style={styles.statLabel}>Afinaciones</Text>
+            </View>
+            <View style={[styles.statCard, { backgroundColor: '#0891b2' }]}>
+              <Ionicons name="water" size={24} color={COLORS.white} />
+              <Text style={styles.statNumber}>{stats.cleaning}</Text>
+              <Text style={styles.statLabel}>Limpiezas</Text>
+            </View>
+            <View style={[styles.statCard, { backgroundColor: '#10b981' }]}>
+              <Ionicons name="construct" size={24} color={COLORS.white} />
+              <Text style={styles.statNumber}>{stats.repair}</Text>
+              <Text style={styles.statLabel}>Reparaciones</Text>
+            </View>
+            <View style={[styles.statCard, { backgroundColor: '#f59e0b' }]}>
+              <Ionicons name="settings" size={24} color={COLORS.white} />
+              <Text style={styles.statNumber}>{stats.regulation}</Text>
+              <Text style={styles.statLabel}>Regulaciones</Text>
+            </View>
+          </View>
 
-      <View style={styles.searchContainer}>
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Buscar..."
-          accessibilityLabel="Buscar servicios"
-        />
-      </View>
-
-      {/* Filtros */}
-      <View style={styles.filtersWrapper}>
-        <FlatList
-          horizontal
-          data={filters}
-          keyExtractor={(item) => item.key}
-          showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }}
-          contentContainerStyle={styles.filtersContainer}
-          renderItem={({ item: f }) => (
-            <Pressable
-              style={[
-                styles.filterChip,
-                { 
-                  backgroundColor: filter === f.key ? COLORS.primary : COLORS.background,
-                  borderColor: filter === f.key ? COLORS.primary : COLORS.border
-                },
-              ]}
-              onPress={() => setFilter(f.key)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  { color: filter === f.key ? COLORS.background : COLORS.textSecondary },
-                ]}
-              >
-                {f.label}
-              </Text>
-            </Pressable>
-          )}
-        />
-      </View>
-
-      {filteredServices.length === 0 ? (
-        <EmptyState
-          icon="wrench.fill"
-          showBackButton={true}
-          title={search || filter !== 'all' ? 'Sin resultados' : 'No hay servicios'}
-          message={
-            search || filter !== 'all'
-              ? 'No se encontraron servicios'
-              : 'Añade tu primer servicio'
-          }
-        />
-      ) : (
-        <FlatList
-          data={filteredServices}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={COLORS.primary}
-              title="Cargando..."
-              titleColor={COLORS.textSecondary}
+          {/* Búsqueda */}
+          <View style={styles.searchSection}>
+            <SearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Buscar servicios..."
             />
-          }
-        />
-      )}
+          </View>
 
+          {/* Filtros de tipo */}
+          <View style={styles.filtersSection}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filtersContent}
+            >
+              {typeFilters.map((item) => (
+                <Pressable
+                  key={item.key}
+                  style={[
+                    styles.filterButton,
+                    filter === item.key && styles.filterButtonActive,
+                  ]}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    setFilter(item.key);
+                  }}
+                >
+                  <Ionicons
+                    name={item.icon as any}
+                    size={18}
+                    color={filter === item.key ? COLORS.white : COLORS.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.filterButtonText,
+                      filter === item.key && styles.filterButtonTextActive,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Lista de servicios */}
+          <View style={styles.servicesSection}>
+            {filteredServices.length === 0 ? (
+              <EmptyState
+                icon="construct-outline"
+                title="No hay servicios"
+                message="Añade tu primer servicio para comenzar"
+                actionLabel="Añadir Servicio"
+                onAction={handleAddService}
+              />
+            ) : (
+              <FlatList
+                data={filteredServices}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <ServiceCard
+                    service={item}
+                    onPress={() => handleServicePress(item)}
+                    clientName={
+                      item.clientId
+                        ? getClientFullName(getClient(item.clientId))
+                        : undefined
+                    }
+                    pianoInfo={
+                      item.pianoId
+                        ? (() => {
+                            const piano = getPiano(item.pianoId);
+                            return piano ? `${piano.brand} ${piano.model}` : undefined;
+                          })()
+                        : undefined
+                    }
+                  />
+                )}
+                contentContainerStyle={styles.servicesList}
+                scrollEnabled={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={COLORS.primary}
+                  />
+                }
+              />
+            )}
+          </View>
+
+          {/* Acciones rápidas */}
+          <View style={styles.actionsSection}>
+            <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+            <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push('/services/calendar');
+                }}
+              >
+                <Ionicons name="calendar-outline" size={24} color={COLORS.white} />
+                <Text style={styles.actionButtonText}>Ver Calendario</Text>
+              </Pressable>
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push('/services/export');
+                }}
+              >
+                <Ionicons name="cloud-download-outline" size={24} color={COLORS.white} />
+                <Text style={styles.actionButtonText}>Exportar Lista</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* FAB para añadir servicio */}
       <FAB 
         onPress={handleAddService} 
-        accessibilityLabel="Nuevo servicio"
-        accessibilityHint="Añadir un nuevo servicio"
+        accessibilityLabel="Añadir servicio"
+        accessibilityHint="Añade un nuevo servicio"
       />
     </View>
   );
@@ -288,71 +332,128 @@ export default function ServicesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   loadingState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-  // Grid de estadísticas
+  mainContent: {
+    padding: Spacing.lg,
+  },
+  
+  // Estadísticas
   statsSection: {
     flexDirection: 'row',
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.xs,
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+    flexWrap: 'wrap',
   },
   statsSectionDesktop: {
-    maxWidth: 800,
-    alignSelf: 'center',
-    width: '100%',
+    maxWidth: 1000,
   },
   statCard: {
     flex: 1,
+    minWidth: 140,
     padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.lg,
     alignItems: 'center',
-    borderWidth: 1,
-    gap: 4,
+    gap: Spacing.xs,
   },
   statNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
+    color: COLORS.white,
   },
   statLabel: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 12,
+    color: COLORS.white,
+    opacity: 0.9,
     textAlign: 'center',
   },
 
-  searchContainer: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.sm,
+  // Búsqueda
+  searchSection: {
+    marginBottom: Spacing.md,
   },
-  filtersWrapper: {
-    marginBottom: Spacing.sm,
-    alignItems: 'center',
+
+  // Filtros
+  filtersSection: {
+    marginBottom: Spacing.lg,
   },
-  filtersContainer: {
-    paddingHorizontal: Spacing.md,
+  filtersContent: {
     gap: Spacing.sm,
+    paddingHorizontal: 2,
   },
-  filterChip: {
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
     paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    height: 34,
-    justifyContent: 'center',
-    borderRadius: BorderRadius.sm,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    backgroundColor: COLORS.white,
     borderWidth: 1,
-    marginRight: Spacing.sm,
+    borderColor: COLORS.border,
   },
-  filterText: {
-    fontSize: 13,
+  filterButtonActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  filterButtonText: {
+    fontSize: 14,
     fontWeight: '500',
+    color: COLORS.textSecondary,
   },
-  list: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: 100,
+  filterButtonTextActive: {
+    color: COLORS.white,
+  },
+
+  // Lista de servicios
+  servicesSection: {
+    marginBottom: Spacing.xl,
+  },
+  servicesList: {
+    gap: Spacing.md,
+  },
+
+  // Acciones rápidas
+  actionsSection: {
+    marginTop: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: Spacing.md,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  actionsGridDesktop: {
+    maxWidth: 600,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: COLORS.accent,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });

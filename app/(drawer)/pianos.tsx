@@ -1,40 +1,55 @@
 /**
- * Pianos Screen - Professional Minimalist Design
+ * Pianos Screen - Elegant Professional Design
  * Piano Emotion Manager
  * 
- * Diseño profesional y minimalista:
- * - Sin colorines infantiles
- * - Paleta neutra con acentos azules
- * - Estadísticas sobrias y elegantes
- * - Tipografía limpia y espaciado generoso
+ * Diseño siguiendo el patrón del Dashboard:
+ * - Header configurado con useHeader
+ * - Búsqueda y filtros elegantes
+ * - Grid de estadísticas
+ * - Lista de pianos con cards profesionales
+ * - Acciones rápidas
+ * - FAB para añadir piano
  */
 
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions, ActivityIndicator } from 'react-native';
+import {
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 
+// Hooks y componentes
+import { useClientsData, usePianosData } from '@/hooks/data';
+import { useTranslation } from '@/hooks/use-translation';
 import { PianoCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
-import { useClientsData, usePianosData } from '@/hooks/data';
-import { useTranslation } from '@/hooks/use-translation';
-import { BorderRadius, Spacing } from '@/constants/theme';
 import { Piano, PianoCategory, getClientFullName } from '@/types';
 import { useDebounce } from '@/hooks/use-debounce';
+import { BorderRadius, Spacing } from '@/constants/theme';
 
-// Paleta profesional minimalista
+// Colores del diseño Elegant Professional
 const COLORS = {
-  primary: '#003a8c',       // Azul corporativo
-  background: '#ffffff',    // Blanco puro
-  surface: '#f8f9fa',       // Gris muy claro
-  border: '#e5e7eb',        // Gris claro para bordes
-  textPrimary: '#1a1a1a',   // Negro casi puro
-  textSecondary: '#6b7280', // Gris medio
-  textTertiary: '#9ca3af',  // Gris claro
-  accent: '#e07a5f',        // Terracota (solo para acciones)
+  primary: '#003a8c',      // Azul Cobalto
+  accent: '#e07a5f',       // Terracota
+  white: '#ffffff',
+  background: '#f5f5f5',
+  textPrimary: '#1a1a1a',
+  textSecondary: '#666666',
+  cardBg: '#ffffff',
+  border: '#e5e7eb',
 };
 
 type FilterType = 'all' | PianoCategory;
@@ -48,10 +63,10 @@ export default function PianosScreen() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Debounce search para evitar demasiadas peticiones
+  // Debounce search
   const debouncedSearch = useDebounce(search, 300);
 
-  // Hook con filtrado en backend
+  // Hook con filtrado
   const { 
     pianos, 
     totalPianos,
@@ -60,7 +75,6 @@ export default function PianosScreen() {
     loadMore,
     hasMore,
     isLoadingMore,
-    stats,
   } = usePianosData({
     search: debouncedSearch,
     category: filter !== 'all' ? filter : undefined,
@@ -71,80 +85,64 @@ export default function PianosScreen() {
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
   // Configurar header
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
     setHeaderConfig({
-      title: t('navigation.pianos'),
+      title: 'Pianos',
       subtitle: `${totalPianos} ${totalPianos === 1 ? 'piano' : 'pianos'}`,
-      icon: 'pianokeys',
+      icon: 'music.note',
       showBackButton: false,
     });
-    }, [totalPianos, t, setHeaderConfig])
-  );
+  }, [totalPianos, setHeaderConfig]);
 
-  // Estadísticas vienen del hook (calculadas en backend)
+  // Estadísticas por categoría
+  const stats = useMemo(() => {
+    const upright = pianos.filter(p => p.category === 'vertical').length;
+    const grand = pianos.filter(p => p.category === 'cola').length;
+    const digital = pianos.filter(p => p.category === 'digital').length;
+    
+    return { upright, grand, digital };
+  }, [pianos]);
 
-  const handlePianoPress = useCallback((piano: Piano) => {
-    router.push({
-      pathname: '/piano/[id]',
-      params: { id: piano.id },
-    });
-  }, [router]);
+  // Filtrar pianos
+  const filteredPianos = useMemo(() => {
+    return pianos;
+  }, [pianos]);
 
-  const handleAddPiano = useCallback(() => {
-    router.push({
-      pathname: '/piano/[id]',
-      params: { id: 'new' },
-    });
-  }, [router]);
-
-  const handleRefresh = useCallback(async () => {
+  // Refresh handler
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    if (refresh) {
-      await refresh();
-    }
+    await refresh();
     setRefreshing(false);
   }, [refresh]);
 
-  const handleEndReached = useCallback(() => {
-    if (hasMore && !isLoadingMore) {
-      loadMore();
+  // Navegación
+  const handleAddPiano = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-  }, [hasMore, isLoadingMore, loadMore]);
+    router.push('/pianos/new');
+  }, [router]);
 
-  const renderItem = useCallback(
-    ({ item }: { item: Piano }) => {
-      const client = getClient(item.clientId);
-      return (
-        <PianoCard
-          piano={item}
-          clientName={client ? getClientFullName(client) : undefined}
-          onPress={() => handlePianoPress(item)}
-        />
-      );
-    },
-    [getClient, handlePianoPress]
-  );
+  const handlePianoPress = useCallback((piano: Piano) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push(`/pianos/${piano.id}`);
+  }, [router]);
 
-  const renderFooter = useCallback(() => {
-    if (!isLoadingMore) return null;
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={COLORS.accent} />
-      </View>
-    );
-  }, [isLoadingMore]);
-
-  const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: t('common.all') },
-    { key: 'vertical', label: t('pianos.categories.upright') },
-    { key: 'grand', label: t('pianos.categories.grand') },
+  // Filtros de categoría
+  const categoryFilters: { key: FilterType; label: string; icon: string }[] = [
+    { key: 'all', label: 'Todos', icon: 'apps' },
+    { key: 'vertical', label: 'Vertical', icon: 'square' },
+    { key: 'cola', label: 'Cola', icon: 'triangle' },
+    { key: 'digital', label: 'Digital', icon: 'hardware-chip' },
   ];
 
-  // Mostrar animación de carga inicial
+  // Render de loading inicial
   if (loading && pianos.length === 0) {
     return (
       <View style={styles.container}>
@@ -157,92 +155,165 @@ export default function PianosScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Estadísticas minimalistas */}
-      <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.vertical}</Text>
-          <Text style={styles.statLabel}>Verticales</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.grand}</Text>
-          <Text style={styles.statLabel}>De Cola</Text>
-        </View>
-      </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Contenedor principal con padding */}
+        <View style={styles.mainContent}>
+          {/* Estadísticas por categoría */}
+          <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
+            <View style={[styles.statCard, { backgroundColor: '#7c3aed' }]}>
+              <Ionicons name="square" size={24} color={COLORS.white} />
+              <Text style={styles.statNumber}>{stats.upright}</Text>
+              <Text style={styles.statLabel}>Verticales</Text>
+            </View>
+            <View style={[styles.statCard, { backgroundColor: '#0891b2' }]}>
+              <Ionicons name="triangle" size={24} color={COLORS.white} />
+              <Text style={styles.statNumber}>{stats.grand}</Text>
+              <Text style={styles.statLabel}>De Cola</Text>
+            </View>
+            <View style={[styles.statCard, { backgroundColor: '#10b981' }]}>
+              <Ionicons name="hardware-chip" size={24} color={COLORS.white} />
+              <Text style={styles.statNumber}>{stats.digital}</Text>
+              <Text style={styles.statLabel}>Digitales</Text>
+            </View>
+          </View>
 
-      {/* Barra de búsqueda */}
-      <View style={styles.searchContainer}>
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t('common.search') + '...'}
-          accessibilityLabel={t('common.search') + ' ' + t('navigation.pianos').toLowerCase()}
-        />
-      </View>
-
-      {/* Filtros minimalistas */}
-      <View style={styles.filtersContainer}>
-        {filters.map((f) => (
-          <Pressable
-            key={f.key}
-            style={[
-              styles.filterChip,
-              filter === f.key && styles.filterChipActive,
-            ]}
-            onPress={() => setFilter(f.key)}
-            accessibilityRole="button"
-            accessibilityLabel={`${t('common.filter')}: ${f.label}`}
-            accessibilityState={{ selected: filter === f.key }}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                filter === f.key && styles.filterTextActive,
-              ]}
-            >
-              {f.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {/* Lista de pianos */}
-      {pianos.length === 0 ? (
-        <EmptyState
-          icon="pianokeys"
-          showBackButton={false}
-          title={search || filter !== 'all' ? t('common.noResults') : t('pianos.noPianos')}
-          message={
-            search || filter !== 'all'
-              ? t('common.noResults')
-              : t('pianos.addFirstPiano')
-          }
-        />
-      ) : (
-        <FlatList
-          data={pianos}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={COLORS.textSecondary}
-              title={t('common.loading')}
-              titleColor={COLORS.textSecondary}
+          {/* Búsqueda */}
+          <View style={styles.searchSection}>
+            <SearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Buscar pianos..."
             />
-          }
-        />
-      )}
+          </View>
 
+          {/* Filtros de categoría */}
+          <View style={styles.filtersSection}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filtersContent}
+            >
+              {categoryFilters.map((item) => (
+                <Pressable
+                  key={item.key}
+                  style={[
+                    styles.filterButton,
+                    filter === item.key && styles.filterButtonActive,
+                  ]}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    setFilter(item.key);
+                  }}
+                >
+                  <Ionicons
+                    name={item.icon as any}
+                    size={18}
+                    color={filter === item.key ? COLORS.white : COLORS.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.filterButtonText,
+                      filter === item.key && styles.filterButtonTextActive,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Lista de pianos */}
+          <View style={styles.pianosSection}>
+            {filteredPianos.length === 0 ? (
+              <EmptyState
+                icon="musical-notes-outline"
+                title="No hay pianos"
+                message="Añade tu primer piano para comenzar"
+                actionLabel="Añadir Piano"
+                onAction={handleAddPiano}
+              />
+            ) : (
+              <FlatList
+                data={filteredPianos}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <PianoCard
+                    piano={item}
+                    onPress={() => handlePianoPress(item)}
+                    clientName={
+                      item.clientId
+                        ? getClientFullName(getClient(item.clientId))
+                        : undefined
+                    }
+                  />
+                )}
+                contentContainerStyle={styles.pianosList}
+                scrollEnabled={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={COLORS.primary}
+                  />
+                }
+                onEndReached={loadMore}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                  isLoadingMore ? (
+                    <View style={styles.loadingMore}>
+                      <LoadingSpinner size="small" />
+                    </View>
+                  ) : null
+                }
+              />
+            )}
+          </View>
+
+          {/* Acciones rápidas */}
+          <View style={styles.actionsSection}>
+            <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+            <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push('/pianos/import');
+                }}
+              >
+                <Ionicons name="cloud-upload-outline" size={24} color={COLORS.white} />
+                <Text style={styles.actionButtonText}>Importar Pianos</Text>
+              </Pressable>
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push('/pianos/export');
+                }}
+              >
+                <Ionicons name="cloud-download-outline" size={24} color={COLORS.white} />
+                <Text style={styles.actionButtonText}>Exportar Lista</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* FAB para añadir piano */}
       <FAB 
         onPress={handleAddPiano} 
-        accessibilityLabel={t('pianos.newPiano')}
-        accessibilityHint={t('pianos.addFirstPiano')}
+        accessibilityLabel="Añadir piano"
+        accessibilityHint="Añade un nuevo piano al inventario"
       />
     </View>
   );
@@ -253,88 +324,127 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
   loadingState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  mainContent: {
+    padding: Spacing.lg,
+  },
   
-  // Estadísticas minimalistas
+  // Estadísticas
   statsSection: {
     flexDirection: 'row',
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.sm,
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   statsSectionDesktop: {
-    maxWidth: 600,
-    alignSelf: 'center',
-    width: '100%',
+    maxWidth: 800,
   },
   statCard: {
     flex: 1,
     padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: BorderRadius.lg,
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
   },
   statNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: COLORS.primary,
+    color: COLORS.white,
   },
   statLabel: {
     fontSize: 12,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
+    color: COLORS.white,
+    opacity: 0.9,
   },
 
   // Búsqueda
-  searchContainer: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.sm,
+  searchSection: {
+    marginBottom: Spacing.md,
   },
 
-  // Filtros minimalistas
-  filtersContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
-    gap: Spacing.sm,
+  // Filtros
+  filtersSection: {
+    marginBottom: Spacing.lg,
   },
-  filterChip: {
+  filtersContent: {
+    gap: Spacing.sm,
+    paddingHorizontal: 2,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.full,
+    backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.border,
-    backgroundColor: COLORS.background,
   },
-  filterChipActive: {
+  filterButtonActive: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  filterText: {
-    fontSize: 13,
+  filterButtonText: {
+    fontSize: 14,
     fontWeight: '500',
     color: COLORS.textSecondary,
   },
-  filterTextActive: {
-    color: '#FFFFFF',
+  filterButtonTextActive: {
+    color: COLORS.white,
   },
 
-  // Lista
-  list: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: 100,
+  // Lista de pianos
+  pianosSection: {
+    marginBottom: Spacing.xl,
+  },
+  pianosList: {
     gap: Spacing.md,
   },
-  footerLoader: {
+  loadingMore: {
     paddingVertical: Spacing.lg,
     alignItems: 'center',
+  },
+
+  // Acciones rápidas
+  actionsSection: {
+    marginTop: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: Spacing.md,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  actionsGridDesktop: {
+    maxWidth: 600,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: COLORS.accent,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });
