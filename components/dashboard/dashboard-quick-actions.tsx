@@ -67,7 +67,7 @@ const ROUTE_MAP: Record<string, string> = {
   new_piano: '/piano/[id]',
   new_service: '/service/[id]',
   clients: '/(tabs)/clients',
-  pianos: '/(tabs)/pianos',
+  pianos: '/(drawer)/pianos',
   inventory: '/(tabs)/inventory',
   stats: '/stats',
   settings: '/settings',

@@ -40,7 +40,7 @@ const MODULE_ACTIONS = [
 // Mapeo de rutas
 const ROUTE_MAP: Record<string, string> = {
   clients: '/(tabs)/clients',
-  pianos: '/(tabs)/pianos',
+  pianos: '/(drawer)/pianos',
   services: '/(tabs)/services',
   inventory: '/(tabs)/inventory',
   stats: '/stats',

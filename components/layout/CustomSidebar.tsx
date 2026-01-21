@@ -31,7 +31,7 @@ const MENU_SECTIONS: MenuSection[] = [
       { id: 'inicio', label: 'Inicio', icon: 'home-outline', route: '/(drawer)', useArkhip: true },
       { id: 'agenda', label: 'Agenda', icon: 'calendar-outline', route: '/(drawer)/agenda' },
       { id: 'clientes', label: 'Clientes', icon: 'people-outline', route: '/(drawer)/clients' },
-      { id: 'pianos', label: 'Pianos', icon: 'musical-notes-outline', route: '/(tabs)/pianos' },
+      { id: 'pianos', label: 'Pianos', icon: 'musical-notes-outline', route: '/(drawer)/pianos' },
       { id: 'servicios', label: 'Servicios', icon: 'construct-outline', route: '/(drawer)/services' },
       { id: 'facturacion', label: 'Facturación', icon: 'receipt-outline', route: '/(drawer)/invoices' },
       { id: 'inventario', label: 'Inventario', icon: 'cube-outline', route: '/(drawer)/inventory' },
