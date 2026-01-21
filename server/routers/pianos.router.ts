@@ -460,4 +460,48 @@ export const pianosRouter = router({
       
       return db.updatePiano(piano.odId, input.pianoId, { environment });
     }),
+
+  // Obtener estadísticas de pianos
+  getStats: protectedProcedure
+    .query(withCache(
+      async ({ ctx }) => {
+        const database = await db.getDb();
+        if (!database) return { total: 0, vertical: 0, cola: 0, digital: 0 };
+
+        const whereClauses = [
+          filterByPartner(pianos.partnerId, ctx.partnerId),
+          eq(pianos.odId, ctx.user.email)
+        ];
+
+        // Total de pianos
+        const [totalResult] = await database
+          .select({ count: count() })
+          .from(pianos)
+          .where(and(...whereClauses));
+
+        // Pianos por categoría
+        const [verticalResult] = await database
+          .select({ count: count() })
+          .from(pianos)
+          .where(and(...whereClauses, eq(pianos.category, 'vertical')));
+
+        const [colaResult] = await database
+          .select({ count: count() })
+          .from(pianos)
+          .where(and(...whereClauses, eq(pianos.category, 'cola')));
+
+        const [digitalResult] = await database
+          .select({ count: count() })
+          .from(pianos)
+          .where(and(...whereClauses, eq(pianos.category, 'digital')));
+
+        return {
+          total: totalResult?.count || 0,
+          vertical: verticalResult?.count || 0,
+          cola: colaResult?.count || 0,
+          digital: digitalResult?.count || 0,
+        };
+      },
+      { ttl: 5 * 60, keyPrefix: 'pianos:stats' }
+    )),
 });

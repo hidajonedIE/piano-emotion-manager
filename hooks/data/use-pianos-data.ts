@@ -88,6 +88,11 @@ export function usePianosData(options: UsePianosDataOptions = {}) {
     staleTime: 60 * 60 * 1000, // 1 hora
   });
 
+  // Query para estadísticas
+  const { data: statsData } = trpc.pianos.getStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
   // Mutations
   const createMutation = trpc.pianos.create.useMutation({
     onSuccess: () => {
@@ -218,6 +223,7 @@ export function usePianosData(options: UsePianosDataOptions = {}) {
     hasMore: hasNextPage,
     isLoadingMore: isFetchingNextPage,
     brands,
+    stats: statsData || { total: 0, vertical: 0, cola: 0, digital: 0 },
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

@@ -61,6 +61,7 @@ export default function PianosScreen() {
     loadMore,
     hasMore,
     isLoadingMore,
+    stats,
   } = usePianosData({
     search: debouncedSearch,
     category: filter !== 'all' ? filter : undefined,
@@ -85,14 +86,7 @@ export default function PianosScreen() {
     }, [totalPianos, t, setHeaderConfig])
   );
 
-  // Estadísticas por categoría
-  const stats = useMemo(() => {
-    const upright = pianos.filter(p => p.category === 'vertical').length;
-    const grand = pianos.filter(p => p.category === 'cola').length;
-    const digital = pianos.filter(p => p.category === 'digital').length;
-    
-    return { upright, grand, digital };
-  }, [pianos]);
+  // Estadísticas desde el backend
 
   const handlePianoPress = useCallback((piano: Piano) => {
     router.push({
@@ -168,11 +162,11 @@ export default function PianosScreen() {
       {/* Estadísticas minimalistas */}
       <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.upright}</Text>
+          <Text style={styles.statNumber}>{stats.vertical}</Text>
           <Text style={styles.statLabel}>Verticales</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.grand}</Text>
+          <Text style={styles.statNumber}>{stats.cola}</Text>
           <Text style={styles.statLabel}>De Cola</Text>
         </View>
         <View style={styles.statCard}>
