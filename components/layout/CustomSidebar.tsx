@@ -63,38 +63,11 @@ export default function CustomSidebar() {
   };
 
   const isActive = (route: string) => {
-    console.log('[Sidebar isActive] Checking:', { pathname, route });
-    
     // Para la ruta principal del drawer, considerar tanto '/(drawer)' como '/'
     if (route === '/(drawer)') {
-      const result = pathname === '/(drawer)' || pathname === '/' || pathname === '' || pathname === '/index';
-      console.log('[Sidebar isActive] Home route result:', result);
-      return result;
+      return pathname === '/(drawer)' || pathname === '/' || pathname === '';
     }
-    
-    // Comparación directa con la ruta completa
-    if (pathname === route) {
-      console.log('[Sidebar isActive] Direct match: true');
-      return true;
-    }
-    
-    // Si el pathname empieza con la ruta seguida de /
-    if (pathname.startsWith(route + '/')) {
-      console.log('[Sidebar isActive] Starts with route/: true');
-      return true;
-    }
-    
-    // Comparar sin el prefijo /(drawer)/ o /(tabs)/
-    // Por ejemplo: route='/(drawer)/clients' y pathname='/clients'
-    const routeWithoutPrefix = route.replace(/^\/(drawer|tabs)\//, '/');
-    console.log('[Sidebar isActive] Comparing without prefix:', { routeWithoutPrefix });
-    if (pathname === routeWithoutPrefix || pathname.startsWith(routeWithoutPrefix + '/')) {
-      console.log('[Sidebar isActive] Match without prefix: true');
-      return true;
-    }
-    
-    console.log('[Sidebar isActive] No match: false');
-    return false;
+    return pathname === route || pathname.startsWith(route + '/');
   };
 
   return (
