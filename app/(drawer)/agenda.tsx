@@ -191,18 +191,24 @@ export default function AgendaScreen() {
           <Text style={styles.sectionTitle}>Calendario</Text>
           <View style={styles.calendarContainer}>
             <CalendarView
-              events={appointments.map(apt => ({
-                id: apt.id,
-                date: apt.date,
-                startTime: apt.startTime || '00:00',
-                endTime: apt.endTime,
-                title: apt.title || 'Sin título',
-                subtitle: apt.description,
-                status: apt.status,
-              }))}
+              events={appointments
+                .filter(apt => apt && apt.id && apt.date)
+                .map(apt => ({
+                  id: apt.id,
+                  date: apt.date,
+                  startTime: apt.startTime || '00:00',
+                  endTime: apt.endTime,
+                  title: apt.title || 'Sin título',
+                  subtitle: apt.description,
+                  status: apt.status,
+                }))}
               onDatePress={(dateStr) => {
-                const date = new Date(dateStr);
-                handleDateSelect(date);
+                try {
+                  const date = new Date(dateStr);
+                  handleDateSelect(date);
+                } catch (error) {
+                  console.error('[Agenda] Error al seleccionar fecha:', error);
+                }
               }}
               initialDate={selectedDate.toISOString().split('T')[0]}
             />
