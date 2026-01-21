@@ -183,7 +183,7 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
 
   // Color de borde según estado - tonos sutiles y profesionales
   const statusBorderColor = isPast !== undefined 
-    ? (isPast ? '#059669' : '#DC2626') // Verde oscuro para completados, rojo oscuro para pendientes
+    ? (isPast ? '#065F46' : '#991B1B') // Verde muy oscuro para completados, rojo muy oscuro para pendientes
     : borderColor;
 
   return (
