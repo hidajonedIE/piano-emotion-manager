@@ -10,6 +10,36 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../../_core/trpc.js';
 import { createDistributorService } from '../../services/distributor/distributor.service.js';
+import { getDb } from '../../db.js';
+import { distributors } from '../../../drizzle/schema.js';
+import { eq } from 'drizzle-orm';
+
+// Helper function to get or create distributor for current user
+async function getDistributorIdForUser(userId: number, userEmail: string): Promise<number> {
+  const db = await getDb();
+  
+  // Try to find existing distributor by email
+  const [existing] = await db
+    .select()
+    .from(distributors)
+    .where(eq(distributors.email, userEmail))
+    .limit(1);
+  
+  if (existing) {
+    return existing.id;
+  }
+  
+  // Create new distributor if not exists
+  const [newDistributor] = await db
+    .insert(distributors)
+    .values({
+      name: userEmail.split('@')[0],
+      email: userEmail,
+      isActive: true,
+    });
+  
+  return newDistributor.insertId;
+}
 
 // ============================================================================
 // Schemas de validación
@@ -86,7 +116,8 @@ export const distributorRouter = router({
    */
   getModuleConfig: protectedProcedure
     .query(async ({ ctx }) => {
-      const service = createDistributorService(ctx.user.id);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const service = createDistributorService(distributorId);
       return service.getModuleConfig();
     }),
 
@@ -96,7 +127,8 @@ export const distributorRouter = router({
   saveModuleConfig: protectedProcedure
     .input(moduleConfigSchema.partial())
     .mutation(async ({ ctx, input }) => {
-      const service = createDistributorService(ctx.user.id);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const service = createDistributorService(distributorId);
       return service.saveModuleConfig(input);
     }),
 
@@ -109,7 +141,8 @@ export const distributorRouter = router({
    */
   getWooCommerceConfig: protectedProcedure
     .query(async ({ ctx }) => {
-      const service = createDistributorService(ctx.user.id);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const service = createDistributorService(distributorId);
       return service.getWooCommerceConfig();
     }),
 
@@ -119,7 +152,8 @@ export const distributorRouter = router({
   saveWooCommerceConfig: protectedProcedure
     .input(wooCommerceConfigSchema)
     .mutation(async ({ ctx, input }) => {
-      const service = createDistributorService(ctx.user.id);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const service = createDistributorService(distributorId);
       return service.saveWooCommerceConfig(input);
     }),
 
@@ -129,7 +163,8 @@ export const distributorRouter = router({
   testWooCommerceConnection: protectedProcedure
     .input(wooCommerceConfigSchema)
     .mutation(async ({ ctx, input }) => {
-      const service = createDistributorService(ctx.user.id);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const service = createDistributorService(distributorId);
       return service.testWooCommerceConnection({
         ...input,
         connectionStatus: 'testing',
@@ -145,7 +180,8 @@ export const distributorRouter = router({
    */
   getPremiumConfig: protectedProcedure
     .query(async ({ ctx }) => {
-      const service = createDistributorService(ctx.user.id);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const service = createDistributorService(distributorId);
       return service.getPremiumConfig();
     }),
 
@@ -155,7 +191,8 @@ export const distributorRouter = router({
   savePremiumConfig: protectedProcedure
     .input(premiumConfigSchema.partial())
     .mutation(async ({ ctx, input }) => {
-      const service = createDistributorService(ctx.user.id);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const service = createDistributorService(distributorId);
       return service.savePremiumConfig(input);
     }),
 

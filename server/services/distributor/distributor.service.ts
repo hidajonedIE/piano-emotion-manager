@@ -80,6 +80,7 @@ export class DistributorService {
    */
   async getWooCommerceConfig(): Promise<WooCommerceConfig | null> {
     try {
+      const db = await getDb();
       const [config] = await db
         .select()
         .from(distributorWooCommerceConfig)
