@@ -1072,6 +1072,12 @@
   },
   "shop": {
     "noShops": "No hay tiendas disponibles",
-    "noShopsDesc": "Actualmente no hay tiendas configuradas en el sistema"
+    "noShopsDesc": "Actualmente no hay tiendas configuradas en el sistema",
+    "official": "Oficial",
+    "accessDenied": "Acceso denegado",
+    "accessDeniedDesc": "No tienes permiso para acceder a esta tienda",
+    "outOfStock": "Agotado",
+    "viewCart": "Ver carrito",
+    "approvalRequired": "Requiere aprobación"
   }
 }
