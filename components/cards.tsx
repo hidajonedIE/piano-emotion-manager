@@ -181,9 +181,9 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
 
   const serviceDescription = `${SERVICE_TYPE_LABELS[service.type]}, ${formatDate(service.date)}${service.cost !== undefined ? `, ${service.cost} euros` : ''}`;
 
-  // Color de borde según estado
+  // Color de borde según estado - tonos sutiles y profesionales
   const statusBorderColor = isPast !== undefined 
-    ? (isPast ? '#10B981' : '#EF4444') // Verde para completados, rojo para pendientes
+    ? (isPast ? '#059669' : '#DC2626') // Verde oscuro para completados, rojo oscuro para pendientes
     : borderColor;
 
   return (
