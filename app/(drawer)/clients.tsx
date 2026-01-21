@@ -42,7 +42,7 @@ export default function ClientsScreen() {
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
-  const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData({ pageSize: 300 }); // Cargar todos los clientes de una vez
+  const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData({ pageSize: 50 });
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   
@@ -51,7 +51,7 @@ export default function ClientsScreen() {
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [selectedRouteGroup, setSelectedRouteGroup] = useState<string>('');
   
-  // Estado para paginación
+  // Estado de paginación
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 50;
 
@@ -155,9 +155,8 @@ export default function ClientsScreen() {
     });
   }, [clients, search, selectedProvince, selectedCity, selectedRouteGroup]);
   
-  // Calcular paginación
-  // Usar stats.total para el cálculo total (sin filtros) ya que filteredClients puede estar limitado por el backend
-  const totalPages = Math.ceil((stats?.total || 0) / ITEMS_PER_PAGE);
+  // Calcular paginación basada en filteredClients
+  const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
   const paginatedClients = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -169,15 +168,15 @@ export default function ClientsScreen() {
     setCurrentPage(1);
   }, [search, selectedProvince, selectedCity, selectedRouteGroup]);
   
-  // Cargar más clientes automáticamente si la página actual necesita más datos
+  // Cargar más clientes del backend automáticamente si es necesario
   useEffect(() => {
+    // Calcular cuántos clientes necesitamos para la página actual
     const clientsNeeded = currentPage * ITEMS_PER_PAGE;
-    console.log('[Paginación] Página:', currentPage, 'Clientes cargados:', clients.length, 'Filtrados:', filteredClients.length, 'Necesarios:', clientsNeeded, 'HasMore:', hasMore, 'IsLoadingMore:', isLoadingMore);
-    if (filteredClients.length < clientsNeeded && hasMore && !isLoadingMore) {
-      console.log('[Paginación] Cargando más clientes...');
+    // Si no tenemos suficientes clientes cargados y hay más disponibles, cargar
+    if (clients.length < clientsNeeded && hasMore && !isLoadingMore) {
       loadMore();
     }
-  }, [currentPage, clients.length, filteredClients.length, hasMore, isLoadingMore, loadMore]);
+  }, [currentPage, clients.length, hasMore, isLoadingMore, loadMore]);
 
   const handleClientPress = (client: Client) => {
     router.push({
@@ -301,10 +300,8 @@ export default function ClientsScreen() {
         </View>
       </View>
 
-      {/* Lista de clientes */}
-      <FlatList
-        data={paginatedClients}
-        renderItem={renderItem}
+      {/* Lista de cliente      <FlatList<Client>
+        data={paginatedClients}       renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.listContent,
