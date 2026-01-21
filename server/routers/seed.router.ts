@@ -1,5 +1,5 @@
 import { router, protectedProcedure } from "../_core/trpc.js";
-import { getDb } from "../getDb().js";
+import { getDb } from "../db.js";
 import { clients, pianos, services } from "../../drizzle/schema.js";
 
 export const seedRouter = router({

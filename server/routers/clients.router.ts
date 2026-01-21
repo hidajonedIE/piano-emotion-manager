@@ -5,9 +5,9 @@
  */
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
-import * as db from "../getDb().js";
+import * as db from "../db.js";
 import { clients, users, pianos } from "../../drizzle/schema.js";
-import { getDb } from "../getDb().js";
+import { getDb } from "../db.js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
 import { 
   filterByPartner, 

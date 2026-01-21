@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../getDb().js";
+import * as db from "../db.js";
 import { addPartnerToInsert } from "../utils/multi-tenant.js";
 
 export const businessInfoRouter = router({

@@ -5,7 +5,8 @@
  */
 
 import type { Request, Response } from 'express';
-import * as db from './getDb().js';
+import type { CalendarConnection } from './types.js';
+import * as db from './db.js';
 import * as syncEngine from './sync-engine.js';
 import * as googleCalendar from './google-calendar.js';
 import * as microsoftCalendar from './microsoft-calendar.js';
@@ -174,7 +175,7 @@ export async function renewExpiringWebhooks(): Promise<void> {
 /**
  * Setup webhook subscriptions for a connection
  */
-export async function setupWebhookSubscription(connection: getDb().CalendarConnection): Promise<void> {
+export async function setupWebhookSubscription(connection: CalendarConnection): Promise<void> {
   try {
     let subscription;
     
@@ -199,7 +200,7 @@ export async function setupWebhookSubscription(connection: getDb().CalendarConne
 /**
  * Remove webhook subscription for a connection
  */
-export async function removeWebhookSubscription(connection: getDb().CalendarConnection): Promise<void> {
+export async function removeWebhookSubscription(connection: CalendarConnection): Promise<void> {
   try {
     if (connection.provider === 'google') {
       await googleCalendar.stopWebhookSubscription(connection);

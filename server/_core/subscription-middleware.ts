@@ -5,7 +5,7 @@
 
 import { TRPCError } from '@trpc/server';
 import { getUserByOpenId } from '../getDb().js';
-import { getMonthlyAIUsage, trackAIUsage } from './ai-usage-getDb().js';
+import { getMonthlyAIUsage, trackAIUsage } from './ai-usage-db.js';
 import {
   normalizePlanName,
   hasFeatureAccess,

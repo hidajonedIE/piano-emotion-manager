@@ -5,7 +5,7 @@ import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema.js";
-import * as db from "../getDb().js";
+import * as db from "../db.js";
 import { ENV } from "./env.js";
 import type {
   ExchangeTokenRequest,

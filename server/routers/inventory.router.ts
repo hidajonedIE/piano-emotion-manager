@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../getDb().js";
+import * as db from "../db.js";
 import { inventory } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, asc, desc, count, sql } from "drizzle-orm";
 import { 

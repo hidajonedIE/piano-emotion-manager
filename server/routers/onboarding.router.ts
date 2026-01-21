@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../getDb().js";
+import { getDb } from "../db.js";
 import { partners, partnerSettings, partnerUsers, users, serviceTypes as serviceTypesTable, serviceTasks as serviceTasksTable, alertSettings } from "../../drizzle/schema.js";
 import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";

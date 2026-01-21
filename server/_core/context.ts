@@ -3,7 +3,7 @@ import type { User } from "../../drizzle/schema.js";
 import type { OrganizationContext } from "../middleware/organization-context.js";
 import { eq } from "drizzle-orm";
 import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
-import { getDb } from "../../server/getDb().js";
+import { getDb } from "../../server/db.js";
 import { users } from "../../drizzle/schema.js";
 import * as jose from "jose";
 
