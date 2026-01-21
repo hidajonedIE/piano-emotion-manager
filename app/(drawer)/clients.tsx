@@ -150,10 +150,12 @@ export default function ClientsScreen() {
   // Cargar más clientes automáticamente si la página actual necesita más datos
   useEffect(() => {
     const clientsNeeded = currentPage * ITEMS_PER_PAGE;
+    console.log('[Paginación] Página:', currentPage, 'Clientes cargados:', clients.length, 'Filtrados:', filteredClients.length, 'Necesarios:', clientsNeeded, 'HasMore:', hasMore, 'IsLoadingMore:', isLoadingMore);
     if (filteredClients.length < clientsNeeded && hasMore && !isLoadingMore) {
+      console.log('[Paginación] Cargando más clientes...');
       loadMore();
     }
-  }, [currentPage, filteredClients.length, hasMore, isLoadingMore, loadMore]);
+  }, [currentPage, clients.length, filteredClients.length, hasMore, isLoadingMore, loadMore]);
 
   const handleClientPress = (client: Client) => {
     router.push({
