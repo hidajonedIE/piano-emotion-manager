@@ -1,0 +1,21 @@
+Errores 500 después del deployment con commit 584f844:
+
+Todos los errores son:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/var/task/drizzle/schema' imported from /var/task/drizzle/distributor-schema.js
+
+O también:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/var/task/drizzle/accounting-schema' imported from /var/task/drizzle/schema.js
+
+Endpoints afectados:
+- /api/trpc/modules.getModulesWithStatus
+- /api/trpc/modules.getCurrentPlan
+- /api/trpc/clients.list
+- /api/trpc/pianos.getStats
+- /api/trpc/onboarding.getOnboardingStatus
+- /api/trpc/clients.getRegions
+
+El problema es que:
+1. distributor-schema.js está importando desde './schema' sin extensión .js
+2. accounting-schema.js está importando desde './schema' sin extensión .js
+
+Necesito agregar .js a TODOS los imports relativos en TODOS los archivos de schema.

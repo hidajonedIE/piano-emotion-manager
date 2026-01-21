@@ -7,8 +7,8 @@
  */
 
 import { mysqlTable, int, varchar, text, boolean, datetime, decimal, json, mysqlEnum, index, unique } from 'drizzle-orm/mysql-core';
-import { users } from './schema';
-import { distributors } from './distributor-schema';
+import { users } from './schema.js';
+import { distributors } from './distributor-schema.js';
 
 // ============================================================================
 // Enums

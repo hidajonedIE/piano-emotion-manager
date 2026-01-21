@@ -1,6 +1,6 @@
 import { mysqlTable, varchar, text, int, boolean, timestamp, json, mysqlEnum } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
-import { organizations } from './schema';
+import { organizations } from './schema.js';
 
 /**
  * Tipos de plantillas de mensajes disponibles

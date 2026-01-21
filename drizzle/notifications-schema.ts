@@ -6,7 +6,7 @@
  */
 
 import { mysqlTable, int, varchar, text, boolean, datetime, json, mysqlEnum, index } from 'drizzle-orm/mysql-core';
-import { users } from './schema';
+import { users } from './schema.js';
 
 // ============================================================================
 // Push Tokens
