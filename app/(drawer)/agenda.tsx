@@ -1,141 +1,236 @@
-/**
- * Agenda Screen - Elegant Professional Design
- * Piano Emotion Manager
- * 
- * Diseño siguiendo el patrón del Dashboard:
- * - Header configurado con useHeader
- * - Grid de estadísticas de citas
- * - Vista de calendario
- * - Lista de próximas citas
- * - Optimizador de rutas
- * - Acciones rápidas
- * - FAB para añadir cita
- */
-
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import { useHeader } from '@/contexts/HeaderContext';
-import {
-  ScrollView,
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
-
-// Hooks y componentes
-import { useClientsData, usePianosData, useAppointmentsData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
+import { useRouter } from 'expo-router';
+import { useMemo, useState, useEffect } from 'react';
+import { useHeader } from '@/contexts/HeaderContext';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+
 import { CalendarView } from '@/components/calendar-view';
-import { RouteOptimizer } from '@/components/route-optimizer';
 import { EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
-import { LoadingSpinner } from '@/components/loading-spinner';
-import { Appointment, APPOINTMENT_STATUS_LABELS, formatDate, getClientFullName } from '@/types';
+import { RouteOptimizer } from '@/components/route-optimizer';
+import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
-
-// Colores del diseño Elegant Professional
-const COLORS = {
-  primary: '#003a8c',      // Azul Cobalto
-  accent: '#e07a5f',       // Terracota
-  white: '#ffffff',
-  background: '#f5f5f5',
-  textPrimary: '#1a1a1a',
-  textSecondary: '#666666',
-  cardBg: '#ffffff',
-  border: '#e5e7eb',
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ff4d4f',
-};
+import { useClientsData, usePianosData, useAppointmentsData } from '@/hooks/data';
+import { Appointment, APPOINTMENT_STATUS_LABELS } from '@/types/business';
+import { formatDate, getClientFullName } from '@/types';
 
 export default function AgendaScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
-  const { width } = useWindowDimensions();
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showRouteOptimizer, setShowRouteOptimizer] = useState(false);
-
-  // Datos
+  const insets = useSafeAreaInsets();
   const { appointments, loading } = useAppointmentsData();
   const { getClient } = useClientsData();
   const { getPiano } = usePianosData();
 
-  // Determinar si es móvil, tablet o desktop
-  const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
+  const accent = useThemeColor({}, 'accent');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const cardBg = useThemeColor({}, 'cardBackground');
+  const borderColor = useThemeColor({}, 'border');
+  const success = useThemeColor({}, 'success');
+  const warning = useThemeColor({}, 'warning');
+  const error = useThemeColor({}, 'error');
 
-  // Estadísticas de citas
-  const stats = useMemo(() => {
+  // Agrupar citas por fecha
+  const groupedAppointments = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    const pending = appointments.filter(a => a.status === 'pending' && a.date >= today).length;
-    const confirmed = appointments.filter(a => a.status === 'confirmed' && a.date >= today).length;
-    const completed = appointments.filter(a => a.status === 'completed').length;
-    const cancelled = appointments.filter(a => a.status === 'cancelled').length;
-    
-    return { pending, confirmed, completed, cancelled };
+    const groups: { date: string; label: string; appointments: Appointment[] }[] = [];
+
+    // Ordenar por fecha y hora
+    const sorted = [...appointments].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+    // Filtrar solo citas futuras o de hoy
+    const upcoming = sorted.filter((a) => a.date >= today && a.status !== 'cancelled');
+
+    // Agrupar por fecha
+    upcoming.forEach((apt) => {
+      let group = groups.find((g) => g.date === apt.date);
+      if (!group) {
+        let label: string;
+        if (apt.date === today) {
+          label = t('appointments.today');
+        } else {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          if (apt.date === tomorrow.toISOString().split('T')[0]) {
+            label = t('appointments.tomorrow');
+          } else {
+            label = formatDate(apt.date);
+          }
+        }
+        group = { date: apt.date, label, appointments: [] };
+        groups.push(group);
+      }
+      group.appointments.push(apt);
+    });
+
+    return groups;
   }, [appointments]);
 
-  // Configurar header
+  const pendingCount = appointments.filter((a: Appointment) => a.status !== 'cancelled' && a.status !== 'completed').length;
+
+  // Citas de hoy para el optimizador de rutas
+  const todayAppointments = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return appointments
+      .filter(a => a.date === today && a.status !== 'cancelled' && a.status !== 'completed')
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [appointments]);
+
+  const [showCalendar, setShowCalendar] = useState(true);
+
+  // Configurar header con acciones
   useEffect(() => {
     setHeaderConfig({
       title: 'Agenda',
-      subtitle: `${stats.pending + stats.confirmed} citas pendientes`,
+      subtitle: `${pendingCount} ${pendingCount === 1 ? 'cita pendiente' : 'citas pendientes'}`,
       icon: 'calendar',
       showBackButton: false,
-    });
-  }, [stats.pending, stats.confirmed, setHeaderConfig]);
-
-  // Próximas citas (hoy y futuras)
-  const upcomingAppointments = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return appointments
-      .filter(a => a.date >= today && a.status !== 'cancelled')
-      .sort((a, b) => {
-        const dateCompare = a.date.localeCompare(b.date);
-        if (dateCompare !== 0) return dateCompare;
-        return a.startTime.localeCompare(b.startTime);
-      })
-      .slice(0, 5); // Mostrar solo las próximas 5
-  }, [appointments]);
-
-  // Navegación
-  const handleAddAppointment = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-    router.push('/appointments/new');
-  }, [router]);
-
-  const handleAppointmentPress = useCallback((appointment: Appointment) => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    router.push(`/appointments/${appointment.id}`);
-  }, [router]);
-
-  // Render de loading inicial
-  if (loading && appointments.length === 0) {
-    return (
-      <LinearGradient
-        colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.container}
-      >
-        <View style={styles.loadingState}>
-          <LoadingSpinner size="large" messageType="appointments" />
+      rightAction: (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/settings/calendar-settings' as any);
+            }}
+            style={[{ padding: 8, borderRadius: 8, backgroundColor: `${accent}15` }]}
+          >
+            <IconSymbol name="gearshape.fill" size={20} color={accent} />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowCalendar(!showCalendar);
+            }}
+            style={[{ padding: 8, borderRadius: 8, backgroundColor: `${accent}15` }]}
+          >
+            <IconSymbol name={showCalendar ? 'list.bullet' : 'calendar'} size={20} color={accent} />
+          </Pressable>
         </View>
-      </LinearGradient>
+      ),
+    });
+  }, [pendingCount, showCalendar, accent, router, setHeaderConfig]);
+
+  // Convertir citas a eventos para el calendario
+  const calendarEvents = useMemo(() => {
+    return appointments.map((apt) => {
+      const client = getClient(apt.clientId);
+      return {
+        id: apt.id,
+        date: apt.date,
+        startTime: apt.startTime,
+        endTime: apt.endTime,
+        title: client ? getClientFullName(client) : 'Cliente',
+        subtitle: apt.notes,
+        status: apt.status,
+      };
+    });
+  }, [appointments, getClient]);
+
+  const handleCalendarEventPress = (event: { id: string }) => {
+    router.push({
+      pathname: '/appointment/[id]' as any,
+      params: { id: event.id },
+    });
+  };
+
+  const handleCalendarDatePress = (date: string) => {
+    // Navegar a crear cita con fecha preseleccionada
+    router.push({
+      pathname: '/appointment/[id]' as any,
+      params: { id: 'new', date },
+    });
+  };
+
+  const handleAppointmentPress = (appointment: Appointment) => {
+    router.push({
+      pathname: '/appointment/[id]' as any,
+      params: { id: appointment.id },
+    });
+  };
+
+  const handleAddAppointment = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push({
+      pathname: '/appointment/[id]' as any,
+      params: { id: 'new' },
+    });
+  };
+
+  const getStatusColor = (status: Appointment['status']) => {
+    switch (status) {
+      case 'confirmed':
+        return success;
+      case 'scheduled':
+        return accent;
+      case 'in_progress':
+        return warning;
+      case 'completed':
+        return success;
+      case 'cancelled':
+      case 'no_show':
+        return error;
+      default:
+        return textSecondary;
+    }
+  };
+
+  const renderAppointment = (appointment: Appointment) => {
+    const client = getClient(appointment.clientId);
+    const piano = appointment.pianoId ? getPiano(appointment.pianoId) : null;
+    const statusColor = getStatusColor(appointment.status);
+
+    return (
+      <Pressable
+        key={appointment.id}
+        style={[styles.appointmentCard, { backgroundColor: cardBg, borderColor }]}
+        onPress={() => handleAppointmentPress(appointment)}
+      >
+        <View style={styles.timeColumn}>
+          <ThemedText style={styles.timeText}>{appointment.startTime}</ThemedText>
+          {appointment.endTime && (
+            <ThemedText style={[styles.endTimeText, { color: textSecondary }]}>
+              {appointment.endTime}
+            </ThemedText>
+          )}
+        </View>
+
+        <View style={[styles.divider, { backgroundColor: statusColor }]} />
+
+        <View style={styles.contentColumn}>
+          <ThemedText style={styles.clientName} numberOfLines={1}>
+            {client ? getClientFullName(client) : 'Cliente desconocido'}
+          </ThemedText>
+          {piano && (
+            <ThemedText style={[styles.pianoInfo, { color: textSecondary }]} numberOfLines={1}>
+              {piano.brand} {piano.model}
+            </ThemedText>
+          )}
+          <View style={styles.appointmentMeta}>
+            <View style={[styles.statusBadge, { backgroundColor: `${statusColor}20` }]}>
+              <ThemedText style={[styles.statusText, { color: statusColor }]}>
+                {APPOINTMENT_STATUS_LABELS[appointment.status]}
+              </ThemedText>
+            </View>
+            <ThemedText style={[styles.durationText, { color: textSecondary }]}>
+              {appointment.estimatedDuration} min
+            </ThemedText>
+          </View>
+        </View>
+
+        <IconSymbol name="chevron.right" size={20} color={textSecondary} />
+      </Pressable>
     );
-  }
+  };
 
   return (
     <LinearGradient
@@ -144,176 +239,59 @@ export default function AgendaScreen() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
+
+
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Estadísticas de citas */}
-        <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
-          <View style={[styles.statCard, { backgroundColor: '#f59e0b' }]}>
-            <Ionicons name="time" size={20} color={COLORS.white} />
-            <Text style={styles.statNumber}>{stats.pending}</Text>
-            <Text style={styles.statLabel}>Pendientes</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#10b981' }]}>
-            <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
-            <Text style={styles.statNumber}>{stats.confirmed}</Text>
-            <Text style={styles.statLabel}>Confirmadas</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#0891b2' }]}>
-            <Ionicons name="checkmark-done" size={20} color={COLORS.white} />
-            <Text style={styles.statNumber}>{stats.completed}</Text>
-            <Text style={styles.statLabel}>Completadas</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#ff4d4f' }]}>
-            <Ionicons name="close-circle" size={20} color={COLORS.white} />
-            <Text style={styles.statNumber}>{stats.cancelled}</Text>
-            <Text style={styles.statLabel}>Canceladas</Text>
-          </View>
-        </View>
-
-        {/* Vista de calendario */}
-        <View style={styles.calendarSection}>
+        {/* Vista de Calendario */}
+        {showCalendar && (
           <CalendarView
-            appointments={appointments}
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-            onAppointmentPress={handleAppointmentPress}
+            events={calendarEvents}
+            onEventPress={handleCalendarEventPress}
+            onDatePress={handleCalendarDatePress}
           />
-        </View>
-
-        {/* Próximas citas */}
-        <View style={styles.upcomingSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Próximas Citas</Text>
-            <Pressable
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                router.push('/appointments');
-              }}
-            >
-              <Text style={styles.seeAllText}>Ver todo →</Text>
-            </Pressable>
-          </View>
-
-          {upcomingAppointments.length === 0 ? (
-            <EmptyState
-              icon="calendar-outline"
-              title="No hay citas próximas"
-              message="Añade una cita para comenzar"
-              actionLabel="Añadir Cita"
-              onAction={handleAddAppointment}
-            />
-          ) : (
-            <View style={styles.appointmentsList}>
-              {upcomingAppointments.map((appointment) => {
-                const client = appointment.clientId ? getClient(appointment.clientId) : null;
-                const piano = appointment.pianoId ? getPiano(appointment.pianoId) : null;
-                
-                return (
-                  <Pressable
-                    key={appointment.id}
-                    style={styles.appointmentCard}
-                    onPress={() => handleAppointmentPress(appointment)}
-                  >
-                    <View style={styles.appointmentTime}>
-                      <Text style={styles.timeText}>{appointment.startTime}</Text>
-                      <View style={[
-                        styles.statusBadge,
-                        { backgroundColor: appointment.status === 'confirmed' ? COLORS.success : COLORS.warning }
-                      ]}>
-                        <Text style={styles.statusText}>
-                          {APPOINTMENT_STATUS_LABELS[appointment.status]}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.appointmentInfo}>
-                      <Text style={styles.appointmentTitle}>{appointment.title}</Text>
-                      {client && (
-                        <Text style={styles.appointmentClient}>
-                          {getClientFullName(client)}
-                        </Text>
-                      )}
-                      {piano && (
-                        <Text style={styles.appointmentPiano}>
-                          {piano.brand} {piano.model}
-                        </Text>
-                      )}
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-        </View>
-
-        {/* Optimizador de rutas */}
-        {upcomingAppointments.length > 1 && (
-          <View style={styles.optimizerSection}>
-            <Pressable
-              style={styles.optimizerButton}
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                setShowRouteOptimizer(!showRouteOptimizer);
-              }}
-            >
-              <Ionicons name="map" size={20} color={COLORS.white} />
-              <Text style={styles.optimizerButtonText}>
-                {showRouteOptimizer ? 'Ocultar' : 'Optimizar'} Ruta del Día
-              </Text>
-            </Pressable>
-            
-            {showRouteOptimizer && (
-              <View style={styles.optimizerContainer}>
-                <RouteOptimizer appointments={upcomingAppointments} />
-              </View>
-            )}
-          </View>
         )}
 
-        {/* Acciones rápidas */}
-        <View style={styles.actionsSection}>
-          <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
-          <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
-            <Pressable
-              style={styles.actionButton}
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                router.push('/appointments/calendar');
-              }}
-            >
-              <Ionicons name="calendar-outline" size={18} color={COLORS.white} />
-              <Text style={styles.actionButtonText}>Vista Mensual</Text>
-            </Pressable>
-            <Pressable
-              style={styles.actionButton}
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                router.push('/appointments/export');
-              }}
-            >
-              <Ionicons name="cloud-download-outline" size={18} color={COLORS.white} />
-              <Text style={styles.actionButtonText}>Exportar Agenda</Text>
-            </Pressable>
-          </View>
-        </View>
+        {/* Optimizador de Rutas - Solo muestra citas de hoy */}
+        {todayAppointments.length > 0 && (
+          <RouteOptimizer
+            appointments={todayAppointments}
+            getClient={getClient}
+            onAppointmentPress={handleAppointmentPress}
+          />
+        )}
+
+        {/* Lista de citas */}
+        {groupedAppointments.length === 0 ? (
+          <EmptyState
+            icon="calendar"
+            title="Sin citas programadas"
+            message="Programa tu primera cita tocando el botón + abajo."
+          />
+        ) : (
+          <>
+            {groupedAppointments.map((group) => (
+              <View key={group.date} style={styles.dateGroup}>
+                <View style={styles.dateHeader}>
+                  <ThemedText type="subtitle">{group.label}</ThemedText>
+                  <ThemedText style={[styles.dateCount, { color: textSecondary }]}>
+                    {group.appointments.length} {group.appointments.length === 1 ? 'cita' : 'citas'}
+                  </ThemedText>
+                </View>
+                {group.appointments.map(renderAppointment)}
+              </View>
+            ))}
+          </>
+        )}
       </ScrollView>
 
-      {/* FAB para añadir cita */}
       <FAB 
         onPress={handleAddAppointment} 
-        accessibilityLabel="Añadir cita"
-        accessibilityHint="Añade una nueva cita a la agenda"
+        accessibilityLabel="Añadir nueva cita"
+        accessibilityHint="Pulsa para programar una nueva cita"
       />
     </LinearGradient>
   );
@@ -326,174 +304,78 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  loadingState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
-  // Estadísticas
-  statsSection: {
-    flexDirection: 'row',
+  content: {
     paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.xs,
+    gap: Spacing.lg,
   },
-  statsSectionDesktop: {
-    maxWidth: 800,
-    alignSelf: 'center',
-    width: '100%',
+  dateGroup: {
+    gap: Spacing.sm,
   },
-  statCard: {
-    flex: 1,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    gap: 4,
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.white,
-  },
-  statLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: COLORS.white,
-    opacity: 0.9,
-    textAlign: 'center',
-  },
-
-  // Calendario
-  calendarSection: {
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-
-  // Próximas citas
-  upcomingSection: {
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  sectionHeader: {
+  dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  seeAllText: {
+  dateCount: {
     fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  appointmentsList: {
-    gap: Spacing.sm,
   },
   appointmentCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.md,
-    backgroundColor: COLORS.white,
-    borderRadius: BorderRadius.md,
-    gap: Spacing.sm,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    gap: Spacing.md,
   },
-  appointmentTime: {
+  timeColumn: {
+    width: 50,
     alignItems: 'center',
-    gap: 4,
   },
   timeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  statusBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 9,
+    fontSize: 16,
     fontWeight: '600',
-    color: COLORS.white,
   },
-  appointmentInfo: {
+  endTimeText: {
+    fontSize: 12,
+  },
+  divider: {
+    width: 3,
+    height: '100%',
+    minHeight: 50,
+    borderRadius: 2,
+  },
+  contentColumn: {
     flex: 1,
     gap: 2,
   },
-  appointmentTitle: {
-    fontSize: 13,
+  clientName: {
+    fontSize: 15,
     fontWeight: '600',
-    color: COLORS.textPrimary,
   },
-  appointmentClient: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+  pianoInfo: {
+    fontSize: 13,
   },
-  appointmentPiano: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-
-  // Optimizador
-  optimizerSection: {
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  optimizerButton: {
+  appointmentMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    padding: Spacing.sm,
-    backgroundColor: COLORS.primary,
-    borderRadius: BorderRadius.md,
-  },
-  optimizerButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  optimizerContainer: {
-    marginTop: Spacing.sm,
-  },
-
-  // Acciones rápidas
-  actionsSection: {
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
     gap: Spacing.sm,
-    marginTop: Spacing.sm,
+    marginTop: 4,
   },
-  actionsGridDesktop: {
-    maxWidth: 600,
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.sm,
   },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  durationText: {
+    fontSize: 12,
+  },
+  toggleButton: {
     padding: Spacing.sm,
     borderRadius: BorderRadius.md,
-    backgroundColor: COLORS.accent,
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.white,
   },
 });
