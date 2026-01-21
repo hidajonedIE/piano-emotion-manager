@@ -319,9 +319,8 @@ export class AccountingService {
     // Obtener facturas desde la tabla invoices
     const allInvoices = await db.query.invoices.findMany({
       where: and(
-        eq(invoices.partnerId, this.organizationId),
-        gte(invoices.invoiceDate, startDate),
-        lte(invoices.invoiceDate, endDate)
+        gte(invoices.date, startDate),
+        lte(invoices.date, endDate)
       ),
     });
 
@@ -461,9 +460,7 @@ export class AccountingService {
     byAccount: Array<{ account: typeof financialAccounts.$inferSelect; balance: number }>;
   }> {
     // Calcular balance total desde facturas
-    const allInvoices = await db.query.invoices.findMany({
-      where: eq(invoices.partnerId, this.organizationId),
-    });
+    const allInvoices = await db.query.invoices.findMany({});
 
     let totalBalance = 0;
     for (const invoice of allInvoices) {
