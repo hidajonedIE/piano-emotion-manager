@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useHeader } from '@/contexts/HeaderContext';

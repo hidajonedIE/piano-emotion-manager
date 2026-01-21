@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet } from 'react-native';
 import { useHeader } from '@/contexts/HeaderContext';
 import { ShopView } from '@/components/shop';

@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
 import {
   ScrollView,
