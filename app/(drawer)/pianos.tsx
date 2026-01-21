@@ -1,22 +1,41 @@
+/**
+ * Pianos Screen - Professional Minimalist Design
+ * Piano Emotion Manager
+ * 
+ * Diseño profesional y minimalista:
+ * - Sin colorines infantiles
+ * - Paleta neutra con acentos azules
+ * - Estadísticas sobrias y elegantes
+ * - Tipografía limpia y espaciado generoso
+ */
+
 import { useRouter } from 'expo-router';
-import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions, ActivityIndicator } from 'react-native';
 
 import { PianoCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
-import { ThemedText } from '@/components/themed-text';
 import { useClientsData, usePianosData } from '@/hooks/data';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslation } from '@/hooks/use-translation';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Piano, PianoCategory, getClientFullName } from '@/types';
 import { useDebounce } from '@/hooks/use-debounce';
+
+// Paleta profesional minimalista
+const COLORS = {
+  primary: '#003a8c',       // Azul corporativo
+  background: '#ffffff',    // Blanco puro
+  surface: '#f8f9fa',       // Gris muy claro
+  border: '#e5e7eb',        // Gris claro para bordes
+  textPrimary: '#1a1a1a',   // Negro casi puro
+  textSecondary: '#6b7280', // Gris medio
+  textTertiary: '#9ca3af',  // Gris claro
+  accent: '#e07a5f',        // Terracota (solo para acciones)
+};
 
 type FilterType = 'all' | PianoCategory;
 
@@ -41,7 +60,6 @@ export default function PianosScreen() {
     loadMore,
     hasMore,
     isLoadingMore,
-    brands,
   } = usePianosData({
     search: debouncedSearch,
     category: filter !== 'all' ? filter : undefined,
@@ -50,7 +68,9 @@ export default function PianosScreen() {
 
   const { getClient } = useClientsData();
 
-  const accent = useThemeColor({}, 'accent');
+  // Determinar si es móvil, tablet o desktop
+  const isMobile = width < 768;
+  const isDesktop = width >= 1024;
 
   // Configurar header
   useFocusEffect(
@@ -63,14 +83,6 @@ export default function PianosScreen() {
     });
     }, [totalPianos, t, setHeaderConfig])
   );
-  
-  const textSecondary = useThemeColor({}, 'textSecondary');
-  const cardBg = useThemeColor({}, 'cardBackground');
-  const borderColor = useThemeColor({}, 'border');
-
-  // Determinar si es móvil, tablet o desktop
-  const isMobile = width < 768;
-  const isDesktop = width >= 1024;
 
   // Estadísticas por categoría
   const stats = useMemo(() => {
@@ -127,10 +139,10 @@ export default function PianosScreen() {
     if (!isLoadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={accent} />
+        <ActivityIndicator size="small" color={COLORS.accent} />
       </View>
     );
-  }, [isLoadingMore, accent]);
+  }, [isLoadingMore]);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: t('common.all') },
@@ -142,45 +154,33 @@ export default function PianosScreen() {
   // Mostrar animación de carga inicial
   if (loading && pianos.length === 0) {
     return (
-        <LinearGradient
-          colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.container}
-        >
-          <View style={styles.loadingState}>
-            <LoadingSpinner size="large" messageType="pianos" />
-          </View>
-        </LinearGradient>
+      <View style={styles.container}>
+        <View style={styles.loadingState}>
+          <LoadingSpinner size="large" messageType="pianos" />
+        </View>
+      </View>
     );
   }
 
   return (
-      <LinearGradient
-        colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.container}
-      >
-      {/* Grid de estadísticas por categoría */}
+    <View style={styles.container}>
+      {/* Estadísticas minimalistas */}
       <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
-        <View style={[styles.statCard, { backgroundColor: '#7c3aed' }]}>
-          <Ionicons name="square" size={24} color="#ffffff" />
+        <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.upright}</Text>
           <Text style={styles.statLabel}>Verticales</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#0891b2' }]}>
-          <Ionicons name="triangle" size={24} color="#ffffff" />
+        <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.grand}</Text>
           <Text style={styles.statLabel}>De Cola</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#10b981' }]}>
-          <Ionicons name="hardware-chip" size={24} color="#ffffff" />
+        <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.digital}</Text>
           <Text style={styles.statLabel}>Digitales</Text>
         </View>
       </View>
 
+      {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>
         <SearchBar
           value={search}
@@ -190,33 +190,33 @@ export default function PianosScreen() {
         />
       </View>
 
-      {/* Filtros */}
+      {/* Filtros minimalistas */}
       <View style={styles.filtersContainer}>
         {filters.map((f) => (
           <Pressable
             key={f.key}
             style={[
               styles.filterChip,
-              { backgroundColor: cardBg, borderColor },
-              filter === f.key && { backgroundColor: accent, borderColor: accent },
+              filter === f.key && styles.filterChipActive,
             ]}
             onPress={() => setFilter(f.key)}
             accessibilityRole="button"
             accessibilityLabel={`${t('common.filter')}: ${f.label}`}
             accessibilityState={{ selected: filter === f.key }}
           >
-            <ThemedText
+            <Text
               style={[
                 styles.filterText,
-                { color: filter === f.key ? '#FFFFFF' : textSecondary },
+                filter === f.key && styles.filterTextActive,
               ]}
             >
               {f.label}
-            </ThemedText>
+            </Text>
           </Pressable>
         ))}
       </View>
 
+      {/* Lista de pianos */}
       {pianos.length === 0 ? (
         <EmptyState
           icon="pianokeys"
@@ -242,28 +242,12 @@ export default function PianosScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#7A8B99"
+              tintColor={COLORS.textSecondary}
               title={t('common.loading')}
-              titleColor="#7A8B99"
+              titleColor={COLORS.textSecondary}
             />
           }
         />
-      )}
-
-      {/* Acciones rápidas */}
-      {pianos.length > 0 && (
-        <View style={styles.actionsSection}>
-          <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
-            <Pressable style={styles.actionButton}>
-              <Ionicons name="download" size={20} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Importar</Text>
-            </Pressable>
-            <Pressable style={styles.actionButton}>
-              <Ionicons name="share" size={20} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Exportar</Text>
-            </Pressable>
-          </View>
-        </View>
       )}
 
       <FAB 
@@ -271,13 +255,14 @@ export default function PianosScreen() {
         accessibilityLabel={t('pianos.newPiano')}
         accessibilityHint={t('pianos.addFirstPiano')}
       />
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   loadingState: {
     flex: 1,
@@ -285,7 +270,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   
-  // Grid de estadísticas
+  // Estadísticas minimalistas
   statsSection: {
     flexDirection: 'row',
     paddingHorizontal: Spacing.md,
@@ -301,26 +286,31 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: 4,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
+    color: COLORS.primary,
   },
   statLabel: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#ffffff',
-    opacity: 0.9,
+    color: COLORS.textSecondary,
   },
 
+  // Búsqueda
   searchContainer: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
   },
+
+  // Filtros minimalistas
   filtersContainer: {
     flexDirection: 'row',
     paddingHorizontal: Spacing.md,
@@ -330,13 +320,25 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.background,
+  },
+  filterChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   filterText: {
     fontSize: 13,
     fontWeight: '500',
+    color: COLORS.textSecondary,
   },
+  filterTextActive: {
+    color: '#FFFFFF',
+  },
+
+  // Lista
   list: {
     paddingHorizontal: Spacing.md,
     paddingBottom: 100,
@@ -345,38 +347,5 @@ const styles = StyleSheet.create({
   footerLoader: {
     paddingVertical: Spacing.lg,
     alignItems: 'center',
-  },
-
-  // Acciones rápidas
-  actionsSection: {
-    position: 'absolute',
-    bottom: 80,
-    left: 0,
-    right: 0,
-    paddingHorizontal: Spacing.md,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  actionsGridDesktop: {
-    maxWidth: 400,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    backgroundColor: '#e07a5f',
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#ffffff',
   },
 });
