@@ -141,7 +141,7 @@ export default function RootLayout() {
                         },
                       }}
                     >
-                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
                       <Stack.Screen name="(app)" options={{ headerShown: false }} />
                       <Stack.Screen name="settings" options={{ title: 'Configuración', headerShown: false }} />
                       <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
