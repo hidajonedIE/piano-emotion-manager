@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
 export interface HeaderConfig {
   title: string;
@@ -17,10 +17,14 @@ interface HeaderContextType {
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
 
 export function HeaderProvider({ children }: { children: ReactNode }) {
-  const [headerConfig, setHeaderConfig] = useState<HeaderConfig>({
+  const [headerConfig, setHeaderConfigState] = useState<HeaderConfig>({
     title: 'Inicio',
     icon: 'house.fill',
   });
+
+  const setHeaderConfig = useCallback((config: HeaderConfig) => {
+    setHeaderConfigState(config);
+  }, []);
 
   return (
     <HeaderContext.Provider value={{ headerConfig, setHeaderConfig }}>

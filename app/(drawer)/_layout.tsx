@@ -8,8 +8,6 @@
 
 import { Drawer } from 'expo-router/drawer';
 import { useWindowDimensions } from 'react-native';
-import { usePathname } from 'expo-router';
-import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import CustomSidebar from '@/components/layout/CustomSidebar';
 import CustomHeader from '@/components/layout/CustomHeader';
@@ -21,20 +19,7 @@ const TABLET_BREAKPOINT = 768;
 function DrawerContent() {
   const { width } = useWindowDimensions();
   const isTabletOrDesktop = width >= TABLET_BREAKPOINT;
-  const { headerConfig, setHeaderConfig } = useHeader();
-  const pathname = usePathname();
-  
-  // Resetear header cuando cambia la ruta para evitar que se quede el header anterior
-  useEffect(() => {
-    // Este efecto se ejecuta antes que el useLayoutEffect de cada página
-    // Solo resetea si hay un header configurado previamente
-    if (headerConfig.title !== 'Inicio') {
-      setHeaderConfig({
-        title: 'Cargando...',
-        icon: 'house.fill',
-      });
-    }
-  }, [pathname]);
+  const { headerConfig } = useHeader();
 
   return (
     <Drawer
