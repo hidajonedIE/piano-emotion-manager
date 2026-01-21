@@ -51,7 +51,7 @@ export default function InventoryScreen() {
     React.useCallback(() => {
     setHeaderConfig({
       title: t('navigation.inventory'),
-      subtitle: `${items.length} ${items.length === 1 ? 'artículo' : 'artículos'}`,
+      subtitle: `${items.length} ${items.length === 1 ? 'articulo' : 'articulos'}`,
       icon: 'shippingbox.fill',
       showBackButton: false,
     });

@@ -29,7 +29,7 @@ export default function SettingsScreen() {
   useFocusEffect(
     React.useCallback(() => {
     setHeaderConfig({
-      title: 'Configuración',
+      title: 'Configuracion',
       subtitle: 'Ajustes del sistema',
       icon: 'gearshape.fill',
       showBackButton: false,

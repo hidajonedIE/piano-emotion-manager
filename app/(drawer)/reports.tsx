@@ -19,7 +19,7 @@ export default function ReportsScreen() {
     React.useCallback(() => {
     setHeaderConfig({
       title: 'Reportes',
-      subtitle: 'Análisis y estadísticas del negocio',
+      subtitle: 'Analisis y estadisticas del negocio',
       icon: 'chart.bar.fill',
       showBackButton: false,
     });

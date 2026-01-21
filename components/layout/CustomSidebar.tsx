@@ -28,7 +28,7 @@ const MENU_SECTIONS: MenuSection[] = [
   {
     title: 'MAIN',
     items: [
-      { id: 'inicio', label: 'Inicio', icon: 'home-outline', route: '/(drawer)', useArkhip: true },
+      { id: 'inicio', label: 'Inicio', icon: 'home-outline', route: '/(drawer)' },
       { id: 'agenda', label: 'Agenda', icon: 'calendar-outline', route: '/(drawer)/agenda' },
       { id: 'clientes', label: 'Clientes', icon: 'people-outline', route: '/(drawer)/clients' },
       { id: 'pianos', label: 'Pianos', icon: 'musical-notes-outline', route: '/(drawer)/pianos' },

@@ -75,8 +75,8 @@ export default function QuickAccessScreen() {
   useFocusEffect(
     React.useCallback(() => {
     setHeaderConfig({
-      title: 'Accesos Rápidos',
-      subtitle: 'Accede rápidamente a las funciones principales',
+      title: 'Accesos Rapidos',
+      subtitle: 'Accede rapidamente a las funciones principales',
       icon: 'square.grid.2x2.fill',
       showBackButton: false,
     });

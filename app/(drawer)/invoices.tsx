@@ -16,8 +16,8 @@ export default function InvoicesScreen() {
   useFocusEffect(
     React.useCallback(() => {
       setHeaderConfig({
-        title: 'Facturación',
-        subtitle: 'Gestión de facturas y contabilidad',
+        title: 'Facturacion',
+        subtitle: 'Gestion de facturas y contabilidad',
         icon: 'doc.text.fill',
         showBackButton: false,
       });
