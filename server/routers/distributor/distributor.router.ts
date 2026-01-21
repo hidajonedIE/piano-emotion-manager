@@ -14,9 +14,22 @@ import { getDb } from '../../db.js';
 import { distributors } from '../../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
+// Helper function to validate user email
+function validateUserEmail(email: string | null | undefined): string {
+  if (!email) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'User email is required but not found in context',
+    });
+  }
+  return email;
+}
+
 // Helper function to get or create distributor for current user
 async function getDistributorIdForUser(userId: number, userEmail: string): Promise<number> {
   const db = await getDb();
+  
+  console.log('[getDistributorIdForUser] Looking for distributor with email:', userEmail);
   
   // Try to find existing distributor by email
   const [existing] = await db
@@ -26,26 +39,48 @@ async function getDistributorIdForUser(userId: number, userEmail: string): Promi
     .limit(1);
   
   if (existing) {
+    console.log('[getDistributorIdForUser] Found existing distributor:', existing.id);
     return existing.id;
   }
   
+  console.log('[getDistributorIdForUser] No existing distributor found, creating new one');
+  
   // Create new distributor if not exists
-  const result = await db
-    .insert(distributors)
-    .values({
-      name: userEmail.split('@')[0],
-      email: userEmail,
-      isActive: true,
+  try {
+    const result = await db
+      .insert(distributors)
+      .values({
+        name: userEmail.split('@')[0],
+        email: userEmail,
+        isActive: true,
+      });
+    
+    console.log('[getDistributorIdForUser] Insert result:', result);
+    
+    // Get the newly created distributor
+    const [newDistributor] = await db
+      .select()
+      .from(distributors)
+      .where(eq(distributors.email, userEmail))
+      .limit(1);
+    
+    if (!newDistributor) {
+      console.error('[getDistributorIdForUser] Failed to retrieve newly created distributor');
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to create distributor',
+      });
+    }
+    
+    console.log('[getDistributorIdForUser] Created new distributor:', newDistributor.id);
+    return newDistributor.id;
+  } catch (error) {
+    console.error('[getDistributorIdForUser] Error creating distributor:', error);
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `Failed to create distributor: ${error}`,
     });
-  
-  // Get the newly created distributor
-  const [newDistributor] = await db
-    .select()
-    .from(distributors)
-    .where(eq(distributors.email, userEmail))
-    .limit(1);
-  
-  return newDistributor.id;
+  }
 }
 
 // ============================================================================
@@ -123,7 +158,8 @@ export const distributorRouter = router({
    */
   getModuleConfig: protectedProcedure
     .query(async ({ ctx }) => {
-      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const email = validateUserEmail(ctx.user.email);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, email);
       const service = createDistributorService(distributorId);
       return service.getModuleConfig();
     }),
@@ -134,7 +170,8 @@ export const distributorRouter = router({
   saveModuleConfig: protectedProcedure
     .input(moduleConfigSchema.partial())
     .mutation(async ({ ctx, input }) => {
-      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const email = validateUserEmail(ctx.user.email);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, email);
       const service = createDistributorService(distributorId);
       return service.saveModuleConfig(input);
     }),
@@ -148,7 +185,8 @@ export const distributorRouter = router({
    */
   getWooCommerceConfig: protectedProcedure
     .query(async ({ ctx }) => {
-      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const email = validateUserEmail(ctx.user.email);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, email);
       const service = createDistributorService(distributorId);
       return service.getWooCommerceConfig();
     }),
@@ -159,7 +197,8 @@ export const distributorRouter = router({
   saveWooCommerceConfig: protectedProcedure
     .input(wooCommerceConfigSchema)
     .mutation(async ({ ctx, input }) => {
-      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const email = validateUserEmail(ctx.user.email);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, email);
       const service = createDistributorService(distributorId);
       return service.saveWooCommerceConfig(input);
     }),
@@ -170,7 +209,8 @@ export const distributorRouter = router({
   testWooCommerceConnection: protectedProcedure
     .input(wooCommerceConfigSchema)
     .mutation(async ({ ctx, input }) => {
-      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const email = validateUserEmail(ctx.user.email);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, email);
       const service = createDistributorService(distributorId);
       return service.testWooCommerceConnection({
         ...input,
@@ -187,7 +227,8 @@ export const distributorRouter = router({
    */
   getPremiumConfig: protectedProcedure
     .query(async ({ ctx }) => {
-      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const email = validateUserEmail(ctx.user.email);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, email);
       const service = createDistributorService(distributorId);
       return service.getPremiumConfig();
     }),
@@ -198,7 +239,8 @@ export const distributorRouter = router({
   savePremiumConfig: protectedProcedure
     .input(premiumConfigSchema.partial())
     .mutation(async ({ ctx, input }) => {
-      const distributorId = await getDistributorIdForUser(ctx.user.id, ctx.user.email!);
+      const email = validateUserEmail(ctx.user.email);
+      const distributorId = await getDistributorIdForUser(ctx.user.id, email);
       const service = createDistributorService(distributorId);
       return service.savePremiumConfig(input);
     }),
