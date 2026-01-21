@@ -23,7 +23,7 @@ import {
   quotes,
   serviceRates,
   reminders
-} from '../drizzle/schema';
+} from '../drizzle/schema.js';
 
 // ID del usuario propietario (debe coincidir con el usuario autenticado)
 const OWNER_ID = 'jnavarrete@inboundemotion.com';

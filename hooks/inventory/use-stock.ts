@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import { trpc } from '@/utils/trpc';
-import type { StockMovementType } from '@/drizzle/inventory-schema';
+import type { StockMovementType } from '../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

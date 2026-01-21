@@ -5,7 +5,7 @@
  * Proporciona métricas de negocio, KPIs y datos para dashboards
  */
 
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../../drizzle/db.js';
 import { eq, and, gte, lte, sql, count, sum, avg, desc } from 'drizzle-orm';
 
 // ============================================================================

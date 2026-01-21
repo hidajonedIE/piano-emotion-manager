@@ -1,5 +1,5 @@
-import { getDb } from './drizzle/db';
-import { modules, subscriptionPlans } from './drizzle/modules-schema';
+import { getDb } from './drizzle/db.js';
+import { modules, subscriptionPlans } from './drizzle/modules-schema.js';
 import { eq } from 'drizzle-orm';
 import { DEFAULT_MODULES, DEFAULT_PLANS } from './server/data/modules-data';
 

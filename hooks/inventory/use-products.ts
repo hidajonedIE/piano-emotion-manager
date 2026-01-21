@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { trpc } from '@/utils/trpc';
-import type { ProductType, ProductCategory } from '@/drizzle/inventory-schema';
+import type { ProductType, ProductCategory } from '../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

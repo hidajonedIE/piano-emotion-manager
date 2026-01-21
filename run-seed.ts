@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import { eq } from 'drizzle-orm';
-import { modules, subscriptionPlans } from './drizzle/modules-schema';
+import { modules, subscriptionPlans } from './drizzle/modules-schema.js';
 
 // Connect directly to TiDB
 const DATABASE_URL = process.env.DATABASE_URL || "mysql://3v9ofvvgodfeCHv.root:9wl3Ks7pqSVjBamc@gateway01.us-east-1.prod.aws.tidbcloud.com:4000/test?ssl={\"rejectUnauthorized\":true}";

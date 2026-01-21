@@ -2,7 +2,7 @@
  * Script para verificar el usuario autenticado y los datos asociados
  */
 import { getDb } from '../server/db';
-import { users, clients, pianos, services } from '../drizzle/schema';
+import { users, clients, pianos, services } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 async function checkUserAuth() {

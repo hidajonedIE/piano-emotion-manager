@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ProductList, BarcodeScanner } from '@/components/inventory';
 import { useProducts } from '@/hooks/inventory';
 import { useTranslation } from '@/hooks/use-translation';
-import type { ProductCategory, ProductType } from '@/drizzle/inventory-schema';
+import type { ProductCategory, ProductType } from '../../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Product Form Modal

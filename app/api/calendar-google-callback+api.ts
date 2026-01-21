@@ -4,7 +4,7 @@
  */
 import { exchangeCodeForTokens } from '../../server/_core/calendar/oauth-google.js';
 import * as db from '../../server/db.js';
-import { calendarConnections } from '../../drizzle/schema.js';
+import { calendarConnections } from '../../drizzle/schema.js.js';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 

@@ -3,8 +3,8 @@
  * Envía emails usando SMTP para servidores de email corporativos
  */
 import nodemailer from 'nodemailer';
-import { getDb } from '@/drizzle/db';
-import { users } from '@/drizzle/schema';
+import { getDb } from '../../drizzle/db.js';
+import { users } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 interface SMTPConfig {

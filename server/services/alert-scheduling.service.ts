@@ -9,7 +9,7 @@ import {
   services, 
   alertHistory,
   appointments,
-} from '../../drizzle/schema.js';
+} from '../../drizzle/schema.js.js';
 import { eq, and, desc, gte, lte, isNull } from 'drizzle-orm';
 
 interface DateSuggestion {

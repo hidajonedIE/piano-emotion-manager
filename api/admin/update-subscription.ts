@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { verifyClerkSession } from '../../server/_core/clerk.js';
 import { getDb } from '../../server/db.js';
-import { users } from '../../drizzle/schema.js';
+import { users } from '../../drizzle/schema.js.js';
 import { eq } from 'drizzle-orm';
 
 /**

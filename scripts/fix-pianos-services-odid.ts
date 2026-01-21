@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { getDb } from '../server/db.js';
-import { users, pianos, services } from '../drizzle/schema.js';
+import { users, pianos, services } from '../drizzle/schema.js.js';
 import { eq } from 'drizzle-orm';
 
 const CORRECT_ODID = 'user_37Nq41VhiCgFUQldUPyH8fn25j6'; // El que funciona con clientes

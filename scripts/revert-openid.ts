@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { getDb } from '../server/db.js';
-import { users } from '../drizzle/schema.js';
+import { users } from '../drizzle/schema.js.js';
 import { eq } from 'drizzle-orm';
 
 const OLD_OPENID = 'user_37Nq41VhiCgFUQldUPyH8fn25j6';

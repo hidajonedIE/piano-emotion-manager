@@ -16,7 +16,7 @@ import {
   products,
   warehouses,
   type PurchaseOrderStatus,
-} from '../../../drizzle/inventory-schema.js';
+} from '../../../drizzle/inventory-schema.js.js';
 import { stockService } from './stock.service.js';
 
 // ============================================================================

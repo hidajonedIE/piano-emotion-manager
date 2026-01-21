@@ -8,7 +8,7 @@
 
 import { TRPCError } from '@trpc/server';
 import * as db from '../db.js';
-import { invitations } from '../../drizzle/invitations-schema.js';
+import { invitations } from '../../drizzle/invitations-schema.js.js';
 import { eq, and } from 'drizzle-orm';
 
 /**

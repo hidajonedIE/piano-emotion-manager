@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
 import * as db from '../db.js';
-import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
+import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { TRPCError } from '@trpc/server';

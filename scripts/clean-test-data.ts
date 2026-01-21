@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import { eq } from 'drizzle-orm';
-import { clients, pianos, services, appointments, invoices, inventory, users } from '../drizzle/schema';
+import { clients, pianos, services, appointments, invoices, inventory, users } from '../drizzle/schema.js';
 
 const USER_EMAIL = 'jnavarrete@inboundemotion.com';
 

@@ -11,7 +11,7 @@ import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../../_core/trpc.js';
 import { createDistributorService } from '../../services/distributor/distributor.service.js';
 import { getDb } from '../../db.js';
-import { distributors } from '../../../drizzle/schema.js';
+import { distributors } from '../../../drizzle/schema.js.js';
 import { eq } from 'drizzle-orm';
 
 // Helper function to validate user email

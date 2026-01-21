@@ -16,8 +16,8 @@ import {
   WorkAssignment,
   InsertWorkAssignment,
   OrganizationMember,
-} from '../../../drizzle/schema.js';
-import { appointments, services, clients } from '../../../drizzle/schema.js';
+} from '../../../drizzle/schema.js.js';
+import { appointments, services, clients } from '../../../drizzle/schema.js.js';
 import { organizationService } from './organization.service.js';
 
 // ==========================================

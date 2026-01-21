@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { getDb } from '../server/db.js';
-import { users, clients, pianos, services, appointments, invoices, quotes } from '../drizzle/schema.js';
+import { users, clients, pianos, services, appointments, invoices, quotes } from '../drizzle/schema.js.js';
 import { writeFileSync } from 'fs';
 
 async function exportDatabase() {

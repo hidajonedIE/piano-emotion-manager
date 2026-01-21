@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useProducts, type ProductFilters } from '@/hooks/inventory';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCurrency } from '@/utils/format';
-import type { ProductType, ProductCategory } from '@/drizzle/inventory-schema';
+import type { ProductType, ProductCategory } from '../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

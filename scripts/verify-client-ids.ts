@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import { clients, appointments } from '../drizzle/schema.js';
+import { clients, appointments } from '../drizzle/schema.js.js';
 import { eq, inArray } from 'drizzle-orm';
 
 async function main() {

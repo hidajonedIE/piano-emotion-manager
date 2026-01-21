@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../../drizzle/db.js';
 import { eq, and, desc, asc, inArray } from 'drizzle-orm';
 import {
   campaigns,
@@ -13,7 +13,7 @@ import {
   clientTagAssignments,
   type CampaignType,
   type CampaignStatus,
-} from '@/drizzle/crm-schema';
+} from '../../../drizzle/crm-schema.js';
 import { EmailService } from '@/server/services/email';
 
 // ============================================================================

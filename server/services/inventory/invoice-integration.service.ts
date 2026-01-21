@@ -6,9 +6,9 @@
  * permitiendo incluir automáticamente las piezas usadas en las facturas.
  */
 
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../../drizzle/db.js';
 import { eq, and, inArray } from 'drizzle-orm';
-import { products, stockMovements } from '@/drizzle/inventory-schema';
+import { products, stockMovements } from '../../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

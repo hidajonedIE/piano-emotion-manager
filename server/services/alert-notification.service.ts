@@ -2,9 +2,9 @@
  * Alert Notification Service
  * Gestiona el envío de notificaciones por email para alertas de mantenimiento
  */
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../drizzle/db.js';
 import { UnifiedEmailService } from './unified-email.service';
-import { pianos, clients, alertHistory, alertSettings, users } from '@/drizzle/schema';
+import { pianos, clients, alertHistory, alertSettings, users } from '../../drizzle/schema.js';
 import { eq, and, gte, lte, isNull } from 'drizzle-orm';
 
 interface AlertNotification {

@@ -6,16 +6,16 @@
  * y el estado de los técnicos.
  */
 
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../../drizzle/db.js';
 import { eq, and, desc, gte, sql, lte } from 'drizzle-orm';
-import { users } from '@/drizzle/schema';
+import { users } from '../../../drizzle/schema.js';
 import { 
   distributors,
   distributorWooCommerceConfig,
   distributorPremiumConfig,
   technicianAccountStatus,
   purchaseVerificationLogs,
-} from '@/drizzle/schema';
+} from '../../../drizzle/schema.js';
 
 // ============================================================================
 // Types

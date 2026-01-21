@@ -9,14 +9,14 @@ type DatabaseTransaction = unknown;
  * automáticamente el stock y la facturación.
  */
 
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../../drizzle/db.js';
 import { eq, and, sql } from 'drizzle-orm';
 import {
   products,
   warehouseStock,
   stockMovements,
   stockAlerts,
-} from '@/drizzle/inventory-schema';
+} from '../../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

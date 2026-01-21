@@ -3,7 +3,7 @@
  */
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import { users } from '../drizzle/schema.js';
+import { users } from '../drizzle/schema.js.js';
 import { eq } from 'drizzle-orm';
 
 async function updateUserSubscription() {

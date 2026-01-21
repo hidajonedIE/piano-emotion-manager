@@ -2,7 +2,7 @@
  * Script de depuración para verificar las recomendaciones de servicio
  */
 import { getDb } from '../server/db';
-import { pianos, services, clients } from '../drizzle/schema';
+import { pianos, services, clients } from '../drizzle/schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 
 const OWNER_ID = 'jnavarrete-inboundemotion';

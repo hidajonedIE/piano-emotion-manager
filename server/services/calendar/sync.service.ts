@@ -5,14 +5,14 @@
  * Soporta Google Calendar, Outlook y CalDAV
  */
 
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../../drizzle/db.js';
 import { eq, and } from 'drizzle-orm';
 import {
   calendarConnections,
   externalCalendars,
   calendarEvents,
   type CalendarProvider,
-} from '@/drizzle/calendar-schema';
+} from '../../../drizzle/calendar-schema.js';
 
 // ============================================================================
 // Types

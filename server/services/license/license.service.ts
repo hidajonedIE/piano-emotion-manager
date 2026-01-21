@@ -5,9 +5,9 @@
  * Gestiona la creación, activación y administración de licencias.
  */
 
-import { getDb } from '../../../drizzle/db.js';
+import { getDb } from '../../../drizzle/db.js.js';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
-import { users } from '../../../drizzle/schema.js';
+import { users } from '../../../drizzle/schema.js.js';
 
 // ============================================================================
 // Types

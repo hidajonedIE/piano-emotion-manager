@@ -8,7 +8,7 @@
  *    para usar el openId correcto
  */
 import { getDb } from '../server/db';
-import { users, clients } from '../drizzle/schema';
+import { users, clients } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 const TARGET_EMAIL = 'jnavarrete@inboundemotion.com';

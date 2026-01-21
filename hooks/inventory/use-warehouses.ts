@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { trpc } from '@/utils/trpc';
-import type { WarehouseType } from '@/drizzle/inventory-schema';
+import type { WarehouseType } from '../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // useWarehouses Hook

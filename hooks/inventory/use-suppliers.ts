@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import { trpc } from '@/utils/trpc';
-import type { PurchaseOrderStatus } from '@/drizzle/inventory-schema';
+import type { PurchaseOrderStatus } from '../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

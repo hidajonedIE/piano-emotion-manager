@@ -4,7 +4,7 @@
  */
 
 import { getDb } from '../server/db';
-import { clients, pianos, services, appointments, invoices, inventory, users } from '../drizzle/schema';
+import { clients, pianos, services, appointments, invoices, inventory, users } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 const CLIENTS_COUNT = 250;

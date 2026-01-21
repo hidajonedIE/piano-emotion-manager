@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { getDb } from '@/drizzle/db';
+import { getDb } from '../../../drizzle/db.js';
 import { eq, and, or, gte, lte, between, desc, asc, sql } from 'drizzle-orm';
 import {
   calendarEvents,
@@ -14,7 +14,7 @@ import {
   type EventType,
   type EventStatus,
   type ReminderType,
-} from '@/drizzle/calendar-schema';
+} from '../../../drizzle/calendar-schema.js';
 
 // ============================================================================
 // Types

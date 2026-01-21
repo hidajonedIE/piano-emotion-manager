@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useWarehouses, useWarehouseStats } from '@/hooks/inventory';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCurrency } from '@/utils/format';
-import type { WarehouseType } from '@/drizzle/inventory-schema';
+import type { WarehouseType } from '../../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

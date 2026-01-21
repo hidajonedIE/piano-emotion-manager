@@ -15,7 +15,7 @@ import {
   stockAlerts,
   type ProductType,
   type ProductCategory,
-} from '../../../drizzle/inventory-schema.js';
+} from '../../../drizzle/inventory-schema.js.js';
 
 // ============================================================================
 // Types

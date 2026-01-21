@@ -4,7 +4,7 @@ import {
   users, clients, pianos, services, appointments, 
   invoices, quotes, inventory, reminders, serviceRates,
   businessInfo, quoteTemplates
-} from '../drizzle/schema.js';
+} from '../drizzle/schema.js.js';
 import { eq } from 'drizzle-orm';
 
 // Mapeo de OpenID a Email (incluyendo ambas variantes)

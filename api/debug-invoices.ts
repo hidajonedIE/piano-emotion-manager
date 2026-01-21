@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getDb } from '../drizzle/db.js';
-import { invoices } from '../drizzle/schema.js';
+import { getDb } from '../drizzle/db.js.js';
+import { invoices } from '../drizzle/schema.js.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
