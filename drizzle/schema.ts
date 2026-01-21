@@ -1101,3 +1101,9 @@ export const serviceTasks = mysqlTable("service_tasks", {
 	index("service_tasks_type_idx").on(table.serviceTypeId),
 	index("service_tasks_order_idx").on(table.serviceTypeId, table.orderIndex),
 ]);
+
+// ============================================================================
+// ACCOUNTING TABLES
+// ============================================================================
+
+export * from './accounting-schema.js';
