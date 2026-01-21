@@ -316,13 +316,8 @@ export class AccountingService {
    * Obtiene resumen financiero
    */
   async getFinancialSummary(startDate: string, endDate: string): Promise<FinancialSummary> {
-    // Obtener facturas desde la tabla invoices
-    const allInvoices = await db.query.invoices.findMany({
-      where: and(
-        gte(invoices.date, startDate),
-        lte(invoices.date, endDate)
-      ),
-    });
+    // Obtener facturas desde la tabla invoices (sin filtro de fechas para debug)
+    const allInvoices = await db.query.invoices.findMany({});
 
     let totalIncome = 0;
     let totalExpenses = 0;
