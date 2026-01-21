@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and, desc, asc, inArray } from 'drizzle-orm';
 import {
   campaigns,
@@ -63,7 +63,7 @@ export class CampaignService {
    * Crea una nueva campaña
    */
   async createCampaign(input: CampaignInput): Promise<typeof campaigns.$inferSelect> {
-    const [campaign] = await db.insert(campaigns).values({
+    const [campaign] = await getDb().insert(campaigns).values({
       organizationId: this.organizationId,
       createdBy: this.userId,
       name: input.name,
@@ -94,7 +94,7 @@ export class CampaignService {
       conditions.push(eq(campaigns.status, status));
     }
 
-    return db.query.campaigns.findMany({
+    return getDb().query.campaigns.findMany({
       where: and(...conditions),
       orderBy: [desc(campaigns.createdAt)],
     });
@@ -104,7 +104,7 @@ export class CampaignService {
    * Obtiene una campaña por ID
    */
   async getCampaign(campaignId: number): Promise<typeof campaigns.$inferSelect | undefined> {
-    return db.query.campaigns.findFirst({
+    return getDb().query.campaigns.findFirst({
       where: and(
         eq(campaigns.id, campaignId),
         eq(campaigns.organizationId, this.organizationId)
@@ -155,14 +155,14 @@ export class CampaignService {
     }
 
     // Obtener clientes que cumplen criterios
-    const eligibleClients = await db.query.clientProfiles.findMany({
+    const eligibleClients = await getDb().query.clientProfiles.findMany({
       where: and(...conditions),
     });
 
     // Si hay filtro por tags, filtrar adicionalmente
     let filteredClients = eligibleClients;
     if (campaign.targetTags && campaign.targetTags.length > 0) {
-      const tagAssignments = await db.query.clientTagAssignments.findMany({
+      const tagAssignments = await getDb().query.clientTagAssignments.findMany({
         where: inArray(clientTagAssignments.tagId, campaign.targetTags),
       });
       const clientIdsWithTags = new Set(tagAssignments.map((a) => a.clientId));
@@ -313,7 +313,7 @@ export class CampaignService {
       );
 
     // Actualizar contador de campaña
-    await db.execute(
+    await getDb().execute(
       sql`UPDATE campaigns SET opened_count = opened_count + 1 WHERE id = ${campaignId}`
     );
   }
@@ -333,7 +333,7 @@ export class CampaignService {
       );
 
     // Actualizar contador de campaña
-    await db.execute(
+    await getDb().execute(
       sql`UPDATE campaigns SET clicked_count = clicked_count + 1 WHERE id = ${campaignId}`
     );
   }
@@ -357,7 +357,7 @@ export class CampaignService {
       conditions.push(eq(communicationTemplates.type, type as any));
     }
 
-    return db.query.communicationTemplates.findMany({
+    return getDb().query.communicationTemplates.findMany({
       where: and(...conditions),
       orderBy: [asc(communicationTemplates.name)],
     });
@@ -373,7 +373,7 @@ export class CampaignService {
     subject?: string,
     variables?: string[]
   ): Promise<typeof communicationTemplates.$inferSelect> {
-    const [template] = await db.insert(communicationTemplates).values({
+    const [template] = await getDb().insert(communicationTemplates).values({
       organizationId: this.organizationId,
       name,
       type: type as any,

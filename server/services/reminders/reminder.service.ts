@@ -291,7 +291,7 @@ export class ReminderService {
     };
 
     // Insertar en la base de datos
-    const result = await this.db.insert('reminderRules' as never).values(rule as never).returning();
+    const result = await this.getDb().insert('reminderRules' as never).values(rule as never).returning();
     return result[0] as ReminderRule;
   }
 
@@ -325,7 +325,7 @@ export class ReminderService {
       createdAt: new Date()
     };
 
-    const result = await this.db.insert('scheduledReminders' as never).values(reminder as never).returning();
+    const result = await this.getDb().insert('scheduledReminders' as never).values(reminder as never).returning();
     return result[0] as ScheduledReminder;
   }
 
@@ -557,7 +557,7 @@ export class ReminderService {
     for (const [channel, result] of Object.entries(results)) {
       if (!result) continue;
       
-      await this.db.insert('reminderHistory' as never).values({
+      await this.getDb().insert('reminderHistory' as never).values({
         organizationId: reminder.organizationId,
         reminderId: reminder.id,
         channel,
@@ -735,7 +735,7 @@ export class ReminderService {
         serviceThreshold.setDate(serviceThreshold.getDate() - (condition.daysSince || 180));
         
         // Query para encontrar pianos con último servicio antes de la fecha umbral
-        const pianos = await this.db.execute(sql`
+        const pianos = await this.getDb().execute(sql`
           SELECT p.id as piano_id, p.client_id, c.first_name, c.last_name, c.email,
                  p.brand, p.model, MAX(s.date) as last_service_date
           FROM pianos p
@@ -771,7 +771,7 @@ export class ReminderService {
         const completedThreshold = new Date();
         completedThreshold.setDate(completedThreshold.getDate() - (condition.daysAfter || 7));
         
-        const services = await this.db.execute(sql`
+        const services = await this.getDb().execute(sql`
           SELECT s.id as service_id, s.piano_id, s.client_id, s.type, s.date,
                  c.first_name, c.last_name, c.email,
                  p.brand, p.model
@@ -818,7 +818,7 @@ export class ReminderService {
         const appointmentThreshold = new Date();
         appointmentThreshold.setDate(appointmentThreshold.getDate() + (condition.daysBefore || 1));
         
-        const appointments = await this.db.execute(sql`
+        const appointments = await this.getDb().execute(sql`
           SELECT a.id as appointment_id, a.client_id, a.piano_id, a.date, a.time, a.service_type,
                  c.first_name, c.last_name, c.email, c.phone,
                  p.brand, p.model
@@ -861,7 +861,7 @@ export class ReminderService {
         const invoiceThreshold = new Date();
         invoiceThreshold.setDate(invoiceThreshold.getDate() - (condition.daysAfter || 7));
         
-        const invoices = await this.db.execute(sql`
+        const invoices = await this.getDb().execute(sql`
           SELECT i.id as invoice_id, i.client_id, i.invoice_number, i.total, i.due_date,
                  c.first_name, c.last_name, c.email
           FROM invoices i

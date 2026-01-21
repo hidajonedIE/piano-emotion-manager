@@ -264,7 +264,7 @@ function getLanguageName(langCode: string): string {
  *       }
  *
  *       // Optionally save transcription to database
- *       await db.insert(transcriptions).values({
+ *       await getDb().insert(transcriptions).values({
  *         userId: ctx.user.id,
  *         text: result.text,
  *         duration: result.duration,

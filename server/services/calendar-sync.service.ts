@@ -2,7 +2,7 @@
  * Calendar Sync Service
  * Sincroniza citas programadas con Google Calendar y Outlook
  */
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { appointments, users, calendarConnections } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { createEvent, updateEvent, deleteEvent } from '../_core/calendar/google-calendar.js';
@@ -35,7 +35,7 @@ export class CalendarSyncService {
     userId: string,
     appointmentId: number
   ): Promise<SyncResult> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         success: false,
@@ -159,7 +159,7 @@ export class CalendarSyncService {
   private static async syncWithGoogleCalendar(event: CalendarEvent, userId: string): Promise<SyncResult> {
     try {
       // 1. Obtener conexión de Google Calendar del usuario
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         return {
           success: false,
@@ -255,7 +255,7 @@ export class CalendarSyncService {
    * Sincronizar con Outlook Calendar usando Microsoft Graph API
    */
   private static async syncWithOutlookCalendar(event: CalendarEvent, userId: string): Promise<SyncResult> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         success: false,
@@ -384,7 +384,7 @@ export class CalendarSyncService {
     externalEventId: string,
     provider: 'google' | 'outlook'
   ): Promise<SyncResult> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         success: false,
@@ -442,7 +442,7 @@ export class CalendarSyncService {
   ): Promise<SyncResult> {
     try {
       // 1. Obtener conexión de Google Calendar del usuario
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         return {
           success: false,
@@ -536,7 +536,7 @@ export class CalendarSyncService {
   ): Promise<SyncResult> {
     try {
       // 1. Obtener conexión de Outlook Calendar del usuario
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         return {
           success: false,
@@ -664,7 +664,7 @@ export class CalendarSyncService {
   ): Promise<SyncResult> {
     try {
       // 1. Obtener conexión de Google Calendar del usuario
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         return {
           success: false,
@@ -741,7 +741,7 @@ export class CalendarSyncService {
   ): Promise<SyncResult> {
     try {
       // 1. Obtener conexión de Outlook Calendar del usuario
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         return {
           success: false,
@@ -843,7 +843,7 @@ export class CalendarSyncService {
     hasOutlook: boolean;
   }> {
     try {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         return {
           hasGoogle: false,

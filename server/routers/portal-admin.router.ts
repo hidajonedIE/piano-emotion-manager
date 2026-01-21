@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import * as portalDb from '../_core/client-portal/db.js';
+import * as portalDb from '../_core/client-portal/getDb().js';
 import { TRPCError } from '@trpc/server';
 
 export const portalAdminRouter = router({

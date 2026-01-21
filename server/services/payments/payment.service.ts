@@ -93,7 +93,7 @@ export class PaymentService {
     // Encriptar las credenciales
     const encryptedConfig = encryptJSON(config);
     
-    await this.db.execute(`
+    await this.getDb().execute(`
       INSERT INTO payment_gateway_config (organization_id, gateway, config, updated_at)
       VALUES ($1, 'stripe', $2, NOW())
       ON CONFLICT (organization_id, gateway) 
@@ -116,7 +116,7 @@ export class PaymentService {
     // Encriptar las credenciales
     const encryptedConfig = encryptJSON(config);
     
-    await this.db.execute(`
+    await this.getDb().execute(`
       INSERT INTO payment_gateway_config (organization_id, gateway, config, updated_at)
       VALUES ($1, 'paypal', $2, NOW())
       ON CONFLICT (organization_id, gateway) 
@@ -135,7 +135,7 @@ export class PaymentService {
     organizationId: string, 
     gateway: PaymentGateway
   ): Promise<T | null> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT config FROM payment_gateway_config
       WHERE organization_id = $1 AND gateway = $2
     `, [organizationId, gateway]) as DatabaseQueryResult<{ config: string }>;
@@ -208,7 +208,7 @@ export class PaymentService {
     userId?: string
   ): Promise<void> {
     try {
-      await this.db.execute(`
+      await this.getDb().execute(`
         INSERT INTO credential_audit_log 
         (organization_id, gateway, action, user_id, created_at, ip_address)
         VALUES ($1, $2, $3, $4, NOW(), $5)
@@ -230,7 +230,7 @@ export class PaymentService {
    * Obtiene las pasarelas configuradas
    */
   async getConfiguredGateways(organizationId: string): Promise<PaymentGateway[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT gateway FROM payment_gateway_config
       WHERE organization_id = $1
     `, [organizationId]) as DatabaseQueryResult<GatewayConfigRow>;
@@ -415,21 +415,21 @@ export class PaymentService {
   }
 
   private async handleStripePaymentSucceeded(paymentIntent: StripePaymentIntent): Promise<void> {
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE payments SET status = 'completed', completed_at = NOW()
       WHERE gateway_payment_id = $1 OR metadata->>'paymentIntentId' = $1
     `, [paymentIntent.id]);
   }
 
   private async handleStripePaymentFailed(paymentIntent: StripePaymentIntent): Promise<void> {
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE payments SET status = 'failed', error_message = $1
       WHERE gateway_payment_id = $2 OR metadata->>'paymentIntentId' = $2
     `, [paymentIntent.last_payment_error?.message || 'Payment failed', paymentIntent.id]);
   }
 
   private async handleStripeRefund(charge: StripeCharge): Promise<void> {
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE payments SET status = 'refunded'
       WHERE gateway_payment_id = $1
     `, [charge.payment_intent]);
@@ -630,7 +630,7 @@ export class PaymentService {
 
   private async handlePayPalRefund(refund: PayPalCapture): Promise<void> {
     const captureId = refund.id;
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE payments SET status = 'refunded'
       WHERE gateway_payment_id = $1
     `, [captureId]);
@@ -644,7 +644,7 @@ export class PaymentService {
    * Crea un registro de pago
    */
   private async createPaymentRecord(data: CreatePaymentRecordInput): Promise<string> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       INSERT INTO payments 
       (organization_id, client_id, invoice_id, quote_id, contract_id, amount, currency, gateway, status, gateway_payment_id, gateway_customer_id, payment_method, receipt_url, error_message, metadata, created_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
@@ -701,7 +701,7 @@ export class PaymentService {
 
     values.push(gatewayPaymentId);
 
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE payments SET ${updates.join(', ')}
       WHERE gateway_payment_id = $${paramIndex}
     `, values);
@@ -711,7 +711,7 @@ export class PaymentService {
    * Marca una factura como pagada
    */
   private async markInvoiceAsPaid(invoiceId: string, paymentReference: string): Promise<void> {
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE invoices SET status = 'paid', paid_at = NOW(), payment_reference = $1
       WHERE id = $2
     `, [paymentReference, invoiceId]);
@@ -721,7 +721,7 @@ export class PaymentService {
    * Obtiene el historial de pagos de un cliente
    */
   async getClientPayments(organizationId: string, clientId: string): Promise<PaymentRecord[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT * FROM payments
       WHERE organization_id = $1 AND client_id = $2
       ORDER BY created_at DESC
@@ -734,7 +734,7 @@ export class PaymentService {
    * Obtiene un pago por ID
    */
   async getPayment(paymentId: string): Promise<PaymentRecord | null> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT * FROM payments WHERE id = $1
     `, [paymentId]) as DatabaseQueryResult<PaymentRecord>;
 
@@ -749,7 +749,7 @@ export class PaymentService {
     startDate: Date, 
     endDate: Date
   ): Promise<PaymentStats> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
@@ -760,7 +760,7 @@ export class PaymentService {
       WHERE organization_id = $1 AND created_at BETWEEN $2 AND $3
     `, [organizationId, startDate, endDate]) as DatabaseQueryResult<PaymentStatsRow>;
 
-    const gatewayResult = await this.db.execute(`
+    const gatewayResult = await this.getDb().execute(`
       SELECT gateway, COUNT(*) as count, SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as amount
       FROM payments
       WHERE organization_id = $1 AND created_at BETWEEN $2 AND $3
@@ -797,7 +797,7 @@ export class PaymentService {
     baseUrl: string
   ): Promise<string> {
     // Obtener datos de la factura
-    const invoiceResult = await this.db.execute(`
+    const invoiceResult = await this.getDb().execute(`
       SELECT i.*, c.email as client_email, c.name as client_name
       FROM invoices i
       JOIN clients c ON i.client_id = c.id

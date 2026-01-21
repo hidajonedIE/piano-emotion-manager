@@ -6,7 +6,7 @@
  */
 
 import { eq, and, gte, lte, desc, asc, sql, or } from 'drizzle-orm';
-import { getDb } from '../../db.js';
+import { getDb } from '../../getDb().js';
 import {
   workAssignments,
   organizationMembers,
@@ -109,7 +109,7 @@ export class WorkAssignmentService {
     }
     
     // Crear asignación
-    const [assignment] = await db.insert(workAssignments).values({
+    const [assignment] = await getDb().insert(workAssignments).values({
       organizationId: input.organizationId,
       appointmentId: input.appointmentId,
       serviceId: input.serviceId,

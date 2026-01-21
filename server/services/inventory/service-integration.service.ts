@@ -9,7 +9,7 @@ type DatabaseTransaction = unknown;
  * automáticamente el stock y la facturación.
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and, sql } from 'drizzle-orm';
 import {
   products,
@@ -83,7 +83,7 @@ export class ServiceIntegrationService {
     };
 
     // Procesar cada pieza en una transacción
-    await db.transaction(async (tx) => {
+    await getDb().transaction(async (tx) => {
       for (const part of parts) {
         try {
           // Obtener información del producto
@@ -194,7 +194,7 @@ export class ServiceIntegrationService {
   ): Promise<{ success: boolean; errors?: string[] }> {
     const errors: string[] = [];
 
-    await db.transaction(async (tx) => {
+    await getDb().transaction(async (tx) => {
       for (const part of parts) {
         try {
           // Registrar movimiento de entrada (devolución)
@@ -239,7 +239,7 @@ export class ServiceIntegrationService {
     serviceId: number
   ): Promise<InvoiceLineItem[]> {
     // Obtener movimientos de stock asociados al servicio
-    const movements = await db.query.stockMovements.findMany({
+    const movements = await getDb().query.stockMovements.findMany({
       where: and(
         eq(stockMovements.organizationId, this.organizationId),
         eq(stockMovements.referenceType, 'service'),
@@ -278,7 +278,7 @@ export class ServiceIntegrationService {
    * Obtiene el historial de piezas usadas en un servicio
    */
   async getServicePartsHistory(serviceId: number) {
-    const movements = await db.query.stockMovements.findMany({
+    const movements = await getDb().query.stockMovements.findMany({
       where: and(
         eq(stockMovements.organizationId, this.organizationId),
         eq(stockMovements.referenceType, 'service'),
@@ -325,14 +325,14 @@ export class ServiceIntegrationService {
     let allAvailable = true;
 
     for (const part of parts) {
-      const product = await db.query.products.findFirst({
+      const product = await getDb().query.products.findFirst({
         where: and(
           eq(products.id, part.productId),
           eq(products.organizationId, this.organizationId)
         ),
       });
 
-      const stock = await db.query.warehouseStock.findFirst({
+      const stock = await getDb().query.warehouseStock.findFirst({
         where: and(
           eq(warehouseStock.productId, part.productId),
           eq(warehouseStock.warehouseId, part.warehouseId)
@@ -367,7 +367,7 @@ export class ServiceIntegrationService {
   ): Promise<{ success: boolean; errors?: string[] }> {
     const errors: string[] = [];
 
-    await db.transaction(async (tx) => {
+    await getDb().transaction(async (tx) => {
       for (const part of parts) {
         try {
           // Verificar disponibilidad
@@ -414,7 +414,7 @@ export class ServiceIntegrationService {
     serviceId: number,
     parts: Array<{ productId: number; quantity: number; warehouseId: number }>
   ): Promise<void> {
-    await db.transaction(async (tx) => {
+    await getDb().transaction(async (tx) => {
       for (const part of parts) {
         await tx
           .update(warehouseStock)

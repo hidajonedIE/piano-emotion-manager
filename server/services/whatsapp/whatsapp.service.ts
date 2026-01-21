@@ -214,7 +214,7 @@ export class WhatsAppService {
    */
   async configure(organizationId: string, config: WhatsAppConfig): Promise<void> {
     // Guardar configuración en la base de datos
-    await this.db.execute(`
+    await this.getDb().execute(`
       INSERT INTO whatsapp_config (organization_id, phone_number_id, access_token, business_account_id, webhook_verify_token, api_version, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, NOW())
       ON CONFLICT (organization_id) 
@@ -232,7 +232,7 @@ export class WhatsAppService {
    * Obtiene la configuración de WhatsApp para una organización
    */
   async getConfig(organizationId: string): Promise<WhatsAppConfig | null> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT phone_number_id, access_token, business_account_id, webhook_verify_token, api_version
       FROM whatsapp_config
       WHERE organization_id = $1
@@ -468,7 +468,7 @@ export class WhatsAppService {
    * Registra un mensaje en el historial
    */
   private async logMessage(log: Omit<MessageLog, 'id'>): Promise<void> {
-    await this.db.execute(`
+    await this.getDb().execute(`
       INSERT INTO whatsapp_message_logs 
       (organization_id, client_id, phone_number, template_name, message_type, status, whatsapp_message_id, error_message, sent_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -496,13 +496,13 @@ export class WhatsAppService {
     const field = status === 'delivered' ? 'delivered_at' : status === 'read' ? 'read_at' : null;
     
     if (field) {
-      await this.db.execute(`
+      await this.getDb().execute(`
         UPDATE whatsapp_message_logs 
         SET status = $1, ${field} = $2
         WHERE whatsapp_message_id = $3
       `, [status, timestamp, whatsappMessageId]);
     } else {
-      await this.db.execute(`
+      await this.getDb().execute(`
         UPDATE whatsapp_message_logs 
         SET status = $1
         WHERE whatsapp_message_id = $2
@@ -514,7 +514,7 @@ export class WhatsAppService {
    * Obtiene el historial de mensajes de un cliente
    */
   async getClientMessageHistory(organizationId: string, clientId: string): Promise<MessageLog[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT * FROM whatsapp_message_logs
       WHERE organization_id = $1 AND client_id = $2
       ORDER BY sent_at DESC
@@ -535,7 +535,7 @@ export class WhatsAppService {
     failed: number;
     byTemplate: Record<string, number>;
   }> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent,
@@ -546,7 +546,7 @@ export class WhatsAppService {
       WHERE organization_id = $1 AND sent_at BETWEEN $2 AND $3
     `, [organizationId, startDate, endDate]);
 
-    const templateResult = await this.db.execute(`
+    const templateResult = await this.getDb().execute(`
       SELECT template_name, COUNT(*) as count
       FROM whatsapp_message_logs
       WHERE organization_id = $1 AND sent_at BETWEEN $2 AND $3 AND template_name IS NOT NULL

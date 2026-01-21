@@ -2,7 +2,7 @@
  * Database functions for Calendar Sync
  */
 
-import { getDb } from '../../db.js';
+import { getDb } from '../../getDb().js';
 import { sql } from 'drizzle-orm';
 import type {
   CalendarConnection,
@@ -22,7 +22,7 @@ export async function createConnection(data: Omit<CalendarConnection, 'createdAt
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO calendar_connections (
       id, userId, provider, calendarId, calendarName,
       accessToken, refreshToken, expiresAt,
@@ -47,7 +47,7 @@ export async function getConnectionById(id: string): Promise<CalendarConnection 
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM calendar_connections WHERE id = ${id}
   `);
   
@@ -58,7 +58,7 @@ export async function getConnectionsByUserId(userId: string): Promise<CalendarCo
   const db = await getDb();
   if (!db) return [];
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM calendar_connections WHERE userId = ${userId} ORDER BY createdAt DESC
   `);
   
@@ -72,7 +72,7 @@ export async function getConnectionByUserAndProvider(
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM calendar_connections 
     WHERE userId = ${userId} AND provider = ${provider}
     LIMIT 1
@@ -135,14 +135,14 @@ export async function updateConnection(
   
   const query = `UPDATE calendar_connections SET ${updates.join(', ')} WHERE id = ?`;
   
-  await db.execute(sql.raw(query, values));
+  await getDb().execute(sql.raw(query, values));
 }
 
 export async function deleteConnection(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     DELETE FROM calendar_connections WHERE id = ${id}
   `);
 }
@@ -151,7 +151,7 @@ export async function getExpiringSoonWebhooks(hoursThreshold: number): Promise<C
   const db = await getDb();
   if (!db) return [];
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM calendar_connections 
     WHERE webhookExpiration IS NOT NULL 
     AND webhookExpiration < DATE_ADD(NOW(), INTERVAL ${hoursThreshold} HOUR)
@@ -169,7 +169,7 @@ export async function createSyncEvent(data: CalendarSyncEvent): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO calendar_sync_events (
       id, connectionId, appointmentId, externalEventId,
       provider, syncStatus, lastSyncedAt, errorMessage, metadata
@@ -188,7 +188,7 @@ export async function getSyncEventByAppointmentAndConnection(
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM calendar_sync_events 
     WHERE appointmentId = ${appointmentId} AND connectionId = ${connectionId}
     LIMIT 1
@@ -204,7 +204,7 @@ export async function getSyncEventByExternalId(
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM calendar_sync_events 
     WHERE externalEventId = ${externalEventId} AND connectionId = ${connectionId}
     LIMIT 1
@@ -247,14 +247,14 @@ export async function updateSyncEvent(
   
   const query = `UPDATE calendar_sync_events SET ${updates.join(', ')} WHERE id = ?`;
   
-  await db.execute(sql.raw(query, values));
+  await getDb().execute(sql.raw(query, values));
 }
 
 export async function deleteSyncEvent(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     DELETE FROM calendar_sync_events WHERE id = ${id}
   `);
 }
@@ -267,7 +267,7 @@ export async function createSyncLog(data: Omit<CalendarSyncLog, 'id' | 'createdA
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO calendar_sync_log (
       connectionId, action, direction, appointmentId,
       externalEventId, status, errorMessage, details
@@ -286,7 +286,7 @@ export async function getSyncLogsByConnection(
   const db = await getDb();
   if (!db) return [];
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM calendar_sync_log 
     WHERE connectionId = ${connectionId}
     ORDER BY createdAt DESC

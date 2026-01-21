@@ -2,7 +2,7 @@
  * Alert Scheduling Service
  * Genera sugerencias de fechas para servicios basadas en alertas
  */
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { 
   pianos, 
   clients, 
@@ -43,7 +43,7 @@ export class AlertSchedulingService {
       maxDaysAhead?: number; // días máximos en el futuro
     } = {}
   ): Promise<DateSuggestion[]> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       throw new Error('Database not available');
     }
@@ -343,7 +343,7 @@ export class AlertSchedulingService {
       maxDaysAhead?: number;
     } = {}
   ): Promise<DateSuggestion | null> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       throw new Error('Database not available');
     }

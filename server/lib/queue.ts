@@ -53,7 +53,7 @@ queue.on('error', (error) => {
  * @returns The result of the function
  * 
  * @example
- * const result = await withQueue(() => db.query.clients.findMany(...));
+ * const result = await withQueue(() => getDb().query.clients.findMany(...));
  */
 export async function withQueue<T>(fn: () => Promise<T>): Promise<T> {
   return queue.add(fn);

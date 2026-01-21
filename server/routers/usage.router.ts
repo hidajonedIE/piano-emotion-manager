@@ -4,7 +4,7 @@
  */
 
 import { router, protectedProcedure } from '../_core/trpc.js';
-import { getAllMonthlyAIUsage, getAIUsageStats } from '../_core/ai-usage-db.js';
+import { getAllMonthlyAIUsage, getAIUsageStats } from '../_core/ai-usage-getDb().js';
 import { getUserSubscriptionInfo } from '../_core/subscription-middleware.js';
 import { getAILimits, getDataLimits, normalizePlanName } from '../_core/subscription-limits.js';
 import { checkUsageAlerts, getAlertsSummary } from '../_core/usage-alerts.js';

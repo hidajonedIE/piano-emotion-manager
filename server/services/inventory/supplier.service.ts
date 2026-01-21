@@ -7,7 +7,7 @@
  */
 
 import { eq, and, or, like, desc, asc, sql, isNull, inArray } from 'drizzle-orm';
-import { db } from '../../db.js';
+import { db } from '../../getDb().js';
 import {
   suppliers,
   supplierProducts,
@@ -107,7 +107,7 @@ export class SupplierService {
    */
   async create(input: CreateSupplierInput): Promise<typeof suppliers.$inferSelect> {
     // Verificar que el código no exista
-    const existing = await db.query.suppliers.findFirst({
+    const existing = await getDb().query.suppliers.findFirst({
       where: and(
         eq(suppliers.code, input.code),
         input.organizationId 
@@ -120,7 +120,7 @@ export class SupplierService {
       throw new Error(`Ya existe un proveedor con el código: ${input.code}`);
     }
 
-    const [supplier] = await db.insert(suppliers).values({
+    const [supplier] = await getDb().insert(suppliers).values({
       code: input.code,
       name: input.name,
       tradeName: input.tradeName,
@@ -157,7 +157,7 @@ export class SupplierService {
   async update(input: UpdateSupplierInput): Promise<typeof suppliers.$inferSelect> {
     const { id, ...updateData } = input;
 
-    const [updated] = await db.update(suppliers)
+    const [updated] = await getDb().update(suppliers)
       .set({
         ...updateData,
         discountPercent: updateData.discountPercent?.toString(),
@@ -175,7 +175,7 @@ export class SupplierService {
    * Obtener proveedor por ID
    */
   async getById(id: number): Promise<typeof suppliers.$inferSelect | null> {
-    const supplier = await db.query.suppliers.findFirst({
+    const supplier = await getDb().query.suppliers.findFirst({
       where: eq(suppliers.id, id),
     });
 
@@ -228,14 +228,14 @@ export class SupplierService {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [{ count }] = await db.select({ count: sql<number>`count(*)` })
+    const [{ count }] = await getDb().select({ count: sql<number>`count(*)` })
       .from(suppliers)
       .where(whereClause);
 
     const total = Number(count);
     const offset = (page - 1) * pageSize;
 
-    const supplierList = await db.query.suppliers.findMany({
+    const supplierList = await getDb().query.suppliers.findMany({
       where: whereClause,
       limit: pageSize,
       offset,
@@ -254,7 +254,7 @@ export class SupplierService {
    * Obtener todos los proveedores activos
    */
   async getAll(organizationId?: number): Promise<typeof suppliers.$inferSelect[]> {
-    return db.query.suppliers.findMany({
+    return getDb().query.suppliers.findMany({
       where: and(
         eq(suppliers.isActive, true),
         organizationId 
@@ -269,7 +269,7 @@ export class SupplierService {
    * Desactivar proveedor
    */
   async deactivate(id: number): Promise<void> {
-    await db.update(suppliers)
+    await getDb().update(suppliers)
       .set({ 
         isActive: false,
         updatedAt: new Date(),
@@ -286,7 +286,7 @@ export class SupplierService {
    */
   async addProduct(input: SupplierProductInput): Promise<typeof supplierProducts.$inferSelect> {
     // Verificar que no exista ya
-    const existing = await db.query.supplierProducts.findFirst({
+    const existing = await getDb().query.supplierProducts.findFirst({
       where: and(
         eq(supplierProducts.supplierId, input.supplierId),
         eq(supplierProducts.productId, input.productId)
@@ -299,12 +299,12 @@ export class SupplierService {
 
     // Si es preferido, quitar el flag de otros
     if (input.isPreferred) {
-      await db.update(supplierProducts)
+      await getDb().update(supplierProducts)
         .set({ isPreferred: false })
         .where(eq(supplierProducts.productId, input.productId));
     }
 
-    const [supplierProduct] = await db.insert(supplierProducts).values({
+    const [supplierProduct] = await getDb().insert(supplierProducts).values({
       supplierId: input.supplierId,
       productId: input.productId,
       supplierSku: input.supplierSku,
@@ -327,7 +327,7 @@ export class SupplierService {
     id: number,
     input: Partial<SupplierProductInput>
   ): Promise<typeof supplierProducts.$inferSelect> {
-    const [updated] = await db.update(supplierProducts)
+    const [updated] = await getDb().update(supplierProducts)
       .set({
         supplierSku: input.supplierSku,
         supplierProductName: input.supplierProductName,
@@ -351,7 +351,7 @@ export class SupplierService {
   async getProducts(supplierId: number): Promise<Array<typeof supplierProducts.$inferSelect & {
     product: typeof products.$inferSelect;
   }>> {
-    return db.query.supplierProducts.findMany({
+    return getDb().query.supplierProducts.findMany({
       where: and(
         eq(supplierProducts.supplierId, supplierId),
         eq(supplierProducts.isActive, true)
@@ -369,7 +369,7 @@ export class SupplierService {
   async getProductSuppliers(productId: number): Promise<Array<typeof supplierProducts.$inferSelect & {
     supplier: typeof suppliers.$inferSelect;
   }>> {
-    return db.query.supplierProducts.findMany({
+    return getDb().query.supplierProducts.findMany({
       where: and(
         eq(supplierProducts.productId, productId),
         eq(supplierProducts.isActive, true)
@@ -387,7 +387,7 @@ export class SupplierService {
   async getPreferredSupplier(productId: number): Promise<typeof supplierProducts.$inferSelect & {
     supplier: typeof suppliers.$inferSelect;
   } | null> {
-    const preferred = await db.query.supplierProducts.findFirst({
+    const preferred = await getDb().query.supplierProducts.findFirst({
       where: and(
         eq(supplierProducts.productId, productId),
         eq(supplierProducts.isPreferred, true),
@@ -435,7 +435,7 @@ export class SupplierService {
     const totalAmount = subtotal + taxAmount;
 
     // Crear orden
-    const [order] = await db.insert(purchaseOrders).values({
+    const [order] = await getDb().insert(purchaseOrders).values({
       orderNumber,
       supplierId: input.supplierId,
       warehouseId: input.warehouseId,
@@ -452,7 +452,7 @@ export class SupplierService {
 
     // Crear líneas
     for (const line of linesWithTotals) {
-      await db.insert(purchaseOrderLines).values({
+      await getDb().insert(purchaseOrderLines).values({
         purchaseOrderId: order.id,
         productId: line.productId,
         orderedQuantity: line.quantity.toString(),
@@ -474,7 +474,7 @@ export class SupplierService {
     const year = new Date().getFullYear();
     const prefix = `PO-${year}`;
 
-    const [lastOrder] = await db.select({
+    const [lastOrder] = await getDb().select({
       orderNumber: purchaseOrders.orderNumber,
     })
       .from(purchaseOrders)
@@ -517,7 +517,7 @@ export class SupplierService {
       updateData.approvedByUserId = userId;
     }
 
-    const [updated] = await db.update(purchaseOrders)
+    const [updated] = await getDb().update(purchaseOrders)
       .set(updateData)
       .where(eq(purchaseOrders.id, orderId))
       .returning();
@@ -529,7 +529,7 @@ export class SupplierService {
    * Recibir productos de una orden de compra
    */
   async receivePurchaseOrder(input: ReceivePurchaseOrderInput): Promise<void> {
-    const order = await db.query.purchaseOrders.findFirst({
+    const order = await getDb().query.purchaseOrders.findFirst({
       where: eq(purchaseOrders.id, input.purchaseOrderId),
       with: {
         lines: true,
@@ -558,7 +558,7 @@ export class SupplierService {
       }
 
       // Actualizar línea
-      await db.update(purchaseOrderLines)
+      await getDb().update(purchaseOrderLines)
         .set({
           receivedQuantity: newReceivedQty.toString(),
           updatedAt: new Date(),
@@ -588,7 +588,7 @@ export class SupplierService {
     await this.updateOrderStatus(order.id, newStatus);
 
     if (allReceived) {
-      await db.update(purchaseOrders)
+      await getDb().update(purchaseOrders)
         .set({ actualDeliveryDate: new Date() })
         .where(eq(purchaseOrders.id, order.id));
     }
@@ -604,7 +604,7 @@ export class SupplierService {
       product: typeof products.$inferSelect;
     }>;
   } | null> {
-    const order = await db.query.purchaseOrders.findFirst({
+    const order = await getDb().query.purchaseOrders.findFirst({
       where: eq(purchaseOrders.id, id),
       with: {
         supplier: true,
@@ -659,14 +659,14 @@ export class SupplierService {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [{ count }] = await db.select({ count: sql<number>`count(*)` })
+    const [{ count }] = await getDb().select({ count: sql<number>`count(*)` })
       .from(purchaseOrders)
       .where(whereClause);
 
     const total = Number(count);
     const offset = (page - 1) * pageSize;
 
-    const orders = await db.query.purchaseOrders.findMany({
+    const orders = await getDb().query.purchaseOrders.findMany({
       where: whereClause,
       with: {
         supplier: true,
@@ -688,7 +688,7 @@ export class SupplierService {
    * Cancelar orden de compra
    */
   async cancelPurchaseOrder(orderId: number): Promise<void> {
-    const order = await db.query.purchaseOrders.findFirst({
+    const order = await getDb().query.purchaseOrders.findFirst({
       where: eq(purchaseOrders.id, orderId),
     });
 
@@ -715,7 +715,7 @@ export class SupplierService {
     estimatedCost: number;
   }>> {
     // Obtener productos con stock bajo
-    const lowStockProducts = await db.select({
+    const lowStockProducts = await getDb().select({
       product: products,
       totalStock: sql<number>`coalesce(sum(${warehouseStock.quantity}::numeric), 0)`,
     })

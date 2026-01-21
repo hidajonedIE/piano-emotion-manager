@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc.js';
-import { getDb } from '../db.js';
+import { getDb } from '../getDb().js';
 import { serviceTypes } from '../../drizzle/service-types-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 
@@ -202,7 +202,7 @@ export const serviceTypesRouter = router({
       }
 
       // Crear el nuevo tipo de servicio
-      const result = await db.insert(serviceTypes).values({
+      const result = await getDb().insert(serviceTypes).values({
         userId,
         partnerId: 1,
         code: input.code,

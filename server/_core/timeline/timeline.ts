@@ -4,7 +4,7 @@
  * Aggregates events from multiple sources into a unified timeline
  */
 
-import { getDb } from '../../db.js';
+import { getDb } from '../../getDb().js';
 import { sql } from 'drizzle-orm';
 
 // ============================================================================
@@ -108,7 +108,7 @@ async function getServiceEvents(clientId: string): Promise<TimelineEvent[]> {
   const db = await getDb();
   if (!db) return [];
 
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT 
       s.id,
       s.serviceType,
@@ -153,7 +153,7 @@ async function getInvoiceEvents(clientId: string): Promise<TimelineEvent[]> {
   const db = await getDb();
   if (!db) return [];
 
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT 
       id,
       invoiceNumber,
@@ -221,7 +221,7 @@ async function getAppointmentEvents(clientId: string): Promise<TimelineEvent[]> 
   const db = await getDb();
   if (!db) return [];
 
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT 
       a.id,
       a.serviceType,
@@ -277,7 +277,7 @@ async function getMessageEvents(clientId: string): Promise<TimelineEvent[]> {
   const db = await getDb();
   if (!db) return [];
 
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT 
       id,
       message,
@@ -324,7 +324,7 @@ async function getPianoEvents(clientId: string): Promise<TimelineEvent[]> {
   const db = await getDb();
   if (!db) return [];
 
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT 
       id,
       brand,

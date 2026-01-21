@@ -2,7 +2,7 @@
  * Auto-Scheduling Service
  * Crea automáticamente citas y servicios desde alertas
  */
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { 
   pianos, 
   clients, 
@@ -50,7 +50,7 @@ export class AutoSchedulingService {
     alertId: number,
     options: AutoScheduleOptions = {}
   ): Promise<AutoScheduleResult> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         success: false,
@@ -232,7 +232,7 @@ export class AutoSchedulingService {
     userId: string,
     options: AutoScheduleOptions = {}
   ): Promise<AutoScheduleResult[]> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return [{
         success: false,
@@ -261,7 +261,7 @@ export class AutoSchedulingService {
     date: Date,
     durationMinutes: number
   ): Promise<boolean> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return false;
 
     const startTime = new Date(date);
@@ -309,7 +309,7 @@ export class AutoSchedulingService {
     time: string,
     notes?: string
   ): Promise<number> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) throw new Error('Database not available');
 
     const duration = this.getEstimatedDuration(alert.alertType);
@@ -329,7 +329,7 @@ export class AutoSchedulingService {
       updatedAt: new Date(),
     };
 
-    const appointmentId = await db.createAppointment(appointmentData);
+    const appointmentId = await getDb().createAppointment(appointmentData);
     return appointmentId;
   }
 
@@ -343,7 +343,7 @@ export class AutoSchedulingService {
     notes?: string,
     appointmentId?: number
   ): Promise<number> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) throw new Error('Database not available');
 
     const serviceTypeName = this.getServiceTypeName(alert.alertType);
@@ -361,7 +361,7 @@ export class AutoSchedulingService {
       updatedAt: new Date(),
     };
 
-    const serviceId = await db.createService(serviceData);
+    const serviceId = await getDb().createService(serviceData);
     return serviceId;
   }
 
@@ -415,7 +415,7 @@ export class AutoSchedulingService {
     scheduledThisMonth: number;
     averageLeadTime: number; // días promedio entre alerta y cita programada
   }> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         totalScheduled: 0,

@@ -5,7 +5,7 @@
  * Gestiona la creación, activación y administración de licencias.
  */
 
-import { getDb } from '../../../drizzle/db.js';
+import { getDb } from '../../../drizzle/getDb().js';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { users } from '../../../drizzle/schema.js';
 
@@ -208,7 +208,7 @@ export class LicenseService {
 
     const moduleConfig = input.moduleConfig || DEFAULT_MODULE_CONFIGS[input.licenseType];
 
-    const result = await db.execute(sql`
+    const result = await getDb().execute(sql`
       INSERT INTO licenses (
         code, license_type, status, distributor_id, template_id,
         module_config, max_users, max_clients, max_pianos,
@@ -257,7 +257,7 @@ export class LicenseService {
     const now = new Date();
 
     // Crear el lote
-    const batchResult = await db.execute(sql`
+    const batchResult = await getDb().execute(sql`
       INSERT INTO license_batches (
         batch_code, name, description, distributor_id, template_id,
         total_licenses, license_type, module_config, duration_days, created_by_admin_id
@@ -303,7 +303,7 @@ export class LicenseService {
     }
 
     // Buscar la licencia
-    const [license] = await db.execute(sql`
+    const [license] = await getDb().execute(sql`
       SELECT l.*, d.name as distributor_name, d.logo_url as distributor_logo,
              dwc.enabled as woo_enabled
       FROM licenses l
@@ -334,7 +334,7 @@ export class LicenseService {
     }
 
     // Verificar si el usuario ya tiene una licencia activa
-    const [existingLicense] = await db.execute(sql`
+    const [existingLicense] = await getDb().execute(sql`
       SELECT id, code FROM licenses 
       WHERE activated_by_user_id = ${userId} AND status = 'active'
     `) as any[];
@@ -348,7 +348,7 @@ export class LicenseService {
 
     // Activar la licencia
     const now = new Date();
-    await db.execute(sql`
+    await getDb().execute(sql`
       UPDATE licenses 
       SET status = 'active', 
           activated_by_user_id = ${userId}, 
@@ -359,7 +359,7 @@ export class LicenseService {
 
     // Actualizar contador del lote si existe
     if (license.batch_id) {
-      await db.execute(sql`
+      await getDb().execute(sql`
         UPDATE license_batches 
         SET activated_licenses = activated_licenses + 1 
         WHERE id = ${license.batch_id}
@@ -410,7 +410,7 @@ export class LicenseService {
       return null;
     }
 
-    const [license] = await db.execute(sql`
+    const [license] = await getDb().execute(sql`
       SELECT l.*, d.name as distributor_name
       FROM licenses l
       LEFT JOIN distributors d ON l.distributor_id = d.id
@@ -451,7 +451,7 @@ export class LicenseService {
       return false;
     }
 
-    const [license] = await db.execute(sql`
+    const [license] = await getDb().execute(sql`
       SELECT status FROM licenses WHERE id = ${licenseId}
     `) as any[];
 
@@ -461,7 +461,7 @@ export class LicenseService {
 
     const previousStatus = license.status;
     
-    await db.execute(sql`
+    await getDb().execute(sql`
       UPDATE licenses 
       SET status = 'revoked', updated_at = ${new Date()}
       WHERE id = ${licenseId}
@@ -505,7 +505,7 @@ export class LicenseService {
 
     query = sql`${query} ORDER BY l.created_at DESC LIMIT 100`;
 
-    const licenses = await db.execute(query) as any[];
+    const licenses = await getDb().execute(query) as any[];
 
     return licenses.map(license => {
       const moduleConfig = typeof license.module_config === 'string' 
@@ -547,7 +547,7 @@ export class LicenseService {
       return;
     }
 
-    await db.execute(sql`
+    await getDb().execute(sql`
       INSERT INTO license_history (
         license_id, action, previous_status, new_status,
         performed_by_admin_id, performed_by_user_id, details

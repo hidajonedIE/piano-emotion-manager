@@ -334,7 +334,7 @@ export class WorkflowService {
       createdBy
     };
 
-    const result = await this.db.insert('workflows' as never).values(workflow as never).returning();
+    const result = await this.getDb().insert('workflows' as never).values(workflow as never).returning();
     return result[0] as Workflow;
   }
 
@@ -442,7 +442,7 @@ export class WorkflowService {
       createdAt: new Date()
     };
 
-    const result = await this.db.insert('workflowExecutions' as never).values(execution as never).returning();
+    const result = await this.getDb().insert('workflowExecutions' as never).values(execution as never).returning();
     return result[0] as WorkflowExecution;
   }
 
@@ -535,7 +535,7 @@ export class WorkflowService {
         .where(eq('id' as never, executionId as never));
 
       // Actualizar contador del workflow
-      await this.db.execute(`
+      await this.getDb().execute(`
         UPDATE workflows 
         SET execution_count = execution_count + 1, last_executed_at = NOW()
         WHERE id = '${workflow.id}'
@@ -695,7 +695,7 @@ export class WorkflowService {
       createdAt: new Date()
     };
 
-    await this.db.insert('tasks' as never).values(task as never);
+    await this.getDb().insert('tasks' as never).values(task as never);
     return { success: true, result: task };
   }
 
@@ -716,7 +716,7 @@ export class WorkflowService {
       status: 'pending'
     };
 
-    await this.db.insert('scheduledReminders' as never).values(reminder as never);
+    await this.getDb().insert('scheduledReminders' as never).values(reminder as never);
     return { success: true, result: reminder };
   }
 
@@ -953,7 +953,7 @@ export class WorkflowService {
       completedAt: new Date()
     };
 
-    await this.db.insert('workflowActionLogs' as never).values(log as never);
+    await this.getDb().insert('workflowActionLogs' as never).values(log as never);
   }
 
   /**

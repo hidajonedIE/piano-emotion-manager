@@ -7,7 +7,7 @@
  */
 
 import { eq, and, desc, asc, sql, isNull } from 'drizzle-orm';
-import { db } from '../../db.js';
+import { db } from '../../getDb().js';
 import {
   warehouses,
   warehouseStock,
@@ -76,7 +76,7 @@ export class WarehouseService {
    */
   async create(input: CreateWarehouseInput): Promise<typeof warehouses.$inferSelect> {
     // Verificar que el código no exista
-    const existing = await db.query.warehouses.findFirst({
+    const existing = await getDb().query.warehouses.findFirst({
       where: and(
         eq(warehouses.code, input.code),
         input.organizationId 
@@ -91,7 +91,7 @@ export class WarehouseService {
 
     // Si es el almacén por defecto, quitar el flag de otros
     if (input.isDefault) {
-      await db.update(warehouses)
+      await getDb().update(warehouses)
         .set({ isDefault: false })
         .where(input.organizationId 
           ? eq(warehouses.organizationId, input.organizationId)
@@ -99,7 +99,7 @@ export class WarehouseService {
         );
     }
 
-    const [warehouse] = await db.insert(warehouses).values({
+    const [warehouse] = await getDb().insert(warehouses).values({
       code: input.code,
       name: input.name,
       type: input.type || 'central',
@@ -133,7 +133,7 @@ export class WarehouseService {
 
     // Si se cambia el código, verificar que no exista
     if (updateData.code && updateData.code !== existing.code) {
-      const codeExists = await db.query.warehouses.findFirst({
+      const codeExists = await getDb().query.warehouses.findFirst({
         where: and(
           eq(warehouses.code, updateData.code),
           existing.organizationId 
@@ -149,7 +149,7 @@ export class WarehouseService {
 
     // Si se establece como por defecto, quitar el flag de otros
     if (updateData.isDefault) {
-      await db.update(warehouses)
+      await getDb().update(warehouses)
         .set({ isDefault: false })
         .where(and(
           existing.organizationId 
@@ -159,7 +159,7 @@ export class WarehouseService {
         ));
     }
 
-    const [updated] = await db.update(warehouses)
+    const [updated] = await getDb().update(warehouses)
       .set({
         ...updateData,
         latitude: updateData.latitude?.toString(),
@@ -176,7 +176,7 @@ export class WarehouseService {
    * Obtener almacén por ID
    */
   async getById(id: number): Promise<typeof warehouses.$inferSelect | null> {
-    const warehouse = await db.query.warehouses.findFirst({
+    const warehouse = await getDb().query.warehouses.findFirst({
       where: eq(warehouses.id, id),
     });
 
@@ -187,7 +187,7 @@ export class WarehouseService {
    * Obtener almacén por código
    */
   async getByCode(code: string, organizationId?: number): Promise<typeof warehouses.$inferSelect | null> {
-    const warehouse = await db.query.warehouses.findFirst({
+    const warehouse = await getDb().query.warehouses.findFirst({
       where: and(
         eq(warehouses.code, code),
         organizationId 
@@ -203,7 +203,7 @@ export class WarehouseService {
    * Obtener almacén por defecto
    */
   async getDefault(organizationId?: number): Promise<typeof warehouses.$inferSelect | null> {
-    const warehouse = await db.query.warehouses.findFirst({
+    const warehouse = await getDb().query.warehouses.findFirst({
       where: and(
         eq(warehouses.isDefault, true),
         eq(warehouses.isActive, true),
@@ -230,7 +230,7 @@ export class WarehouseService {
       conditions.push(eq(warehouses.isActive, true));
     }
 
-    return db.query.warehouses.findMany({
+    return getDb().query.warehouses.findMany({
       where: and(...conditions),
       orderBy: [desc(warehouses.isDefault), asc(warehouses.name)],
     });
@@ -240,7 +240,7 @@ export class WarehouseService {
    * Obtener almacenes por tipo
    */
   async getByType(type: WarehouseType, organizationId?: number): Promise<typeof warehouses.$inferSelect[]> {
-    return db.query.warehouses.findMany({
+    return getDb().query.warehouses.findMany({
       where: and(
         eq(warehouses.type, type),
         eq(warehouses.isActive, true),
@@ -256,7 +256,7 @@ export class WarehouseService {
    * Obtener almacén (vehículo) de un técnico
    */
   async getTechnicianWarehouse(userId: number): Promise<typeof warehouses.$inferSelect | null> {
-    const warehouse = await db.query.warehouses.findFirst({
+    const warehouse = await getDb().query.warehouses.findFirst({
       where: and(
         eq(warehouses.type, 'vehicle'),
         eq(warehouses.responsibleUserId, userId),
@@ -274,7 +274,7 @@ export class WarehouseService {
     const warehouse = await this.getById(id);
     if (!warehouse) return null;
 
-    const [stats] = await db.select({
+    const [stats] = await getDb().select({
       totalProducts: sql<number>`count(distinct ${warehouseStock.productId})`,
       totalValue: sql<number>`coalesce(sum(${warehouseStock.totalCost}::numeric), 0)`,
     })
@@ -282,7 +282,7 @@ export class WarehouseService {
       .where(eq(warehouseStock.warehouseId, id));
 
     // Productos con stock bajo
-    const lowStockResult = await db.select({
+    const lowStockResult = await getDb().select({
       count: sql<number>`count(*)`,
     })
       .from(warehouseStock)
@@ -294,7 +294,7 @@ export class WarehouseService {
       ));
 
     // Productos sin stock
-    const outOfStockResult = await db.select({
+    const outOfStockResult = await getDb().select({
       count: sql<number>`count(*)`,
     })
       .from(warehouseStock)
@@ -327,7 +327,7 @@ export class WarehouseService {
 
     const offset = (page - 1) * pageSize;
 
-    const stockData = await db.query.warehouseStock.findMany({
+    const stockData = await getDb().query.warehouseStock.findMany({
       where: eq(warehouseStock.warehouseId, warehouseId),
       with: {
         product: true,
@@ -337,7 +337,7 @@ export class WarehouseService {
       orderBy: [asc(products.name)],
     });
 
-    const [totals] = await db.select({
+    const [totals] = await getDb().select({
       totalProducts: sql<number>`count(*)`,
       totalValue: sql<number>`coalesce(sum(${warehouseStock.totalCost}::numeric), 0)`,
     })
@@ -369,7 +369,7 @@ export class WarehouseService {
     productId: number,
     location: string
   ): Promise<void> {
-    await db.update(warehouseStock)
+    await getDb().update(warehouseStock)
       .set({ 
         location,
         updatedAt: new Date(),
@@ -385,7 +385,7 @@ export class WarehouseService {
    */
   async deactivate(id: number): Promise<void> {
     // Verificar que no tenga stock
-    const [stockCheck] = await db.select({
+    const [stockCheck] = await getDb().select({
       totalStock: sql<number>`coalesce(sum(${warehouseStock.quantity}::numeric), 0)`,
     })
       .from(warehouseStock)
@@ -395,7 +395,7 @@ export class WarehouseService {
       throw new Error('No se puede desactivar un almacén con stock. Transfiera el stock primero.');
     }
 
-    await db.update(warehouses)
+    await getDb().update(warehouses)
       .set({ 
         isActive: false,
         updatedAt: new Date(),
@@ -407,7 +407,7 @@ export class WarehouseService {
    * Reactivar almacén
    */
   async activate(id: number): Promise<void> {
-    await db.update(warehouses)
+    await getDb().update(warehouses)
       .set({ 
         isActive: true,
         updatedAt: new Date(),
@@ -487,14 +487,14 @@ export class WarehouseService {
       : isNull(warehouses.organizationId);
 
     // Total de almacenes
-    const [totals] = await db.select({
+    const [totals] = await getDb().select({
       total: sql<number>`count(*)`,
     })
       .from(warehouses)
       .where(and(orgCondition, eq(warehouses.isActive, true)));
 
     // Por tipo
-    const byTypeResult = await db.select({
+    const byTypeResult = await getDb().select({
       type: warehouses.type,
       count: sql<number>`count(*)`,
     })
@@ -508,7 +508,7 @@ export class WarehouseService {
     }
 
     // Valor total y productos
-    const [inventoryStats] = await db.select({
+    const [inventoryStats] = await getDb().select({
       totalValue: sql<number>`coalesce(sum(${warehouseStock.totalCost}::numeric), 0)`,
       totalProducts: sql<number>`count(distinct ${warehouseStock.productId})`,
     })

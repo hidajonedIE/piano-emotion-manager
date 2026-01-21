@@ -2,7 +2,7 @@
  * Alert Notification Service
  * Gestiona el envío de notificaciones por email para alertas de mantenimiento
  */
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { UnifiedEmailService } from './unified-email.service';
 import { pianos, clients, alertHistory, alertSettings, users } from '@/drizzle/schema';
 import { eq, and, gte, lte, isNull } from 'drizzle-orm';
@@ -42,7 +42,7 @@ export class AlertNotificationService {
   ): Promise<boolean> {
     try {
       // Obtener configuración del usuario
-      const userSettings = await db.query.alertSettings.findFirst({
+      const userSettings = await getDb().query.alertSettings.findFirst({
         where: eq(alertSettings.userId, userId),
       });
 
@@ -53,7 +53,7 @@ export class AlertNotificationService {
       }
 
       // Obtener datos del usuario
-      const user = await db.query.users.findFirst({
+      const user = await getDb().query.users.findFirst({
         where: eq(users.id, userId),
       });
 
@@ -63,7 +63,7 @@ export class AlertNotificationService {
       }
 
       // Obtener datos del piano
-      const piano = await db.query.pianos.findFirst({
+      const piano = await getDb().query.pianos.findFirst({
         where: eq(pianos.id, pianoId),
       });
 
@@ -73,7 +73,7 @@ export class AlertNotificationService {
       }
 
       // Obtener datos del cliente
-      const client = await db.query.clients.findFirst({
+      const client = await getDb().query.clients.findFirst({
         where: eq(clients.id, piano.clientId),
       });
 
@@ -103,7 +103,7 @@ export class AlertNotificationService {
       await this.sendEmail(emailData);
 
       // Registrar en historial
-      await db.insert(alertHistory).values({
+      await getDb().insert(alertHistory).values({
         userId,
         pianoId,
         type: alertType,
@@ -126,7 +126,7 @@ export class AlertNotificationService {
   static async sendWeeklyDigest(userId: string): Promise<boolean> {
     try {
       // Obtener configuración del usuario
-      const userSettings = await db.query.alertSettings.findFirst({
+      const userSettings = await getDb().query.alertSettings.findFirst({
         where: eq(alertSettings.userId, userId),
       });
 
@@ -137,7 +137,7 @@ export class AlertNotificationService {
       }
 
       // Obtener datos del usuario
-      const user = await db.query.users.findFirst({
+      const user = await getDb().query.users.findFirst({
         where: eq(users.id, userId),
       });
 
@@ -147,7 +147,7 @@ export class AlertNotificationService {
       }
 
       // Obtener todas las alertas activas del usuario
-      const userPianos = await db.query.pianos.findMany({
+      const userPianos = await getDb().query.pianos.findMany({
         where: eq(pianos.userId, userId),
       });
 
@@ -161,7 +161,7 @@ export class AlertNotificationService {
 
       for (const piano of userPianos) {
         // Obtener cliente
-        const client = await db.query.clients.findFirst({
+        const client = await getDb().query.clients.findFirst({
           where: eq(clients.id, piano.clientId),
         });
 
@@ -258,7 +258,7 @@ export class AlertNotificationService {
       await this.sendWeeklyDigestEmail(emailData);
 
       // Registrar en historial
-      await db.insert(alertHistory).values({
+      await getDb().insert(alertHistory).values({
         userId,
         pianoId: null,
         type: 'tuning', // Tipo genérico para resumen
@@ -704,7 +704,7 @@ export class AlertNotificationService {
       const today = new Date().getDay() || 7;
 
       // Obtener todos los usuarios con resumen semanal habilitado para hoy
-      const settings = await db.query.alertSettings.findMany({
+      const settings = await getDb().query.alertSettings.findMany({
         where: and(
           eq(alertSettings.weeklyDigestEnabled, true),
           eq(alertSettings.weeklyDigestDay, today)

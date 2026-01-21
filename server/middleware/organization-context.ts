@@ -13,7 +13,7 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { getDb } from "../db.js";
+import { getDb } from "../getDb().js";
 import { users } from "../../drizzle/schema.js";
 import { organizations, organizationMembers } from "../../drizzle/schema.js";
 // import { organizationSharingSettings } from "../../drizzle/schema.js"; // Tabla no existe aún

@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import * as db from "../getDb().js";
 import { serviceRates } from "../../drizzle/schema.js";
 import { eq, and, asc, desc, count } from "drizzle-orm";
 import { 
@@ -133,7 +133,7 @@ export const serviceRatesRouter = router({
         isActive
       } = input || {};
       
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
       // Construir condiciones WHERE con filtrado por organización
@@ -197,7 +197,7 @@ export const serviceRatesRouter = router({
    * Lista completa sin paginación (para selects)
    */
   listAll: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return [];
     
     const items = await database
@@ -218,7 +218,7 @@ export const serviceRatesRouter = router({
    * Lista solo tarifas activas
    */
   listActive: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return [];
     
     const items = await database
@@ -245,7 +245,7 @@ export const serviceRatesRouter = router({
   get: orgProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       const [rate] = await database
@@ -273,7 +273,7 @@ export const serviceRatesRouter = router({
   getByCategory: orgProcedure
     .input(z.object({ category: serviceCategorySchema }))
     .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return [];
 
       const items = await database
@@ -300,7 +300,7 @@ export const serviceRatesRouter = router({
   create: orgProcedure
     .input(serviceRateBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
@@ -330,7 +330,7 @@ export const serviceRatesRouter = router({
       id: z.number(),
     }).merge(serviceRateBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la tarifa para verificar permisos
@@ -381,7 +381,7 @@ export const serviceRatesRouter = router({
       isActive: z.boolean(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la tarifa para verificar permisos
@@ -417,7 +417,7 @@ export const serviceRatesRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la tarifa para verificar permisos
@@ -448,7 +448,7 @@ export const serviceRatesRouter = router({
    * Obtener estadísticas de tarifas
    */
   getStats: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return null;
 
     const items = await database
@@ -467,7 +467,7 @@ export const serviceRatesRouter = router({
   duplicate: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la tarifa original

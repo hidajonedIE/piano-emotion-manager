@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import { getDb } from '../db.js';
+import { getDb } from '../getDb().js';
 import * as pdfGen from '../_core/export/pdf-generator.js';
 import * as excelGen from '../_core/export/excel-generator.js';
 
@@ -28,7 +28,7 @@ export const exportRouter = router({
       const userId = ctx.user.id;
 
       // Get clients
-      let query = db.selectFrom('clients').where('userId', '=', userId);
+      let query = getDb().selectFrom('clients').where('userId', '=', userId);
 
       if (input.filters?.search) {
         query = query.where((eb) =>

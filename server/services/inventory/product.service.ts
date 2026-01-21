@@ -7,7 +7,7 @@
  */
 
 import { eq, and, or, like, desc, asc, sql, inArray, isNull } from 'drizzle-orm';
-import { db } from '../../db.js';
+import { db } from '../../getDb().js';
 import {
   products,
   warehouseStock,
@@ -106,7 +106,7 @@ export class ProductService {
    */
   async create(input: CreateProductInput): Promise<typeof products.$inferSelect> {
     // Verificar que el SKU no exista
-    const existing = await db.query.products.findFirst({
+    const existing = await getDb().query.products.findFirst({
       where: and(
         eq(products.sku, input.sku),
         input.organizationId 
@@ -119,7 +119,7 @@ export class ProductService {
       throw new Error(`Ya existe un producto con el SKU: ${input.sku}`);
     }
 
-    const [product] = await db.insert(products).values({
+    const [product] = await getDb().insert(products).values({
       sku: input.sku,
       barcode: input.barcode,
       name: input.name,
@@ -175,7 +175,7 @@ export class ProductService {
 
     // Si se cambia el SKU, verificar que no exista
     if (updateData.sku && updateData.sku !== existing.sku) {
-      const skuExists = await db.query.products.findFirst({
+      const skuExists = await getDb().query.products.findFirst({
         where: and(
           eq(products.sku, updateData.sku),
           existing.organizationId 
@@ -189,7 +189,7 @@ export class ProductService {
       }
     }
 
-    const [updated] = await db.update(products)
+    const [updated] = await getDb().update(products)
       .set({
         ...updateData,
         costPrice: updateData.costPrice?.toString(),
@@ -211,7 +211,7 @@ export class ProductService {
    * Obtener producto por ID
    */
   async getById(id: number): Promise<typeof products.$inferSelect | null> {
-    const product = await db.query.products.findFirst({
+    const product = await getDb().query.products.findFirst({
       where: and(
         eq(products.id, id),
         isNull(products.deletedAt)
@@ -225,7 +225,7 @@ export class ProductService {
    * Obtener producto por SKU
    */
   async getBySku(sku: string, organizationId?: number): Promise<typeof products.$inferSelect | null> {
-    const product = await db.query.products.findFirst({
+    const product = await getDb().query.products.findFirst({
       where: and(
         eq(products.sku, sku),
         organizationId 
@@ -242,7 +242,7 @@ export class ProductService {
    * Obtener producto por código de barras
    */
   async getByBarcode(barcode: string, organizationId?: number): Promise<typeof products.$inferSelect | null> {
-    const product = await db.query.products.findFirst({
+    const product = await getDb().query.products.findFirst({
       where: and(
         eq(products.barcode, barcode),
         organizationId 
@@ -262,7 +262,7 @@ export class ProductService {
     const product = await this.getById(id);
     if (!product) return null;
 
-    const stockData = await db.query.warehouseStock.findMany({
+    const stockData = await getDb().query.warehouseStock.findMany({
       where: eq(warehouseStock.productId, id),
       with: {
         warehouse: true,
@@ -344,7 +344,7 @@ export class ProductService {
     }
 
     // Contar total
-    const [{ count }] = await db.select({ count: sql<number>`count(*)` })
+    const [{ count }] = await getDb().select({ count: sql<number>`count(*)` })
       .from(products)
       .where(and(...conditions));
 
@@ -356,7 +356,7 @@ export class ProductService {
     const orderColumn = products[sortBy as keyof typeof products] || products.name;
     const orderFn = sortOrder === 'desc' ? desc : asc;
 
-    const productList = await db.query.products.findMany({
+    const productList = await getDb().query.products.findMany({
       where: and(...conditions),
       limit: pageSize,
       offset,
@@ -366,7 +366,7 @@ export class ProductService {
     // Obtener stock para cada producto
     const productIds = productList.map(p => p.id);
     const stockData = productIds.length > 0 
-      ? await db.query.warehouseStock.findMany({
+      ? await getDb().query.warehouseStock.findMany({
           where: inArray(warehouseStock.productId, productIds),
           with: {
             warehouse: true,
@@ -444,7 +444,7 @@ export class ProductService {
     category: ProductCategory,
     organizationId?: number
   ): Promise<typeof products.$inferSelect[]> {
-    return db.query.products.findMany({
+    return getDb().query.products.findMany({
       where: and(
         eq(products.category, category),
         eq(products.isActive, true),
@@ -461,7 +461,7 @@ export class ProductService {
    * Obtener marcas únicas
    */
   async getBrands(organizationId?: number): Promise<string[]> {
-    const result = await db.selectDistinct({ brand: products.brand })
+    const result = await getDb().selectDistinct({ brand: products.brand })
       .from(products)
       .where(and(
         eq(products.isActive, true),
@@ -481,7 +481,7 @@ export class ProductService {
    * Desactivar producto (soft delete)
    */
   async deactivate(id: number): Promise<void> {
-    await db.update(products)
+    await getDb().update(products)
       .set({ 
         isActive: false,
         updatedAt: new Date(),
@@ -493,7 +493,7 @@ export class ProductService {
    * Eliminar producto (soft delete)
    */
   async delete(id: number): Promise<void> {
-    await db.update(products)
+    await getDb().update(products)
       .set({ 
         deletedAt: new Date(),
         updatedAt: new Date(),
@@ -505,7 +505,7 @@ export class ProductService {
    * Restaurar producto eliminado
    */
   async restore(id: number): Promise<void> {
-    await db.update(products)
+    await getDb().update(products)
       .set({ 
         deletedAt: null,
         isActive: true,
@@ -581,7 +581,7 @@ export class ProductService {
         setData.salePrice = update.salePrice.toString();
       }
 
-      await db.update(products)
+      await getDb().update(products)
         .set(setData)
         .where(eq(products.id, update.id));
       
@@ -608,7 +608,7 @@ export class ProductService {
       : isNull(products.organizationId);
 
     // Total y activos
-    const [totals] = await db.select({
+    const [totals] = await getDb().select({
       total: sql<number>`count(*)`,
       active: sql<number>`count(*) filter (where ${products.isActive} = true)`,
     })
@@ -616,7 +616,7 @@ export class ProductService {
       .where(and(orgCondition, isNull(products.deletedAt)));
 
     // Por tipo
-    const byTypeResult = await db.select({
+    const byTypeResult = await getDb().select({
       type: products.type,
       count: sql<number>`count(*)`,
     })
@@ -630,7 +630,7 @@ export class ProductService {
     }
 
     // Por categoría
-    const byCategoryResult = await db.select({
+    const byCategoryResult = await getDb().select({
       category: products.category,
       count: sql<number>`count(*)`,
     })
@@ -644,7 +644,7 @@ export class ProductService {
     }
 
     // Stock bajo y sin stock
-    const stockStats = await db.select({
+    const stockStats = await getDb().select({
       lowStock: sql<number>`count(*) filter (where ${warehouseStock.quantity}::numeric <= ${products.reorderPoint}::numeric and ${warehouseStock.quantity}::numeric > 0)`,
       outOfStock: sql<number>`count(*) filter (where ${warehouseStock.quantity}::numeric = 0)`,
       totalValue: sql<number>`sum(${warehouseStock.totalCost}::numeric)`,

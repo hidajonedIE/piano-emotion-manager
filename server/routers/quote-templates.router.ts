@@ -4,15 +4,15 @@
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import * as db from "../getDb().js";
 import { addPartnerToInsert } from "../utils/multi-tenant.js";
 
 export const quoteTemplatesRouter = router({
-  list: protectedProcedure.query(({ ctx }) => db.getQuoteTemplates(ctx.user.email)),
+  list: protectedProcedure.query(({ ctx }) => getDb().getQuoteTemplates(ctx.user.email)),
   
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => db.getQuoteTemplate(ctx.user.email, input.id)),
+    .query(({ ctx, input }) => getDb().getQuoteTemplate(ctx.user.email, input.id)),
   
   create: protectedProcedure
     .input(z.object({
@@ -30,7 +30,7 @@ export const quoteTemplatesRouter = router({
       })).optional(),
       isDefault: z.boolean().optional(),
     }))
-    .mutation(({ ctx, input }) => db.createQuoteTemplate({ ...input, odId: ctx.user.email, partnerId: ctx.partnerId })),
+    .mutation(({ ctx, input }) => getDb().createQuoteTemplate({ ...input, odId: ctx.user.email, partnerId: ctx.partnerId })),
   
   update: protectedProcedure
     .input(z.object({
@@ -51,10 +51,10 @@ export const quoteTemplatesRouter = router({
     }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
-      return db.updateQuoteTemplate(ctx.user.email, id, data);
+      return getDb().updateQuoteTemplate(ctx.user.email, id, data);
     }),
   
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => db.deleteQuoteTemplate(ctx.user.email, input.id)),
+    .mutation(({ ctx, input }) => getDb().deleteQuoteTemplate(ctx.user.email, input.id)),
 });

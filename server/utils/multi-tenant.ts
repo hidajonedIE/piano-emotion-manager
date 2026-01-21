@@ -99,7 +99,7 @@ export function validatePartnerContext(partnerId: number | null): asserts partne
  *   email: "john@example.com"
  * }, ctx.partnerId);
  * 
- * await db.insert(clients).values(newClient);
+ * await getDb().insert(clients).values(newClient);
  * ```
  */
 export function addPartnerToInsert<T extends Record<string, unknown>>(
@@ -263,7 +263,7 @@ export function filterByPartnerAndOrganization(
  *   "clients"
  * );
  * 
- * await db.insert(clients).values(newClient);
+ * await getDb().insert(clients).values(newClient);
  * ```
  */
 export function addOrganizationToInsert<T extends Record<string, unknown>>(

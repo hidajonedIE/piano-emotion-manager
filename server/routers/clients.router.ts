@@ -5,9 +5,9 @@
  */
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import * as db from "../getDb().js";
 import { clients, users, pianos } from "../../drizzle/schema.js";
-import { getDb } from "../db.js";
+import { getDb } from "../getDb().js";
 import { eq, and, or, ilike, isNotNull, asc, desc, count, sql } from "drizzle-orm";
 import { 
   filterByPartner, 
@@ -141,7 +141,7 @@ export const clientsRouter = router({
      .query(withCache(
       async ({ ctx, input }) => {
       const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return { items: [], total: 0 };
 
       // Usar el partnerId del contexto (ya está disponible desde la autenticación)
@@ -231,7 +231,7 @@ export const clientsRouter = router({
   
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return [];
     
     return database
@@ -253,7 +253,7 @@ export const clientsRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       const [client] = await database
@@ -303,7 +303,7 @@ export const clientsRouter = router({
         partnerId: ctx.partnerId,
       };
       
-      const result = await db.createClient(clientData);
+      const result = await getDb().createClient(clientData);
       
       // Invalidar caché
       await invalidateUserCache(ctx.user.id);
@@ -317,7 +317,7 @@ export const clientsRouter = router({
       id: z.number(),
     }).merge(clientBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Primero obtener el cliente para verificar permisos
@@ -362,7 +362,7 @@ export const clientsRouter = router({
       }
       
       // Actualizar usando el odId del cliente original (no del usuario actual)
-      const result = await db.updateClient(existingClient.odId, id, updateData);
+      const result = await getDb().updateClient(existingClient.odId, id, updateData);
       
       // Invalidar caché
       await invalidateUserCache(ctx.user.id);
@@ -374,7 +374,7 @@ export const clientsRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Primero obtener el cliente para verificar permisos
@@ -399,7 +399,7 @@ export const clientsRouter = router({
       validateWritePermission(ctx.orgContext, "clients", existingClient.odId);
 
       // Eliminar usando el odId del cliente original
-      const result = await db.deleteClient(existingClient.odId, input.id);
+      const result = await getDb().deleteClient(existingClient.odId, input.id);
       
       // Invalidar caché
       await invalidateUserCache(ctx.user.id);
@@ -409,7 +409,7 @@ export const clientsRouter = router({
     }),
   
   getRegions: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return [];
 
     const regionsQuery = await database
@@ -431,7 +431,7 @@ export const clientsRouter = router({
   }),
   
   getRouteGroups: orgProcedure.query(async ({ ctx }) => {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return [];
 
     const groupsQuery = await database
@@ -459,7 +459,7 @@ export const clientsRouter = router({
       excludeId: z.number().optional(),
     }))
     .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return [];
 
       const whereClauses = [
@@ -484,7 +484,7 @@ export const clientsRouter = router({
   
   getStats: orgProcedure.query(async ({ ctx }) => {
     console.log('[getStats] partnerId:', ctx.partnerId, 'orgContext:', ctx.orgContext);
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) return { total: 0, active: 0, vip: 0, withPianos: 0 };
 
     const { pianos } = await import("../../drizzle/schema.js");

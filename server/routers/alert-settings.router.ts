@@ -7,7 +7,7 @@
 
 import { router, protectedProcedure } from '../_core/trpc.js';
 import { z } from 'zod';
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { alertSettings } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 
@@ -97,7 +97,7 @@ export const alertSettingsRouter = router({
 
       try {
         // Obtener conexión a la base de datos
-        const database = await db.getDb();
+        const database = await getDb().getDb();
         
         if (!database) {
           console.error('[ALERT_SETTINGS] Database connection is null');
@@ -149,7 +149,7 @@ export const alertSettingsRouter = router({
 
       try {
         // Obtener conexión a la base de datos
-        const database = await db.getDb();
+        const database = await getDb().getDb();
         
         if (!database) {
           console.error('[ALERT_SETTINGS] Database connection is null');
@@ -226,7 +226,7 @@ export const alertSettingsRouter = router({
 
       try {
         // Obtener conexión a la base de datos
-        const database = await db.getDb();
+        const database = await getDb().getDb();
         
         if (!database) {
           console.error('[ALERT_SETTINGS] Database connection is null');

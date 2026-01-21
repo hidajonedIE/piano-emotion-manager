@@ -18,7 +18,7 @@ import { TRPCError } from "@trpc/server";
 import { eq, and, gte, lte, desc, sql, between } from "drizzle-orm";
 import { protectedProcedure, router } from "../_core/trpc.js";
 import { permissionsService } from "../services/team/permissions.service.js";
-import { getDb } from "../db.js";
+import { getDb } from "../getDb().js";
 import {
   organizationMembers,
   memberAbsences,

@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
 import { nanoid } from 'nanoid';
-import * as db from '../_core/calendar/db.js';
+import * as db from '../_core/calendar/getDb().js';
 import * as googleOAuth from '../_core/calendar/oauth-google.js';
 import * as microsoftOAuth from '../_core/calendar/oauth-microsoft.js';
 import * as googleCalendar from '../_core/calendar/google-calendar.js';
@@ -53,11 +53,11 @@ export const calendarRouter = router({
         const tokens = await googleOAuth.exchangeCodeForTokens(input.code);
         
         // Check if connection already exists
-        const existing = await db.getConnectionByUserAndProvider(ctx.userId, 'google');
+        const existing = await getDb().getConnectionByUserAndProvider(ctx.userId, 'google');
         
         if (existing) {
           // Update existing connection
-          await db.updateConnection(existing.id, {
+          await getDb().updateConnection(existing.id, {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             expiresAt: tokens.expiresAt,
@@ -73,7 +73,7 @@ export const calendarRouter = router({
         // Create new connection
         const connectionId = nanoid();
         
-        await db.createConnection({
+        await getDb().createConnection({
           id: connectionId,
           userId: ctx.userId,
           provider: 'google',
@@ -90,7 +90,7 @@ export const calendarRouter = router({
           lastSyncAt: null,
         });
         
-        const connection = await db.getConnectionById(connectionId);
+        const connection = await getDb().getConnectionById(connectionId);
         
         if (!connection) {
           throw new Error('Failed to create connection');
@@ -127,11 +127,11 @@ export const calendarRouter = router({
         const tokens = await microsoftOAuth.exchangeCodeForTokens(input.code);
         
         // Check if connection already exists
-        const existing = await db.getConnectionByUserAndProvider(ctx.userId, 'microsoft');
+        const existing = await getDb().getConnectionByUserAndProvider(ctx.userId, 'microsoft');
         
         if (existing) {
           // Update existing connection
-          await db.updateConnection(existing.id, {
+          await getDb().updateConnection(existing.id, {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             expiresAt: tokens.expiresAt,
@@ -147,7 +147,7 @@ export const calendarRouter = router({
         // Create new connection
         const connectionId = nanoid();
         
-        await db.createConnection({
+        await getDb().createConnection({
           id: connectionId,
           userId: ctx.userId,
           provider: 'microsoft',
@@ -164,7 +164,7 @@ export const calendarRouter = router({
           lastSyncAt: null,
         });
         
-        const connection = await db.getConnectionById(connectionId);
+        const connection = await getDb().getConnectionById(connectionId);
         
         if (!connection) {
           throw new Error('Failed to create connection');
@@ -190,7 +190,7 @@ export const calendarRouter = router({
    * Get all calendar connections for current user
    */
   getConnections: protectedProcedure.query(async ({ ctx }) => {
-    const connections = await db.getConnectionsByUserId(ctx.userId);
+    const connections = await getDb().getConnectionsByUserId(ctx.userId);
     
     // Remove sensitive data
     return connections.map(conn => ({
@@ -213,7 +213,7 @@ export const calendarRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const connection = await db.getConnectionById(input.connectionId);
+      const connection = await getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -233,7 +233,7 @@ export const calendarRouter = router({
       }
       
       // Delete connection
-      await db.deleteConnection(connection.id);
+      await getDb().deleteConnection(connection.id);
       
       return { success: true };
     }),
@@ -248,7 +248,7 @@ export const calendarRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const connection = await db.getConnectionById(input.connectionId);
+      const connection = await getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -273,7 +273,7 @@ export const calendarRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const connection = await db.getConnectionById(input.connectionId);
+      const connection = await getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -282,7 +282,7 @@ export const calendarRouter = router({
         });
       }
       
-      const logs = await db.getSyncLogsByConnection(
+      const logs = await getDb().getSyncLogsByConnection(
         input.connectionId,
         input.limit || 50
       );
@@ -294,7 +294,7 @@ export const calendarRouter = router({
    * Get sync statistics
    */
   getSyncStats: protectedProcedure.query(async ({ ctx }) => {
-    const connections = await db.getConnectionsByUserId(ctx.userId);
+    const connections = await getDb().getConnectionsByUserId(ctx.userId);
     
     const stats = {
       totalConnections: connections.length,
@@ -322,7 +322,7 @@ export const calendarRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const connections = await db.getConnectionsByUserId(ctx.userId);
+      const connections = await getDb().getConnectionsByUserId(ctx.userId);
       
       const allConflicts: any[] = [];
       
@@ -358,7 +358,7 @@ export const calendarRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const connection = await db.getConnectionById(input.connectionId);
+      const connection = await getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -367,7 +367,7 @@ export const calendarRouter = router({
         });
       }
       
-      await db.updateConnection(connection.id, {
+      await getDb().updateConnection(connection.id, {
         syncEnabled: input.enabled,
       });
       

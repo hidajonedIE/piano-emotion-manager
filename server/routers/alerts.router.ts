@@ -1,6 +1,6 @@
 import { router, protectedProcedure } from "../_core/trpc.js";
 import { z } from "zod";
-import * as db from "../db.js";
+import * as db from "../getDb().js";
 import { pianos, services, appointments, invoices, quotes, alertSettings } from "../../drizzle/schema.js";
 import { eq, and, desc, type InferSelectModel } from "drizzle-orm";
 import { filterByPartner } from "../utils/multi-tenant.js";
@@ -63,7 +63,7 @@ export const alertsRouter = router({
       try {
         // Obtener conexión a la base de datos (copiado de appointments.router)
         console.log('[ALERTS] Getting database connection...');
-        const database = await db.getDb();
+        const database = await getDb().getDb();
         
         if (!database) {
           console.log('[ALERTS] ERROR: Database connection is null');

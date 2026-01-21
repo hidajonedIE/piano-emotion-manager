@@ -7,7 +7,7 @@
  */
 
 import { eq, and, desc, sql, between, inArray, isNull } from 'drizzle-orm';
-import { db } from '../../db.js';
+import { db } from '../../getDb().js';
 import {
   products,
   warehouses,
@@ -92,7 +92,7 @@ export class StockService {
    */
   async recordMovement(input: StockMovementInput): Promise<typeof stockMovements.$inferSelect> {
     // Obtener stock actual
-    let currentStock = await db.query.warehouseStock.findFirst({
+    let currentStock = await getDb().query.warehouseStock.findFirst({
       where: and(
         eq(warehouseStock.productId, input.productId),
         eq(warehouseStock.warehouseId, input.warehouseId)
@@ -101,7 +101,7 @@ export class StockService {
 
     // Si no existe, crear registro de stock
     if (!currentStock) {
-      const [newStock] = await db.insert(warehouseStock).values({
+      const [newStock] = await getDb().insert(warehouseStock).values({
         productId: input.productId,
         warehouseId: input.warehouseId,
         quantity: '0',
@@ -130,7 +130,7 @@ export class StockService {
       totalCost -= input.quantity * unitCost;
       
       // Verificar stock negativo
-      const warehouse = await db.query.warehouses.findFirst({
+      const warehouse = await getDb().query.warehouses.findFirst({
         where: eq(warehouses.id, input.warehouseId),
       });
       
@@ -145,7 +145,7 @@ export class StockService {
     const averageCost = stockAfter > 0 ? totalCost / stockAfter : unitCost;
 
     // Crear movimiento
-    const [movement] = await db.insert(stockMovements).values({
+    const [movement] = await getDb().insert(stockMovements).values({
       productId: input.productId,
       warehouseId: input.warehouseId,
       type: input.type,
@@ -166,7 +166,7 @@ export class StockService {
     }).returning();
 
     // Actualizar stock
-    await db.update(warehouseStock)
+    await getDb().update(warehouseStock)
       .set({
         quantity: stockAfter.toString(),
         availableQuantity: stockAfter.toString(),
@@ -195,7 +195,7 @@ export class StockService {
     }
 
     // Obtener coste del producto en el almacén origen
-    const sourceStock = await db.query.warehouseStock.findFirst({
+    const sourceStock = await getDb().query.warehouseStock.findFirst({
       where: and(
         eq(warehouseStock.productId, input.productId),
         eq(warehouseStock.warehouseId, input.fromWarehouseId)
@@ -232,7 +232,7 @@ export class StockService {
     });
 
     // Actualizar referencia cruzada
-    await db.update(stockMovements)
+    await getDb().update(stockMovements)
       .set({ relatedMovementId: inMovement.id })
       .where(eq(stockMovements.id, outMovement.id));
 
@@ -244,7 +244,7 @@ export class StockService {
    */
   async adjust(input: AdjustmentInput): Promise<typeof stockMovements.$inferSelect> {
     // Obtener stock actual
-    const currentStock = await db.query.warehouseStock.findFirst({
+    const currentStock = await getDb().query.warehouseStock.findFirst({
       where: and(
         eq(warehouseStock.productId, input.productId),
         eq(warehouseStock.warehouseId, input.warehouseId)
@@ -328,7 +328,7 @@ export class StockService {
    * Obtener nivel de stock de un producto en todos los almacenes
    */
   async getStockLevels(productId: number): Promise<StockLevel[]> {
-    const product = await db.query.products.findFirst({
+    const product = await getDb().query.products.findFirst({
       where: eq(products.id, productId),
     });
 
@@ -336,7 +336,7 @@ export class StockService {
       throw new Error(`Producto no encontrado: ${productId}`);
     }
 
-    const stockData = await db.query.warehouseStock.findMany({
+    const stockData = await getDb().query.warehouseStock.findMany({
       where: eq(warehouseStock.productId, productId),
       with: {
         warehouse: true,
@@ -367,7 +367,7 @@ export class StockService {
    * Obtener stock total de un producto
    */
   async getTotalStock(productId: number): Promise<number> {
-    const [result] = await db.select({
+    const [result] = await getDb().select({
       total: sql<number>`coalesce(sum(${warehouseStock.quantity}::numeric), 0)`,
     })
       .from(warehouseStock)
@@ -380,7 +380,7 @@ export class StockService {
    * Obtener stock disponible de un producto en un almacén
    */
   async getAvailableStock(productId: number, warehouseId: number): Promise<number> {
-    const stock = await db.query.warehouseStock.findFirst({
+    const stock = await getDb().query.warehouseStock.findFirst({
       where: and(
         eq(warehouseStock.productId, productId),
         eq(warehouseStock.warehouseId, warehouseId)
@@ -398,7 +398,7 @@ export class StockService {
     warehouseId: number,
     quantity: number
   ): Promise<boolean> {
-    const stock = await db.query.warehouseStock.findFirst({
+    const stock = await getDb().query.warehouseStock.findFirst({
       where: and(
         eq(warehouseStock.productId, productId),
         eq(warehouseStock.warehouseId, warehouseId)
@@ -410,7 +410,7 @@ export class StockService {
     const available = parseFloat(stock.availableQuantity);
     if (available < quantity) return false;
 
-    await db.update(warehouseStock)
+    await getDb().update(warehouseStock)
       .set({
         reservedQuantity: (parseFloat(stock.reservedQuantity) + quantity).toString(),
         availableQuantity: (available - quantity).toString(),
@@ -429,7 +429,7 @@ export class StockService {
     warehouseId: number,
     quantity: number
   ): Promise<void> {
-    const stock = await db.query.warehouseStock.findFirst({
+    const stock = await getDb().query.warehouseStock.findFirst({
       where: and(
         eq(warehouseStock.productId, productId),
         eq(warehouseStock.warehouseId, warehouseId)
@@ -441,7 +441,7 @@ export class StockService {
     const reserved = parseFloat(stock.reservedQuantity);
     const toRelease = Math.min(reserved, quantity);
 
-    await db.update(warehouseStock)
+    await getDb().update(warehouseStock)
       .set({
         reservedQuantity: (reserved - toRelease).toString(),
         availableQuantity: (parseFloat(stock.availableQuantity) + toRelease).toString(),
@@ -486,7 +486,7 @@ export class StockService {
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Contar total
-    const [{ count }] = await db.select({ count: sql<number>`count(*)` })
+    const [{ count }] = await getDb().select({ count: sql<number>`count(*)` })
       .from(stockMovements)
       .where(whereClause);
 
@@ -494,7 +494,7 @@ export class StockService {
     const offset = (page - 1) * pageSize;
 
     // Obtener movimientos
-    const movements = await db.query.stockMovements.findMany({
+    const movements = await getDb().query.stockMovements.findMany({
       where: whereClause,
       with: {
         product: true,
@@ -522,7 +522,7 @@ export class StockService {
     currentQuantity: number,
     organizationId?: number
   ): Promise<void> {
-    const product = await db.query.products.findFirst({
+    const product = await getDb().query.products.findFirst({
       where: eq(products.id, productId),
     });
 
@@ -530,7 +530,7 @@ export class StockService {
 
     // Resolver alertas existentes si el stock es suficiente
     if (currentQuantity > product.reorderPoint) {
-      await db.update(stockAlerts)
+      await getDb().update(stockAlerts)
         .set({
           isResolved: true,
           resolvedAt: new Date(),
@@ -544,7 +544,7 @@ export class StockService {
     }
 
     // Verificar si ya existe una alerta activa
-    const existingAlert = await db.query.stockAlerts.findFirst({
+    const existingAlert = await getDb().query.stockAlerts.findFirst({
       where: and(
         eq(stockAlerts.productId, productId),
         eq(stockAlerts.warehouseId, warehouseId),
@@ -560,7 +560,7 @@ export class StockService {
       ? `Sin stock de ${product.name}`
       : `Stock bajo de ${product.name}: ${currentQuantity} unidades (mínimo: ${product.reorderPoint})`;
 
-    await db.insert(stockAlerts).values({
+    await getDb().insert(stockAlerts).values({
       productId,
       warehouseId,
       alertType,
@@ -578,7 +578,7 @@ export class StockService {
     product: typeof products.$inferSelect;
     warehouse: typeof warehouses.$inferSelect | null;
   }>> {
-    return db.query.stockAlerts.findMany({
+    return getDb().query.stockAlerts.findMany({
       where: and(
         eq(stockAlerts.isResolved, false),
         organizationId ? eq(stockAlerts.organizationId, organizationId) : undefined
@@ -595,7 +595,7 @@ export class StockService {
    * Marcar alerta como leída
    */
   async markAlertAsRead(alertId: number): Promise<void> {
-    await db.update(stockAlerts)
+    await getDb().update(stockAlerts)
       .set({ isRead: true })
       .where(eq(stockAlerts.id, alertId));
   }
@@ -604,7 +604,7 @@ export class StockService {
    * Resolver alerta
    */
   async resolveAlert(alertId: number, userId?: number): Promise<void> {
-    await db.update(stockAlerts)
+    await getDb().update(stockAlerts)
       .set({
         isResolved: true,
         resolvedAt: new Date(),
@@ -649,7 +649,7 @@ export class StockService {
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Total
-    const [totalResult] = await db.select({
+    const [totalResult] = await getDb().select({
       total: sql<number>`coalesce(sum(${warehouseStock.totalCost}::numeric), 0)`,
     })
       .from(warehouseStock)
@@ -657,7 +657,7 @@ export class StockService {
       .where(whereClause);
 
     // Por categoría
-    const byCategoryResult = await db.select({
+    const byCategoryResult = await getDb().select({
       category: products.category,
       value: sql<number>`coalesce(sum(${warehouseStock.totalCost}::numeric), 0)`,
     })
@@ -672,7 +672,7 @@ export class StockService {
     }
 
     // Por almacén
-    const byWarehouseResult = await db.select({
+    const byWarehouseResult = await getDb().select({
       warehouseId: warehouses.id,
       warehouseName: warehouses.name,
       value: sql<number>`coalesce(sum(${warehouseStock.totalCost}::numeric), 0)`,

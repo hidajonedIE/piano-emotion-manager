@@ -4,7 +4,7 @@
  */
 
 import { eq, and, gte, sql } from 'drizzle-orm';
-import { getDb } from '../db.js';
+import { getDb } from '../getDb().js';
 import { aiUsageTracking, type InsertAIUsageTracking } from '../../drizzle/ai-usage-schema.js';
 import type { AIFeature } from './subscription-limits.js';
 
@@ -30,7 +30,7 @@ export async function trackAIUsage(
       createdAt: new Date(),
     };
 
-    await db.insert(aiUsageTracking).values(record);
+    await getDb().insert(aiUsageTracking).values(record);
   } catch (error) {
     console.error('[AI Usage] Failed to track usage:', error);
     // No lanzar error para no interrumpir el flujo principal

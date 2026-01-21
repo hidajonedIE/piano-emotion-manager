@@ -115,7 +115,7 @@ export class PredictionService {
   }
 
   private async getHistoricalRevenue(organizationId: string, months: number): Promise<number[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         DATE_TRUNC('month', created_at) as month,
         COALESCE(SUM(total), 0) as total
@@ -215,7 +215,7 @@ export class PredictionService {
    */
   async predictClientChurn(organizationId: string): Promise<ChurnRisk[]> {
     // Obtener clientes con su historial de servicios
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         c.id,
         c.name,
@@ -313,7 +313,7 @@ export class PredictionService {
    */
   async predictMaintenance(organizationId: string): Promise<MaintenancePrediction[]> {
     // Obtener pianos con su historial de servicios
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         p.id as piano_id,
         p.brand,
@@ -409,7 +409,7 @@ export class PredictionService {
    */
   async predictWorkload(organizationId: string, weeks: number = 4): Promise<any[]> {
     // Obtener citas programadas
-    const appointmentsResult = await this.db.execute(`
+    const appointmentsResult = await this.getDb().execute(`
       SELECT 
         DATE_TRUNC('week', date) as week,
         COUNT(*) as appointments
@@ -420,7 +420,7 @@ export class PredictionService {
     `, [organizationId]);
 
     // Obtener histórico de servicios por semana
-    const historicalResult = await this.db.execute(`
+    const historicalResult = await this.getDb().execute(`
       SELECT 
         EXTRACT(DOW FROM created_at) as day_of_week,
         COUNT(*) as services
@@ -508,7 +508,7 @@ export class PredictionService {
    */
   async predictInventoryDemand(organizationId: string): Promise<any[]> {
     // Obtener consumo histórico de inventario
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         i.id,
         i.name,

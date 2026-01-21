@@ -191,7 +191,7 @@ class NotificationService {
           .where(eq(pushTokensTable.id, existing.id));
       } else {
         // Insertar nuevo token
-        await db.insert(pushTokensTable).values({
+        await getDb().insert(pushTokensTable).values({
           userId,
           token,
           platform,
@@ -379,7 +379,7 @@ class NotificationService {
       const { db } = await import('@/drizzle/db');
       const { storedNotifications } = await import('@/drizzle/notifications-schema');
       
-      await db.insert(storedNotifications).values({
+      await getDb().insert(storedNotifications).values({
         notificationId: notification.id,
         userId: notification.userId,
         organizationId: notification.organizationId,

@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import * as db from "../getDb().js";
 import { services, clients, pianos } from "../../drizzle/schema.js";
 import { eq, and, or, gte, lte, asc, desc, count, sql, ilike } from "drizzle-orm";
 import { 
@@ -125,7 +125,7 @@ export const servicesRouter = router({
     .query(withCache(
       async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "date", sortOrder = "desc", search, serviceType, status, clientId, pianoId, dateFrom, dateTo } = input || {};
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return { items: [], total: 0 };
 
       console.log('[services.list] ===== INICIO CONSULTA =====');
@@ -227,7 +227,7 @@ export const servicesRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return undefined;
 
       const [result] = await database
@@ -284,7 +284,7 @@ export const servicesRouter = router({
   byPiano: orgProcedure
     .input(z.object({ pianoId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return [];
 
       return database
@@ -305,7 +305,7 @@ export const servicesRouter = router({
   byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return [];
 
       return database
@@ -332,7 +332,7 @@ export const servicesRouter = router({
         "services"
       );
       
-      const result = await db.createService(serviceData);
+      const result = await getDb().createService(serviceData);
       await invalidateUserCache(ctx.user.id);
       await invalidatePath('services');
       return result;
@@ -343,7 +343,7 @@ export const servicesRouter = router({
       id: z.number(),
     }).merge(serviceBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el servicio para verificar permisos
@@ -368,7 +368,7 @@ export const servicesRouter = router({
       validateWritePermission(ctx.orgContext, "services", existingService.odId);
 
       const { id, ...data } = input;
-      const result = await db.updateService(existingService.odId, id, data);
+      const result = await getDb().updateService(existingService.odId, id, data);
       await invalidateUserCache(ctx.user.id);
       await invalidatePath('services');
       return result;
@@ -377,7 +377,7 @@ export const servicesRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el servicio para verificar permisos
@@ -401,7 +401,7 @@ export const servicesRouter = router({
       // Validar permisos de escritura
       validateWritePermission(ctx.orgContext, "services", existingService.odId);
 
-      const result = await db.deleteService(existingService.odId, input.id);
+      const result = await getDb().deleteService(existingService.odId, input.id);
       await invalidateUserCache(ctx.user.id);
       await invalidatePath('services');
       return result;
@@ -413,7 +413,7 @@ export const servicesRouter = router({
       dateTo: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) return { total: 0, totalRevenue: 0, byType: [], byStatus: [] };
 
       // TEMPORAL: Filtro simplificado sin multi-tenant

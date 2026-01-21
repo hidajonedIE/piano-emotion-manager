@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
@@ -24,7 +24,7 @@ export const invitationsRouter = router({
         });
       }
 
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -93,7 +93,7 @@ export const invitationsRouter = router({
       });
     }
 
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -124,7 +124,7 @@ export const invitationsRouter = router({
 
       // Cache disabled
 
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -168,7 +168,7 @@ export const invitationsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -212,7 +212,7 @@ export const invitationsRouter = router({
         });
       }
 
-      const database = await db.getDb();
+      const database = await getDb().getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',

@@ -5,7 +5,7 @@
  */
 
 import type { Request, Response } from 'express';
-import * as db from './db.js';
+import * as db from './getDb().js';
 import * as syncEngine from './sync-engine.js';
 import * as googleCalendar from './google-calendar.js';
 import * as microsoftCalendar from './microsoft-calendar.js';
@@ -27,7 +27,7 @@ export async function handleGoogleWebhook(req: Request, res: Response): Promise<
     }
     
     // Find connection by webhook ID
-    const connections = await db.getConnectionsByUserId(''); // We need to find by webhookId
+    const connections = await getDb().getConnectionsByUserId(''); // We need to find by webhookId
     const connection = connections.find(c => c.webhookId === channelId);
     
     if (!connection) {
@@ -121,7 +121,7 @@ async function processMicrosoftNotification(notification: any): Promise<void> {
   const { clientState, resource, changeType } = notification;
   
   // Find connection by clientState (which is the connection ID)
-  const connection = await db.getConnectionById(clientState);
+  const connection = await getDb().getConnectionById(clientState);
   
   if (!connection) {
     console.log('⚠️  Connection not found for notification:', clientState);
@@ -140,7 +140,7 @@ async function processMicrosoftNotification(notification: any): Promise<void> {
 export async function renewExpiringWebhooks(): Promise<void> {
   console.log('🔄 Checking for expiring webhooks...');
   
-  const expiringConnections = await db.getExpiringSoonWebhooks(24); // 24 hours
+  const expiringConnections = await getDb().getExpiringSoonWebhooks(24); // 24 hours
   
   for (const connection of expiringConnections) {
     try {
@@ -151,7 +151,7 @@ export async function renewExpiringWebhooks(): Promise<void> {
         await googleCalendar.stopWebhookSubscription(connection);
         const subscription = await googleCalendar.createWebhookSubscription(connection);
         
-        await db.updateConnection(connection.id, {
+        await getDb().updateConnection(connection.id, {
           webhookId: subscription.id,
           webhookExpiration: subscription.expiration,
         });
@@ -159,7 +159,7 @@ export async function renewExpiringWebhooks(): Promise<void> {
         // Microsoft webhooks: renew existing
         const subscription = await microsoftCalendar.renewWebhookSubscription(connection);
         
-        await db.updateConnection(connection.id, {
+        await getDb().updateConnection(connection.id, {
           webhookExpiration: subscription.expiration,
         });
       }
@@ -174,7 +174,7 @@ export async function renewExpiringWebhooks(): Promise<void> {
 /**
  * Setup webhook subscriptions for a connection
  */
-export async function setupWebhookSubscription(connection: db.CalendarConnection): Promise<void> {
+export async function setupWebhookSubscription(connection: getDb().CalendarConnection): Promise<void> {
   try {
     let subscription;
     
@@ -184,7 +184,7 @@ export async function setupWebhookSubscription(connection: db.CalendarConnection
       subscription = await microsoftCalendar.createWebhookSubscription(connection);
     }
     
-    await db.updateConnection(connection.id, {
+    await getDb().updateConnection(connection.id, {
       webhookId: subscription.id,
       webhookExpiration: subscription.expiration,
     });
@@ -199,7 +199,7 @@ export async function setupWebhookSubscription(connection: db.CalendarConnection
 /**
  * Remove webhook subscription for a connection
  */
-export async function removeWebhookSubscription(connection: db.CalendarConnection): Promise<void> {
+export async function removeWebhookSubscription(connection: getDb().CalendarConnection): Promise<void> {
   try {
     if (connection.provider === 'google') {
       await googleCalendar.stopWebhookSubscription(connection);
@@ -207,7 +207,7 @@ export async function removeWebhookSubscription(connection: db.CalendarConnectio
       await microsoftCalendar.stopWebhookSubscription(connection);
     }
     
-    await db.updateConnection(connection.id, {
+    await getDb().updateConnection(connection.id, {
       webhookId: null,
       webhookExpiration: null,
     });

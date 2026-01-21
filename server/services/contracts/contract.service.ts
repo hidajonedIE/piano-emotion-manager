@@ -80,7 +80,7 @@ export class ContractService {
     const prefix = `CTR-${year}`;
     
     // Obtener el último número de contrato del año
-    const result = await this.db.execute(sql`
+    const result = await this.getDb().execute(sql`
       SELECT contract_number FROM maintenance_contracts 
       WHERE organization_id = ${organizationId} 
       AND contract_number LIKE ${prefix + '%'}
@@ -379,7 +379,7 @@ export class ContractService {
     }
 
     // Registrar uso
-    await this.db.insert('contractServiceUsage' as never).values({
+    await this.getDb().insert('contractServiceUsage' as never).values({
       contractId,
       serviceId,
       serviceType,
@@ -492,7 +492,7 @@ export class ContractService {
       createdAt: new Date()
     };
 
-    await this.db.insert('contractPayments' as never).values(payment as never);
+    await this.getDb().insert('contractPayments' as never).values(payment as never);
 
     // Actualizar próxima fecha de facturación
     await this.db
@@ -708,7 +708,7 @@ export class ContractService {
     newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
 
     // Crear registro de renovación
-    await this.db.insert('contractRenewals' as never).values({
+    await this.getDb().insert('contractRenewals' as never).values({
       originalContractId: contractId,
       renewedAt: new Date(),
       previousEndDate: contract.endDate,

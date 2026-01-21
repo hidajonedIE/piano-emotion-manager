@@ -2,7 +2,7 @@
  * Alert Analytics Service
  * Análisis y métricas del sistema de alertas
  */
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { alertHistory, pianos, clients } from '../../drizzle/schema.js';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 
@@ -55,7 +55,7 @@ export class AlertAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Promise<PerformanceMetrics> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         averageResolutionTime: 0,
@@ -141,7 +141,7 @@ export class AlertAnalyticsService {
     endDate: Date,
     interval: 'day' | 'week' | 'month' = 'day'
   ): Promise<TimeSeriesData[]> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return [];
     }
@@ -219,7 +219,7 @@ export class AlertAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Promise<AlertDistribution[]> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return [];
     }
@@ -270,7 +270,7 @@ export class AlertAnalyticsService {
     periods: number = 12,
     interval: 'month' | 'quarter' | 'year' = 'month'
   ): Promise<TrendAnalysis[]> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return [];
     }
@@ -375,7 +375,7 @@ export class AlertAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Promise<ServiceTypeAnalysis[]> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return [];
     }
@@ -466,7 +466,7 @@ export class AlertAnalyticsService {
     urgentCount: number;
     pendingCount: number;
   }>> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return [];
     }

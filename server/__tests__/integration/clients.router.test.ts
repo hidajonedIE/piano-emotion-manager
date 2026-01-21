@@ -730,7 +730,7 @@ describe("clientsRouter.create", () => {
       });
 
       expect(result).toBe(1);
-      expect(db.createClient).toHaveBeenCalledWith(
+      expect(getDb().createClient).toHaveBeenCalledWith(
         expect.objectContaining({
           name: "Nuevo Cliente",
           odId: "user_123",
@@ -753,7 +753,7 @@ describe("clientsRouter.create", () => {
         clientType: "individual",
       });
 
-      expect(db.createClient).toHaveBeenCalledWith(
+      expect(getDb().createClient).toHaveBeenCalledWith(
         expect.objectContaining({
           organizationId: null,
         })
@@ -782,7 +782,7 @@ describe("clientsRouter.create", () => {
         clientType: "individual",
       });
 
-      expect(db.createClient).toHaveBeenCalledWith(
+      expect(getDb().createClient).toHaveBeenCalledWith(
         expect.objectContaining({
           odId: "user_123",
           partnerId: 1,
@@ -813,7 +813,7 @@ describe("clientsRouter.create", () => {
         clientType: "business",
       });
 
-      expect(db.createClient).toHaveBeenCalledWith(
+      expect(getDb().createClient).toHaveBeenCalledWith(
         expect.objectContaining({
           odId: "user_123",
           partnerId: 1,
@@ -844,7 +844,7 @@ describe("clientsRouter.create", () => {
         clientType: "institution",
       });
 
-      expect(db.createClient).toHaveBeenCalledWith(
+      expect(getDb().createClient).toHaveBeenCalledWith(
         expect.objectContaining({
           odId: "user_123",
           partnerId: 1,
@@ -984,7 +984,7 @@ describe("clientsRouter.create", () => {
         },
       });
 
-      expect(db.createClient).toHaveBeenCalledWith(
+      expect(getDb().createClient).toHaveBeenCalledWith(
         expect.objectContaining({
           address: expect.stringContaining("Calle Mayor 10"),
         })

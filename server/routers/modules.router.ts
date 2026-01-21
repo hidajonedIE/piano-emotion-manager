@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
+import { getDb } from "../getDb().js";
 import { users } from "../../drizzle/schema.js";
 import { getModulesForPlan, DEFAULT_PLANS, getPlanByCode, type ModuleInfo } from "../data/modules-data.js";
 import type { SubscriptionPlan } from "../../drizzle/modules-schema.js";
@@ -26,7 +26,7 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
     console.log('[getUserPlan] Looking for user with Clerk ID:', userId);
     
     // Buscar usuario por openId (Clerk ID) en lugar de por id numérico
-    const result = await db.select().from(users).where(eq(users.openId, userId)).limit(1);
+    const result = await getDb().select().from(users).where(eq(users.openId, userId)).limit(1);
     const user = result.length > 0 ? result[0] : null;
 
     console.log('[getUserPlan] User found:', user ? { id: user.id, email: user.email, plan: user.subscriptionPlan, status: user.subscriptionStatus } : 'null');
@@ -122,7 +122,7 @@ export const modulesRouter = router({
 
     try {
       const db = await getDb();
-      const user = await db.query.users.findFirst({
+      const user = await getDb().query.users.findFirst({
         where: eq(users.openId, userId),
       });
 

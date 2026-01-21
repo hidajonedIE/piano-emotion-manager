@@ -5,7 +5,7 @@
  * Soporta Google Calendar, Outlook y CalDAV
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and } from 'drizzle-orm';
 import {
   calendarConnections,
@@ -115,7 +115,7 @@ export class CalendarSyncService {
     const accountInfo = await this.getAccountInfo(provider, tokens.accessToken);
 
     // Guardar conexión
-    const [connection] = await db.insert(calendarConnections).values({
+    const [connection] = await getDb().insert(calendarConnections).values({
       userId: this.userId,
       organizationId: this.organizationId,
       provider,
@@ -146,7 +146,7 @@ export class CalendarSyncService {
       throw new Error('No se pudo conectar al servidor CalDAV');
     }
 
-    const [connection] = await db.insert(calendarConnections).values({
+    const [connection] = await getDb().insert(calendarConnections).values({
       userId: this.userId,
       organizationId: this.organizationId,
       provider: 'caldav',
@@ -183,7 +183,7 @@ export class CalendarSyncService {
    * Obtiene conexiones del usuario
    */
   async getConnections(): Promise<Array<typeof calendarConnections.$inferSelect>> {
-    return db.query.calendarConnections.findMany({
+    return getDb().query.calendarConnections.findMany({
       where: eq(calendarConnections.userId, this.userId),
     });
   }
@@ -240,7 +240,7 @@ export class CalendarSyncService {
     const accessToken = await this.ensureValidToken(connection);
 
     // Obtener calendarios seleccionados
-    const calendars = await db.query.externalCalendars.findMany({
+    const calendars = await getDb().query.externalCalendars.findMany({
       where: and(
         eq(externalCalendars.connectionId, connection.id),
         eq(externalCalendars.isSelected, true)
@@ -299,7 +299,7 @@ export class CalendarSyncService {
 
     for (const extEvent of externalEvents) {
       // Verificar si ya existe
-      const existing = await db.query.calendarEvents.findFirst({
+      const existing = await getDb().query.calendarEvents.findFirst({
         where: and(
           eq(calendarEvents.externalId, extEvent.id),
           eq(calendarEvents.organizationId, this.organizationId)
@@ -330,7 +330,7 @@ export class CalendarSyncService {
     calendarId: string
   ): Promise<number> {
     // Obtener eventos locales sin sincronizar
-    const localEvents = await db.query.calendarEvents.findMany({
+    const localEvents = await getDb().query.calendarEvents.findMany({
       where: and(
         eq(calendarEvents.organizationId, this.organizationId),
         eq(calendarEvents.userId, this.userId)
@@ -421,7 +421,7 @@ export class CalendarSyncService {
     const startTime = extEvent.start.dateTime?.split('T')[1]?.substring(0, 5);
     const endTime = extEvent.end.dateTime?.split('T')[1]?.substring(0, 5);
 
-    await db.insert(calendarEvents).values({
+    await getDb().insert(calendarEvents).values({
       organizationId: this.organizationId,
       userId: this.userId,
       type: 'appointment',

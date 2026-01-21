@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
+import { getDb } from "../getDb().js";
 import { partners, partnerSettings, partnerPricing, partnerUsers, users } from "../../drizzle/schema.js";
 import { eq, and, or, ilike, asc, desc, count, sql } from "drizzle-orm";
 

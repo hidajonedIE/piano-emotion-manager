@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and, or, gte, lte, between, desc, asc, sql } from 'drizzle-orm';
 import {
   calendarEvents,
@@ -90,7 +90,7 @@ export class CalendarService {
    * Crea un nuevo evento
    */
   async createEvent(input: EventInput): Promise<typeof calendarEvents.$inferSelect> {
-    const [event] = await db.insert(calendarEvents).values({
+    const [event] = await getDb().insert(calendarEvents).values({
       organizationId: this.organizationId,
       userId: this.userId,
       type: input.type,
@@ -219,7 +219,7 @@ export class CalendarService {
       conditions.push(eq(calendarEvents.clientId, filters.clientId));
     }
 
-    return db.query.calendarEvents.findMany({
+    return getDb().query.calendarEvents.findMany({
       where: and(...conditions),
       orderBy: [asc(calendarEvents.startDate), asc(calendarEvents.startTime)],
     });
@@ -229,7 +229,7 @@ export class CalendarService {
    * Obtiene un evento por ID
    */
   async getEvent(eventId: number): Promise<typeof calendarEvents.$inferSelect | undefined> {
-    return db.query.calendarEvents.findFirst({
+    return getDb().query.calendarEvents.findFirst({
       where: and(
         eq(calendarEvents.id, eventId),
         eq(calendarEvents.organizationId, this.organizationId)
@@ -252,7 +252,7 @@ export class CalendarService {
       conditions.push(eq(calendarEvents.assignedTo, userId));
     }
 
-    return db.query.calendarEvents.findMany({
+    return getDb().query.calendarEvents.findMany({
       where: and(...conditions),
       orderBy: [asc(calendarEvents.startTime)],
     });
@@ -277,7 +277,7 @@ export class CalendarService {
       conditions.push(eq(calendarEvents.assignedTo, userId));
     }
 
-    return db.query.calendarEvents.findMany({
+    return getDb().query.calendarEvents.findMany({
       where: and(...conditions),
       orderBy: [asc(calendarEvents.startDate), asc(calendarEvents.startTime)],
       limit,
@@ -312,7 +312,7 @@ export class CalendarService {
       };
     });
 
-    await db.insert(eventReminders).values(reminderValues);
+    await getDb().insert(eventReminders).values(reminderValues);
   }
 
   /**
@@ -321,7 +321,7 @@ export class CalendarService {
   async getPendingReminders(): Promise<Array<typeof eventReminders.$inferSelect & { event: typeof calendarEvents.$inferSelect }>> {
     const now = new Date();
 
-    const reminders = await db.query.eventReminders.findMany({
+    const reminders = await getDb().query.eventReminders.findMany({
       where: and(
         eq(eventReminders.isSent, false),
         lte(eventReminders.scheduledAt, now)
@@ -385,7 +385,7 @@ export class CalendarService {
    * Obtiene disponibilidad de un técnico
    */
   async getAvailability(userId?: number): Promise<Array<typeof technicianAvailability.$inferSelect>> {
-    return db.query.technicianAvailability.findMany({
+    return getDb().query.technicianAvailability.findMany({
       where: eq(technicianAvailability.userId, userId || this.userId),
       orderBy: [asc(technicianAvailability.dayOfWeek)],
     });
@@ -403,7 +403,7 @@ export class CalendarService {
     const dayOfWeek = new Date(date).getDay();
 
     // Obtener disponibilidad del día
-    const availability = await db.query.technicianAvailability.findFirst({
+    const availability = await getDb().query.technicianAvailability.findFirst({
       where: and(
         eq(technicianAvailability.userId, targetUserId),
         eq(technicianAvailability.dayOfWeek, dayOfWeek)
@@ -415,7 +415,7 @@ export class CalendarService {
     }
 
     // Obtener eventos del día
-    const events = await db.query.calendarEvents.findMany({
+    const events = await getDb().query.calendarEvents.findMany({
       where: and(
         eq(calendarEvents.assignedTo, targetUserId),
         eq(calendarEvents.startDate, date),
@@ -424,7 +424,7 @@ export class CalendarService {
     });
 
     // Obtener bloqueos del día
-    const blocks = await db.query.timeBlocks.findMany({
+    const blocks = await getDb().query.timeBlocks.findMany({
       where: and(
         eq(timeBlocks.userId, targetUserId),
         lte(timeBlocks.startDate, date),
@@ -486,7 +486,7 @@ export class CalendarService {
       isAllDay?: boolean;
     } = {}
   ): Promise<typeof timeBlocks.$inferSelect> {
-    const [block] = await db.insert(timeBlocks).values({
+    const [block] = await getDb().insert(timeBlocks).values({
       userId: this.userId,
       organizationId: this.organizationId,
       title,
@@ -509,7 +509,7 @@ export class CalendarService {
     endDate: string,
     userId?: number
   ): Promise<Array<typeof timeBlocks.$inferSelect>> {
-    return db.query.timeBlocks.findMany({
+    return getDb().query.timeBlocks.findMany({
       where: and(
         eq(timeBlocks.userId, userId || this.userId),
         lte(timeBlocks.startDate, endDate),
@@ -540,7 +540,7 @@ export class CalendarService {
    * Obtiene configuración de recordatorios
    */
   async getReminderSettings(): Promise<typeof reminderSettings.$inferSelect | null> {
-    const settings = await db.query.reminderSettings.findFirst({
+    const settings = await getDb().query.reminderSettings.findFirst({
       where: eq(reminderSettings.userId, this.userId),
     });
 
@@ -567,7 +567,7 @@ export class CalendarService {
       return updated;
     }
 
-    const [created] = await db.insert(reminderSettings).values({
+    const [created] = await getDb().insert(reminderSettings).values({
       userId: this.userId,
       organizationId: this.organizationId,
       ...settings,

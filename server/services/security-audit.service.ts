@@ -73,7 +73,7 @@ export class SecurityAuditService {
     
     // Intentar guardar en base de datos
     try {
-      await this.db.execute(`
+      await this.getDb().execute(`
         INSERT INTO credential_audit_log 
         (organization_id, gateway, action, user_id, ip_address, user_agent, details, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
@@ -165,7 +165,7 @@ export class SecurityAuditService {
     limit: number = 50
   ): Promise<any[]> {
     try {
-      const result = await this.db.execute(`
+      const result = await this.getDb().execute(`
         SELECT * FROM credential_audit_log
         WHERE organization_id = $1
         ORDER BY created_at DESC
@@ -183,7 +183,7 @@ export class SecurityAuditService {
    */
   async getRecentSecurityEvents(organizationId: string): Promise<any[]> {
     try {
-      const result = await this.db.execute(`
+      const result = await this.getDb().execute(`
         SELECT * FROM credential_audit_log
         WHERE organization_id = $1
           AND created_at > NOW() - INTERVAL '24 hours'

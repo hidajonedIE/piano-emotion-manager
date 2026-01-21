@@ -2,7 +2,7 @@
  * Client Portal Database Functions
  */
 
-import { getDb } from '../../db.js';
+import { getDb } from '../../getDb().js';
 import { sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import * as auth from './auth.js';
@@ -75,7 +75,7 @@ export async function createPortalUser(data: {
   const id = nanoid();
   const passwordHash = await auth.hashPassword(data.password);
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO client_portal_users (id, clientId, email, passwordHash, isActive)
     VALUES (${id}, ${data.clientId}, ${data.email}, ${passwordHash}, TRUE)
   `);
@@ -89,7 +89,7 @@ export async function getPortalUserById(id: string): Promise<ClientPortalUser | 
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_users WHERE id = ${id}
   `);
   
@@ -100,7 +100,7 @@ export async function getPortalUserByEmail(email: string): Promise<ClientPortalU
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_users WHERE email = ${email}
   `);
   
@@ -111,7 +111,7 @@ export async function getPortalUserByClientId(clientId: string): Promise<ClientP
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_users WHERE clientId = ${clientId} LIMIT 1
   `);
   
@@ -151,14 +151,14 @@ export async function updatePortalUser(
   values.push(id);
   
   const query = `UPDATE client_portal_users SET ${updates.join(', ')} WHERE id = ?`;
-  await db.execute(sql.raw(query, values));
+  await getDb().execute(sql.raw(query, values));
 }
 
 export async function deletePortalUser(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     DELETE FROM client_portal_users WHERE id = ${id}
   `);
 }
@@ -177,7 +177,7 @@ export async function createSession(data: {
   
   const id = nanoid();
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO client_portal_sessions (id, clientPortalUserId, token, expiresAt)
     VALUES (${id}, ${data.clientPortalUserId}, ${data.token}, ${data.expiresAt})
   `);
@@ -191,7 +191,7 @@ export async function getSessionById(id: string): Promise<ClientPortalSession | 
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_sessions WHERE id = ${id}
   `);
   
@@ -202,7 +202,7 @@ export async function getSessionByToken(token: string): Promise<ClientPortalSess
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_sessions WHERE token = ${token}
   `);
   
@@ -213,7 +213,7 @@ export async function deleteSession(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     DELETE FROM client_portal_sessions WHERE id = ${id}
   `);
 }
@@ -222,7 +222,7 @@ export async function deleteExpiredSessions(): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     DELETE FROM client_portal_sessions WHERE expiresAt < NOW()
   `);
 }
@@ -243,7 +243,7 @@ export async function createInvitation(data: {
   const token = auth.generateInvitationToken();
   const expiresAt = auth.generateExpirationDate(7); // 7 days
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO client_portal_invitations (id, clientId, email, token, expiresAt, createdBy)
     VALUES (${id}, ${data.clientId}, ${data.email}, ${token}, ${expiresAt}, ${data.createdBy})
   `);
@@ -257,7 +257,7 @@ export async function getInvitationById(id: string): Promise<ClientPortalInvitat
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_invitations WHERE id = ${id}
   `);
   
@@ -268,7 +268,7 @@ export async function getInvitationByToken(token: string): Promise<ClientPortalI
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_invitations WHERE token = ${token}
   `);
   
@@ -279,7 +279,7 @@ export async function markInvitationAsUsed(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     UPDATE client_portal_invitations SET usedAt = NOW() WHERE id = ${id}
   `);
 }
@@ -288,7 +288,7 @@ export async function deleteInvitation(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     DELETE FROM client_portal_invitations WHERE id = ${id}
   `);
 }
@@ -308,7 +308,7 @@ export async function createMessage(data: {
   
   const id = nanoid();
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO client_messages (id, clientId, fromUserId, fromClientPortalUserId, message, isRead)
     VALUES (
       ${id}, 
@@ -329,7 +329,7 @@ export async function getMessageById(id: string): Promise<ClientMessage | null> 
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_messages WHERE id = ${id}
   `);
   
@@ -343,7 +343,7 @@ export async function getMessagesByClientId(
   const db = await getDb();
   if (!db) return [];
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_messages 
     WHERE clientId = ${clientId}
     ORDER BY createdAt DESC
@@ -362,14 +362,14 @@ export async function markMessagesAsRead(ids: string[]): Promise<void> {
   const placeholders = ids.map(() => '?').join(',');
   const query = `UPDATE client_messages SET isRead = TRUE WHERE id IN (${placeholders})`;
   
-  await db.execute(sql.raw(query, ids));
+  await getDb().execute(sql.raw(query, ids));
 }
 
 export async function getUnreadMessageCount(clientId: string): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT COUNT(*) as count FROM client_messages 
     WHERE clientId = ${clientId} AND isRead = FALSE
   `);
@@ -391,7 +391,7 @@ export async function createPasswordReset(
   const token = auth.generatePasswordResetToken();
   const expiresAt = auth.generateExpirationDate(1); // 1 day
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     INSERT INTO client_portal_password_resets (id, clientPortalUserId, token, expiresAt)
     VALUES (${id}, ${clientPortalUserId}, ${token}, ${expiresAt})
   `);
@@ -405,7 +405,7 @@ export async function getPasswordResetById(id: string): Promise<PasswordReset | 
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_password_resets WHERE id = ${id}
   `);
   
@@ -416,7 +416,7 @@ export async function getPasswordResetByToken(token: string): Promise<PasswordRe
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.execute(sql`
+  const result = await getDb().execute(sql`
     SELECT * FROM client_portal_password_resets WHERE token = ${token}
   `);
   
@@ -427,7 +427,7 @@ export async function markPasswordResetAsUsed(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     UPDATE client_portal_password_resets SET usedAt = NOW() WHERE id = ${id}
   `);
 }
@@ -436,7 +436,7 @@ export async function deletePasswordReset(id: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   
-  await db.execute(sql`
+  await getDb().execute(sql`
     DELETE FROM client_portal_password_resets WHERE id = ${id}
   `);
 }

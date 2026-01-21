@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { getDb } from '../../../drizzle/db.js';
+import { getDb } from '../../../drizzle/getDb().js';
 
 const db = getDb();
 import { eq, and, gte, lte, desc, asc, sql, sum } from 'drizzle-orm';
@@ -120,7 +120,7 @@ export class AccountingService {
    * Crea una cuenta financiera
    */
   async createAccount(input: AccountInput): Promise<typeof financialAccounts.$inferSelect> {
-    const [account] = await db.insert(financialAccounts).values({
+    const [account] = await getDb().insert(financialAccounts).values({
       organizationId: this.organizationId,
       name: input.name,
       type: input.type,
@@ -143,7 +143,7 @@ export class AccountingService {
    * Obtiene todas las cuentas
    */
   async getAccounts(): Promise<Array<typeof financialAccounts.$inferSelect>> {
-    return db.query.financialAccounts.findMany({
+    return getDb().query.financialAccounts.findMany({
       where: and(
         eq(financialAccounts.organizationId, this.organizationId),
         eq(financialAccounts.isActive, true)
@@ -156,7 +156,7 @@ export class AccountingService {
    * Actualiza el saldo de una cuenta
    */
   private async updateAccountBalance(accountId: number, amount: number, isAddition: boolean): Promise<void> {
-    const account = await db.query.financialAccounts.findFirst({
+    const account = await getDb().query.financialAccounts.findFirst({
       where: eq(financialAccounts.id, accountId),
     });
 
@@ -191,7 +191,7 @@ export class AccountingService {
       vatAmount = input.amount - netAmount;
     }
 
-    const [transaction] = await db.insert(transactions).values({
+    const [transaction] = await getDb().insert(transactions).values({
       organizationId: this.organizationId,
       userId: this.userId,
       accountId: input.accountId,
@@ -260,7 +260,7 @@ export class AccountingService {
     }
 
     const [result, countResult] = await Promise.all([
-      db.query.transactions.findMany({
+      getDb().query.transactions.findMany({
         where: and(...conditions),
         orderBy: [desc(transactions.transactionDate), desc(transactions.createdAt)],
         limit: pageSize,
@@ -285,7 +285,7 @@ export class AccountingService {
    * Elimina una transacción
    */
   async deleteTransaction(transactionId: number): Promise<void> {
-    const transaction = await db.query.transactions.findFirst({
+    const transaction = await getDb().query.transactions.findFirst({
       where: and(
         eq(transactions.id, transactionId),
         eq(transactions.organizationId, this.organizationId)
@@ -305,7 +305,7 @@ export class AccountingService {
       await this.updateAccountBalance(transaction.toAccountId, amount, false);
     }
 
-    await db.delete(transactions).where(eq(transactions.id, transactionId));
+    await getDb().delete(transactions).where(eq(transactions.id, transactionId));
   }
 
   // ============================================================================
@@ -317,7 +317,7 @@ export class AccountingService {
    */
   async getFinancialSummary(startDate: string, endDate: string): Promise<FinancialSummary> {
     // Obtener facturas desde la tabla invoices (sin filtro de fechas para debug)
-    const allInvoices = await db.query.invoices.findMany({});
+    const allInvoices = await getDb().query.invoices.findMany({});
 
     let totalIncome = 0;
     let totalExpenses = 0;
@@ -408,7 +408,7 @@ export class AccountingService {
    * Obtiene flujo de caja
    */
   async getCashFlow(startDate: string, endDate: string): Promise<CashFlowData[]> {
-    const txs = await db.query.transactions.findMany({
+    const txs = await getDb().query.transactions.findMany({
       where: and(
         eq(transactions.organizationId, this.organizationId),
         gte(transactions.transactionDate, startDate),
@@ -455,7 +455,7 @@ export class AccountingService {
     byAccount: Array<{ account: typeof financialAccounts.$inferSelect; balance: number }>;
   }> {
     // Calcular balance total desde facturas
-    const allInvoices = await db.query.invoices.findMany({});
+    const allInvoices = await getDb().query.invoices.findMany({});
 
     let totalBalance = 0;
     for (const invoice of allInvoices) {
@@ -505,7 +505,7 @@ export class AccountingService {
   ): Promise<typeof budgets.$inferSelect> {
     const totalAmount = lines.reduce((sum, line) => sum + line.plannedAmount, 0);
 
-    const [budget] = await db.insert(budgets).values({
+    const [budget] = await getDb().insert(budgets).values({
       organizationId: this.organizationId,
       name,
       startDate,
@@ -515,7 +515,7 @@ export class AccountingService {
 
     // Crear líneas de presupuesto
     if (lines.length > 0) {
-      await db.insert(budgetLines).values(
+      await getDb().insert(budgetLines).values(
         lines.map((line) => ({
           budgetId: budget.id,
           category: line.category,
@@ -541,7 +541,7 @@ export class AccountingService {
     totalSpent: number;
     totalRemaining: number;
   }> {
-    const budget = await db.query.budgets.findFirst({
+    const budget = await getDb().query.budgets.findFirst({
       where: and(
         eq(budgets.id, budgetId),
         eq(budgets.organizationId, this.organizationId)
@@ -556,7 +556,7 @@ export class AccountingService {
     }
 
     // Obtener gastos por categoría en el período
-    const expenses = await db.query.transactions.findMany({
+    const expenses = await getDb().query.transactions.findMany({
       where: and(
         eq(transactions.organizationId, this.organizationId),
         eq(transactions.type, 'expense'),
@@ -603,7 +603,7 @@ export class AccountingService {
    * Obtiene tasas de impuestos
    */
   async getTaxRates(): Promise<Array<typeof taxRates.$inferSelect>> {
-    return db.query.taxRates.findMany({
+    return getDb().query.taxRates.findMany({
       where: and(
         eq(taxRates.organizationId, this.organizationId),
         eq(taxRates.isActive, true)
@@ -619,7 +619,7 @@ export class AccountingService {
     rate: number,
     options: { appliesToIncome?: boolean; appliesToExpense?: boolean; isDefault?: boolean } = {}
   ): Promise<typeof taxRates.$inferSelect> {
-    const [taxRate] = await db.insert(taxRates).values({
+    const [taxRate] = await getDb().insert(taxRates).values({
       organizationId: this.organizationId,
       name,
       rate: rate.toString(),

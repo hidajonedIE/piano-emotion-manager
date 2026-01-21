@@ -7,7 +7,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { eq, and, desc, lt, isNull } from 'drizzle-orm';
-import { db } from '../db.js';
+import { db } from '../getDb().js';
 import {
   portalMagicLinks,
   portalSessions,
@@ -82,7 +82,7 @@ const authenticatePortal = async (
 
     if (new Date(session.expiresAt) < new Date()) {
       // Eliminar sesión expirada
-      await db.delete(portalSessions).where(eq(portalSessions.id, session.id));
+      await getDb().delete(portalSessions).where(eq(portalSessions.id, session.id));
       return res.status(401).json({ error: 'Sesión expirada' });
     }
 
@@ -150,7 +150,7 @@ router.post('/auth/request-magic-link', async (req: Request, res: Response) => {
       );
 
     // Guardar nuevo token en base de datos
-    await db.insert(portalMagicLinks).values({
+    await getDb().insert(portalMagicLinks).values({
       clientId: client.id,
       email: client.email!,
       token,
@@ -277,7 +277,7 @@ router.post('/auth/verify-magic-link', async (req: Request, res: Response) => {
 
     // Guardar sesión en base de datos
     const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días
-    await db.insert(portalSessions).values({
+    await getDb().insert(portalSessions).values({
       clientId: client.id,
       token: accessToken,
       expiresAt: sessionExpiresAt,
@@ -345,7 +345,7 @@ router.post('/auth/logout', authenticatePortal, async (req: AuthenticatedRequest
     const authHeader = req.headers.authorization;
     const token = authHeader!.substring(7);
 
-    await db.delete(portalSessions).where(eq(portalSessions.token, token));
+    await getDb().delete(portalSessions).where(eq(portalSessions.token, token));
 
     res.json({ success: true });
   } catch (error) {
@@ -665,7 +665,7 @@ router.post('/appointment-requests', authenticatePortal, async (req: Authenticat
     }
 
     // Crear solicitud en base de datos
-    const [result] = await db.insert(portalAppointmentRequests).values({
+    const [result] = await getDb().insert(portalAppointmentRequests).values({
       odId,
       clientId,
       pianoId,
@@ -804,7 +804,7 @@ router.post('/services/:id/rating', authenticatePortal, async (req: Authenticate
     }
 
     // Crear valoración
-    const [result] = await db.insert(serviceRatings).values({
+    const [result] = await getDb().insert(serviceRatings).values({
       odId,
       serviceId: parseInt(id),
       clientId,
@@ -854,7 +854,7 @@ router.get('/conversations', authenticatePortal, async (req: AuthenticatedReques
 
     if (!conversation) {
       // Crear nueva conversación
-      const [result] = await db.insert(portalConversations).values({
+      const [result] = await getDb().insert(portalConversations).values({
         odId,
         clientId,
       });
@@ -971,7 +971,7 @@ router.post('/conversations/:id/messages', authenticatePortal, async (req: Authe
     }
 
     // Crear mensaje
-    const [result] = await db.insert(portalMessages).values({
+    const [result] = await getDb().insert(portalMessages).values({
       conversationId: parseInt(id),
       senderType: 'client',
       senderId: clientId,

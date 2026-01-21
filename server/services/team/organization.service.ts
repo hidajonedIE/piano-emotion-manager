@@ -6,7 +6,7 @@
  */
 
 import { eq, and, desc } from 'drizzle-orm';
-import { getDb } from '../../db.js';
+import { getDb } from '../../getDb().js';
 import {
   organizations,
   organizationMembers,
@@ -90,7 +90,7 @@ export class OrganizationService {
     const slug = await this.generateUniqueSlug(input.name);
     
     // Crear la organización
-    const [organization] = await db.insert(organizations).values({
+    const [organization] = await getDb().insert(organizations).values({
       name: input.name,
       slug,
       ownerId: input.ownerId,
@@ -105,7 +105,7 @@ export class OrganizationService {
     }).returning();
     
     // Añadir al propietario como miembro con rol 'owner'
-    await db.insert(organizationMembers).values({
+    await getDb().insert(organizationMembers).values({
       organizationId: organization.id,
       userId: input.ownerId,
       role: 'owner',
@@ -221,7 +221,7 @@ export class OrganizationService {
     expiresAt.setDate(expiresAt.getDate() + 7); // Expira en 7 días
     
     // Crear invitación
-    const [invitation] = await db.insert(organizationInvitations).values({
+    const [invitation] = await getDb().insert(organizationInvitations).values({
       organizationId: input.organizationId,
       email: input.email,
       role: input.role,
@@ -280,7 +280,7 @@ export class OrganizationService {
       .where(eq(organizationInvitations.id, invitation.id));
     
     // Crear miembro
-    const [member] = await db.insert(organizationMembers).values({
+    const [member] = await getDb().insert(organizationMembers).values({
       organizationId: invitation.organizationId,
       userId,
       role: invitation.role,
@@ -571,7 +571,7 @@ export class OrganizationService {
     entityId?: number;
     metadata?: Record<string, any>;
   }): Promise<void> {
-    await db.insert(organizationActivityLog).values({
+    await getDb().insert(organizationActivityLog).values({
       organizationId: data.organizationId,
       userId: data.userId,
       activityType: data.activityType as any,

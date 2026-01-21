@@ -7,7 +7,7 @@
  */
 
 import { TRPCError } from '@trpc/server';
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { invitations } from '../../drizzle/invitations-schema.js';
 import { eq, and } from 'drizzle-orm';
 
@@ -26,7 +26,7 @@ export async function validateInvitation(email: string): Promise<boolean> {
   }
 
   try {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       console.error('Database not available for invitation validation');
       return false;
@@ -72,7 +72,7 @@ export async function markInvitationAsUsed(email: string): Promise<void> {
   }
 
   try {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',

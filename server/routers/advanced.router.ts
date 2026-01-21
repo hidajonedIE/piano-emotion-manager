@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
-import { getUserByClerkId } from "../db.js";
+import { getUserByClerkId } from "../getDb().js";
 import { storageRouter } from "./storage/index.js";
 
 // Funciones auxiliares para el chat

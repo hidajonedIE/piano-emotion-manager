@@ -9,7 +9,7 @@
 import { Webhook } from 'svix';
 import { WebhookEvent } from '@clerk/clerk-sdk-node';
 import { validateInvitation, markInvitationAsUsed } from '../middleware/invitation-guard.js';
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { users } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -62,7 +62,7 @@ export async function handleClerkWebhook(
 
       // Crear el usuario en nuestra base de datos
       try {
-        const database = await db.getDb();
+        const database = await getDb().getDb();
         if (database) {
           await database.insert(users).values({
             openId: id,
@@ -89,7 +89,7 @@ export async function handleClerkWebhook(
       if (primaryEmail?.email_address) {
         // Actualizar datos del usuario en nuestra base de datos
         try {
-          const database = await db.getDb();
+          const database = await getDb().getDb();
           if (database) {
             await database
               .update(users)
@@ -113,7 +113,7 @@ export async function handleClerkWebhook(
       
       if (id) {
         try {
-          const database = await db.getDb();
+          const database = await getDb().getDb();
           if (database) {
             await database.delete(users).where(eq(users.openId, id));
           }

@@ -20,7 +20,7 @@ import {
 } from '../services/purchase-verification.service.js';
 import { createWooCommerceService } from '../services/woocommerce.service.js';
 import type { AccountTier, TechnicianAccountStatus, DistributorPremiumConfig } from '../db/premium-schema.js';
-import { db } from '../../drizzle/db.js';
+import { getDb } from '../../drizzle/getDb().js';
 import { users } from '../../drizzle/schema.js';
 import { eq, and, lt, or, isNull, sql } from 'drizzle-orm';
 
@@ -201,7 +201,7 @@ async function saveVerificationLog(log: VerificationLog): Promise<void> {
     try {
       const { purchaseVerificationLogs } = await import('@/drizzle/schema');
       
-      await db.insert(purchaseVerificationLogs).values({
+      await getDb().insert(purchaseVerificationLogs).values({
         logId: log.id,
         userId: parseInt(log.technicianId),
         distributorId: log.distributorId || 1,

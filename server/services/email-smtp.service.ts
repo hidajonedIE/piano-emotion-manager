@@ -3,7 +3,7 @@
  * Envía emails usando SMTP para servidores de email corporativos
  */
 import nodemailer from 'nodemailer';
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { users } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
 
@@ -30,7 +30,7 @@ export class SMTPEmailService {
    */
   static async getUserSMTPConfig(userId: string): Promise<SMTPConfig | null> {
     try {
-      const user = await db.query.users.findFirst({
+      const user = await getDb().query.users.findFirst({
         where: eq(users.id, userId),
       });
 

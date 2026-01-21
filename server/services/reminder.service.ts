@@ -2,7 +2,7 @@
  * Reminder Service
  * Gestiona recordatorios automáticos para citas y alertas
  */
-import * as db from '../db.js';
+import * as db from '../getDb().js';
 import { 
   appointments,
   alertHistory,
@@ -38,7 +38,7 @@ export class ReminderService {
   static async sendAppointmentReminders(
     config: ReminderConfig = {}
   ): Promise<ReminderResult> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         sent: 0,
@@ -113,7 +113,7 @@ export class ReminderService {
     success: boolean;
     error?: string;
   }> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         type: 'appointment',
@@ -270,7 +270,7 @@ export class ReminderService {
   static async sendAlertReminders(
     config: ReminderConfig = {}
   ): Promise<ReminderResult> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         sent: 0,
@@ -336,7 +336,7 @@ export class ReminderService {
     success: boolean;
     error?: string;
   }> {
-    const database = await db.getDb();
+    const database = await getDb().getDb();
     if (!database) {
       return {
         type: 'alert',

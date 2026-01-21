@@ -6,7 +6,7 @@
  * permitiendo incluir automáticamente las piezas usadas en las facturas.
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and, inArray } from 'drizzle-orm';
 import { products, stockMovements } from '@/drizzle/inventory-schema';
 
@@ -82,7 +82,7 @@ export class InvoiceIntegrationService {
   ): Promise<InvoiceProductLine[]> {
     const productIds = productInputs.map((p) => p.productId);
 
-    const productRecords = await db.query.products.findMany({
+    const productRecords = await getDb().query.products.findMany({
       where: and(
         inArray(products.id, productIds),
         eq(products.organizationId, this.organizationId)
@@ -131,7 +131,7 @@ export class InvoiceIntegrationService {
   async generateLinesFromServiceMovements(
     serviceId: number
   ): Promise<InvoiceProductLine[]> {
-    const movements = await db.query.stockMovements.findMany({
+    const movements = await getDb().query.stockMovements.findMany({
       where: and(
         eq(stockMovements.organizationId, this.organizationId),
         eq(stockMovements.referenceType, 'service'),
@@ -305,7 +305,7 @@ export class InvoiceIntegrationService {
     totalRevenue: number;
   }>> {
     // Obtener movimientos de tipo service_usage agrupados por producto
-    const movements = await db.query.stockMovements.findMany({
+    const movements = await getDb().query.stockMovements.findMany({
       where: and(
         eq(stockMovements.organizationId, this.organizationId),
         eq(stockMovements.type, 'service_usage')
@@ -372,7 +372,7 @@ export class InvoiceIntegrationService {
     marginAmount: number;
     marginPercent: number;
   }>> {
-    const productRecords = await db.query.products.findMany({
+    const productRecords = await getDb().query.products.findMany({
       where: and(
         inArray(products.id, productIds),
         eq(products.organizationId, this.organizationId)

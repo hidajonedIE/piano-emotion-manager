@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and, or, gte, lte, like, inArray, sql, desc, asc } from 'drizzle-orm';
 import {
   clientProfiles,
@@ -120,7 +120,7 @@ export class ClientService {
    * Obtiene o crea perfil CRM para un cliente
    */
   async getOrCreateProfile(clientId: number): Promise<typeof clientProfiles.$inferSelect> {
-    let profile = await db.query.clientProfiles.findFirst({
+    let profile = await getDb().query.clientProfiles.findFirst({
       where: and(
         eq(clientProfiles.clientId, clientId),
         eq(clientProfiles.organizationId, this.organizationId)
@@ -128,7 +128,7 @@ export class ClientService {
     });
 
     if (!profile) {
-      const [newProfile] = await db.insert(clientProfiles).values({
+      const [newProfile] = await getDb().insert(clientProfiles).values({
         clientId,
         organizationId: this.organizationId,
         status: 'active',
@@ -249,7 +249,7 @@ export class ClientService {
    * Obtiene todas las etiquetas de la organización
    */
   async getTags(): Promise<Array<typeof clientTags.$inferSelect>> {
-    return db.query.clientTags.findMany({
+    return getDb().query.clientTags.findMany({
       where: eq(clientTags.organizationId, this.organizationId),
       orderBy: [asc(clientTags.name)],
     });
@@ -259,7 +259,7 @@ export class ClientService {
    * Crea una nueva etiqueta
    */
   async createTag(name: string, color: string = '#3b82f6', description?: string) {
-    const [tag] = await db.insert(clientTags).values({
+    const [tag] = await getDb().insert(clientTags).values({
       organizationId: this.organizationId,
       name,
       color,
@@ -279,7 +279,7 @@ export class ClientService {
 
     // Asignar nuevas etiquetas
     if (tagIds.length > 0) {
-      await db.insert(clientTagAssignments).values(
+      await getDb().insert(clientTagAssignments).values(
         tagIds.map((tagId) => ({
           clientId,
           tagId,
@@ -293,7 +293,7 @@ export class ClientService {
    * Obtiene etiquetas de un cliente
    */
   async getClientTags(clientId: number): Promise<Array<typeof clientTags.$inferSelect>> {
-    const assignments = await db.query.clientTagAssignments.findMany({
+    const assignments = await getDb().query.clientTagAssignments.findMany({
       where: eq(clientTagAssignments.clientId, clientId),
       with: {
         tag: true,
@@ -311,7 +311,7 @@ export class ClientService {
    * Registra una comunicación con un cliente
    */
   async logCommunication(input: CommunicationInput): Promise<typeof communications.$inferSelect> {
-    const [comm] = await db.insert(communications).values({
+    const [comm] = await getDb().insert(communications).values({
       organizationId: this.organizationId,
       clientId: input.clientId,
       userId: this.userId,
@@ -351,7 +351,7 @@ export class ClientService {
     clientId: number,
     limit: number = 50
   ): Promise<Array<typeof communications.$inferSelect>> {
-    return db.query.communications.findMany({
+    return getDb().query.communications.findMany({
       where: and(
         eq(communications.clientId, clientId),
         eq(communications.organizationId, this.organizationId)
@@ -367,7 +367,7 @@ export class ClientService {
   async getPendingFollowUps(): Promise<Array<typeof communications.$inferSelect>> {
     const today = new Date().toISOString().split('T')[0];
 
-    return db.query.communications.findMany({
+    return getDb().query.communications.findMany({
       where: and(
         eq(communications.organizationId, this.organizationId),
         eq(communications.requiresFollowUp, true),
@@ -385,7 +385,7 @@ export class ClientService {
    * Crea una tarea CRM
    */
   async createTask(input: TaskInput): Promise<typeof crmTasks.$inferSelect> {
-    const [task] = await db.insert(crmTasks).values({
+    const [task] = await getDb().insert(crmTasks).values({
       organizationId: this.organizationId,
       clientId: input.clientId,
       assignedTo: input.assignedTo || this.userId,
@@ -417,7 +417,7 @@ export class ClientService {
       conditions.push(eq(crmTasks.assignedTo, assignedTo));
     }
 
-    return db.query.crmTasks.findMany({
+    return getDb().query.crmTasks.findMany({
       where: and(...conditions),
       orderBy: [asc(crmTasks.dueDate), desc(crmTasks.priority)],
     });
@@ -450,7 +450,7 @@ export class ClientService {
    * Obtiene clientes de un segmento
    */
   async getSegmentClients(segmentId: number): Promise<number[]> {
-    const segment = await db.query.clientSegments.findFirst({
+    const segment = await getDb().query.clientSegments.findFirst({
       where: and(
         eq(clientSegments.id, segmentId),
         eq(clientSegments.organizationId, this.organizationId)
@@ -472,7 +472,7 @@ export class ClientService {
     filters: ClientFilters,
     description?: string
   ): Promise<typeof clientSegments.$inferSelect> {
-    const [segment] = await db.insert(clientSegments).values({
+    const [segment] = await getDb().insert(clientSegments).values({
       organizationId: this.organizationId,
       createdBy: this.userId,
       name,

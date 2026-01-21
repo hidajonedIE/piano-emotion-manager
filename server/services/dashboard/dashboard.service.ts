@@ -172,7 +172,7 @@ export class DashboardService {
    * Obtiene todos los layouts de un usuario
    */
   async getUserLayouts(userId: string, organizationId: string): Promise<DashboardLayout[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT l.*, 
         (SELECT json_agg(w.*) FROM dashboard_widgets w WHERE w.layout_id = l.id) as widgets
       FROM dashboard_layouts l
@@ -190,7 +190,7 @@ export class DashboardService {
    * Obtiene un layout por ID
    */
   async getLayout(layoutId: string): Promise<DashboardLayout | null> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT l.*, 
         (SELECT json_agg(w.*) FROM dashboard_widgets w WHERE w.layout_id = l.id ORDER BY w.position_y, w.position_x) as widgets
       FROM dashboard_layouts l
@@ -222,13 +222,13 @@ export class DashboardService {
   ): Promise<string> {
     // Si es default, quitar default de otros layouts
     if (data.isDefault) {
-      await this.db.execute(`
+      await this.getDb().execute(`
         UPDATE dashboard_layouts SET is_default = false
         WHERE user_id = $1 AND organization_id = $2
       `, [userId, organizationId]);
     }
 
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       INSERT INTO dashboard_layouts (user_id, organization_id, name, description, columns, row_height, is_default)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id
@@ -277,7 +277,7 @@ export class DashboardService {
     updates.push(`updated_at = NOW()`);
     values.push(layoutId);
 
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE dashboard_layouts SET ${updates.join(', ')}
       WHERE id = $${paramIndex}
     `, values);
@@ -287,19 +287,19 @@ export class DashboardService {
    * Elimina un layout
    */
   async deleteLayout(layoutId: string): Promise<void> {
-    await this.db.execute(`DELETE FROM dashboard_layouts WHERE id = $1`, [layoutId]);
+    await this.getDb().execute(`DELETE FROM dashboard_layouts WHERE id = $1`, [layoutId]);
   }
 
   /**
    * Establece un layout como predeterminado
    */
   async setDefaultLayout(userId: string, organizationId: string, layoutId: string): Promise<void> {
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE dashboard_layouts SET is_default = false
       WHERE user_id = $1 AND organization_id = $2
     `, [userId, organizationId]);
 
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE dashboard_layouts SET is_default = true
       WHERE id = $1
     `, [layoutId]);
@@ -313,7 +313,7 @@ export class DashboardService {
    * Añade un widget a un layout
    */
   async addWidget(layoutId: string, widget: Omit<Widget, 'id'>): Promise<string> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       INSERT INTO dashboard_widgets 
       (layout_id, type, title, size, position_x, position_y, width, height, config, is_visible, refresh_interval)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -333,7 +333,7 @@ export class DashboardService {
     ]);
 
     // Actualizar timestamp del layout
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE dashboard_layouts SET updated_at = NOW() WHERE id = $1
     `, [layoutId]);
 
@@ -388,7 +388,7 @@ export class DashboardService {
     updates.push(`updated_at = NOW()`);
     values.push(widgetId);
 
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE dashboard_widgets SET ${updates.join(', ')}
       WHERE id = $${paramIndex}
     `, values);
@@ -399,7 +399,7 @@ export class DashboardService {
    */
   async updateWidgetPositions(widgets: Array<{ id: string; positionX: number; positionY: number }>): Promise<void> {
     for (const widget of widgets) {
-      await this.db.execute(`
+      await this.getDb().execute(`
         UPDATE dashboard_widgets SET position_x = $1, position_y = $2, updated_at = NOW()
         WHERE id = $3
       `, [widget.positionX, widget.positionY, widget.id]);
@@ -410,7 +410,7 @@ export class DashboardService {
    * Elimina un widget
    */
   async deleteWidget(widgetId: string): Promise<void> {
-    await this.db.execute(`DELETE FROM dashboard_widgets WHERE id = $1`, [widgetId]);
+    await this.getDb().execute(`DELETE FROM dashboard_widgets WHERE id = $1`, [widgetId]);
   }
 
   // ============================================
@@ -434,7 +434,7 @@ export class DashboardService {
     }
 
     // Eliminar widgets existentes
-    await this.db.execute(`DELETE FROM dashboard_widgets WHERE layout_id = $1`, [layoutId]);
+    await this.getDb().execute(`DELETE FROM dashboard_widgets WHERE layout_id = $1`, [layoutId]);
 
     // Añadir widgets de la plantilla
     for (const widget of template.widgets) {
@@ -452,7 +452,7 @@ export class DashboardService {
     }
 
     // Actualizar columnas del layout
-    await this.db.execute(`
+    await this.getDb().execute(`
       UPDATE dashboard_layouts SET columns = $1, updated_at = NOW() WHERE id = $2
     `, [template.columns, layoutId]);
   }
@@ -518,7 +518,7 @@ export class DashboardService {
 
     switch (metric) {
       case 'monthly_revenue':
-        const revenueResult = await this.db.execute(`
+        const revenueResult = await this.getDb().execute(`
           SELECT 
             COALESCE(SUM(CASE WHEN created_at >= $2 THEN total ELSE 0 END), 0) as current,
             COALESCE(SUM(CASE WHEN created_at >= $3 AND created_at <= $4 THEN total ELSE 0 END), 0) as previous
@@ -530,7 +530,7 @@ export class DashboardService {
         break;
 
       case 'services_count':
-        const servicesResult = await this.db.execute(`
+        const servicesResult = await this.getDb().execute(`
           SELECT 
             COUNT(CASE WHEN created_at >= $2 THEN 1 END) as current,
             COUNT(CASE WHEN created_at >= $3 AND created_at <= $4 THEN 1 END) as previous
@@ -542,7 +542,7 @@ export class DashboardService {
         break;
 
       case 'active_clients':
-        const clientsResult = await this.db.execute(`
+        const clientsResult = await this.getDb().execute(`
           SELECT COUNT(*) as count FROM clients WHERE organization_id = $1
         `, [organizationId]);
         currentValue = parseInt(clientsResult.rows?.[0]?.count) || 0;
@@ -584,7 +584,7 @@ export class DashboardService {
   }
 
   private async getRecentClients(organizationId: string, limit: number): Promise<RecentClient[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT id, name, email, phone, created_at
       FROM clients
       WHERE organization_id = $1
@@ -596,7 +596,7 @@ export class DashboardService {
   }
 
   private async getRecentServices(organizationId: string, limit: number): Promise<RecentService[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT s.id, s.type, s.status, s.created_at, c.name as client_name
       FROM services s
       LEFT JOIN clients c ON s.client_id = c.id
@@ -609,7 +609,7 @@ export class DashboardService {
   }
 
   private async getRecentInvoices(organizationId: string, limit: number): Promise<RecentInvoice[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT i.id, i.invoice_number, i.total, i.status, i.created_at, c.name as client_name
       FROM invoices i
       LEFT JOIN clients c ON i.client_id = c.id
@@ -622,7 +622,7 @@ export class DashboardService {
   }
 
   private async getUpcomingAppointments(organizationId: string, limit: number): Promise<UpcomingAppointment[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT a.id, a.date, a.time, a.type, c.name as client_name, c.address
       FROM appointments a
       LEFT JOIN clients c ON a.client_id = c.id
@@ -655,7 +655,7 @@ export class DashboardService {
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     }
 
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         COALESCE(SUM(total), 0) as total,
         COUNT(*) as count,
@@ -669,7 +669,7 @@ export class DashboardService {
   }
 
   private async getPaymentStatus(organizationId: string): Promise<PaymentStatusData> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid,
         COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
@@ -683,7 +683,7 @@ export class DashboardService {
   }
 
   private async getInventoryAlerts(organizationId: string): Promise<InventoryAlert[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT id, name, current_stock, min_stock
       FROM inventory_items
       WHERE organization_id = $1 AND current_stock <= min_stock
@@ -695,7 +695,7 @@ export class DashboardService {
   }
 
   private async getTeamActivity(organizationId: string, limit: number): Promise<TeamActivityMember[]> {
-    const result = await this.db.execute(`
+    const result = await this.getDb().execute(`
       SELECT 
         tm.id,
         tm.name,

@@ -6,7 +6,7 @@
  * y el estado de los técnicos.
  */
 
-import { db } from '@/drizzle/db';
+import { getDb } from '@/drizzle/db';
 import { eq, and, desc, gte, sql, lte } from 'drizzle-orm';
 import { users } from '@/drizzle/schema';
 import { 
@@ -143,7 +143,7 @@ export class DistributorService {
           .where(eq(distributorWooCommerceConfig.id, existing.id));
       } else {
         // Insertar
-        await db.insert(distributorWooCommerceConfig).values({
+        await getDb().insert(distributorWooCommerceConfig).values({
           ...configData,
           distributorId: this.distributorId,
         });
@@ -346,7 +346,7 @@ export class DistributorService {
           .set(configData)
           .where(eq(distributorPremiumConfig.id, existing.id));
       } else {
-        await db.insert(distributorPremiumConfig).values({
+        await getDb().insert(distributorPremiumConfig).values({
           ...configData,
           distributorId: this.distributorId,
         });
@@ -478,7 +478,7 @@ export class DistributorService {
           .where(eq(technicianAccountStatus.id, currentStatus.id));
       } else {
         // Crear nuevo registro
-        await db.insert(technicianAccountStatus).values({
+        await getDb().insert(technicianAccountStatus).values({
           userId,
           distributorId: this.distributorId,
           accountTier: tier,
@@ -608,7 +608,7 @@ export class DistributorService {
             ));
 
           // Registrar log
-          await db.insert(purchaseVerificationLogs).values({
+          await getDb().insert(purchaseVerificationLogs).values({
             logId: crypto.randomUUID(),
             userId,
             distributorId: this.distributorId,
@@ -828,7 +828,7 @@ DistributorService.prototype.saveModuleConfig = async function(config: Partial<M
         .set(configData)
         .where(eq(distributorModuleConfig.id, existing.id));
     } else {
-      await db.insert(distributorModuleConfig).values({
+      await getDb().insert(distributorModuleConfig).values({
         ...configData,
         distributorId: this.distributorId,
       });

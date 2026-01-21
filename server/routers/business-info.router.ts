@@ -4,11 +4,11 @@
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc.js";
-import * as db from "../db.js";
+import * as db from "../getDb().js";
 import { addPartnerToInsert } from "../utils/multi-tenant.js";
 
 export const businessInfoRouter = router({
-  get: protectedProcedure.query(({ ctx }) => db.getBusinessInfo(ctx.user.email)),
+  get: protectedProcedure.query(({ ctx }) => getDb().getBusinessInfo(ctx.user.email)),
   
   save: protectedProcedure
     .input(z.object({
@@ -21,5 +21,5 @@ export const businessInfoRouter = router({
       email: z.string().optional().nullable(),
       bankAccount: z.string().optional().nullable(),
     }))
-    .mutation(({ ctx, input }) => db.saveBusinessInfo({ ...input, odId: ctx.user.email, partnerId: ctx.partnerId })),
+    .mutation(({ ctx, input }) => getDb().saveBusinessInfo({ ...input, odId: ctx.user.email, partnerId: ctx.partnerId })),
 });

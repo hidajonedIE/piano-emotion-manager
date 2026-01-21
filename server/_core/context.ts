@@ -3,7 +3,7 @@ import type { User } from "../../drizzle/schema.js";
 import type { OrganizationContext } from "../middleware/organization-context.js";
 import { eq } from "drizzle-orm";
 import { verifyClerkSession, getOrCreateUserFromClerk } from "./clerk.js";
-import { getDb } from "../../server/db.js";
+import { getDb } from "../../server/getDb().js";
 import { users } from "../../drizzle/schema.js";
 import * as jose from "jose";
 
@@ -84,7 +84,7 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
       const db = await getDb();
       if (db) {
         // Get the first user from database for stress testing
-        const [testUser] = await db.select().from(users).limit(1);
+        const [testUser] = await getDb().select().from(users).limit(1);
         if (testUser) {
           console.log('[Stress Test] Using test user:', { id: testUser.id, email: testUser.email });
           return { 
@@ -149,7 +149,7 @@ export async function createContext(opts: CreateContextOptions): Promise<TrpcCon
           } else if (partnerId) {
             // Try to get partner's default language
             const { partners } = await import('../../drizzle/schema.js');
-            const [partner] = await db.select().from(partners).where(eq(partners.id, partnerId)).limit(1);
+            const [partner] = await getDb().select().from(partners).where(eq(partners.id, partnerId)).limit(1);
             if (partner?.defaultLanguage) {
               language = partner.defaultLanguage;
             }

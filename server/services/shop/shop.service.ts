@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { db } from '../../../drizzle/db.js';
+import { getDb } from '../../../drizzle/getDb().js';
 import { eq, and, desc, asc, sql, inArray } from 'drizzle-orm';
 import {
   shops,
@@ -98,7 +98,7 @@ export class ShopService {
   async checkShopAccess(shopId: number): Promise<ShopAccessResult> {
     // Los roles owner y admin siempre tienen acceso completo
     if (this.userRole === 'owner' || this.userRole === 'admin') {
-      const shop = await db.query.shops.findFirst({
+      const shop = await getDb().query.shops.findFirst({
         where: and(
           eq(shops.id, shopId),
           eq(shops.organizationId, this.organizationId)
@@ -116,14 +116,14 @@ export class ShopService {
     }
 
     // Buscar permisos específicos del rol
-    const permission = await db.query.shopRolePermissions.findFirst({
+    const permission = await getDb().query.shopRolePermissions.findFirst({
       where: and(
         eq(shopRolePermissions.shopId, shopId),
         eq(shopRolePermissions.role, this.userRole)
       ),
     });
 
-    const shop = await db.query.shops.findFirst({
+    const shop = await getDb().query.shops.findFirst({
       where: eq(shops.id, shopId),
     });
 
@@ -181,7 +181,7 @@ export class ShopService {
       throw new Error('No tienes permiso para crear tiendas');
     }
 
-    const [shop] = await db.insert(shops).values({
+    const [shop] = await getDb().insert(shops).values({
       organizationId: this.organizationId,
       name: input.name,
       type: input.type,
@@ -219,7 +219,7 @@ export class ShopService {
       { role: 'viewer', canView: true, canOrder: false, canApprove: false },
     ];
 
-    await db.insert(shopRolePermissions).values(
+    await getDb().insert(shopRolePermissions).values(
       defaultPermissions.map((p) => ({
         shopId,
         role: p.role,
@@ -240,11 +240,11 @@ export class ShopService {
     }
 
     // Eliminar permisos existentes
-    await db.delete(shopRolePermissions).where(eq(shopRolePermissions.shopId, shopId));
+    await getDb().delete(shopRolePermissions).where(eq(shopRolePermissions.shopId, shopId));
 
     // Insertar nuevos permisos
     if (permissions.length > 0) {
-      await db.insert(shopRolePermissions).values(
+      await getDb().insert(shopRolePermissions).values(
         permissions.map((p) => ({
           shopId,
           role: p.role,
@@ -261,7 +261,7 @@ export class ShopService {
    * Obtiene tiendas accesibles para el usuario
    */
   async getAccessibleShops(): Promise<Array<typeof shops.$inferSelect & { access: ShopAccessResult }>> {
-    const allShops = await db.query.shops.findMany({
+    const allShops = await getDb().query.shops.findMany({
       where: and(
         eq(shops.organizationId, this.organizationId),
         eq(shops.isActive, true)
@@ -315,7 +315,7 @@ export class ShopService {
     const pageSize = options.pageSize || 20;
 
     const [products, countResult] = await Promise.all([
-      db.query.shopProducts.findMany({
+      getDb().query.shopProducts.findMany({
         where: and(...conditions),
         orderBy: [asc(shopProducts.name)],
         limit: pageSize,
@@ -341,7 +341,7 @@ export class ShopService {
    * Obtiene o crea el carrito del usuario
    */
   async getOrCreateCart(shopId: number): Promise<typeof shopCarts.$inferSelect> {
-    let cart = await db.query.shopCarts.findFirst({
+    let cart = await getDb().query.shopCarts.findFirst({
       where: and(
         eq(shopCarts.userId, this.userId),
         eq(shopCarts.shopId, shopId),
@@ -350,7 +350,7 @@ export class ShopService {
     });
 
     if (!cart) {
-      [cart] = await db.insert(shopCarts).values({
+      [cart] = await getDb().insert(shopCarts).values({
         organizationId: this.organizationId,
         userId: this.userId,
         shopId,
@@ -372,7 +372,7 @@ export class ShopService {
     const cart = await this.getOrCreateCart(shopId);
 
     // Verificar si el producto ya está en el carrito
-    const existingItem = await db.query.shopCartItems.findFirst({
+    const existingItem = await getDb().query.shopCartItems.findFirst({
       where: and(
         eq(shopCartItems.cartId, cart.id),
         eq(shopCartItems.productId, productId)
@@ -388,7 +388,7 @@ export class ShopService {
         })
         .where(eq(shopCartItems.id, existingItem.id));
     } else {
-      await db.insert(shopCartItems).values({
+      await getDb().insert(shopCartItems).values({
         cartId: cart.id,
         productId,
         quantity,
@@ -406,7 +406,7 @@ export class ShopService {
   }> {
     const cart = await this.getOrCreateCart(shopId);
 
-    const items = await db.query.shopCartItems.findMany({
+    const items = await getDb().query.shopCartItems.findMany({
       where: eq(shopCartItems.cartId, cart.id),
       with: {
         product: true,
@@ -455,7 +455,7 @@ export class ShopService {
     }
 
     // Crear pedido
-    const [order] = await db.insert(shopOrders).values({
+    const [order] = await getDb().insert(shopOrders).values({
       organizationId: this.organizationId,
       shopId,
       createdBy: this.userId,
@@ -469,7 +469,7 @@ export class ShopService {
     }).returning();
 
     // Crear líneas de pedido
-    await db.insert(shopOrderLines).values(
+    await getDb().insert(shopOrderLines).values(
       items.map((item) => ({
         orderId: order.id,
         productId: item.productId,
@@ -484,7 +484,7 @@ export class ShopService {
 
     // Vaciar carrito
     const cart = await this.getOrCreateCart(shopId);
-    await db.delete(shopCartItems).where(eq(shopCartItems.cartId, cart.id));
+    await getDb().delete(shopCartItems).where(eq(shopCartItems.cartId, cart.id));
 
     return order;
   }
@@ -493,7 +493,7 @@ export class ShopService {
    * Aprueba un pedido (solo admin/owner o con permiso canApprove)
    */
   async approveOrder(orderId: number): Promise<void> {
-    const order = await db.query.shopOrders.findFirst({
+    const order = await getDb().query.shopOrders.findFirst({
       where: and(
         eq(shopOrders.id, orderId),
         eq(shopOrders.organizationId, this.organizationId)
@@ -525,7 +525,7 @@ export class ShopService {
    * Rechaza un pedido
    */
   async rejectOrder(orderId: number, reason: string): Promise<void> {
-    const order = await db.query.shopOrders.findFirst({
+    const order = await getDb().query.shopOrders.findFirst({
       where: and(
         eq(shopOrders.id, orderId),
         eq(shopOrders.organizationId, this.organizationId)
@@ -574,7 +574,7 @@ export class ShopService {
     const pageSize = options.pageSize || 20;
 
     const [orders, countResult] = await Promise.all([
-      db.query.shopOrders.findMany({
+      getDb().query.shopOrders.findMany({
         where: and(...conditions),
         orderBy: [desc(shopOrders.createdAt)],
         limit: pageSize,
@@ -603,7 +603,7 @@ export class ShopService {
     // Solo admin/owner o usuarios con permiso canApprove
     if (this.userRole !== 'owner' && this.userRole !== 'admin') {
       // Verificar si tiene permiso en alguna tienda
-      const permissions = await db.query.shopRolePermissions.findMany({
+      const permissions = await getDb().query.shopRolePermissions.findMany({
         where: and(
           eq(shopRolePermissions.role, this.userRole),
           eq(shopRolePermissions.canApprove, true)
@@ -615,7 +615,7 @@ export class ShopService {
       }
     }
 
-    return db.query.shopOrders.findMany({
+    return getDb().query.shopOrders.findMany({
       where: and(
         eq(shopOrders.organizationId, this.organizationId),
         eq(shopOrders.approvalStatus, 'pending')

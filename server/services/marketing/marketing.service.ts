@@ -1,4 +1,4 @@
-import { db } from '../../db.js';
+import { db } from '../../getDb().js';
 
 interface RecipientFilters {
   tags?: string[];
@@ -247,7 +247,7 @@ export class MarketingService {
    * Obtener todas las plantillas de una organización
    */
   async getTemplates(organizationId: number) {
-    return db.select()
+    return getDb().select()
       .from(messageTemplates)
       .where(eq(messageTemplates.organizationId, organizationId))
       .orderBy(messageTemplates.type, messageTemplates.name);
@@ -257,7 +257,7 @@ export class MarketingService {
    * Obtener plantilla por ID
    */
   async getTemplateById(id: number, organizationId: number) {
-    const [template] = await db.select()
+    const [template] = await getDb().select()
       .from(messageTemplates)
       .where(and(
         eq(messageTemplates.id, id),
@@ -270,7 +270,7 @@ export class MarketingService {
    * Obtener plantilla por defecto de un tipo
    */
   async getDefaultTemplate(organizationId: number, type: MessageTemplateType) {
-    const [template] = await db.select()
+    const [template] = await getDb().select()
       .from(messageTemplates)
       .where(and(
         eq(messageTemplates.organizationId, organizationId),
@@ -293,7 +293,7 @@ export class MarketingService {
   }) {
     // Si es default, quitar el default de otras plantillas del mismo tipo
     if (data.isDefault) {
-      await db.update(messageTemplates)
+      await getDb().update(messageTemplates)
         .set({ isDefault: false })
         .where(and(
           eq(messageTemplates.organizationId, data.organizationId),
@@ -301,7 +301,7 @@ export class MarketingService {
         ));
     }
     
-    const [result] = await db.insert(messageTemplates).values({
+    const [result] = await getDb().insert(messageTemplates).values({
       ...data,
       availableVariables: templateVariables[data.type],
     });
@@ -320,12 +320,12 @@ export class MarketingService {
   }) {
     // Si se establece como default, quitar el default de otras
     if (data.isDefault) {
-      const [template] = await db.select()
+      const [template] = await getDb().select()
         .from(messageTemplates)
         .where(eq(messageTemplates.id, id));
       
       if (template) {
-        await db.update(messageTemplates)
+        await getDb().update(messageTemplates)
           .set({ isDefault: false })
           .where(and(
             eq(messageTemplates.organizationId, organizationId),
@@ -334,7 +334,7 @@ export class MarketingService {
       }
     }
     
-    await db.update(messageTemplates)
+    await getDb().update(messageTemplates)
       .set(data)
       .where(and(
         eq(messageTemplates.id, id),
@@ -346,7 +346,7 @@ export class MarketingService {
    * Eliminar plantilla
    */
   async deleteTemplate(id: number, organizationId: number) {
-    await db.delete(messageTemplates)
+    await getDb().delete(messageTemplates)
       .where(and(
         eq(messageTemplates.id, id),
         eq(messageTemplates.organizationId, organizationId)
@@ -379,7 +379,7 @@ export class MarketingService {
    * Obtener todas las campañas de una organización
    */
   async getCampaigns(organizationId: number) {
-    return db.select()
+    return getDb().select()
       .from(marketingCampaigns)
       .where(eq(marketingCampaigns.organizationId, organizationId))
       .orderBy(desc(marketingCampaigns.createdAt));
@@ -389,7 +389,7 @@ export class MarketingService {
    * Obtener campaña por ID
    */
   async getCampaignById(id: number, organizationId: number) {
-    const [campaign] = await db.select()
+    const [campaign] = await getDb().select()
       .from(marketingCampaigns)
       .where(and(
         eq(marketingCampaigns.id, id),
@@ -409,7 +409,7 @@ export class MarketingService {
     recipientFilters?: RecipientFilters;
     createdBy?: number;
   }) {
-    const [result] = await db.insert(marketingCampaigns).values({
+    const [result] = await getDb().insert(marketingCampaigns).values({
       ...data,
       status: 'draft',
     });
@@ -427,7 +427,7 @@ export class MarketingService {
     recipientFilters?: RecipientFilters;
     status?: CampaignStatus;
   }) {
-    await db.update(marketingCampaigns)
+    await getDb().update(marketingCampaigns)
       .set(data)
       .where(and(
         eq(marketingCampaigns.id, id),
@@ -448,7 +448,7 @@ export class MarketingService {
     isActive?: boolean;
   }) {
     // Consulta base de clientes
-    let query = db.select({
+    let query = getDb().select({
       id: clients.id,
       firstName: clients.firstName,
       lastName: clients.lastName,
@@ -484,7 +484,7 @@ export class MarketingService {
     );
     
     // Limpiar destinatarios anteriores
-    await db.delete(campaignRecipients)
+    await getDb().delete(campaignRecipients)
       .where(eq(campaignRecipients.campaignId, campaignId));
     
     // Crear nuevos destinatarios
@@ -499,7 +499,7 @@ export class MarketingService {
         // TODO: Añadir más variables según el contexto
       });
       
-      await db.insert(campaignRecipients).values({
+      await getDb().insert(campaignRecipients).values({
         campaignId,
         clientId: client.id,
         generatedMessage: message,
@@ -509,7 +509,7 @@ export class MarketingService {
     }
     
     // Actualizar contador de destinatarios
-    await db.update(marketingCampaigns)
+    await getDb().update(marketingCampaigns)
       .set({ totalRecipients: order })
       .where(eq(marketingCampaigns.id, campaignId));
     
@@ -526,7 +526,7 @@ export class MarketingService {
       conditions.push(eq(campaignRecipients.status, status));
     }
     
-    return db.select({
+    return getDb().select({
       recipient: campaignRecipients,
       client: {
         id: clients.id,
@@ -545,7 +545,7 @@ export class MarketingService {
    * Obtener siguiente destinatario pendiente
    */
   async getNextPendingRecipient(campaignId: number) {
-    const [recipient] = await db.select({
+    const [recipient] = await getDb().select({
       recipient: campaignRecipients,
       client: {
         id: clients.id,
@@ -570,7 +570,7 @@ export class MarketingService {
    * Marcar destinatario como enviado
    */
   async markRecipientAsSent(recipientId: number, sentBy: number) {
-    await db.update(campaignRecipients)
+    await getDb().update(campaignRecipients)
       .set({
         status: 'sent',
         sentAt: new Date(),
@@ -579,12 +579,12 @@ export class MarketingService {
       .where(eq(campaignRecipients.id, recipientId));
     
     // Actualizar contador de la campaña
-    const [recipient] = await db.select()
+    const [recipient] = await getDb().select()
       .from(campaignRecipients)
       .where(eq(campaignRecipients.id, recipientId));
     
     if (recipient) {
-      await db.update(marketingCampaigns)
+      await getDb().update(marketingCampaigns)
         .set({ sentCount: sql`sent_count + 1` })
         .where(eq(marketingCampaigns.id, recipient.campaignId));
     }
@@ -594,7 +594,7 @@ export class MarketingService {
    * Marcar destinatario como saltado
    */
   async markRecipientAsSkipped(recipientId: number, reason: string) {
-    await db.update(campaignRecipients)
+    await getDb().update(campaignRecipients)
       .set({
         status: 'skipped',
         notes: reason,
@@ -634,7 +634,7 @@ export class MarketingService {
     recipientPhone: string;
     sentBy: number;
   }) {
-    await db.insert(messageHistory).values({
+    await getDb().insert(messageHistory).values({
       ...data,
       channel: 'whatsapp',
       status: 'sent',
@@ -645,7 +645,7 @@ export class MarketingService {
    * Obtener historial de mensajes de un cliente
    */
   async getClientMessageHistory(clientId: number, organizationId: number) {
-    return db.select()
+    return getDb().select()
       .from(messageHistory)
       .where(and(
         eq(messageHistory.clientId, clientId),

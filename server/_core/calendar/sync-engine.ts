@@ -7,7 +7,7 @@
 
 import * as googleCalendar from './google-calendar.js';
 import * as microsoftCalendar from './microsoft-calendar.js';
-import * as db from './db.js';
+import * as db from './getDb().js';
 import type { CalendarConnection, ExternalEvent, SyncResult } from './types.js';
 import { nanoid } from 'nanoid';
 
@@ -20,7 +20,7 @@ export async function syncAppointmentToExternal(
 ): Promise<SyncResult> {
   try {
     // Check if already synced
-    const existingSync = await db.getSyncEventByAppointmentAndConnection(
+    const existingSync = await getDb().getSyncEventByAppointmentAndConnection(
       appointment.id,
       connection.id
     );
@@ -52,7 +52,7 @@ export async function syncAppointmentToExternal(
       }
       
       // Update sync event
-      await db.updateSyncEvent(existingSync.id, {
+      await getDb().updateSyncEvent(existingSync.id, {
         syncStatus: 'synced',
         lastSyncedAt: new Date(),
         errorMessage: null,
@@ -66,7 +66,7 @@ export async function syncAppointmentToExternal(
       }
       
       // Create sync event record
-      await db.createSyncEvent({
+      await getDb().createSyncEvent({
         id: nanoid(),
         connectionId: connection.id,
         appointmentId: appointment.id,
@@ -80,7 +80,7 @@ export async function syncAppointmentToExternal(
     }
     
     // Log success
-    await db.createSyncLog({
+    await getDb().createSyncLog({
       connectionId: connection.id,
       action: existingSync ? 'update' : 'create',
       direction: 'to_external',
@@ -99,7 +99,7 @@ export async function syncAppointmentToExternal(
     console.error('❌ Error syncing appointment to external:', error);
     
     // Log error
-    await db.createSyncLog({
+    await getDb().createSyncLog({
       connectionId: connection.id,
       action: 'create',
       direction: 'to_external',
@@ -125,7 +125,7 @@ export async function deleteAppointmentFromExternal(
   connection: CalendarConnection
 ): Promise<SyncResult> {
   try {
-    const syncEvent = await db.getSyncEventByAppointmentAndConnection(
+    const syncEvent = await getDb().getSyncEventByAppointmentAndConnection(
       appointmentId,
       connection.id
     );
@@ -142,10 +142,10 @@ export async function deleteAppointmentFromExternal(
     }
     
     // Delete sync event record
-    await db.deleteSyncEvent(syncEvent.id);
+    await getDb().deleteSyncEvent(syncEvent.id);
     
     // Log success
-    await db.createSyncLog({
+    await getDb().createSyncLog({
       connectionId: connection.id,
       action: 'delete',
       direction: 'to_external',
@@ -161,7 +161,7 @@ export async function deleteAppointmentFromExternal(
     console.error('❌ Error deleting appointment from external:', error);
     
     // Log error
-    await db.createSyncLog({
+    await getDb().createSyncLog({
       connectionId: connection.id,
       action: 'delete',
       direction: 'to_external',
@@ -189,7 +189,7 @@ export async function syncExternalEventToPiano(
 ): Promise<SyncResult> {
   try {
     // Check if event is already synced
-    const existingSync = await db.getSyncEventByExternalId(
+    const existingSync = await getDb().getSyncEventByExternalId(
       externalEvent.id,
       connection.id
     );
@@ -200,13 +200,13 @@ export async function syncExternalEventToPiano(
         // Delete appointment in Piano
         // TODO: Call your appointment deletion function
         console.log('📅 Appointment deleted in external calendar:', existingSync.appointmentId);
-        await db.deleteSyncEvent(existingSync.id);
+        await getDb().deleteSyncEvent(existingSync.id);
       } else {
         // Update appointment in Piano
         // TODO: Call your appointment update function
         console.log('📅 Appointment updated in external calendar:', existingSync.appointmentId);
         
-        await db.updateSyncEvent(existingSync.id, {
+        await getDb().updateSyncEvent(existingSync.id, {
           syncStatus: 'synced',
           lastSyncedAt: new Date(),
         });
@@ -217,7 +217,7 @@ export async function syncExternalEventToPiano(
       console.log('📅 New event in external calendar:', externalEvent.id);
       
       // For now, just log it (you'll need to implement appointment creation)
-      await db.createSyncEvent({
+      await getDb().createSyncEvent({
         id: nanoid(),
         connectionId: connection.id,
         appointmentId: null, // Will be set when appointment is created
@@ -231,7 +231,7 @@ export async function syncExternalEventToPiano(
     }
     
     // Log success
-    await db.createSyncLog({
+    await getDb().createSyncLog({
       connectionId: connection.id,
       action: existingSync ? 'update' : 'create',
       direction: 'from_external',
@@ -247,7 +247,7 @@ export async function syncExternalEventToPiano(
     console.error('❌ Error syncing external event to Piano:', error);
     
     // Log error
-    await db.createSyncLog({
+    await getDb().createSyncLog({
       connectionId: connection.id,
       action: 'create',
       direction: 'from_external',
@@ -286,7 +286,7 @@ export async function performFullSync(connection: CalendarConnection): Promise<{
       nextToken = result.nextSyncToken;
       
       // Update sync token
-      await db.updateConnection(connection.id, {
+      await getDb().updateConnection(connection.id, {
         lastSyncToken: nextToken,
         lastSyncAt: new Date(),
       });
@@ -296,7 +296,7 @@ export async function performFullSync(connection: CalendarConnection): Promise<{
       nextToken = result.nextDeltaLink;
       
       // Update delta link
-      await db.updateConnection(connection.id, {
+      await getDb().updateConnection(connection.id, {
         lastDeltaLink: nextToken,
         lastSyncAt: new Date(),
       });
@@ -339,7 +339,7 @@ export async function syncAllAppointmentsForUser(
   userId: string,
   appointments: any[] // Type from your appointments schema
 ): Promise<void> {
-  const connections = await db.getConnectionsByUserId(userId);
+  const connections = await getDb().getConnectionsByUserId(userId);
   
   for (const connection of connections) {
     if (!connection.syncEnabled) continue;
