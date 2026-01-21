@@ -345,7 +345,7 @@ export default function PredictionsScreen() {
         </ThemedText>
       </View>
 
-      {data.workload.map((week, index) => {
+      {data.workload.filter(week => week && typeof week.scheduled === 'number' && typeof week.estimated === 'number').map((week, index) => {
         const percentage = (week.scheduled / week.estimated) * 100;
         return (
           <View key={index} style={[styles.workloadCard, { backgroundColor: cardBg, borderColor: border }]}>
