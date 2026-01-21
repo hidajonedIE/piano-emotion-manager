@@ -68,20 +68,17 @@ export default function CustomSidebar() {
       return pathname === '/(drawer)' || pathname === '/' || pathname === '' || pathname === '/index';
     }
     
-    // Normalizar pathname y route eliminando trailing slashes
-    const normalizedPathname = pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname;
-    const normalizedRoute = route.endsWith('/') && route !== '/' ? route.slice(0, -1) : route;
+    // Comparación directa
+    if (pathname === route) {
+      return true;
+    }
     
-    // Extraer el nombre de la ruta sin el prefijo (drawer) o (tabs)
-    const getRouteName = (r: string) => {
-      // Eliminar prefijos como /(drawer)/ o /(tabs)/
-      return r.replace(/^\/(drawer|tabs)\//, '/');
-    };
+    // Si el pathname empieza con la ruta seguida de /
+    if (pathname.startsWith(route + '/')) {
+      return true;
+    }
     
-    const pathName = getRouteName(normalizedPathname);
-    const routeName = getRouteName(normalizedRoute);
-    
-    return pathName === routeName || pathName.startsWith(routeName + '/');
+    return false;
   };
 
   return (
