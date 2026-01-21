@@ -3,7 +3,9 @@
  * Piano Emotion Manager
  */
 
-import { db } from '../../../drizzle/db.js';
+import { getDb } from '../../../drizzle/db.js';
+
+const db = getDb();
 import { eq, and, gte, lte, desc, asc, sql, sum } from 'drizzle-orm';
 import {
   financialAccounts,
