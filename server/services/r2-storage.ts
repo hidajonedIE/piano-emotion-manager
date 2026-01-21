@@ -242,7 +242,7 @@ export async function r2Upload(
     Metadata: metadata,
   });
   
-  await client.send(command);
+  await (client as any).send(command);
   
   // Generate public URL
   const publicUrl = `${config.endpoint}/${normalizedKey}`;
@@ -269,7 +269,7 @@ export async function r2Delete(key: string): Promise<void> {
     Key: normalizedKey,
   });
   
-  await client.send(command);
+  await (client as any).send(command);
 }
 
 /**
