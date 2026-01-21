@@ -67,7 +67,16 @@ export default function CustomSidebar() {
     if (route === '/(drawer)') {
       return pathname === '/(drawer)' || pathname === '/' || pathname === '';
     }
-    return pathname === route || pathname.startsWith(route + '/');
+    
+    // Comparación directa
+    if (pathname === route || pathname.startsWith(route + '/')) {
+      return true;
+    }
+    
+    // Comparar pathname con route sin el prefijo /(drawer)/ o /(tabs)/
+    // Por ejemplo: pathname='/agenda' y route='/(drawer)/agenda'
+    const routeWithoutPrefix = route.replace(/^\/(drawer|tabs)/, '');
+    return pathname === routeWithoutPrefix || pathname.startsWith(routeWithoutPrefix + '/');
   };
 
   return (
