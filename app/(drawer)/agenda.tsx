@@ -1,6 +1,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter, usePathname } from 'expo-router';
-import { useMemo, useState, useEffect, useLayoutEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -89,8 +90,9 @@ export default function AgendaScreen() {
 
   const [showCalendar, setShowCalendar] = useState(true);
 
-  // Configurar header con acciones - useLayoutEffect para actualización inmediata
-  useLayoutEffect(() => {
+  // Configurar header con acciones - useFocusEffect para actualización al recibir foco
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: 'Agenda',
       subtitle: `${pendingCount} ${pendingCount === 1 ? 'cita pendiente' : 'citas pendientes'}`,
@@ -119,7 +121,8 @@ export default function AgendaScreen() {
         </View>
       ),
     });
-  }, [pendingCount, showCalendar, accent, router, setHeaderConfig, pathname]);
+    }, [pendingCount, showCalendar, accent, router, setHeaderConfig])
+  );
 
   // Convertir citas a eventos para el calendario
   const calendarEvents = useMemo(() => {

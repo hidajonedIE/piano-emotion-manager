@@ -1,6 +1,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,14 +46,16 @@ export default function InventoryScreen() {
   const success = useThemeColor({}, 'success');
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: t('navigation.inventory'),
       subtitle: `${items.length} ${items.length === 1 ? 'artículo' : 'artículos'}`,
       icon: 'shippingbox.fill',
       showBackButton: false,
     });
-  }, [items.length, t, setHeaderConfig]);
+    }, [items.length, t, setHeaderConfig])
+  );
 
   // Filtrar items
   const filteredItems = useMemo(() => {

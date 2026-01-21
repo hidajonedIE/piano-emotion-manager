@@ -14,14 +14,16 @@ export default function ReportsScreen() {
   const { setHeaderConfig } = useHeader();
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: 'Reportes',
       subtitle: 'Análisis y estadísticas del negocio',
       icon: 'chart.bar.fill',
       showBackButton: false,
     });
-  }, [setHeaderConfig]);
+    }, [setHeaderConfig])
+  );
 
   return (
     <View style={styles.container}>

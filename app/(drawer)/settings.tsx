@@ -25,14 +25,16 @@ export default function SettingsScreen() {
   const { setHeaderConfig } = useHeader();
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: 'Configuración',
       subtitle: 'Ajustes del sistema',
       icon: 'gearshape.fill',
       showBackButton: false,
     });
-  }, [setHeaderConfig]);
+    }, [setHeaderConfig])
+  );
 
   return (
     <View style={styles.container}>

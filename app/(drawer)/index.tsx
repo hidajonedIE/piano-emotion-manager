@@ -65,14 +65,16 @@ export default function DashboardScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: 'Inicio',
       subtitle: 'Panel de control principal',
       icon: 'house.fill',
       showBackButton: false,
     });
-  }, [setHeaderConfig]);
+    }, [setHeaderConfig])
+  );
 
   // Datos
   const { clients } = useClientsData();

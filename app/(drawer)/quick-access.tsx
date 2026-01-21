@@ -71,14 +71,16 @@ export default function QuickAccessScreen() {
   const { visibleShortcuts } = useDashboardPreferences();
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: 'Accesos Rápidos',
       subtitle: 'Accede rápidamente a las funciones principales',
       icon: 'square.grid.2x2.fill',
       showBackButton: false,
     });
-  }, [setHeaderConfig]);
+    }, [setHeaderConfig])
+  );
 
   const handleAction = (action: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

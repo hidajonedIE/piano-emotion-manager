@@ -1,6 +1,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -40,14 +41,16 @@ export default function ServicesScreen() {
   const isDesktop = width >= 1024;
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: t('navigation.services'),
       subtitle: `${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`,
       icon: 'wrench.and.screwdriver.fill',
       showBackButton: false,
     });
-  }, [services.length, t, setHeaderConfig]);
+    }, [services.length, t, setHeaderConfig])
+  );
 
   // Estadísticas por tipo
   const stats = useMemo(() => {

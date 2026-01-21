@@ -100,14 +100,16 @@ export default function AdvancedToolsScreen() {
   const userTier = tierFromHook;
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: 'Herramientas Avanzadas',
       subtitle: 'Funciones premium y avanzadas',
       icon: 'star.fill',
       showBackButton: false,
     });
-  }, [setHeaderConfig]);
+    }, [setHeaderConfig])
+  );
   
   const [upgradeModal, setUpgradeModal] = useState<{ visible: boolean; tier: 'pro' | 'premium' | null }>({
     visible: false,

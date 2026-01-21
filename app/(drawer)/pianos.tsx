@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -52,14 +53,16 @@ export default function PianosScreen() {
   const accent = useThemeColor({}, 'accent');
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: t('navigation.pianos'),
       subtitle: `${totalPianos} ${totalPianos === 1 ? 'piano' : 'pianos'}`,
       icon: 'pianokeys',
       showBackButton: false,
     });
-  }, [totalPianos, t, setHeaderConfig]);
+    }, [totalPianos, t, setHeaderConfig])
+  );
   
   const textSecondary = useThemeColor({}, 'textSecondary');
   const cardBg = useThemeColor({}, 'cardBackground');

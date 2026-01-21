@@ -12,14 +12,16 @@ export default function StoreScreen() {
   const { setHeaderConfig } = useHeader();
 
   // Configurar header
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     setHeaderConfig({
       title: 'Store',
       subtitle: 'Tienda de pianos y accesorios',
       icon: 'cart.fill',
       showBackButton: false,
     });
-  }, [setHeaderConfig]);
+    }, [setHeaderConfig])
+  );
 
   return (
     <View style={styles.container}>
