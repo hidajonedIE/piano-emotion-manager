@@ -340,7 +340,7 @@ importers:
         specifier: ^7.0.3
         version: 7.0.3
       drizzle-kit:
-        specifier: ^0.31.4
+        specifier: ^0.31.6
         version: 0.31.6
       eslint:
         specifier: ^9.25.0

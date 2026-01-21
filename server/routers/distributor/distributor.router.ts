@@ -30,7 +30,7 @@ async function getDistributorIdForUser(userId: number, userEmail: string): Promi
   }
   
   // Create new distributor if not exists
-  const [newDistributor] = await db
+  const result = await db
     .insert(distributors)
     .values({
       name: userEmail.split('@')[0],
@@ -38,7 +38,14 @@ async function getDistributorIdForUser(userId: number, userEmail: string): Promi
       isActive: true,
     });
   
-  return newDistributor.insertId;
+  // Get the newly created distributor
+  const [newDistributor] = await db
+    .select()
+    .from(distributors)
+    .where(eq(distributors.email, userEmail))
+    .limit(1);
+  
+  return newDistributor.id;
 }
 
 // ============================================================================
