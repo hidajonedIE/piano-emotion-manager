@@ -9,7 +9,7 @@
  * - Tipografía limpia y espaciado generoso
  */
 
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
@@ -39,6 +39,7 @@ const COLORS = {
 
 export default function ClientsScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
@@ -111,7 +112,7 @@ export default function ClientsScreen() {
         </View>
       ),
     });
-  }, [stats?.total, t, setHeaderConfig]);
+  }, [stats?.total, t, setHeaderConfig, pathname]);
 
   // Estadísticas desde el backend (getStats endpoint)
 

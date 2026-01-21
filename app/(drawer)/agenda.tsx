@@ -1,5 +1,5 @@
 import { useTranslation } from '@/hooks/use-translation';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { useMemo, useState, useEffect } from 'react';
 import { useHeader } from '@/contexts/HeaderContext';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -21,6 +21,7 @@ import { formatDate, getClientFullName } from '@/types';
 
 export default function AgendaScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const insets = useSafeAreaInsets();
@@ -118,7 +119,7 @@ export default function AgendaScreen() {
         </View>
       ),
     });
-  }, [pendingCount, showCalendar, accent, router, setHeaderConfig]);
+  }, [pendingCount, showCalendar, accent, router, setHeaderConfig, pathname]);
 
   // Convertir citas a eventos para el calendario
   const calendarEvents = useMemo(() => {
