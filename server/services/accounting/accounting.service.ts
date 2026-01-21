@@ -20,6 +20,7 @@ import {
   type IncomeCategory,
   type AccountType,
 } from '../../../drizzle/accounting-schema.js';
+import { invoices } from '../../../drizzle/schema.js';
 
 // ============================================================================
 // Types
@@ -316,8 +317,6 @@ export class AccountingService {
    */
   async getFinancialSummary(startDate: string, endDate: string): Promise<FinancialSummary> {
     // Obtener facturas desde la tabla invoices
-    const { invoices } = await import('../../../drizzle/schema.js');
-    
     const allInvoices = await db.query.invoices.findMany({
       where: and(
         eq(invoices.partnerId, this.organizationId),
@@ -462,8 +461,6 @@ export class AccountingService {
     byAccount: Array<{ account: typeof financialAccounts.$inferSelect; balance: number }>;
   }> {
     // Calcular balance total desde facturas
-    const { invoices } = await import('../../../drizzle/schema.js');
-    
     const allInvoices = await db.query.invoices.findMany({
       where: eq(invoices.partnerId, this.organizationId),
     });
