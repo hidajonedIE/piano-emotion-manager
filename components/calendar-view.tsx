@@ -464,7 +464,7 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BorderRadius.lg,
+    borderRadius: 8,
     borderWidth: 1,
     overflow: 'hidden',
     maxWidth: 900,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   todayButton: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 6,
     borderWidth: 1,
   },
   todayButtonText: {
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   },
   viewModeButton: {
     padding: Spacing.xs,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 6,
   },
   
   // Vista mensual
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   },
   todayCell: {
     borderWidth: 2,
-    borderRadius: BorderRadius.full,
+    borderRadius: 8,
   },
   dayText: {
     fontSize: 14,
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   todayColumn: {
-    borderRadius: BorderRadius.sm,
+    borderRadius: 6,
   },
   weekDayName: {
     fontSize: 11,
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   },
   weekEventCard: {
     padding: Spacing.xs,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 6,
     borderLeftWidth: 3,
   },
   weekEventTime: {
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
   },
   dayEventCard: {
     padding: Spacing.sm,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 6,
     borderLeftWidth: 4,
   },
   dayEventHeader: {
