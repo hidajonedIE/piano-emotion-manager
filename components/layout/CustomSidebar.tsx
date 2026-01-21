@@ -68,13 +68,20 @@ export default function CustomSidebar() {
       return pathname === '/(drawer)' || pathname === '/' || pathname === '' || pathname === '/index';
     }
     
-    // Comparación directa
+    // Comparación directa con la ruta completa
     if (pathname === route) {
       return true;
     }
     
     // Si el pathname empieza con la ruta seguida de /
     if (pathname.startsWith(route + '/')) {
+      return true;
+    }
+    
+    // Comparar sin el prefijo /(drawer)/ o /(tabs)/
+    // Por ejemplo: route='/(drawer)/clients' y pathname='/clients'
+    const routeWithoutPrefix = route.replace(/^\/(drawer|tabs)\//, '/');
+    if (pathname === routeWithoutPrefix || pathname.startsWith(routeWithoutPrefix + '/')) {
       return true;
     }
     
