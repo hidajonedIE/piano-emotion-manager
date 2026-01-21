@@ -1,12 +1,12 @@
 /**
- * Invoices Screen - Original Modern Design
+ * Invoices Screen - Modern & Elegant Design
  * Piano Emotion Manager
  * 
- * Diseño original y moderno:
- * - Layout único con dashboard horizontal
- * - Paleta oficial: rojo teja #e07a5f, verde sobrio
- * - Tipografía elegante y espaciado generoso
- * - Cards con diseño asimétrico
+ * Diseño moderno y elegante:
+ * - Estadísticas discretas y compactas
+ * - Sin bloques enormes ni negro
+ * - Mucho aire y espacio
+ * - Paleta suave y profesional
  */
 
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -19,25 +19,25 @@ import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
 import { useInvoicesData } from '@/hooks/data';
-import { BorderRadius, Spacing, Colors } from '@/constants/theme';
-import { Invoice, INVOICE_STATUS_LABELS } from '@/types/invoice';
+import { BorderRadius, Spacing } from '@/constants/theme';
+import { Invoice } from '@/types/invoice';
 import { useDebounce } from '@/hooks/use-debounce';
 import React from 'react';
 
-// Paleta oficial de Piano Emotion
-const THEME = {
-  primary: '#1A1A2E',        // Azul oscuro profundo
-  accent: '#e07a5f',         // Terracota (rojo teja)
-  success: '#6B9080',        // Verde sobrio (no vibrante)
-  warning: '#F59E0B',        // Ámbar
-  error: '#EF4444',          // Rojo
-  background: '#FAFAFA',     // Fondo claro
-  surface: '#FFFFFF',        // Blanco
-  surfaceAlt: '#F8F9FA',     // Gris muy claro
-  border: '#E5E7EB',         // Gris claro
-  textPrimary: '#1A1A2E',    // Texto principal
-  textSecondary: '#6B7280',  // Texto secundario
-  textTertiary: '#9CA3AF',   // Texto terciario
+// Paleta moderna y elegante
+const COLORS = {
+  primary: '#003a8c',           // Azul corporativo
+  accent: '#e07a5f',            // Terracota
+  success: '#6B9080',           // Verde sobrio
+  warning: '#F59E0B',           // Ámbar
+  background: '#FAFAFA',        // Fondo
+  surface: '#FFFFFF',           // Blanco
+  surfaceAlt: '#F8F9FA',        // Gris muy claro
+  border: '#E5E7EB',            // Gris claro
+  borderLight: '#F3F4F6',       // Gris muy claro
+  text: '#1A1A2E',              // Texto principal
+  textSecondary: '#6B7280',     // Texto secundario
+  textTertiary: '#9CA3AF',      // Texto terciario
 };
 
 type FilterType = 'all' | Invoice['status'];
@@ -53,7 +53,6 @@ export default function InvoicesScreen() {
   const [period, setPeriod] = useState<PeriodType>('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Aplicar filtro desde alertas
   useEffect(() => {
     if (params.filter === 'pending' || params.filter === 'overdue') {
       setFilter('sent');
@@ -65,7 +64,6 @@ export default function InvoicesScreen() {
 
   const isDesktop = width >= 1024;
 
-  // Configurar header
   useFocusEffect(
     React.useCallback(() => {
       setHeaderConfig({
@@ -83,16 +81,8 @@ export default function InvoicesScreen() {
     const pending = invoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
     const paid = invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
     const draft = invoices.filter(inv => inv.status === 'draft').length;
-    const cancelled = invoices.filter(inv => inv.status === 'cancelled').length;
     
-    return { 
-      total, 
-      pending, 
-      paid,
-      count: invoices.length,
-      draft,
-      cancelled,
-    };
+    return { total, pending, paid, count: invoices.length, draft };
   }, [invoices]);
 
   // Filtrar facturas
@@ -189,44 +179,34 @@ export default function InvoicesScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Dashboard horizontal original */}
-      <View style={[styles.dashboard, isDesktop && styles.dashboardDesktop]}>
-        {/* Card principal con total */}
-        <View style={[styles.mainCard, { backgroundColor: THEME.primary }]}>
-          <Text style={styles.mainCardLabel}>Total Facturado</Text>
-          <Text style={styles.mainCardValue}>€{stats.total.toFixed(2)}</Text>
-          <View style={styles.mainCardFooter}>
-            <Text style={styles.mainCardFooterText}>{stats.count} facturas</Text>
-          </View>
+      {/* Estadísticas discretas en línea */}
+      <View style={[styles.statsRow, isDesktop && styles.statsRowDesktop]}>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Total</Text>
+          <Text style={[styles.statValue, { color: COLORS.primary }]}>
+            €{stats.total.toFixed(2)}
+          </Text>
         </View>
-
-        {/* Cards secundarios */}
-        <View style={styles.secondaryCards}>
-          <View style={[styles.secondaryCard, { borderLeftColor: THEME.warning, borderLeftWidth: 4 }]}>
-            <Text style={styles.secondaryCardLabel}>Pendiente</Text>
-            <Text style={[styles.secondaryCardValue, { color: THEME.warning }]}>
-              €{stats.pending.toFixed(2)}
-            </Text>
-          </View>
-          
-          <View style={[styles.secondaryCard, { borderLeftColor: THEME.success, borderLeftWidth: 4 }]}>
-            <Text style={styles.secondaryCardLabel}>Cobrado</Text>
-            <Text style={[styles.secondaryCardValue, { color: THEME.success }]}>
-              €{stats.paid.toFixed(2)}
-            </Text>
-          </View>
+        
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Pendiente</Text>
+          <Text style={[styles.statValue, { color: COLORS.warning }]}>
+            €{stats.pending.toFixed(2)}
+          </Text>
         </View>
-
-        {/* Mini stats */}
-        <View style={styles.miniStats}>
-          <View style={styles.miniStat}>
-            <Text style={styles.miniStatValue}>{stats.draft}</Text>
-            <Text style={styles.miniStatLabel}>Borradores</Text>
-          </View>
-          <View style={styles.miniStat}>
-            <Text style={styles.miniStatValue}>{stats.cancelled}</Text>
-            <Text style={styles.miniStatLabel}>Anuladas</Text>
-          </View>
+        
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Cobrado</Text>
+          <Text style={[styles.statValue, { color: COLORS.success }]}>
+            €{stats.paid.toFixed(2)}
+          </Text>
+        </View>
+        
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Borradores</Text>
+          <Text style={[styles.statValue, { color: COLORS.textSecondary }]}>
+            {stats.draft}
+          </Text>
         </View>
       </View>
 
@@ -240,16 +220,15 @@ export default function InvoicesScreen() {
         />
       </View>
 
-      {/* Filtros en línea */}
-      <View style={styles.filtersRow}>
-        <Text style={styles.filtersLabel}>Estado:</Text>
-        <View style={styles.filtersChips}>
+      {/* Filtros compactos */}
+      <View style={styles.filtersContainer}>
+        <View style={styles.filterGroup}>
           {statusFilters.map((f) => (
             <Pressable
               key={f.key}
               style={[
                 styles.filterChip,
-                filter === f.key && { backgroundColor: THEME.primary },
+                filter === f.key && styles.filterChipActive,
               ]}
               onPress={() => setFilter(f.key)}
             >
@@ -262,17 +241,14 @@ export default function InvoicesScreen() {
             </Pressable>
           ))}
         </View>
-      </View>
-
-      <View style={styles.filtersRow}>
-        <Text style={styles.filtersLabel}>Período:</Text>
-        <View style={styles.filtersChips}>
+        
+        <View style={styles.filterGroup}>
           {periodFilters.map((f) => (
             <Pressable
               key={f.key}
               style={[
                 styles.filterChip,
-                period === f.key && { backgroundColor: THEME.accent },
+                period === f.key && styles.filterChipActive,
               ]}
               onPress={() => setPeriod(f.key)}
             >
@@ -310,7 +286,7 @@ export default function InvoicesScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor={THEME.textSecondary}
+              tintColor={COLORS.textSecondary}
             />
           }
         />
@@ -324,49 +300,33 @@ export default function InvoicesScreen() {
   );
 }
 
-// Card de factura con diseño asimétrico
+// Card de factura elegante
 function InvoiceCard({ invoice, onPress }: { invoice: Invoice; onPress: () => void }) {
   const statusConfig = {
-    draft: { color: THEME.textTertiary, bg: THEME.surfaceAlt, label: 'Borrador' },
-    sent: { color: THEME.warning, bg: THEME.warning + '15', label: 'Enviada' },
-    paid: { color: THEME.success, bg: THEME.success + '15', label: 'Pagada' },
-    cancelled: { color: THEME.textSecondary, bg: THEME.border, label: 'Anulada' },
+    draft: { color: COLORS.textTertiary, bg: COLORS.surfaceAlt, label: 'Borrador' },
+    sent: { color: COLORS.warning, bg: COLORS.warning + '10', label: 'Enviada' },
+    paid: { color: COLORS.success, bg: COLORS.success + '10', label: 'Pagada' },
+    cancelled: { color: COLORS.textSecondary, bg: COLORS.borderLight, label: 'Anulada' },
   };
 
   const config = statusConfig[invoice.status];
 
   return (
-    <Pressable
-      style={styles.invoiceCard}
-      onPress={onPress}
-    >
-      {/* Barra lateral de color según estado */}
-      <View style={[styles.invoiceColorBar, { backgroundColor: config.color }]} />
+    <Pressable style={styles.invoiceCard} onPress={onPress}>
+      <View style={styles.invoiceHeader}>
+        <Text style={styles.invoiceNumber}>{invoice.invoiceNumber}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: config.bg }]}>
+          <Text style={[styles.statusText, { color: config.color }]}>
+            {config.label}
+          </Text>
+        </View>
+      </View>
       
-      <View style={styles.invoiceContent}>
-        {/* Header con número y fecha */}
-        <View style={styles.invoiceHeader}>
-          <Text style={styles.invoiceNumber}>{invoice.invoiceNumber}</Text>
-          <View style={[styles.invoiceStatusBadge, { backgroundColor: config.bg }]}>
-            <Text style={[styles.invoiceStatusText, { color: config.color }]}>
-              {config.label}
-            </Text>
-          </View>
-        </View>
-
-        {/* Cliente */}
-        <Text style={styles.invoiceClient}>{invoice.clientName}</Text>
-
-        {/* Footer con fecha, conceptos y total */}
-        <View style={styles.invoiceFooter}>
-          <View style={styles.invoiceFooterLeft}>
-            <Text style={styles.invoiceDate}>{formatDate(invoice.date)}</Text>
-            <Text style={styles.invoiceConcepts}>
-              {invoice.items?.length || 0} concepto{(invoice.items?.length || 0) !== 1 ? 's' : ''}
-            </Text>
-          </View>
-          <Text style={styles.invoiceTotal}>€{invoice.total.toFixed(2)}</Text>
-        </View>
+      <Text style={styles.invoiceClient}>{invoice.clientName}</Text>
+      
+      <View style={styles.invoiceFooter}>
+        <Text style={styles.invoiceDate}>{formatDate(invoice.date)}</Text>
+        <Text style={styles.invoiceTotal}>€{invoice.total.toFixed(2)}</Text>
       </View>
     </Pressable>
   );
@@ -375,7 +335,7 @@ function InvoiceCard({ invoice, onPress }: { invoice: Invoice; onPress: () => vo
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('es-ES', { 
-    day: '2-digit', 
+    day: 'numeric', 
     month: 'short', 
     year: 'numeric' 
   });
@@ -384,7 +344,7 @@ function formatDate(dateString: string): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.background,
+    backgroundColor: COLORS.background,
   },
   loadingState: {
     flex: 1,
@@ -392,82 +352,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Dashboard horizontal original
-  dashboard: {
+  // Estadísticas discretas en línea
+  statsRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
     padding: Spacing.md,
-    gap: Spacing.md,
   },
-  dashboardDesktop: {
+  statsRowDesktop: {
     maxWidth: 1200,
     alignSelf: 'center',
     width: '100%',
   },
-  mainCard: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
-  },
-  mainCardLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.7)',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  mainCardValue: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  mainCardFooter: {
-    marginTop: Spacing.xs,
-  },
-  mainCardFooterText: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-  },
-  secondaryCards: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  secondaryCard: {
+  statCard: {
     flex: 1,
-    backgroundColor: THEME.surface,
+    backgroundColor: COLORS.surface,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    gap: 8,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 6,
   },
-  secondaryCardLabel: {
-    fontSize: 12,
+  statLabel: {
+    fontSize: 11,
     fontWeight: '600',
-    color: THEME.textSecondary,
+    color: COLORS.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  secondaryCardValue: {
-    fontSize: 24,
+  statValue: {
+    fontSize: 18,
     fontWeight: '700',
-  },
-  miniStats: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  miniStat: {
-    flex: 1,
-    backgroundColor: THEME.surface,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.sm,
-    alignItems: 'center',
-    gap: 4,
-  },
-  miniStatValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: THEME.primary,
-  },
-  miniStatLabel: {
-    fontSize: 11,
-    color: THEME.textSecondary,
   },
 
   // Búsqueda
@@ -476,38 +390,33 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
   },
 
-  // Filtros en línea
-  filtersRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  // Filtros compactos
+  filtersContainer: {
     paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.sm,
+    paddingBottom: Spacing.md,
     gap: Spacing.sm,
   },
-  filtersLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: THEME.textSecondary,
-    minWidth: 60,
-  },
-  filtersChips: {
-    flex: 1,
+  filterGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.xs,
   },
   filterChip: {
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: THEME.surfaceAlt,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: THEME.border,
+    borderColor: COLORS.border,
+  },
+  filterChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   filterChipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
-    color: THEME.textSecondary,
+    color: COLORS.textSecondary,
   },
   filterChipTextActive: {
     color: '#FFFFFF',
@@ -530,30 +439,22 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: THEME.textPrimary,
+    color: COLORS.text,
     marginBottom: Spacing.sm,
   },
   emptyMessage: {
     fontSize: 14,
-    color: THEME.textSecondary,
+    color: COLORS.textSecondary,
     textAlign: 'center',
   },
 
-  // Card de factura con diseño asimétrico
+  // Card de factura elegante
   invoiceCard: {
-    flexDirection: 'row',
-    backgroundColor: THEME.surface,
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: THEME.border,
-  },
-  invoiceColorBar: {
-    width: 4,
-  },
-  invoiceContent: {
-    flex: 1,
+    backgroundColor: COLORS.surface,
     padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     gap: Spacing.sm,
   },
   invoiceHeader: {
@@ -562,46 +463,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   invoiceNumber: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: THEME.primary,
+    color: COLORS.text,
   },
-  invoiceStatusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
-  invoiceStatusText: {
-    fontSize: 11,
+  statusText: {
+    fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   invoiceClient: {
-    fontSize: 15,
-    color: THEME.textPrimary,
+    fontSize: 14,
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   invoiceFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: Spacing.xs,
-  },
-  invoiceFooterLeft: {
-    gap: 4,
+    alignItems: 'center',
+    marginTop: 4,
   },
   invoiceDate: {
     fontSize: 12,
-    color: THEME.textSecondary,
-  },
-  invoiceConcepts: {
-    fontSize: 11,
-    color: THEME.textTertiary,
+    color: COLORS.textTertiary,
   },
   invoiceTotal: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
-    color: THEME.accent,
+    color: COLORS.accent,
   },
 });
