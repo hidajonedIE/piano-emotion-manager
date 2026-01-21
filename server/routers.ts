@@ -45,9 +45,9 @@ import { serviceTypesRouter } from "./routers/service-types.router.js";
 import { accountingRouter } from "./routers/accounting/index.js";
 import { distributorRouter } from "./routers/distributor/index.js";
 import { shopRouter } from "./routers/shop/shop.router.js";
-import { teamRouter, teamExtendedRouter } from "./routers/team.router.js";
-import { crmRouter } from "./routers/crm/index.js";
-import { reportsRouter } from "./routers/reports/index.js";
+import { teamRouter } from "./routers/team.router.js";
+import { clientRouter } from "./routers/crm/index.js";
+import { analyticsRouter } from "./routers/reports/index.js";
 
 export const appRouter = router({
   // Sistema
@@ -123,13 +123,12 @@ export const appRouter = router({
 
   // Equipos
   team: teamRouter,
-  teamExtended: teamExtendedRouter,
 
   // CRM
-  crm: crmRouter,
+  client: clientRouter,
 
-  // Reportes
-  reports: reportsRouter,
+  // Reportes y Analytics
+  analytics: analyticsRouter,
 
 });
 
