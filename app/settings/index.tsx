@@ -560,7 +560,7 @@ export default function SettingsIndexScreen() {
 
             <Pressable
               style={[styles.actionButton, { backgroundColor: accent, marginTop: Spacing.md }]}
-              onPress={() => router.push('/accounting' as any)}
+              onPress={() => router.push('/invoices' as any)}
             >
               <IconSymbol name="chart.bar.fill" size={20} color="#FFFFFF" />
               <ThemedText style={styles.actionButtonText}>
