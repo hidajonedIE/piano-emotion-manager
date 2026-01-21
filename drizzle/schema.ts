@@ -1106,9 +1106,9 @@ export const serviceTasks = mysqlTable("service_tasks", {
 // ACCOUNTING TABLES
 // ============================================================================
 
-export * from './accounting-schema';
+export * from './accounting-schema.js';
 
 // ============================================================================
 // DISTRIBUTOR TABLES
 // ============================================================================
-export * from './distributor-schema';
+export * from './distributor-schema.js';
