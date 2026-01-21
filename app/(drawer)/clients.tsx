@@ -42,7 +42,7 @@ export default function ClientsScreen() {
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
-  const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData({ pageSize: 50 });
+  const { clients, loading, refresh, stats, loadMore, hasMore, isLoadingMore } = useClientsData({ pageSize: 300 }); // Cargar todos los clientes de una vez
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   
@@ -88,6 +88,28 @@ export default function ClientsScreen() {
       subtitle: `${stats?.total || 0} ${(stats?.total || 0) === 1 ? 'cliente' : 'clientes'}`,
       icon: 'person.2.fill',
       showBackButton: false,
+      rightAction: (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable 
+            style={styles.headerButton}
+            onPress={() => {}}
+            accessibilityRole="button"
+            accessibilityLabel="Importar clientes"
+          >
+            <Ionicons name="cloud-upload-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.headerButtonText}>Importar</Text>
+          </Pressable>
+          <Pressable 
+            style={styles.headerButton}
+            onPress={() => {}}
+            accessibilityRole="button"
+            accessibilityLabel="Exportar clientes"
+          >
+            <Ionicons name="cloud-download-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.headerButtonText}>Exportar</Text>
+          </Pressable>
+        </View>
+      ),
     });
   }, [stats?.total, t, setHeaderConfig]);
 
@@ -521,5 +543,23 @@ const styles = StyleSheet.create({
   loadingMore: {
     paddingVertical: Spacing.lg,
     alignItems: 'center',
+  },
+  
+  // Botones del header
+  headerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  headerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
