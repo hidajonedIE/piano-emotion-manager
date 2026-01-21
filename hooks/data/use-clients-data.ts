@@ -170,10 +170,19 @@ export function useClientsData(options: UseClientsDataOptions = {}) {
 
   // Convertir clientes del servidor al formato local
   const clients: Client[] = useMemo(() => {
-    if (!data?.pages) return [];
-    return data.pages.flatMap(page => 
-      (page.items || []).map(serverToLocalClient)
-    );
+    console.log('[useClientsData] data:', data);
+    console.log('[useClientsData] data?.pages:', data?.pages);
+    if (!data?.pages) {
+      console.log('[useClientsData] No pages, returning empty array');
+      return [];
+    }
+    const result = data.pages.flatMap(page => {
+      console.log('[useClientsData] page:', page);
+      console.log('[useClientsData] page.items length:', page.items?.length);
+      return (page.items || []).map(serverToLocalClient);
+    });
+    console.log('[useClientsData] Total clients after conversion:', result.length);
+    return result;
   }, [data]);
 
   // Total de clientes
