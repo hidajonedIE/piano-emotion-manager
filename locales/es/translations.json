@@ -1069,5 +1069,9 @@
       "training": "Formación",
       "other": "Otros"
     }
+  },
+  "shop": {
+    "noShops": "No hay tiendas disponibles",
+    "noShopsDesc": "Actualmente no hay tiendas configuradas en el sistema"
   }
 }
