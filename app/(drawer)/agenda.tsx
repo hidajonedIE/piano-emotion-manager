@@ -187,6 +187,17 @@ export default function AgendaScreen() {
 
   const renderAppointment = (appointment: Appointment) => {
     const client = getClient(appointment.clientId);
+    
+    // Debug: Log de clientes desconocidos
+    if (!client) {
+      console.log('⚠️ Cliente desconocido:', {
+        appointmentId: appointment.id,
+        clientId: appointment.clientId,
+        date: appointment.date,
+        startTime: appointment.startTime
+      });
+    }
+    
     const piano = appointment.pianoId ? getPiano(appointment.pianoId) : null;
     const statusColor = getStatusColor(appointment.status);
 
