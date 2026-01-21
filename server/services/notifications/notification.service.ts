@@ -377,7 +377,7 @@ class NotificationService {
     // Guardar en base de datos
     try {
       const { db } = await import('@/drizzle/db');
-      const { storedNotifications } = await import('@/drizzle/schema');
+      const { storedNotifications } = await import('@/drizzle/notifications-schema');
       
       await db.insert(storedNotifications).values({
         notificationId: notification.id,
@@ -444,7 +444,7 @@ class NotificationService {
     // Actualizar en base de datos
     try {
       const { db } = await import('@/drizzle/db');
-      const { storedNotifications } = await import('@/drizzle/schema');
+      const { storedNotifications } = await import('@/drizzle/notifications-schema');
       const { eq, and } = await import('drizzle-orm');
       
       await db
@@ -473,7 +473,7 @@ class NotificationService {
     // Actualizar en base de datos
     try {
       const { db } = await import('@/drizzle/db');
-      const { storedNotifications } = await import('@/drizzle/schema');
+      const { storedNotifications } = await import('@/drizzle/notifications-schema');
       const { eq, and, isNull } = await import('drizzle-orm');
       
       const conditions = [
