@@ -207,29 +207,6 @@ export default function InventoryScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
-        <View style={styles.headerTop}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.back();
-            }}
-          >
-            <IconSymbol name="chevron.left" size={24} color={accent} />
-          </Pressable>
-          <View style={styles.headerContent}>
-            <ThemedText type="title">{t('navigation.inventory')}</ThemedText>
-            <ThemedText style={styles.subtitle}>
-              {items.length} {items.length === 1 ? 'material' : 'materiales'}
-              {lowStockItems.length > 0 && (
-                <ThemedText style={{ color: warning }}> · {lowStockItems.length} con stock bajo</ThemedText>
-              )}
-            </ThemedText>
-          </View>
-        </View>
-      </View>
-
       {/* Alerta de stock bajo con enlace a Piano Emotion Store o proveedor */}
       {lowStockItems.length > 0 && filter !== 'low_stock' && (
         <LowStockAlert 
@@ -423,7 +400,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   itemContent: {
