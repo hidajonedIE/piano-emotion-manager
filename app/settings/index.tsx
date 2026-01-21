@@ -181,6 +181,7 @@ export default function SettingsIndexScreen() {
   const success = useThemeColor({}, 'success');
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');
+  const textColor = useThemeColor({}, 'text');
 
   // Cargar configuración guardada
   useEffect(() => {
@@ -406,7 +407,7 @@ export default function SettingsIndexScreen() {
               <View style={styles.teamConfig}>
                 <ThemedText style={styles.sectionSubtitle}>Configuración del Equipo</ThemedText>
                 <TextInput
-                  style={[styles.input, { borderColor, color: useThemeColor({}, 'text') }]}
+                  style={[styles.input, { borderColor, color: textColor }]}
                   placeholder="Nombre de la empresa"
                   placeholderTextColor={textSecondary}
                   value={settings.organizationName}
@@ -593,7 +594,7 @@ export default function SettingsIndexScreen() {
             </View>
             <View style={[styles.inputRow, { marginLeft: 56 }]}>
               <TextInput
-                style={[styles.input, styles.smallInput, { borderColor, color: useThemeColor({}, 'text') }]}
+                style={[styles.input, styles.smallInput, { borderColor, color: textColor }]}
                 placeholder="5"
                 placeholderTextColor={textSecondary}
                 keyboardType="numeric"
@@ -627,7 +628,7 @@ export default function SettingsIndexScreen() {
             {settings.stockAlertEmail && (
               <View style={[styles.inputRow, { marginLeft: 56, marginBottom: Spacing.sm }]}>
                 <TextInput
-                  style={[styles.input, styles.flexInput, { borderColor, color: useThemeColor({}, 'text') }]}
+                  style={[styles.input, styles.flexInput, { borderColor, color: textColor }]}
                   placeholder="tu@email.com"
                   placeholderTextColor={textSecondary}
                   keyboardType="email-address"
@@ -649,7 +650,7 @@ export default function SettingsIndexScreen() {
             {settings.stockAlertWhatsApp && (
               <View style={[styles.inputRow, { marginLeft: 56, marginBottom: Spacing.sm }]}>
                 <TextInput
-                  style={[styles.input, styles.flexInput, { borderColor, color: useThemeColor({}, 'text') }]}
+                  style={[styles.input, styles.flexInput, { borderColor, color: textColor }]}
                   placeholder="+34 600 000 000"
                   placeholderTextColor={textSecondary}
                   keyboardType="phone-pad"
@@ -733,7 +734,7 @@ export default function SettingsIndexScreen() {
                   </View>
                 </View>
                 <TextInput
-                  style={[styles.input, { borderColor, color: useThemeColor({}, 'text'), marginLeft: 56 }]}
+                  style={[styles.input, { borderColor, color: textColor, marginLeft: 56 }]}
                   placeholder="100"
                   placeholderTextColor={textSecondary}
                   keyboardType="numeric"
