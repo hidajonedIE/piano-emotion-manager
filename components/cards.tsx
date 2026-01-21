@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   serviceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 16,
   },
   levelBadge: {
     paddingHorizontal: 6,
@@ -385,12 +385,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 0,
   },
   statusBadgeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
