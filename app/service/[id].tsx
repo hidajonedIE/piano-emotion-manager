@@ -913,7 +913,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     fontSize: 16,
@@ -934,7 +934,7 @@ const styles = StyleSheet.create({
   selectOption: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   pianoList: {
@@ -942,7 +942,7 @@ const styles = StyleSheet.create({
   },
   pianoOption: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   pianoSerial: {
@@ -957,7 +957,7 @@ const styles = StyleSheet.create({
   typeOption: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   typeText: {
@@ -969,7 +969,7 @@ const styles = StyleSheet.create({
   },
   levelOption: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 2,
   },
   levelTitle: {
@@ -988,7 +988,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.xs,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -1023,7 +1023,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   saveButtonText: {
@@ -1033,7 +1033,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1108,7 +1108,7 @@ const styles = StyleSheet.create({
   },
   materialOption: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.sm,
   },
@@ -1120,7 +1120,7 @@ const styles = StyleSheet.create({
   modalBtn: {
     flex: 1,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -1141,7 +1141,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginTop: Spacing.sm,
   },
   // Estilos para fotos
@@ -1165,7 +1165,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.sm,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     borderStyle: 'dashed',
   },
@@ -1182,7 +1182,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
   },
   signatureText: {
@@ -1205,7 +1205,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.sm,
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 2,
     borderStyle: 'dashed',
   },

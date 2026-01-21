@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
   providerIcon: {
     width: 48,
     height: 48,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
   connectButton: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   connectButtonText: {
     color: '#fff',
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   disconnectButton: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   disconnectButtonText: {
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   intervalButton: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   intervalButtonText: {

@@ -779,7 +779,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   countrySelectorFlag: {
@@ -800,7 +800,7 @@ const styles = StyleSheet.create({
   periodTypeButton: {
     flex: 1,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
   navButton: {
     width: 40,
     height: 40,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginRight: Spacing.xs,
     gap: Spacing.xs,
@@ -897,7 +897,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     gap: Spacing.xs,
   },
   exportButtonText: {
@@ -999,7 +999,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.xs,
     marginTop: Spacing.sm,

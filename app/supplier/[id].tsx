@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   saveButton: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   saveButtonText: {
     color: '#fff',
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   input: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     fontSize: 16,
   },
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   typeButton: {
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   typeButtonText: {

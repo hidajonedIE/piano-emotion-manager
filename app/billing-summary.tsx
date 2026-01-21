@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   viewOption: {
     flex: 1,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   viewOptionText: {
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.xs,
   },

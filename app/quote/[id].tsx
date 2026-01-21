@@ -1021,7 +1021,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingVertical: 6,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   statusText: {
     fontSize: 14,
@@ -1037,7 +1037,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   actionButtonText: {
     color: '#FFF',
@@ -1059,7 +1059,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   selectText: {
@@ -1085,7 +1085,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     padding: Spacing.sm,
     fontSize: 15,
   },
@@ -1136,7 +1136,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingVertical: 6,
     paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   addItemText: {
     fontSize: 12,
@@ -1144,7 +1144,7 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.sm,
   },
@@ -1195,7 +1195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.xl,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     borderStyle: 'dashed',
     gap: Spacing.sm,
@@ -1252,7 +1252,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -1263,7 +1263,7 @@ const styles = StyleSheet.create({
   saveButton: {
     flex: 2,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   saveButtonText: {
@@ -1341,7 +1341,7 @@ const styles = StyleSheet.create({
     minWidth: '45%',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.xs,
   },

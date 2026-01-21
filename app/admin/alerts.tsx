@@ -703,7 +703,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   infoText: {
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
   },
   statsSection: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   statsGrid: {
@@ -745,7 +745,7 @@ const styles = StyleSheet.create({
   },
   section: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.md,
   },
@@ -871,7 +871,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     height: 52,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: Spacing.md,

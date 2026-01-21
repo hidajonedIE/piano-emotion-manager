@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.sm,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginBottom: Spacing.xs,
   },
   sectionItemLeft: {
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.sm,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     minWidth: '48%',
   },
   positionLabel: {
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.sm,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginTop: Spacing.sm,
   },
   resetButton: {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
     paddingVertical: Spacing.md,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginTop: Spacing.md,
     marginBottom: Spacing.xl,
   },

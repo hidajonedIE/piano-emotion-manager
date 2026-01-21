@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   table: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     overflow: 'hidden',
   },
   tableHeader: {

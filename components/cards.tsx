@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   pianoIcon: {
     width: 48,
     height: 48,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   serviceIcon: {
     width: 44,
     height: 44,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,

@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     bottom: Spacing.md,
     left: Spacing.md,
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   viewButton: {
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   viewButtonText: {

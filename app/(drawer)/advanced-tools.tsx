@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   },
   upgradeButton: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   upgradeButtonText: {

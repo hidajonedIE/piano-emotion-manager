@@ -442,7 +442,7 @@ export const DashboardAlertsV2 = memo(function DashboardAlertsV2({ alerts, total
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.sm,
   },

@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 48,
     height: 48,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   addButton: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginTop: Spacing.sm,
   },
   addButtonText: {

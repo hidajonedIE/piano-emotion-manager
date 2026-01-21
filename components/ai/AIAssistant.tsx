@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   suggestionButton: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   suggestionText: {

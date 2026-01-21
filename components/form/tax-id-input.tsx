@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.sm,
   },
   input: {

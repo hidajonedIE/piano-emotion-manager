@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     overflow: 'hidden',
   },
   controls: {

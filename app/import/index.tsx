@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   typeOption: {
     flex: 1,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
     gap: Spacing.sm,
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.sm,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginTop: Spacing.sm,
   },
@@ -587,14 +587,14 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
   importButton: {
     flex: 2,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   resultHeader: {
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   statNumber: {

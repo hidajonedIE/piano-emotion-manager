@@ -186,7 +186,7 @@ export const LoadingError = memo(function LoadingError({
 const styles = StyleSheet.create({
   container: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginVertical: Spacing.sm,
   },
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   actionButton: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginTop: Spacing.sm,
   },
   actionButtonText: {

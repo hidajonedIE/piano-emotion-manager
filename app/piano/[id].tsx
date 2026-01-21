@@ -1004,7 +1004,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.md,
     gap: Spacing.sm,
@@ -1032,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     fontSize: 16,
@@ -1057,7 +1057,7 @@ const styles = StyleSheet.create({
   clientOption: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   clientText: {
@@ -1065,7 +1065,7 @@ const styles = StyleSheet.create({
   },
   emptyClientState: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
     gap: Spacing.sm,
@@ -1077,7 +1077,7 @@ const styles = StyleSheet.create({
   createClientButton: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   createClientButtonText: {
     color: '#FFFFFF',
@@ -1092,7 +1092,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -1105,7 +1105,7 @@ const styles = StyleSheet.create({
   },
   typeOption: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   typeLabel: {
@@ -1120,7 +1120,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.xs,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -1138,7 +1138,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.sm,
     gap: Spacing.sm,
@@ -1169,7 +1169,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 2,
   },
   actionButtonText: {
@@ -1198,7 +1198,7 @@ const styles = StyleSheet.create({
   saveButton: {
     marginTop: Spacing.lg,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   saveButtonText: {
@@ -1209,7 +1209,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     marginTop: Spacing.lg,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1223,7 +1223,7 @@ const styles = StyleSheet.create({
   photoContainer: {
     width: '100%',
     height: 200,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -1251,7 +1251,7 @@ const styles = StyleSheet.create({
   addPhotoButton: {
     width: '100%',
     height: 150,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 2,
     borderStyle: 'dashed',
     justifyContent: 'center',

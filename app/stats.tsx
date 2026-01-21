@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   statIcon: {
     width: 48,
     height: 48,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,

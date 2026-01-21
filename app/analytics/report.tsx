@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.xs,
   },
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.xs,
   },
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   },
   preview: {
     backgroundColor: '#F8F9FA',
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     padding: Spacing.md,
   },
   previewHeader: {
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     ...Shadows.md,
   },
   generateButtonText: {

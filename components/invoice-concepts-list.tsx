@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: 4,
   },
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   },
   conceptCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   conceptHeader: {
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     padding: Spacing.xl,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   emptyText: {
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     marginTop: Spacing.md,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
   input: {
     padding: Spacing.md,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     fontSize: 15,
   },
   textArea: {
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
   inventoryOption: {
     padding: Spacing.sm,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginRight: Spacing.sm,
     minWidth: 120,
   },
@@ -650,7 +650,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: Spacing.md,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   taxOptionText: {
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   },
   previewCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   previewLabel: {
@@ -679,14 +679,14 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
   saveButton: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   saveButtonText: {

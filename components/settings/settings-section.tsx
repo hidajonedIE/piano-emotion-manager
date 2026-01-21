@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sectionContainer: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     overflow: 'hidden',
   },

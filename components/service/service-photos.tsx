@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   photoContainer: {
     width: 100,
     height: 100,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     overflow: 'hidden',
     position: 'relative',
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   addPhotoButton: {
     width: 100,
     height: 100,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 2,
     borderStyle: 'dashed',
     alignItems: 'center',
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
     gap: Spacing.sm,

@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   sectionIconContainer: {
     width: 40,
     height: 40,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,

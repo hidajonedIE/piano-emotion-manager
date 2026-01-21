@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: COLORS.surface,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: Spacing.sm,
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     minWidth: 44,
     alignItems: 'center',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   filtersContainer: {
     marginTop: Spacing.sm,
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.sm,
   },

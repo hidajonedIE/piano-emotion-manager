@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     backgroundColor: 'rgba(0,0,0,0.05)',
   },
   searchInput: {
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   partnerLogo: {
     width: 48,
     height: 48,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

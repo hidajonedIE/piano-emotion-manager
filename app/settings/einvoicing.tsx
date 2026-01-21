@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.sm,
     alignItems: 'flex-start',
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.xs,
     marginTop: Spacing.xs,
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
   },
   systemInfo: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginBottom: Spacing.md,
   },
   systemLabel: {
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
   },
   configInput: {
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     padding: Spacing.md,
     fontSize: 16,
   },
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   selectOption: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   selectOptionText: {
@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
   helpCard: {
     flexDirection: 'row',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.sm,
     marginTop: Spacing.lg,

@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   },
   signatureButton: {
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 2,
     borderStyle: 'dashed',
     alignItems: 'center',
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   signaturePreview: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
     gap: Spacing.sm,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   legalText: {

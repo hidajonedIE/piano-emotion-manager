@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   warningBox: {
     flexDirection: 'row',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.md,
     gap: Spacing.sm,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   },
   section: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.md,
   },

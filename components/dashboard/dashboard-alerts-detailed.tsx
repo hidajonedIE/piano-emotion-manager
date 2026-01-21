@@ -468,7 +468,7 @@ export function DashboardAlertsDetailed({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   alertCard: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.sm,
     overflow: 'hidden',

@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
   // KPI Card
   kpiCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     minWidth: 140,
   },

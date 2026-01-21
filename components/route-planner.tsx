@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   summary: {
     flexDirection: 'row',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginBottom: Spacing.md,
   },
   summaryItem: {
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   stopCard: {
     flexDirection: 'row',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.sm,
     gap: Spacing.sm,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.xs,
   },
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     padding: Spacing.xl,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   emptyText: {

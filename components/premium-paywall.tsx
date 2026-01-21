@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     width: '100%',
   },
   upgradeButtonText: {

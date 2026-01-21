@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
     gap: 4,
   },
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     height: 34,
     justifyContent: 'center',
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginRight: Spacing.sm,
   },
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.xs,
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     backgroundColor: '#e07a5f',
   },
   actionButtonText: {

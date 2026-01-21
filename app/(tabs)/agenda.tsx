@@ -378,6 +378,6 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
 });

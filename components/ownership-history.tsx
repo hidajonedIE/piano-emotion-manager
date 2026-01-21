@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     gap: 4,
   },
   transferButtonText: {
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     marginBottom: Spacing.md,
     gap: Spacing.sm,
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   historyItemLeft: {
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     padding: Spacing.xl,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   emptyText: {
     marginTop: Spacing.sm,
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   clientList: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     maxHeight: 200,
   },
   clientOption: {
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.md,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginBottom: Spacing.xs,
   },
   clientOptionName: {
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     gap: Spacing.xs,
   },
   transferTypeLabel: {
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   input: {
     padding: Spacing.md,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     fontSize: 15,
   },
   textArea: {
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   confirmButton: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   confirmButtonText: {

@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   },
   skeletonCard: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     marginBottom: Spacing.md,
   },
   skeletonCardHeader: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   skeletonTable: {
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     overflow: 'hidden',
   },
   skeletonTableRow: {

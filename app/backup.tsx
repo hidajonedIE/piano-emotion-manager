@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
   actionIcon: {
     width: 52,
     height: 52,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EF4444',
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     gap: Spacing.xs,
   },
   dangerButtonText: {

@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconContainer: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',

@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   quickActionIcon: {
     width: 44,
     height: 44,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },

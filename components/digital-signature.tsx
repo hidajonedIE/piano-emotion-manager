@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   canvasContainer: {
     margin: Spacing.md,
     borderWidth: 2,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderStyle: 'dashed',
     overflow: 'hidden',
     position: 'relative',
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     gap: Spacing.xs,
   },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     gap: Spacing.xs,
   },
   saveButtonText: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   closeButton: {
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   closeButtonText: {
     color: '#fff',

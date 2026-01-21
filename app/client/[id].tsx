@@ -742,7 +742,7 @@ const styles = StyleSheet.create({
   },
   input: {
     padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     fontSize: 16,
   },
@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
   typeOption: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   typeText: {
@@ -800,7 +800,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     gap: 4,
   },
   copyButtonText: {

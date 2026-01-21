@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     margin: Spacing.md,
     marginTop: 0,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.sm,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   templateInfo: {
     flex: 1,
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
   formInput: {
     padding: Spacing.md,
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     fontSize: 15,
   },
   textArea: {
@@ -606,14 +606,14 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     alignItems: 'center',
   },
   saveButton: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   saveButtonText: {

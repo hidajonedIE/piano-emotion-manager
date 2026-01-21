@@ -94,7 +94,7 @@ export function PianoListItemSkeleton() {
   return (
     <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
       <View style={styles.row}>
-        <Skeleton width={60} height={60} borderRadius={BorderRadius.md} />
+        <Skeleton width={60} height={60} borderRadius={BorderRadius.sm} />
         <View style={styles.content}>
           <Skeleton width="50%" height={18} />
           <Skeleton width="70%" height={14} style={{ marginTop: 6 }} />
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   row: {

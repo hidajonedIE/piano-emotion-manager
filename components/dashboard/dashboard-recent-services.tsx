@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   emptyButtonText: {
     color: '#FFFFFF',

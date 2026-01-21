@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
   },
   serviceCard: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   modalContainer: {
     flex: 1,

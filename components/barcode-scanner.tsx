@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
   },
   retryButtonText: {
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   closeButton: {
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   closeButtonText: {
     color: '#fff',
@@ -719,7 +719,7 @@ const mobileStyles = StyleSheet.create({
     backgroundColor: '#10B981',
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
   },
   permissionButtonText: {
     color: '#FFF',
@@ -735,7 +735,7 @@ const mobileStyles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ECFDF5',
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     gap: Spacing.md,
   },
   resultContent: {

@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.sm,
     ...Platform.select({
       web: {
         boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
