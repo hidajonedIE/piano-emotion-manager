@@ -63,20 +63,27 @@ export default function CustomSidebar() {
   };
 
   const isActive = (route: string) => {
+    console.log('🔍 isActive check:', { pathname, route });
+    
     // Para la ruta principal del drawer, considerar tanto '/(drawer)' como '/'
     if (route === '/(drawer)') {
-      return pathname === '/(drawer)' || pathname === '/' || pathname === '';
+      const result = pathname === '/(drawer)' || pathname === '/' || pathname === '';
+      console.log('  → Home check:', result);
+      return result;
     }
     
     // Comparación directa
     if (pathname === route || pathname.startsWith(route + '/')) {
+      console.log('  → Direct match: true');
       return true;
     }
     
     // Comparar pathname con route sin el prefijo /(drawer)/ o /(tabs)/
     // Por ejemplo: pathname='/agenda' y route='/(drawer)/agenda'
     const routeWithoutPrefix = route.replace(/^\/(drawer|tabs)/, '');
-    return pathname === routeWithoutPrefix || pathname.startsWith(routeWithoutPrefix + '/');
+    const result = pathname === routeWithoutPrefix || pathname.startsWith(routeWithoutPrefix + '/');
+    console.log('  → Prefix removed:', { routeWithoutPrefix, result });
+    return result;
   };
 
   return (
