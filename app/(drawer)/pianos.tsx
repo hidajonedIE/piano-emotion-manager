@@ -87,10 +87,9 @@ export default function PianosScreen() {
   // Estadísticas por categoría
   const stats = useMemo(() => {
     const upright = pianos.filter(p => p.category === 'vertical').length;
-    const grand = pianos.filter(p => p.category === 'cola').length;
-    const digital = pianos.filter(p => p.category === 'digital').length;
+    const grand = pianos.filter(p => p.category === 'grand').length;
     
-    return { upright, grand, digital };
+    return { upright, grand };
   }, [pianos]);
 
   const handlePianoPress = useCallback((piano: Piano) => {
@@ -173,10 +172,6 @@ export default function PianosScreen() {
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.grand}</Text>
           <Text style={styles.statLabel}>De Cola</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.digital}</Text>
-          <Text style={styles.statLabel}>Digitales</Text>
         </View>
       </View>
 
