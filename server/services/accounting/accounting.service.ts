@@ -315,35 +315,31 @@ export class AccountingService {
    * Obtiene resumen financiero
    */
   async getFinancialSummary(startDate: string, endDate: string): Promise<FinancialSummary> {
-    const allTransactions = await db.query.transactions.findMany({
+    // Obtener facturas desde la tabla invoices
+    const { invoices } = await import('../../../drizzle/schema.js');
+    
+    const allInvoices = await db.query.invoices.findMany({
       where: and(
-        eq(transactions.organizationId, this.organizationId),
-        gte(transactions.transactionDate, startDate),
-        lte(transactions.transactionDate, endDate)
+        eq(invoices.partnerId, this.organizationId),
+        gte(invoices.invoiceDate, startDate),
+        lte(invoices.invoiceDate, endDate)
       ),
     });
 
     let totalIncome = 0;
     let totalExpenses = 0;
-    const incomeByCategory: Record<string, number> = {};
+    const incomeByCategory: Record<string, number> = { service: 0 };
     const expensesByCategory: Record<string, number> = {};
 
-    for (const tx of allTransactions) {
-      const amount = parseFloat(tx.amount);
-
-      if (tx.type === 'income') {
-        totalIncome += amount;
-        const category = tx.incomeCategory || 'other';
-        incomeByCategory[category] = (incomeByCategory[category] || 0) + amount;
-      } else if (tx.type === 'expense') {
-        totalExpenses += amount;
-        const category = tx.expenseCategory || 'other';
-        expensesByCategory[category] = (expensesByCategory[category] || 0) + amount;
-      }
+    // Calcular ingresos desde facturas
+    for (const invoice of allInvoices) {
+      const amount = parseFloat(invoice.total || '0');
+      totalIncome += amount;
+      incomeByCategory.service += amount;
     }
 
-    // Calcular tendencia mensual
-    const monthlyTrend = this.calculateMonthlyTrend(allTransactions);
+    // Calcular tendencia mensual desde facturas
+    const monthlyTrend = this.calculateMonthlyTrendFromInvoices(allInvoices);
 
     return {
       totalIncome,
@@ -375,6 +371,34 @@ export class AccountingService {
       } else if (tx.type === 'expense') {
         monthlyData[month].expenses += amount;
       }
+    }
+
+    return Object.entries(monthlyData)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, data]) => ({
+        month,
+        income: data.income,
+        expenses: data.expenses,
+        profit: data.income - data.expenses,
+      }));
+  }
+
+  /**
+   * Calcula tendencia mensual desde facturas
+   */
+  private calculateMonthlyTrendFromInvoices(
+    invoices: Array<any>
+  ): Array<{ month: string; income: number; expenses: number; profit: number }> {
+    const monthlyData: Record<string, { income: number; expenses: number }> = {};
+
+    for (const invoice of invoices) {
+      const month = invoice.invoiceDate.substring(0, 7); // YYYY-MM
+      if (!monthlyData[month]) {
+        monthlyData[month] = { income: 0, expenses: 0 };
+      }
+
+      const amount = parseFloat(invoice.total || '0');
+      monthlyData[month].income += amount;
     }
 
     return Object.entries(monthlyData)
@@ -437,16 +461,44 @@ export class AccountingService {
     totalBalance: number;
     byAccount: Array<{ account: typeof financialAccounts.$inferSelect; balance: number }>;
   }> {
-    const accounts = await this.getAccounts();
-    let totalBalance = 0;
-
-    const byAccount = accounts.map((account) => {
-      const balance = parseFloat(account.currentBalance || '0');
-      totalBalance += balance;
-      return { account, balance };
+    // Calcular balance total desde facturas
+    const { invoices } = await import('../../../drizzle/schema.js');
+    
+    const allInvoices = await db.query.invoices.findMany({
+      where: eq(invoices.partnerId, this.organizationId),
     });
 
-    return { totalBalance, byAccount };
+    let totalBalance = 0;
+    for (const invoice of allInvoices) {
+      totalBalance += parseFloat(invoice.total || '0');
+    }
+
+    // Crear cuenta virtual para mostrar el balance
+    const virtualAccount = {
+      id: 1,
+      organizationId: this.organizationId,
+      name: 'Ingresos por Facturación',
+      type: 'bank' as const,
+      initialBalance: '0',
+      currentBalance: totalBalance.toString(),
+      currency: 'EUR',
+      isActive: true,
+      isDefault: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      bankName: null,
+      accountNumber: null,
+      iban: null,
+      swift: null,
+      color: null,
+      icon: null,
+      notes: null,
+    };
+
+    return {
+      totalBalance,
+      byAccount: [{ account: virtualAccount, balance: totalBalance }],
+    };
   }
 
   // ============================================================================
