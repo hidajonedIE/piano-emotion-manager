@@ -181,17 +181,19 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
 
   const serviceDescription = `${SERVICE_TYPE_LABELS[service.type]}, ${formatDate(service.date)}${service.cost !== undefined ? `, ${service.cost} euros` : ''}`;
 
-  // Color de borde según estado - tonos sutiles y profesionales
-  const statusBorderColor = isPast !== undefined 
-    ? (isPast ? '#065F46' : '#991B1B') // Verde muy oscuro para completados, rojo muy oscuro para pendientes
-    : borderColor;
+  // Badge de estado elegante
+  const statusBadge = isPast !== undefined ? {
+    label: isPast ? 'Completado' : 'Pendiente',
+    bgColor: isPast ? '#F0FDF4' : '#FEF2F2',
+    textColor: isPast ? '#065F46' : '#991B1B',
+  } : null;
 
   return (
     <Pressable
       onPress={handlePress}
       style={({ pressed }) => [
         styles.card,
-        { backgroundColor: cardBg, borderColor: statusBorderColor, borderWidth: 2 },
+        { backgroundColor: cardBg, borderColor: borderColor, borderWidth: 1 },
         pressed && styles.cardPressed,
       ]}
       accessibilityRole="button"
@@ -206,13 +208,22 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
           <ThemedText type="defaultSemiBold">
             {SERVICE_TYPE_LABELS[service.type]}
           </ThemedText>
-          {service.maintenanceLevel && (
-            <View style={[styles.levelBadge, { backgroundColor: `${maintenanceColor}20` }]}>
-              <ThemedText style={[styles.levelText, { color: maintenanceColor }]}>
-                {MAINTENANCE_LEVEL_LABELS[service.maintenanceLevel]}
-              </ThemedText>
-            </View>
-          )}
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            {service.maintenanceLevel && (
+              <View style={[styles.levelBadge, { backgroundColor: `${maintenanceColor}20` }]}>
+                <ThemedText style={[styles.levelText, { color: maintenanceColor }]}>
+                  {MAINTENANCE_LEVEL_LABELS[service.maintenanceLevel]}
+                </ThemedText>
+              </View>
+            )}
+            {statusBadge && (
+              <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
+                <ThemedText style={[styles.statusBadgeText, { color: statusBadge.textColor }]}>
+                  {statusBadge.label}
+                </ThemedText>
+              </View>
+            )}
+          </View>
         </View>
         <View style={styles.cardRow}>
           <IconSymbol name="calendar" size={12} color={textSecondary} />
@@ -372,6 +383,17 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 10,
     fontWeight: '600',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 0,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   emptyState: {
     flex: 1,
