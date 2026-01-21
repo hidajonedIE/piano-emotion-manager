@@ -1026,5 +1026,48 @@
     "absences": "Ausencias",
     "holidays": "Vacaciones",
     "sickLeave": "Baja por enfermedad"
+  },
+  "accounting": {
+    "period": {
+      "week": "Semana",
+      "month": "Mes",
+      "quarter": "Trimestre",
+      "year": "Año"
+    },
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "profit": "Beneficio",
+    "balance": "Balance",
+    "accounts": "Cuentas",
+    "expensesByCategory": "Gastos por categoría",
+    "quickActions": "Acciones rápidas",
+    "addIncome": "Añadir ingreso",
+    "addExpense": "Añadir gasto",
+    "transfer": "Transferencia",
+    "reports": "Informes",
+    "accountType": {
+      "cash": "Efectivo",
+      "bank": "Banco",
+      "credit_card": "Tarjeta de crédito",
+      "savings": "Ahorros",
+      "paypal": "PayPal",
+      "other": "Otro"
+    },
+    "category": {
+      "materials": "Materiales",
+      "tools": "Herramientas",
+      "transport": "Transporte",
+      "vehicle": "Vehículo",
+      "office": "Oficina",
+      "marketing": "Marketing",
+      "software": "Software",
+      "insurance": "Seguros",
+      "taxes": "Impuestos",
+      "salaries": "Salarios",
+      "rent": "Alquiler",
+      "utilities": "Suministros",
+      "training": "Formación",
+      "other": "Otros"
+    }
   }
 }
