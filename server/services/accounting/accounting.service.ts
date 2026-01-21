@@ -504,8 +504,9 @@ export class AccountingService {
     lines: Array<{ category: ExpenseCategory; plannedAmount: number }>
   ): Promise<typeof budgets.$inferSelect> {
     const totalAmount = lines.reduce((sum, line) => sum + line.plannedAmount, 0);
+    const db = await getDb();
 
-    const [budget] = await getDb().insert(budgets).values({
+    const [budget] = await db.insert(budgets).values({
       organizationId: this.organizationId,
       name,
       startDate,
@@ -515,7 +516,7 @@ export class AccountingService {
 
     // Crear líneas de presupuesto
     if (lines.length > 0) {
-      await getDb().insert(budgetLines).values(
+      await db.insert(budgetLines).values(
         lines.map((line) => ({
           budgetId: budget.id,
           category: line.category,
@@ -531,17 +532,13 @@ export class AccountingService {
    * Obtiene estado del presupuesto
    */
   async getBudgetStatus(budgetId: number): Promise<{
-    budget: typeof budgets.$inferSelect;
-    lines: Array<{
-      line: typeof budgetLines.$inferSelect;
-      spent: number;
-      remaining: number;
-      percentage: number;
-    }>;
+    budget: typeof budgets.$inferSelect & { lines: Array<typeof budgetLines.$inferSelect> };
+    spentByCategory: Record<string, number>;
     totalSpent: number;
     totalRemaining: number;
   }> {
-    const budget = await getDb().query.budgets.findFirst({
+    const db = await getDb();
+    const budget = await db.query.budgets.findFirst({
       where: and(
         eq(budgets.id, budgetId),
         eq(budgets.organizationId, this.organizationId)
@@ -556,7 +553,7 @@ export class AccountingService {
     }
 
     // Obtener gastos por categoría en el período
-    const expenses = await getDb().query.transactions.findMany({
+    const expenses = await db.query.transactions.findMany({
       where: and(
         eq(transactions.organizationId, this.organizationId),
         eq(transactions.type, 'expense'),
@@ -603,7 +600,8 @@ export class AccountingService {
    * Obtiene tasas de impuestos
    */
   async getTaxRates(): Promise<Array<typeof taxRates.$inferSelect>> {
-    return getDb().query.taxRates.findMany({
+    const db = await getDb();
+    return db.query.taxRates.findMany({
       where: and(
         eq(taxRates.organizationId, this.organizationId),
         eq(taxRates.isActive, true)
@@ -619,7 +617,8 @@ export class AccountingService {
     rate: number,
     options: { appliesToIncome?: boolean; appliesToExpense?: boolean; isDefault?: boolean } = {}
   ): Promise<typeof taxRates.$inferSelect> {
-    const [taxRate] = await getDb().insert(taxRates).values({
+    const db = await getDb();
+    const [taxRate] = await db.insert(taxRates).values({
       organizationId: this.organizationId,
       name,
       rate: rate.toString(),
