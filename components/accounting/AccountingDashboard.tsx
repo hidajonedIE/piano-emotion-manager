@@ -40,13 +40,13 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend })
       <View style={styles.statHeader}>
         <Ionicons name={icon as any} size={24} color={color} />
         {trend !== undefined && (
-          <View style={[styles.trendBadge, { backgroundColor: trend >= 0 ? '#d1fae5' : '#fee2e2' }]}>
+          <View style={[styles.trendBadge, { backgroundColor: trend >= 0 ? '#F0FDF4' : '#FEF2F2' }]}>
             <Ionicons
               name={trend >= 0 ? 'trending-up' : 'trending-down'}
               size={12}
-              color={trend >= 0 ? '#059669' : '#dc2626'}
+              color={trend >= 0 ? '#16A34A' : '#DC2626'}
             />
-            <Text style={[styles.trendText, { color: trend >= 0 ? '#059669' : '#dc2626' }]}>
+            <Text style={[styles.trendText, { color: trend >= 0 ? '#16A34A' : '#DC2626' }]}>
               {Math.abs(trend).toFixed(1)}%
             </Text>
           </View>
@@ -89,7 +89,7 @@ const AccountCard: React.FC<AccountCardProps> = ({ name, type, balance, color })
   };
 
   return (
-    <View style={[styles.accountCard, { borderLeftColor: color || '#3b82f6' }]}>
+    <View style={[styles.accountCard, { borderLeftColor: color || '#003a8c' }]}>
       <View style={styles.accountIcon}>
         <Ionicons name={typeIcons[type] as any || 'wallet-outline'} size={20} color="#6b7280" />
       </View>
@@ -97,7 +97,7 @@ const AccountCard: React.FC<AccountCardProps> = ({ name, type, balance, color })
         <Text style={styles.accountName}>{name}</Text>
         <Text style={styles.accountType}>{t(`accounting.accountType.${type}`)}</Text>
       </View>
-      <Text style={[styles.accountBalance, { color: balance >= 0 ? '#059669' : '#dc2626' }]}>
+      <Text style={[styles.accountBalance, { color: balance >= 0 ? '#16A34A' : '#DC2626' }]}>
         {formatCurrency(balance)}
       </Text>
     </View>
@@ -190,22 +190,22 @@ export const AccountingDashboard: React.FC = () => {
     }).format(value);
   };
 
-  // Colores para categorías de gastos
+  // Colores profesionales y sutiles para categorías de gastos
   const expenseColors: Record<string, string> = {
-    materials: '#3b82f6',
-    tools: '#8b5cf6',
-    transport: '#f59e0b',
-    vehicle: '#ef4444',
-    office: '#10b981',
-    marketing: '#ec4899',
-    software: '#6366f1',
-    insurance: '#14b8a6',
-    taxes: '#f97316',
-    salaries: '#06b6d4',
-    rent: '#84cc16',
-    utilities: '#a855f7',
-    training: '#22c55e',
-    other: '#6b7280',
+    materials: '#64748B',
+    tools: '#6B7280',
+    transport: '#78716C',
+    vehicle: '#737373',
+    office: '#71717A',
+    marketing: '#6B7280',
+    software: '#64748B',
+    insurance: '#78716C',
+    taxes: '#737373',
+    salaries: '#71717A',
+    rent: '#6B7280',
+    utilities: '#64748B',
+    training: '#78716C',
+    other: '#6B7280',
   };
 
   return (
@@ -231,25 +231,25 @@ export const AccountingDashboard: React.FC = () => {
           title={t('accounting.income')}
           value={formatCurrency(summary?.totalIncome || 0)}
           icon="trending-up"
-          color="#10b981"
+          color="#16A34A"
         />
         <StatCard
           title={t('accounting.expenses')}
           value={formatCurrency(summary?.totalExpenses || 0)}
           icon="trending-down"
-          color="#ef4444"
+          color="#DC2626"
         />
         <StatCard
           title={t('accounting.profit')}
           value={formatCurrency(summary?.netProfit || 0)}
           icon="analytics"
-          color={summary?.netProfit && summary.netProfit >= 0 ? '#3b82f6' : '#ef4444'}
+          color={summary?.netProfit && summary.netProfit >= 0 ? '#003a8c' : '#DC2626'}
         />
         <StatCard
           title={t('accounting.balance')}
           value={formatCurrency(balance)}
           icon="wallet"
-          color="#8b5cf6"
+          color="#64748B"
         />
       </View>
 
@@ -285,7 +285,7 @@ export const AccountingDashboard: React.FC = () => {
                 category={category}
                 amount={amount}
                 total={summary.totalExpenses}
-                color={expenseColors[category] || '#6b7280'}
+                color={expenseColors[category] || '#6B7280'}
               />
             ))}
       </View>
@@ -295,26 +295,26 @@ export const AccountingDashboard: React.FC = () => {
         <Text style={styles.sectionTitle}>{t('accounting.quickActions')}</Text>
         <View style={styles.actionsGrid}>
           <TouchableOpacity style={styles.actionButton}>
-            <View style={[styles.actionIcon, { backgroundColor: '#d1fae5' }]}>
-              <Ionicons name="add-circle" size={24} color="#059669" />
+            <View style={[styles.actionIcon, { backgroundColor: '#F0FDF4' }]}>
+              <Ionicons name="add-circle" size={24} color="#16A34A" />
             </View>
             <Text style={styles.actionText}>{t('accounting.addIncome')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
-            <View style={[styles.actionIcon, { backgroundColor: '#fee2e2' }]}>
-              <Ionicons name="remove-circle" size={24} color="#dc2626" />
+            <View style={[styles.actionIcon, { backgroundColor: '#FEF2F2' }]}>
+              <Ionicons name="remove-circle" size={24} color="#DC2626" />
             </View>
             <Text style={styles.actionText}>{t('accounting.addExpense')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
-            <View style={[styles.actionIcon, { backgroundColor: '#dbeafe' }]}>
-              <Ionicons name="swap-horizontal" size={24} color="#3b82f6" />
+            <View style={[styles.actionIcon, { backgroundColor: '#EFF6FF' }]}>
+              <Ionicons name="swap-horizontal" size={24} color="#003a8c" />
             </View>
             <Text style={styles.actionText}>{t('accounting.transfer')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
-            <View style={[styles.actionIcon, { backgroundColor: '#fef3c7' }]}>
-              <Ionicons name="document-text" size={24} color="#d97706" />
+            <View style={[styles.actionIcon, { backgroundColor: '#F8FAFC' }]}>
+              <Ionicons name="document-text" size={24} color="#64748B" />
             </View>
             <Text style={styles.actionText}>{t('accounting.reports')}</Text>
           </TouchableOpacity>
@@ -349,8 +349,8 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   periodButtonActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: '#003a8c',
+    borderColor: '#003a8c',
   },
   periodButtonText: {
     fontSize: 13,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   statCard: {
     width: (Dimensions.get('window').width - 40) / 2,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     borderLeftWidth: 4,
     shadowColor: '#000',
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: 4,
     gap: 2,
   },
   trendText: {
@@ -423,14 +423,14 @@ const styles = StyleSheet.create({
   },
   seeAllButton: {
     fontSize: 14,
-    color: '#3b82f6',
+    color: '#003a8c',
     fontWeight: '500',
   },
   accountCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 12,
     marginBottom: 8,
     borderLeftWidth: 4,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   accountIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 8,
     backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
@@ -481,12 +481,12 @@ const styles = StyleSheet.create({
   progressBar: {
     height: 8,
     backgroundColor: '#e5e7eb',
-    borderRadius: 4,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 2,
   },
   actionsGrid: {
     flexDirection: 'row',
@@ -496,14 +496,14 @@ const styles = StyleSheet.create({
   actionButton: {
     width: (Dimensions.get('window').width - 56) / 2,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     alignItems: 'center',
   },
   actionIcon: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
