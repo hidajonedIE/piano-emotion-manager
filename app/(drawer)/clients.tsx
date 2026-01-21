@@ -472,6 +472,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textPrimary,
     fontWeight: '500',
+    outlineStyle: 'none', // Eliminar outline en web
   },
   filterButton: {
     flexDirection: 'row',

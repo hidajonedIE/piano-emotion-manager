@@ -62,5 +62,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     paddingVertical: 4,
+    outlineStyle: 'none', // Eliminar outline en web
   },
 });
