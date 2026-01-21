@@ -69,7 +69,7 @@ export default function InvoicesScreen() {
       setHeaderConfig({
         title: 'Facturación',
         subtitle: `${invoices.length} ${invoices.length === 1 ? 'factura' : 'facturas'}`,
-        icon: 'receipt',
+        icon: 'doc.plaintext',
         showBackButton: false,
       });
     }, [invoices.length, setHeaderConfig])
