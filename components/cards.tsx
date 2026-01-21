@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 28,
+    gap: 48,
   },
   badgesRow: {
     flexDirection: 'row',
