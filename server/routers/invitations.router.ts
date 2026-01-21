@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { invitations, ADMIN_EMAILS } from '../../drizzle/invitations-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';

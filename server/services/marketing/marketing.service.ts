@@ -1,4 +1,4 @@
-import { db } from '../../getDb().js';
+import { db } from '../../db.js';
 
 interface RecipientFilters {
   tags?: string[];

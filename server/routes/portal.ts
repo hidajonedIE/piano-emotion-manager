@@ -7,7 +7,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { eq, and, desc, lt, isNull } from 'drizzle-orm';
-import { db } from '../getDb().js';
+import { db } from '../db.js';
 import {
   portalMagicLinks,
   portalSessions,

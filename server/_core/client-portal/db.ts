@@ -2,7 +2,7 @@
  * Client Portal Database Functions
  */
 
-import { getDb } from '../../getDb().js';
+import { getDb } from '../../db.js';
 import { sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import * as auth from './auth.js';

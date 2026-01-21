@@ -2,7 +2,7 @@
  * Auto-Scheduling Service
  * Crea automáticamente citas y servicios desde alertas
  */
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { 
   pianos, 
   clients, 

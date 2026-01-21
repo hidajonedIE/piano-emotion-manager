@@ -2,7 +2,7 @@
  * Report Export Service
  * Exportación de reportes de alertas en PDF y Excel
  */
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { alertHistory } from '../../drizzle/schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { AlertAnalyticsService } from './alert-analytics.service.js';

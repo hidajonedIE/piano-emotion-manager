@@ -7,7 +7,7 @@
 
 import { router, protectedProcedure } from '../_core/trpc.js';
 import { z } from 'zod';
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { alertSettings } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 

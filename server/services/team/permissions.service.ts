@@ -11,7 +11,7 @@ interface PermissionContext {
  */
 
 import { eq, and } from 'drizzle-orm';
-import { getDb } from '../../getDb().js';
+import { getDb } from '../../db.js';
 import { organizationMembers, OrganizationMember } from '../../../drizzle/schema.js';
 
 // ==========================================

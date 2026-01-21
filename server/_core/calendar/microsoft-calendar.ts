@@ -6,7 +6,7 @@ import { Client } from '@microsoft/microsoft-graph-client';
 import 'isomorphic-fetch';
 import { getAccessToken, isTokenExpired, refreshAccessToken } from './oauth-microsoft.js';
 import type { CalendarConnection, ExternalCalendar, ExternalEvent, WebhookSubscription } from './types.js';
-import { updateConnection } from './getDb().js';
+import { updateConnection } from './db.js';
 
 const WEBHOOK_URL = process.env.CALENDAR_WEBHOOK_URL || 'https://piano-emotion.com/api/calendar/webhook/microsoft';
 

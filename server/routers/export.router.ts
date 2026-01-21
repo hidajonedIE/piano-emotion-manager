@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import { getDb } from '../getDb().js';
+import { getDb } from '../db.js';
 import * as pdfGen from '../_core/export/pdf-generator.js';
 import * as excelGen from '../_core/export/excel-generator.js';
 

@@ -2,7 +2,7 @@
  * Alert Scheduling Service
  * Genera sugerencias de fechas para servicios basadas en alertas
  */
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { 
   pianos, 
   clients, 

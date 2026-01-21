@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc.js';
-import { getDb } from '../getDb().js';
+import { getDb } from '../db.js';
 import { serviceTypes } from '../../drizzle/service-types-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 

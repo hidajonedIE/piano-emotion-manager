@@ -4,7 +4,7 @@
  * Aggregates events from multiple sources into a unified timeline
  */
 
-import { getDb } from '../../getDb().js';
+import { getDb } from '../../db.js';
 import { sql } from 'drizzle-orm';
 
 // ============================================================================

@@ -7,7 +7,7 @@
  */
 
 import { eq, and, desc, sql, between, inArray, isNull } from 'drizzle-orm';
-import { db } from '../../getDb().js';
+import { db } from '../../db.js';
 import {
   products,
   warehouses,

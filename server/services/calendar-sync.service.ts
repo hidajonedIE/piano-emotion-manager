@@ -2,7 +2,7 @@
  * Calendar Sync Service
  * Sincroniza citas programadas con Google Calendar y Outlook
  */
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { appointments, users, calendarConnections } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { createEvent, updateEvent, deleteEvent } from '../_core/calendar/google-calendar.js';

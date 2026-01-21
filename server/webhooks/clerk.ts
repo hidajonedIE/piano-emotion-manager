@@ -9,7 +9,7 @@
 import { Webhook } from 'svix';
 import { WebhookEvent } from '@clerk/clerk-sdk-node';
 import { validateInvitation, markInvitationAsUsed } from '../middleware/invitation-guard.js';
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { users } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 

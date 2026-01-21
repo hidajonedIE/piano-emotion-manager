@@ -2,7 +2,7 @@
  * Reminder Service
  * Gestiona recordatorios automáticos para citas y alertas
  */
-import * as db from '../getDb().js';
+import * as db from '../db.js';
 import { 
   appointments,
   alertHistory,
