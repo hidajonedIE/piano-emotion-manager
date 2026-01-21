@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter, usePathname } from 'expo-router';
 import { useMemo, useState, useEffect } from 'react';

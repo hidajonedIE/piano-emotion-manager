@@ -1,3 +1,4 @@
+import React from 'react';
 /**
  * Pianos Screen - Professional Minimalist Design
  * Piano Emotion Manager
