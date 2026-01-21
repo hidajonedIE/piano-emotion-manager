@@ -11,7 +11,7 @@ import {
   appointments,
   InsertAppointment,
   InsertService,
-} from '../../drizzle/schema.js.js';
+} from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { AlertSchedulingService } from './alert-scheduling.service.js';
 

@@ -9,7 +9,7 @@ import {
   users,
   pianos,
   clients,
-} from '../../drizzle/schema.js.js';
+} from '../../drizzle/schema.js';
 import { eq, and, gte, lte, isNull } from 'drizzle-orm';
 import { UnifiedEmailService } from './unified-email.service.js';
 

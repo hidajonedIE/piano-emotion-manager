@@ -3,7 +3,7 @@
  * Sincroniza citas programadas con Google Calendar y Outlook
  */
 import * as db from '../db.js';
-import { appointments, users, calendarConnections } from '../../drizzle/schema.js.js';
+import { appointments, users, calendarConnections } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { createEvent, updateEvent, deleteEvent } from '../_core/calendar/google-calendar.js';
 import { isTokenExpired, refreshAccessToken } from '../_core/calendar/oauth-google.js';

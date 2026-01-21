@@ -15,7 +15,7 @@ import {
   products,
   type WarehouseType,
   type ValuationMethod,
-} from '../../../drizzle/inventory-schema.js.js';
+} from '../../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

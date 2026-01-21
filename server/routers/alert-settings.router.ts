@@ -8,7 +8,7 @@
 import { router, protectedProcedure } from '../_core/trpc.js';
 import { z } from 'zod';
 import * as db from '../db.js';
-import { alertSettings } from '../../drizzle/schema.js.js';
+import { alertSettings } from '../../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 
 // Valores por defecto

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { getDb } from '../server/db.js';
-import { users, clients } from '../drizzle/schema.js.js';
+import { users, clients } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 async function checkClients() {

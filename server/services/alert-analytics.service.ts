@@ -3,7 +3,7 @@
  * Análisis y métricas del sistema de alertas
  */
 import * as db from '../db.js';
-import { alertHistory, pianos, clients } from '../../drizzle/schema.js.js';
+import { alertHistory, pianos, clients } from '../../drizzle/schema.js';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 
 interface TimeSeriesData {

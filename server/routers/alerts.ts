@@ -14,7 +14,7 @@ import {
   pianos,
   clients,
   services,
-} from '../../drizzle/schema.js.js';
+} from '../../drizzle/schema.js';
 import { AlertSchedulingService } from '../services/alert-scheduling.service.js';
 import { AutoSchedulingService } from '../services/auto-scheduling.service.js';
 import { CalendarSyncService } from '../services/calendar-sync.service.js';

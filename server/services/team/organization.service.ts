@@ -17,8 +17,8 @@ import {
   OrganizationMember,
   InsertOrganizationMember,
   OrganizationInvitation,
-} from '../../../drizzle/schema.js.js';
-import { users } from '../../../drizzle/schema.js.js';
+} from '../../../drizzle/schema.js';
+import { users } from '../../../drizzle/schema.js';
 import { generateToken, hashToken } from '../../utils/crypto.js';
 import { sendEmail } from '../../utils/email.js';
 

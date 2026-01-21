@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { getDb } from '../server/db.js';
-import { users } from '../drizzle/schema.js.js';
+import { users } from '../drizzle/schema.js';
 
 async function checkUserEmail() {
   console.log('🔍 Verificando email del usuario...\n');

@@ -14,8 +14,8 @@ import {
   messageHistory,
   MessageTemplateType,
   CampaignStatus 
-} from '../../../drizzle/schema.js.js';
-import { clients, pianos, services } from '../../../drizzle/schema.js.js';
+} from '../../../drizzle/schema.js';
+import { clients, pianos, services } from '../../../drizzle/schema.js';
 
 /**
  * Variables disponibles para cada tipo de plantilla

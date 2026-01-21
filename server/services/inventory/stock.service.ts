@@ -15,7 +15,7 @@ import {
   stockMovements,
   stockAlerts,
   type StockMovementType,
-} from '../../../drizzle/inventory-schema.js.js';
+} from '../../../drizzle/inventory-schema.js';
 
 // ============================================================================
 // Types

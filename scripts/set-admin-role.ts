@@ -9,7 +9,7 @@
  */
 
 import { getDb } from '../server/db.js';
-import { users } from '../drizzle/schema.js.js';
+import { users } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 async function setAdminRole(email: string) {

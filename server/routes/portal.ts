@@ -16,8 +16,8 @@ import {
   portalConversations,
   portalMessages,
   portalNotifications,
-} from '../../drizzle/portal-schema.js.js';
-import { clients, pianos, services, invoices, appointments } from '../../drizzle/schema.js.js';
+} from '../../drizzle/portal-schema.js';
+import { clients, pianos, services, invoices, appointments } from '../../drizzle/schema.js';
 
 const router = Router();
 

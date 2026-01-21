@@ -5,7 +5,7 @@
  * Recibe notificaciones de Microsoft Graph cuando hay cambios en el calendario
  */
 import * as db from '../../server/db.js';
-import { calendarConnections } from '../../drizzle/schema.js.js';
+import { calendarConnections } from '../../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: Request) {

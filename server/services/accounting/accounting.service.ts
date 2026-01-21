@@ -3,7 +3,7 @@
  * Piano Emotion Manager
  */
 
-import { getDb } from '../../../drizzle/db.js.js';
+import { getDb } from '../../../drizzle/db.js';
 
 const db = getDb();
 import { eq, and, gte, lte, desc, asc, sql, sum } from 'drizzle-orm';
@@ -19,8 +19,8 @@ import {
   type ExpenseCategory,
   type IncomeCategory,
   type AccountType,
-} from '../../../drizzle/accounting-schema.js.js';
-import { invoices } from '../../../drizzle/schema.js.js';
+} from '../../../drizzle/accounting-schema.js';
+import { invoices } from '../../../drizzle/schema.js';
 
 // ============================================================================
 // Types
