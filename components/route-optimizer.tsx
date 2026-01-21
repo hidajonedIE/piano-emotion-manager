@@ -300,7 +300,7 @@ export function RouteOptimizer({ appointments, getClient, onAppointmentPress }: 
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
     padding: Spacing.md,
     gap: Spacing.md,
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 6,
-    borderRadius: BorderRadius.md,
+    borderRadius: 6,
   },
   optimizeText: {
     fontSize: 13,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 4,
   },
   travelText: {
     fontSize: 11,
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   stopNumber: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   navButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: 6,
   },
   fullRouteText: {
     color: '#FFFFFF',
