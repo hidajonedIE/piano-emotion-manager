@@ -208,7 +208,7 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
           <ThemedText type="defaultSemiBold">
             {SERVICE_TYPE_LABELS[service.type]}
           </ThemedText>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             {service.maintenanceLevel && (
               <View style={[styles.levelBadge, { backgroundColor: `${maintenanceColor}20` }]}>
                 <ThemedText style={[styles.levelText, { color: maintenanceColor }]}>
