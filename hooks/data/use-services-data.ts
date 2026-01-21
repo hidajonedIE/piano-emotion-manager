@@ -68,6 +68,11 @@ export function useServicesData() {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
+  // Query para obtener estadísticas
+  const { data: statsData } = trpc.services.getStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
   // Mutations
   const createMutation = trpc.services.create.useMutation({
     onSuccess: () => {
@@ -178,6 +183,7 @@ export function useServicesData() {
   return {
     services,
     loading,
+    stats: statsData,
     addService,
     updateService,
     deleteService,

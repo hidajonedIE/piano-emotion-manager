@@ -52,7 +52,7 @@ export default function ServicesScreen() {
   // Debounce search
   const debouncedSearch = useDebounce(search, 300);
 
-  const { services, loading, refresh } = useServicesData();
+  const { services, loading, refresh, stats: backendStats } = useServicesData();
   const { getPiano } = usePianosData();
   const { getClient } = useClientsData();
 
@@ -65,22 +65,30 @@ export default function ServicesScreen() {
     React.useCallback(() => {
       setHeaderConfig({
         title: t('navigation.services'),
-        subtitle: `${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`,
+        subtitle: `${backendStats?.total || services.length} ${(backendStats?.total || services.length) === 1 ? 'servicio' : 'servicios'}`,
         icon: 'wrench.and.screwdriver.fill',
         showBackButton: false,
       });
-    }, [services.length, t, setHeaderConfig])
+    }, [backendStats?.total, services.length, t, setHeaderConfig])
   );
 
-  // Estadísticas por tipo
+  // Estadísticas por tipo desde el backend
   const stats = useMemo(() => {
-    const tuning = services.filter(s => s.type === 'tuning').length;
-    const maintenance = services.filter(s => s.type === 'maintenance').length;
-    const repair = services.filter(s => s.type === 'repair').length;
-    const regulation = services.filter(s => s.type === 'regulation').length;
+    if (!backendStats?.byType) {
+      return { tuning: 0, maintenance: 0, repair: 0, regulation: 0 };
+    }
+    
+    const tuning = backendStats.byType.find(t => t.serviceType === 'tuning')?.count || 0;
+    const maintenance = backendStats.byType.filter(t => 
+      t.serviceType === 'maintenance_basic' || 
+      t.serviceType === 'maintenance_complete' || 
+      t.serviceType === 'maintenance_premium'
+    ).reduce((sum, t) => sum + (t.count || 0), 0);
+    const repair = backendStats.byType.find(t => t.serviceType === 'repair')?.count || 0;
+    const regulation = backendStats.byType.find(t => t.serviceType === 'regulation')?.count || 0;
     
     return { tuning, maintenance, repair, regulation };
-  }, [services]);
+  }, [backendStats]);
 
   // Filtrar servicios
   const filteredServices = useMemo(() => {
