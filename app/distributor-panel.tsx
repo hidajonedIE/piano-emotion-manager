@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useDistributorPanel } from '@/hooks/distributor/use-distributor';
 
 // ============================================
 // TIPOS
@@ -85,163 +86,70 @@ interface DistributorStats {
 
 export default function DistributorPanel() {
   const [activeTab, setActiveTab] = useState<'config' | 'modules' | 'technicians' | 'stats'>('config');
+  
+  // Usar hook de tRPC para cargar datos
+  const {
+    wooConfig: wooConfigData,
+    premiumConfig: premiumConfigData,
+    moduleConfig: moduleConfigData,
+    technicians: techniciansData,
+    stats: statsData,
+    isLoading,
+    isSavingWoo,
+    isTestingWoo,
+    isSavingPremium,
+    isSavingModules,
+    saveWooCommerceConfig,
+    testWooCommerceConnection,
+    savePremiumConfig,
+    saveModuleConfig,
+    syncWithWooCommerce,
+  } = useDistributorPanel();
+
+  // Estados locales para edición
   const [wooConfig, setWooConfig] = useState<WooCommerceConfig>({
-    url: '',
-    apiKey: '',
-    apiSecret: '',
-    enabled: false,
-    connectionStatus: 'disconnected',
+    url: wooConfigData.url || '',
+    apiKey: wooConfigData.consumerKey || '',
+    apiSecret: wooConfigData.consumerSecret || '',
+    enabled: wooConfigData.enabled || false,
+    connectionStatus: wooConfigData.connectionStatus || 'disconnected',
   });
-  const [premiumConfig, setPremiumConfig] = useState<PremiumConfig>({
-    minimumPurchaseAmount: 100,
-    trialPeriodDays: 30,
-    gracePeriodDays: 7,
-    whatsappEnabled: true,
-    portalEnabled: true,
-    autoRemindersEnabled: true,
-  });
-  const [moduleConfig, setModuleConfig] = useState<ModuleConfig>({
-    // Módulos de Negocio - por defecto activos
-    suppliersEnabled: true,
-    inventoryEnabled: true,
-    invoicingEnabled: true,
-    advancedInvoicingEnabled: false,
-    accountingEnabled: false,
-    
-    // Módulos Premium - por defecto inactivos
-    teamEnabled: false,
-    crmEnabled: false,
-    reportsEnabled: false,
-    
-    // Configuración de Tienda - por defecto activos
-    shopEnabled: true,
-    showPrices: true,
-    allowDirectOrders: true,
-    showStock: true,
-    stockAlertsEnabled: true,
-    
-    // Configuración de Marca - por defecto inactivos
-    customBranding: false,
-    hideCompetitorLinks: false,
-  });
-  const [technicians, setTechnicians] = useState<TechnicianSummary[]>([]);
-  const [stats, setStats] = useState<DistributorStats | null>(null);
+  const [premiumConfig, setPremiumConfig] = useState<PremiumConfig>(premiumConfigData);
+  const [moduleConfig, setModuleConfig] = useState<ModuleConfig>(moduleConfigData);
+  const technicians = techniciansData;
+  const stats = statsData;
   const [isSaving, setIsSaving] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
+  const isTesting = isTestingWoo;
 
-  // Cargar datos iniciales
+  // Sincronizar estados locales cuando cambian los datos del hook
   useEffect(() => {
-    loadDistributorData();
-  }, []);
-
-  const loadDistributorData = async () => {
-    try {
-      const response = await fetch('/api/distributor', {
-        headers: {
-          'x-distributor-id': localStorage.getItem('distributorId') || '',
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Cargar configuración premium
-        if (data.config) {
-          setPremiumConfig({
-            minimumPurchaseAmount: data.config.minimumPurchaseAmount,
-            trialPeriodDays: data.config.trialPeriodDays,
-            gracePeriodDays: data.config.gracePeriodDays,
-            whatsappEnabled: data.config.whatsappEnabled,
-            portalEnabled: data.config.portalEnabled,
-            autoRemindersEnabled: data.config.autoRemindersEnabled,
-          });
-          
-          if (data.config.woocommerce) {
-            setWooConfig(prev => ({
-              ...prev,
-              url: data.config.woocommerce.url,
-              enabled: data.config.woocommerce.enabled,
-              connectionStatus: data.config.woocommerce.connectionStatus,
-            }));
-          }
-        }
-        
-        // Cargar configuración de módulos
-        if (data.moduleConfig) {
-          setModuleConfig(data.moduleConfig);
-        }
-        
-        // Cargar técnicos
-        if (data.technicians) {
-          setTechnicians(data.technicians);
-        }
-        
-        // Cargar estadísticas
-        if (data.stats) {
-          setStats(data.stats);
-        }
-        
-        return;
-      }
-    } catch (error) {
-      console.error('Error cargando datos del distribuidor:', error);
-    }
-    
-    // Datos de ejemplo como fallback
-    setTechnicians([
-      {
-        id: '1',
-        name: 'Juan García',
-        email: 'juan@example.com',
-        tier: 'premium',
-        purchasesLast30Days: 250,
-        lastPurchaseDate: '2024-12-20',
-        registrationDate: '2024-01-15',
-      },
-      {
-        id: '2',
-        name: 'María López',
-        email: 'maria@example.com',
-        tier: 'basic',
-        purchasesLast30Days: 45,
-        lastPurchaseDate: '2024-12-10',
-        registrationDate: '2024-06-01',
-      },
-      {
-        id: '3',
-        name: 'Pedro Martínez',
-        email: 'pedro@example.com',
-        tier: 'trial',
-        purchasesLast30Days: 0,
-        registrationDate: '2024-12-15',
-        trialEndsAt: '2025-01-14',
-      },
-    ]);
-
-    setStats({
-      totalTechnicians: 3,
-      premiumTechnicians: 1,
-      basicTechnicians: 1,
-      trialTechnicians: 1,
-      totalPurchasesLast30Days: 295,
-      averagePurchasePerTechnician: 98.33,
+    setWooConfig({
+      url: wooConfigData.url || '',
+      apiKey: wooConfigData.consumerKey || '',
+      apiSecret: wooConfigData.consumerSecret || '',
+      enabled: wooConfigData.enabled || false,
+      connectionStatus: wooConfigData.connectionStatus || 'disconnected',
     });
-  };
+  }, [wooConfigData]);
+
+  useEffect(() => {
+    setPremiumConfig(premiumConfigData);
+  }, [premiumConfigData]);
+
+  useEffect(() => {
+    setModuleConfig(moduleConfigData);
+  }, [moduleConfigData]);
 
   const handleTestConnection = async () => {
-    setIsTesting(true);
     setWooConfig(prev => ({ ...prev, connectionStatus: 'testing' }));
 
     try {
-      const response = await fetch('/api/distributor/woocommerce/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(wooConfig),
+      const result = await testWooCommerceConnection({
+        url: wooConfig.url,
+        consumerKey: wooConfig.apiKey,
+        consumerSecret: wooConfig.apiSecret,
+        enabled: wooConfig.enabled,
       });
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message || 'Error de conexión');
-      }
       
       setWooConfig(prev => ({
         ...prev,
@@ -249,30 +157,34 @@ export default function DistributorPanel() {
         lastTestDate: new Date().toISOString(),
         errorMessage: undefined,
       }));
+      alert('✅ Conexión exitosa con WooCommerce');
     } catch (error) {
       setWooConfig(prev => ({
         ...prev,
         connectionStatus: 'error',
         errorMessage: 'No se pudo conectar con WooCommerce',
       }));
-    } finally {
-      setIsTesting(false);
+      alert('❌ Error al conectar con WooCommerce');
     }
   };
 
   const handleSaveConfig = async () => {
     setIsSaving(true);
     try {
-      // Guardar configuración premium
-      await fetch('/api/distributor/premium-config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(premiumConfig),
+      // Guardar configuración de WooCommerce
+      await saveWooCommerceConfig({
+        url: wooConfig.url,
+        consumerKey: wooConfig.apiKey,
+        consumerSecret: wooConfig.apiSecret,
+        enabled: wooConfig.enabled,
       });
       
-      alert('Configuración guardada correctamente');
+      // Guardar configuración premium
+      await savePremiumConfig(premiumConfig);
+      
+      alert('✅ Configuración guardada correctamente');
     } catch (error) {
-      alert('Error al guardar la configuración');
+      alert('❌ Error al guardar la configuración');
     } finally {
       setIsSaving(false);
     }
@@ -281,15 +193,10 @@ export default function DistributorPanel() {
   const handleSaveModuleConfig = async () => {
     setIsSaving(true);
     try {
-      await fetch('/api/distributor/module-config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(moduleConfig),
-      });
-      
-      alert('Configuración de módulos guardada correctamente');
+      await saveModuleConfig(moduleConfig);
+      alert('✅ Configuración de módulos guardada correctamente');
     } catch (error) {
-      alert('Error al guardar la configuración de módulos');
+      alert('❌ Error al guardar la configuración de módulos');
     } finally {
       setIsSaving(false);
     }
