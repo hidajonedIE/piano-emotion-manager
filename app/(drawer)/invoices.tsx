@@ -27,9 +27,9 @@ import React from 'react';
 // Paleta moderna y elegante
 const COLORS = {
   primary: '#003a8c',           // Azul corporativo
-  accent: '#e07a5f',            // Terracota
-  success: '#6B9080',           // Verde sobrio
-  warning: '#F59E0B',           // Ámbar
+  accent: '#e07a5f',            // Terracota (rojo teja)
+  success: '#4A7C59',           // Verde sobrio que armoniza con la paleta
+  warning: '#e07a5f',           // Rojo teja (pendiente)
   background: '#FAFAFA',        // Fondo
   surface: '#FFFFFF',           // Blanco
   surfaceAlt: '#F8F9FA',        // Gris muy claro
