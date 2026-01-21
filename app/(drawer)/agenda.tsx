@@ -191,9 +191,20 @@ export default function AgendaScreen() {
           <Text style={styles.sectionTitle}>Calendario</Text>
           <View style={styles.calendarContainer}>
             <CalendarView
-              selectedDate={selectedDate}
-              onSelectDate={handleDateSelect}
-              appointments={appointments}
+              events={appointments.map(apt => ({
+                id: apt.id,
+                date: apt.date,
+                startTime: apt.startTime || '00:00',
+                endTime: apt.endTime,
+                title: apt.title || 'Sin título',
+                subtitle: apt.description,
+                status: apt.status,
+              }))}
+              onDatePress={(dateStr) => {
+                const date = new Date(dateStr);
+                handleDateSelect(date);
+              }}
+              initialDate={selectedDate.toISOString().split('T')[0]}
             />
           </View>
         </View>
