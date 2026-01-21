@@ -204,11 +204,11 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
         <IconSymbol name="wrench.fill" size={20} color={maintenanceColor} />
       </View>
       <View style={styles.cardContent}>
-        <View style={styles.serviceHeader}>
-          <ThemedText type="defaultSemiBold">
-            {SERVICE_TYPE_LABELS[service.type]}
-          </ThemedText>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+        <ThemedText type="defaultSemiBold">
+          {SERVICE_TYPE_LABELS[service.type]}
+        </ThemedText>
+        {(service.maintenanceLevel || statusBadge) && (
+          <View style={styles.badgesRow}>
             {service.maintenanceLevel && (
               <View style={[styles.levelBadge, { backgroundColor: `${maintenanceColor}20` }]}>
                 <ThemedText style={[styles.levelText, { color: maintenanceColor }]}>
@@ -224,7 +224,7 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
               </View>
             )}
           </View>
-        </View>
+        )}
         <View style={styles.cardRow}>
           <IconSymbol name="calendar" size={12} color={textSecondary} />
           <ThemedText style={[styles.cardSubtext, { color: textSecondary }]}>
@@ -370,10 +370,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
-  serviceHeader: {
+  badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
+    marginTop: 6,
   },
   levelBadge: {
     paddingHorizontal: 6,
