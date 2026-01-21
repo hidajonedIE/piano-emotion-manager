@@ -115,6 +115,11 @@ export default function ClientsScreen() {
 
   // Estadísticas desde el backend (getStats endpoint)
 
+  // Debugging
+  console.log('[Clients Debug] Total clients from backend:', clients.length);
+  console.log('[Clients Debug] Loading:', loading);
+  console.log('[Clients Debug] Has more:', hasMore);
+  
   // Filtrar clientes
   const filteredClients = useMemo(() => {
     return clients.filter((c) => {
