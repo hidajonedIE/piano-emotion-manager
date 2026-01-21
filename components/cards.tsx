@@ -183,7 +183,7 @@ export const ServiceCard = memo(function ServiceCard({ service, pianoInfo, clien
 
   // Badge de estado elegante
   const statusBadge = isPast !== undefined ? {
-    label: isPast ? 'COMPLETADO ✓' : 'PENDIENTE',
+    label: isPast ? 'Completado' : 'Pendiente',
     bgColor: isPast ? '#F0FDF4' : '#FEF2F2',
     textColor: isPast ? '#065F46' : '#991B1B',
   } : null;
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 16,
+    marginTop: 12,
   },
   levelBadge: {
     paddingHorizontal: 6,
@@ -386,12 +386,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 0,
   },
   statusBadgeText: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: '600',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
