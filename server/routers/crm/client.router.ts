@@ -79,7 +79,7 @@ export const clientRouter = router({
       sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
     }))
     .query(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.getClients(
         input.filters || {},
         input.page,
@@ -95,7 +95,7 @@ export const clientRouter = router({
   getProfile: protectedProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.getOrCreateProfile(input.clientId);
     }),
 
@@ -105,7 +105,7 @@ export const clientRouter = router({
   updateProfile: protectedProcedure
     .input(profileInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.updateProfile(input);
     }),
 
@@ -115,7 +115,7 @@ export const clientRouter = router({
   calculateScore: protectedProcedure
     .input(z.object({ clientId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.calculateClientScore(input.clientId);
     }),
 
@@ -127,7 +127,7 @@ export const clientRouter = router({
    * Obtiene todas las etiquetas
    */
   getTags: protectedProcedure.query(async ({ ctx }) => {
-    const service = createClientService(ctx.organizationId, ctx.userId);
+    const service = createClientService(ctx.organizationId, ctx.user.id);
     return service.getTags();
   }),
 
@@ -141,7 +141,7 @@ export const clientRouter = router({
       description: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.createTag(input.name, input.color, input.description);
     }),
 
@@ -154,7 +154,7 @@ export const clientRouter = router({
       tagIds: z.array(z.number()),
     }))
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       await service.assignTags(input.clientId, input.tagIds);
       return { success: true };
     }),
@@ -165,7 +165,7 @@ export const clientRouter = router({
   getClientTags: protectedProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.getClientTags(input.clientId);
     }),
 
@@ -179,7 +179,7 @@ export const clientRouter = router({
   logCommunication: protectedProcedure
     .input(communicationInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.logCommunication(input as any);
     }),
 
@@ -192,7 +192,7 @@ export const clientRouter = router({
       limit: z.number().optional().default(50),
     }))
     .query(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.getCommunicationHistory(input.clientId, input.limit);
     }),
 
@@ -200,7 +200,7 @@ export const clientRouter = router({
    * Obtiene seguimientos pendientes
    */
   getPendingFollowUps: protectedProcedure.query(async ({ ctx }) => {
-    const service = createClientService(ctx.organizationId, ctx.userId);
+    const service = createClientService(ctx.organizationId, ctx.user.id);
     return service.getPendingFollowUps();
   }),
 
@@ -214,7 +214,7 @@ export const clientRouter = router({
   createTask: protectedProcedure
     .input(taskInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.createTask(input as any);
     }),
 
@@ -224,7 +224,7 @@ export const clientRouter = router({
   getPendingTasks: protectedProcedure
     .input(z.object({ assignedTo: z.number().optional() }))
     .query(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.getPendingTasks(input.assignedTo);
     }),
 
@@ -234,7 +234,7 @@ export const clientRouter = router({
   completeTask: protectedProcedure
     .input(z.object({ taskId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       await service.completeTask(input.taskId);
       return { success: true };
     }),
@@ -253,7 +253,7 @@ export const clientRouter = router({
       description: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const service = createClientService(ctx.organizationId, ctx.userId);
+      const service = createClientService(ctx.organizationId, ctx.user.id);
       return service.createSegment(input.name, input.filters, input.description);
     }),
 
@@ -261,7 +261,7 @@ export const clientRouter = router({
    * Obtiene estadísticas CRM
    */
   getStats: protectedProcedure.query(async ({ ctx }) => {
-    const service = createClientService(ctx.organizationId, ctx.userId);
+    const service = createClientService(ctx.organizationId, ctx.user.id);
     return service.getStats();
   }),
 });

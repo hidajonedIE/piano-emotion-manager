@@ -136,7 +136,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       subscriptionId: subscriptionId,
       subscriptionPlan: plan,
       subscriptionStatus: 'active',
-      subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+      subscriptionEndDate: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
     })
     .where(eq(users.clerkId, userId));
 
@@ -166,7 +166,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     .set({
       subscriptionPlan: plan,
       subscriptionStatus: statusMap[subscription.status] || 'none',
-      subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+      subscriptionEndDate: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
     })
     .where(eq(users.stripeCustomerId, customerId));
 }
