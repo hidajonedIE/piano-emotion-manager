@@ -42,6 +42,7 @@ import { portalAdminRouter } from "./routers/portal-admin.router.js";
 import { timelineRouter } from "./routers/timeline.router.js";
 import { exportRouter } from "./routers/export.router.js";
 import { serviceTypesRouter } from "./routers/service-types.router.js";
+import { accountingRouter } from "./routers/accounting/index.js";
 
 export const appRouter = router({
   // Sistema
@@ -105,6 +106,9 @@ export const appRouter = router({
   
   // Tipos de servicio personalizados
   serviceTypes: serviceTypesRouter,
+
+  // Contabilidad
+  accounting: accountingRouter,
 
 });
 
