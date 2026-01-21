@@ -1,22 +1,42 @@
+/**
+ * Services Screen - Professional Minimalist Design
+ * Piano Emotion Manager
+ * 
+ * Diseño profesional y minimalista:
+ * - Sin colorines infantiles
+ * - Paleta neutra con acentos azules
+ * - Estadísticas sobrias y elegantes
+ * - Tipografía limpia y espaciado generoso
+ */
+
 import React from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useHeader } from '@/contexts/HeaderContext';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions, ActivityIndicator } from 'react-native';
 
 import { ServiceCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { SearchBar } from '@/components/search-bar';
-import { ThemedText } from '@/components/themed-text';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Service, ServiceType, getClientFullName } from '@/types';
+import { useDebounce } from '@/hooks/use-debounce';
+
+// Paleta profesional minimalista
+const COLORS = {
+  primary: '#003a8c',       // Azul corporativo
+  background: '#ffffff',    // Blanco puro
+  surface: '#f8f9fa',       // Gris muy claro
+  border: '#e5e7eb',        // Gris claro para bordes
+  textPrimary: '#1a1a1a',   // Negro casi puro
+  textSecondary: '#6b7280', // Gris medio
+  textTertiary: '#9ca3af',  // Gris claro
+  accent: '#e07a5f',        // Terracota (solo para acciones)
+};
 
 type FilterType = 'all' | ServiceType;
 
@@ -25,17 +45,16 @@ export default function ServicesScreen() {
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const { width } = useWindowDimensions();
-  const { services, loading, refresh } = useServicesData();
-  const { getPiano } = usePianosData();
-  const { getClient } = useClientsData();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  const accent = useThemeColor({}, 'accent');
-  const textSecondary = useThemeColor({}, 'textSecondary');
-  const cardBg = useThemeColor({}, 'cardBackground');
-  const borderColor = useThemeColor({}, 'border');
+  // Debounce search
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { services, loading, refresh } = useServicesData();
+  const { getPiano } = usePianosData();
+  const { getClient } = useClientsData();
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
@@ -44,23 +63,23 @@ export default function ServicesScreen() {
   // Configurar header
   useFocusEffect(
     React.useCallback(() => {
-    setHeaderConfig({
-      title: t('navigation.services'),
-      subtitle: `${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`,
-      icon: 'wrench.and.screwdriver.fill',
-      showBackButton: false,
-    });
+      setHeaderConfig({
+        title: t('navigation.services'),
+        subtitle: `${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`,
+        icon: 'wrench.and.screwdriver.fill',
+        showBackButton: false,
+      });
     }, [services.length, t, setHeaderConfig])
   );
 
   // Estadísticas por tipo
   const stats = useMemo(() => {
     const tuning = services.filter(s => s.type === 'tuning').length;
-    const cleaning = services.filter(s => s.type === 'maintenance').length;
+    const maintenance = services.filter(s => s.type === 'maintenance').length;
     const repair = services.filter(s => s.type === 'repair').length;
     const regulation = services.filter(s => s.type === 'regulation').length;
     
-    return { tuning, cleaning, repair, regulation };
+    return { tuning, maintenance, repair, regulation };
   }, [services]);
 
   // Filtrar servicios
@@ -76,8 +95,8 @@ export default function ServicesScreen() {
     }
 
     // Filtrar por búsqueda
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const searchLower = debouncedSearch.toLowerCase();
       result = result.filter((s) => {
         const piano = getPiano(s.pianoId);
         const client = getClient(s.clientId);
@@ -93,9 +112,9 @@ export default function ServicesScreen() {
     // Agregar flag isPast para determinar el color del borde
     return result.map(s => ({
       ...s,
-      isPast: new Date(s.date) < now // true = completado (verde), false = pendiente (rojo)
+      isPast: new Date(s.date) < now
     }));
-  }, [services, filter, search, getPiano, getClient]);
+  }, [services, filter, debouncedSearch, getPiano, getClient]);
 
   const handleServicePress = (service: Service) => {
     router.push({
@@ -137,60 +156,43 @@ export default function ServicesScreen() {
   );
 
   const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: t('common.all') },
-    { key: 'tuning', label: t('services.types.tuning') },
-    { key: 'repair', label: t('services.types.repair') },
-    { key: 'maintenance', label: t('services.types.cleaning') },
-    { key: 'regulation', label: t('services.types.regulation') },
+    { key: 'all', label: 'Todos' },
+    { key: 'tuning', label: 'Afinación' },
+    { key: 'maintenance', label: 'Mantenimiento' },
+    { key: 'repair', label: 'Reparación' },
+    { key: 'regulation', label: 'Regulación' },
   ];
-
-  // Calcular estadísticas
-  const totalCost = filteredServices.reduce((sum, s) => sum + (s.cost || 0), 0);
 
   // Mostrar animación de carga inicial
   if (loading && services.length === 0) {
     return (
-      <LinearGradient
-        colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.container}
-      >
+      <View style={[styles.container, { backgroundColor: COLORS.background }]}>
         <View style={styles.loadingState}>
-          <LoadingSpinner size="large" messageType="services" />
+          <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.container}
-    >
-      {/* Grid de estadísticas por tipo */}
+    <View style={[styles.container, { backgroundColor: COLORS.background }]}>
+      {/* Grid de estadísticas por tipo - Diseño profesional */}
       <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
-        <View style={[styles.statCard, { backgroundColor: '#f59e0b' }]}>
-          <Ionicons name="musical-notes" size={20} color="#ffffff" />
-          <Text style={styles.statNumber}>{stats.tuning}</Text>
-          <Text style={styles.statLabel}>Afinaciones</Text>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.tuning}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Afinaciones</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#3b82f6' }]}>
-          <Ionicons name="sparkles" size={20} color="#ffffff" />
-          <Text style={styles.statNumber}>{stats.cleaning}</Text>
-          <Text style={styles.statLabel}>Limpiezas</Text>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.maintenance}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Mantenimiento</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#ef4444' }]}>
-          <Ionicons name="construct" size={20} color="#ffffff" />
-          <Text style={styles.statNumber}>{stats.repair}</Text>
-          <Text style={styles.statLabel}>Reparaciones</Text>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.repair}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Reparaciones</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#8b5cf6' }]}>
-          <Ionicons name="settings" size={20} color="#ffffff" />
-          <Text style={styles.statNumber}>{stats.regulation}</Text>
-          <Text style={styles.statLabel}>Regulaciones</Text>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.regulation}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Regulaciones</Text>
         </View>
       </View>
 
@@ -198,8 +200,8 @@ export default function ServicesScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder={t('common.search') + '...'}
-          accessibilityLabel={t('common.search') + ' ' + t('navigation.services').toLowerCase()}
+          placeholder="Buscar..."
+          accessibilityLabel="Buscar servicios"
         />
       </View>
 
@@ -216,19 +218,21 @@ export default function ServicesScreen() {
             <Pressable
               style={[
                 styles.filterChip,
-                { backgroundColor: cardBg, borderColor },
-                filter === f.key && { backgroundColor: accent, borderColor: accent },
+                { 
+                  backgroundColor: filter === f.key ? COLORS.primary : COLORS.background,
+                  borderColor: filter === f.key ? COLORS.primary : COLORS.border
+                },
               ]}
               onPress={() => setFilter(f.key)}
             >
-              <ThemedText
+              <Text
                 style={[
                   styles.filterText,
-                  { color: filter === f.key ? '#FFFFFF' : textSecondary },
+                  { color: filter === f.key ? COLORS.background : COLORS.textSecondary },
                 ]}
               >
                 {f.label}
-              </ThemedText>
+              </Text>
             </Pressable>
           )}
         />
@@ -236,12 +240,13 @@ export default function ServicesScreen() {
 
       {filteredServices.length === 0 ? (
         <EmptyState
-          icon="wrench.fill" showBackButton={true}
-          title={search || filter !== 'all' ? t('common.noResults') : t('services.noServices')}
+          icon="wrench.fill"
+          showBackButton={true}
+          title={search || filter !== 'all' ? 'Sin resultados' : 'No hay servicios'}
           message={
             search || filter !== 'all'
-              ? t('common.noResults')
-              : t('services.addFirstService')
+              ? 'No se encontraron servicios'
+              : 'Añade tu primer servicio'
           }
         />
       ) : (
@@ -255,36 +260,20 @@ export default function ServicesScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#7A8B99"
-              title={t('common.loading')}
-              titleColor="#7A8B99"
+              tintColor={COLORS.primary}
+              title="Cargando..."
+              titleColor={COLORS.textSecondary}
             />
           }
         />
       )}
 
-      {/* Acciones rápidas */}
-      {filteredServices.length > 0 && (
-        <View style={styles.actionsSection}>
-          <View style={[styles.actionsGrid, isDesktop && styles.actionsGridDesktop]}>
-            <Pressable style={styles.actionButton}>
-              <Ionicons name="calendar" size={18} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Calendario</Text>
-            </Pressable>
-            <Pressable style={styles.actionButton}>
-              <Ionicons name="share" size={18} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Exportar</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-
       <FAB 
         onPress={handleAddService} 
-        accessibilityLabel={t('services.newService')}
-        accessibilityHint={t('services.addFirstService')}
+        accessibilityLabel="Nuevo servicio"
+        accessibilityHint="Añadir un nuevo servicio"
       />
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -313,21 +302,19 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    padding: Spacing.sm,
+    padding: Spacing.md,
     borderRadius: BorderRadius.sm,
     alignItems: 'center',
+    borderWidth: 1,
     gap: 4,
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '500',
-    color: '#ffffff',
-    opacity: 0.9,
     textAlign: 'center',
   },
 
@@ -359,38 +346,5 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: Spacing.md,
     paddingBottom: 100,
-  },
-
-  // Acciones rápidas
-  actionsSection: {
-    position: 'absolute',
-    bottom: 80,
-    left: 0,
-    right: 0,
-    paddingHorizontal: Spacing.md,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  actionsGridDesktop: {
-    maxWidth: 400,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.sm,
-    backgroundColor: '#e07a5f',
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#ffffff',
   },
 });

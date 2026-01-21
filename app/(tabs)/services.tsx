@@ -3,53 +3,74 @@
  * Piano Emotion Manager
  * 
  * Diseño profesional y minimalista:
- * - Estadísticas limpias y sobrias
- * - Paleta neutra con acentos azules
  * - Sin colorines infantiles
+ * - Paleta neutra con acentos azules
+ * - Estadísticas sobrias y elegantes
  * - Tipografía limpia y espaciado generoso
  */
+
+import React from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
+import { useHeader } from '@/contexts/HeaderContext';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View, Text, useWindowDimensions, ActivityIndicator } from 'react-native';
 
 import { ServiceCard, EmptyState } from '@/components/cards';
 import { FAB } from '@/components/fab';
 import { LoadingSpinner } from '@/components/loading-spinner';
-import { ScreenHeader } from '@/components/screen-header';
 import { SearchBar } from '@/components/search-bar';
-import { ThemedText } from '@/components/themed-text';
 import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Service, ServiceType, getClientFullName } from '@/types';
-
-type FilterType = 'all' | ServiceType;
+import { useDebounce } from '@/hooks/use-debounce';
 
 // Paleta profesional minimalista
 const COLORS = {
-  primary: '#003a8c',
-  surface: '#f8f9fa',
-  border: '#e5e7eb',
-  textPrimary: '#1a1a1a',
-  textSecondary: '#6b7280',
+  primary: '#003a8c',       // Azul corporativo
+  background: '#ffffff',    // Blanco puro
+  surface: '#f8f9fa',       // Gris muy claro
+  border: '#e5e7eb',        // Gris claro para bordes
+  textPrimary: '#1a1a1a',   // Negro casi puro
+  textSecondary: '#6b7280', // Gris medio
+  textTertiary: '#9ca3af',  // Gris claro
+  accent: '#e07a5f',        // Terracota (solo para acciones)
 };
+
+type FilterType = 'all' | ServiceType;
 
 export default function ServicesScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { services, loading, refresh } = useServicesData();
-  const { getPiano } = usePianosData();
-  const { getClient } = useClientsData();
+  const { setHeaderConfig } = useHeader();
+  const { width } = useWindowDimensions();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  const accent = useThemeColor({}, 'accent');
-  const textSecondary = useThemeColor({}, 'textSecondary');
-  const cardBg = useThemeColor({}, 'cardBackground');
-  const borderColor = useThemeColor({}, 'border');
+  // Debounce search
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { services, loading, refresh } = useServicesData();
+  const { getPiano } = usePianosData();
+  const { getClient } = useClientsData();
+
+  // Determinar si es móvil, tablet o desktop
+  const isMobile = width < 768;
+  const isDesktop = width >= 1024;
+
+  // Configurar header
+  useFocusEffect(
+    React.useCallback(() => {
+      setHeaderConfig({
+        title: t('navigation.services'),
+        subtitle: `${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`,
+        icon: 'wrench.and.screwdriver.fill',
+        showBackButton: false,
+      });
+    }, [services.length, t, setHeaderConfig])
+  );
 
   // Estadísticas por tipo
   const stats = useMemo(() => {
@@ -58,13 +79,7 @@ export default function ServicesScreen() {
     const repair = services.filter(s => s.type === 'repair').length;
     const regulation = services.filter(s => s.type === 'regulation').length;
     
-    return { 
-      total: services.length,
-      tuning,
-      maintenance,
-      repair,
-      regulation
-    };
+    return { tuning, maintenance, repair, regulation };
   }, [services]);
 
   // Filtrar servicios
@@ -80,8 +95,8 @@ export default function ServicesScreen() {
     }
 
     // Filtrar por búsqueda
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const searchLower = debouncedSearch.toLowerCase();
       result = result.filter((s) => {
         const piano = getPiano(s.pianoId);
         const client = getClient(s.clientId);
@@ -99,7 +114,7 @@ export default function ServicesScreen() {
       ...s,
       isPast: new Date(s.date) < now
     }));
-  }, [services, filter, search, getPiano, getClient]);
+  }, [services, filter, debouncedSearch, getPiano, getClient]);
 
   const handleServicePress = (service: Service) => {
     router.push({
@@ -143,66 +158,41 @@ export default function ServicesScreen() {
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: 'Todos' },
     { key: 'tuning', label: 'Afinación' },
+    { key: 'maintenance', label: 'Mantenimiento' },
     { key: 'repair', label: 'Reparación' },
-    { key: 'maintenance', label: 'Limpieza' },
     { key: 'regulation', label: 'Regulación' },
   ];
-
-  // Calcular estadísticas
-  const totalCost = filteredServices.reduce((sum, s) => sum + (s.cost || 0), 0);
 
   // Mostrar animación de carga inicial
   if (loading && services.length === 0) {
     return (
-      <LinearGradient
-        colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.container}
-      >
-        <ScreenHeader 
-          title="Servicios" 
-          icon="wrench.fill" 
-          showBackButton={true}
-        />
+      <View style={[styles.container, { backgroundColor: COLORS.background }]}>
         <View style={styles.loadingState}>
-          <LoadingSpinner size="large" messageType="services" />
+          <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.container}
-    >
-      <ScreenHeader 
-        title="Servicios" 
-        subtitle={`${services.length} ${services.length === 1 ? 'servicio' : 'servicios'}`}
-        icon="wrench.fill" 
-        showBackButton={true}
-      />
-
-      {/* Estadísticas minimalistas */}
-      <View style={styles.statsSection}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.total}</Text>
-          <Text style={styles.statLabel}>TOTAL</Text>
+    <View style={[styles.container, { backgroundColor: COLORS.background }]}>
+      {/* Grid de estadísticas por tipo - Diseño profesional */}
+      <View style={[styles.statsSection, isDesktop && styles.statsSectionDesktop]}>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.tuning}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Afinaciones</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.tuning}</Text>
-          <Text style={styles.statLabel}>AFINACIONES</Text>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.maintenance}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Mantenimiento</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.repair}</Text>
-          <Text style={styles.statLabel}>REPARACIONES</Text>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.repair}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Reparaciones</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.maintenance}</Text>
-          <Text style={styles.statLabel}>LIMPIEZAS</Text>
+        <View style={[styles.statCard, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+          <Text style={[styles.statNumber, { color: COLORS.primary }]}>{stats.regulation}</Text>
+          <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>Regulaciones</Text>
         </View>
       </View>
 
@@ -210,12 +200,12 @@ export default function ServicesScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Buscar servicios..."
+          placeholder="Buscar..."
           accessibilityLabel="Buscar servicios"
         />
       </View>
 
-      {/* Filtros minimalistas */}
+      {/* Filtros */}
       <View style={styles.filtersWrapper}>
         <FlatList
           horizontal
@@ -228,19 +218,21 @@ export default function ServicesScreen() {
             <Pressable
               style={[
                 styles.filterChip,
-                { backgroundColor: cardBg, borderColor },
-                filter === f.key && { backgroundColor: accent, borderColor: accent },
+                { 
+                  backgroundColor: filter === f.key ? COLORS.primary : COLORS.background,
+                  borderColor: filter === f.key ? COLORS.primary : COLORS.border
+                },
               ]}
               onPress={() => setFilter(f.key)}
             >
-              <ThemedText
+              <Text
                 style={[
                   styles.filterText,
-                  { color: filter === f.key ? '#FFFFFF' : textSecondary },
+                  { color: filter === f.key ? COLORS.background : COLORS.textSecondary },
                 ]}
               >
                 {f.label}
-              </ThemedText>
+              </Text>
             </Pressable>
           )}
         />
@@ -249,11 +241,12 @@ export default function ServicesScreen() {
       {filteredServices.length === 0 ? (
         <EmptyState
           icon="wrench.fill"
-          title={search || filter !== 'all' ? 'No se encontraron resultados' : 'No hay servicios'}
+          showBackButton={true}
+          title={search || filter !== 'all' ? 'Sin resultados' : 'No hay servicios'}
           message={
             search || filter !== 'all'
-              ? 'Intenta con otros términos de búsqueda'
-              : 'Añade tu primer servicio para comenzar'
+              ? 'No se encontraron servicios'
+              : 'Añade tu primer servicio'
           }
         />
       ) : (
@@ -267,9 +260,9 @@ export default function ServicesScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#7A8B99"
+              tintColor={COLORS.primary}
               title="Cargando..."
-              titleColor="#7A8B99"
+              titleColor={COLORS.textSecondary}
             />
           }
         />
@@ -277,10 +270,10 @@ export default function ServicesScreen() {
 
       <FAB 
         onPress={handleAddService} 
-        accessibilityLabel="Añadir nuevo servicio"
-        accessibilityHint="Crear un nuevo servicio"
+        accessibilityLabel="Nuevo servicio"
+        accessibilityHint="Añadir un nuevo servicio"
       />
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -288,38 +281,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  // Estadísticas
+  loadingState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Grid de estadísticas
   statsSection: {
     flexDirection: 'row',
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    gap: Spacing.sm,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  statsSectionDesktop: {
+    maxWidth: 800,
+    alignSelf: 'center',
+    width: '100%',
   },
   statCard: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    padding: Spacing.md,
     borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: Spacing.sm,
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 70,
+    borderWidth: 1,
+    gap: 4,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    color: COLORS.primary,
-    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: 11,
+    fontWeight: '500',
     textAlign: 'center',
   },
+
   searchContainer: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
@@ -348,10 +346,5 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: Spacing.md,
     paddingBottom: 100,
-  },
-  loadingState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
