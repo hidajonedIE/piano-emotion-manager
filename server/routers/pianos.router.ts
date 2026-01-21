@@ -466,7 +466,7 @@ export const pianosRouter = router({
     .query(withCache(
       async ({ ctx }) => {
         const database = await db.getDb();
-        if (!database) return { total: 0, vertical: 0, cola: 0, digital: 0 };
+        if (!database) return { total: 0, vertical: 0, grand: 0 };
 
         const whereClauses = [
           filterByPartner(pianos.partnerId, ctx.partnerId),
@@ -485,21 +485,15 @@ export const pianosRouter = router({
           .from(pianos)
           .where(and(...whereClauses, eq(pianos.category, 'vertical')));
 
-        const [colaResult] = await database
+        const [grandResult] = await database
           .select({ count: count() })
           .from(pianos)
-          .where(and(...whereClauses, eq(pianos.category, 'cola')));
-
-        const [digitalResult] = await database
-          .select({ count: count() })
-          .from(pianos)
-          .where(and(...whereClauses, eq(pianos.category, 'digital')));
+          .where(and(...whereClauses, eq(pianos.category, 'grand')));
 
         return {
           total: totalResult?.count || 0,
           vertical: verticalResult?.count || 0,
-          cola: colaResult?.count || 0,
-          digital: digitalResult?.count || 0,
+          grand: grandResult?.count || 0,
         };
       },
       { ttl: 5 * 60, keyPrefix: 'pianos:stats' }

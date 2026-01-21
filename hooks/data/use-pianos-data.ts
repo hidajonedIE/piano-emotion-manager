@@ -223,7 +223,7 @@ export function usePianosData(options: UsePianosDataOptions = {}) {
     hasMore: hasNextPage,
     isLoadingMore: isFetchingNextPage,
     brands,
-    stats: statsData || { total: 0, vertical: 0, cola: 0, digital: 0 },
+    stats: statsData || { total: 0, vertical: 0, grand: 0 },
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
