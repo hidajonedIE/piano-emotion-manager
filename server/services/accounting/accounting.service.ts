@@ -385,7 +385,7 @@ export class AccountingService {
     const monthlyData: Record<string, { income: number; expenses: number }> = {};
 
     for (const invoice of invoices) {
-      const month = invoice.invoiceDate.substring(0, 7); // YYYY-MM
+      const month = invoice.date.substring(0, 7); // YYYY-MM
       if (!monthlyData[month]) {
         monthlyData[month] = { income: 0, expenses: 0 };
       }
