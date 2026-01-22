@@ -324,7 +324,6 @@ export class CampaignService {
       );
 
     // Actualizar contador de campaña
-    const db = await getDb();
     await db.execute(
       sql`UPDATE campaigns SET opened_count = opened_count + 1 WHERE id = ${campaignId}`
     );
@@ -346,7 +345,6 @@ export class CampaignService {
       );
 
     // Actualizar contador de campaña
-    const db = await getDb();
     await db.execute(
       sql`UPDATE campaigns SET clicked_count = clicked_count + 1 WHERE id = ${campaignId}`
     );
