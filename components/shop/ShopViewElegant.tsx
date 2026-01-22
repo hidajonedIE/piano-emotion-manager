@@ -13,8 +13,9 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import { useShops, useShopProducts, useShopBlog } from '@/hooks/shop';
+import { useShops, useShopProducts } from '@/hooks/shop';
 import { BlogSection } from './BlogSection';
+import { Colors, BorderRadius, Spacing } from '@/constants/theme';
 
 const { width } = Dimensions.get('window');
 const isDesktop = width >= 1024;
@@ -89,7 +90,7 @@ export function ShopViewElegant() {
               selectedCategory === category.id && styles.categoryCardActive,
             ]}
             onPress={() => setSelectedCategory(
-              selectedCategory === category.id ? null : category.id
+              selectedCategory === category.id ? undefined : category.id
             )}
           >
             <Text style={[
@@ -98,7 +99,12 @@ export function ShopViewElegant() {
             ]}>
               {category.name}
             </Text>
-            <Text style={styles.categoryDescription}>{category.description}</Text>
+            <Text style={[
+              styles.categoryDescription,
+              selectedCategory === category.id && styles.categoryDescriptionActive,
+            ]}>
+              {category.description}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -174,32 +180,32 @@ export function ShopViewElegant() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.light.background,
   },
   contentContainer: {
-    paddingBottom: 40,
+    paddingBottom: Spacing.xxl,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.light.background,
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
+    color: Colors.light.textSecondary,
     fontWeight: '400',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
-    padding: 40,
+    backgroundColor: Colors.light.background,
+    padding: Spacing.xxl,
   },
   emptyText: {
     fontSize: 18,
-    color: '#999',
+    color: Colors.light.textDisabled,
     textAlign: 'center',
     fontWeight: '300',
   },
@@ -207,85 +213,88 @@ const styles = StyleSheet.create({
   // Tabs
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.light.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    paddingHorizontal: isDesktop ? 60 : 20,
+    borderBottomColor: Colors.light.border,
+    paddingHorizontal: isDesktop ? 60 : Spacing.lg,
   },
   tab: {
-    paddingVertical: 20,
-    paddingHorizontal: 32,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
   tabActive: {
-    borderBottomColor: '#1A1A1A',
+    borderBottomColor: Colors.light.tint,
   },
   tabText: {
     fontSize: 15,
     fontWeight: '400',
-    color: '#666',
-    letterSpacing: 0.5,
+    color: Colors.light.textSecondary,
+    letterSpacing: 0.3,
   },
   tabTextActive: {
-    color: '#1A1A1A',
-    fontWeight: '500',
+    color: Colors.light.tint,
+    fontWeight: '600',
   },
 
   // Categories
   categoriesSection: {
-    paddingHorizontal: isDesktop ? 60 : 20,
-    paddingTop: 48,
-    paddingBottom: 32,
+    paddingHorizontal: isDesktop ? 60 : Spacing.lg,
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.xl,
   },
   sectionTitle: {
-    fontSize: 28,
-    fontWeight: '300',
-    color: '#1A1A1A',
-    marginBottom: 32,
-    letterSpacing: -0.5,
+    fontSize: 24,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
   },
   categoriesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -8,
+    marginHorizontal: -Spacing.sm,
   },
   categoryCard: {
     width: isDesktop ? 'calc(25% - 16px)' : 'calc(50% - 16px)',
     minWidth: isDesktop ? 240 : 150,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 0,
+    backgroundColor: Colors.light.cardBackground,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    padding: 24,
-    margin: 8,
+    borderColor: Colors.light.cardBorder,
+    padding: Spacing.lg,
+    margin: Spacing.sm,
     minHeight: 120,
   },
   categoryCardActive: {
-    backgroundColor: '#1A1A1A',
-    borderColor: '#1A1A1A',
+    backgroundColor: Colors.light.tint,
+    borderColor: Colors.light.tint,
   },
   categoryName: {
     fontSize: 18,
-    fontWeight: '500',
-    color: '#1A1A1A',
-    marginBottom: 8,
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: Spacing.sm,
+    letterSpacing: 0.2,
   },
   categoryNameActive: {
     color: '#FFFFFF',
   },
   categoryDescription: {
     fontSize: 13,
-    color: '#666',
+    color: Colors.light.textSecondary,
     lineHeight: 20,
-    fontWeight: '300',
+    fontWeight: '400',
+  },
+  categoryDescriptionActive: {
+    color: 'rgba(255,255,255,0.9)',
   },
 
   // Products
   productsSection: {
-    paddingHorizontal: isDesktop ? 60 : 20,
-    paddingBottom: 32,
+    paddingHorizontal: isDesktop ? 60 : Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   productsLoadingContainer: {
     paddingVertical: 80,
@@ -293,69 +302,69 @@ const styles = StyleSheet.create({
   },
   productsLoadingText: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '300',
+    color: Colors.light.textSecondary,
+    fontWeight: '400',
   },
   emptyProductsContainer: {
     paddingVertical: 80,
-    paddingHorizontal: isDesktop ? 120 : 40,
+    paddingHorizontal: isDesktop ? 120 : Spacing.xxl,
     alignItems: 'center',
   },
   emptyProductsTitle: {
-    fontSize: 32,
-    fontWeight: '300',
-    color: '#1A1A1A',
-    marginBottom: 16,
-    letterSpacing: -0.5,
+    fontSize: 28,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: Spacing.md,
+    letterSpacing: -0.3,
   },
   emptyProductsText: {
     fontSize: 16,
-    color: '#666',
+    color: Colors.light.textSecondary,
     textAlign: 'center',
-    lineHeight: 26,
-    fontWeight: '300',
+    lineHeight: 24,
+    fontWeight: '400',
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -12,
+    marginHorizontal: -Spacing.md,
   },
   productCard: {
     width: isDesktop ? 'calc(33.333% - 24px)' : 'calc(50% - 24px)',
     minWidth: isDesktop ? 280 : 150,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 0,
+    backgroundColor: Colors.light.cardBackground,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    margin: 12,
+    borderColor: Colors.light.cardBorder,
+    margin: Spacing.md,
     overflow: 'hidden',
   },
   productImage: {
     width: '100%',
     height: isDesktop ? 320 : 200,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.light.separator,
   },
   productInfo: {
-    padding: 24,
+    padding: Spacing.lg,
   },
   productName: {
     fontSize: 18,
-    fontWeight: '500',
-    color: '#1A1A1A',
-    marginBottom: 8,
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: Spacing.sm,
+    letterSpacing: 0.2,
   },
   productDescription: {
     fontSize: 14,
-    color: '#666',
-    lineHeight: 22,
-    marginBottom: 16,
-    fontWeight: '300',
+    color: Colors.light.textSecondary,
+    lineHeight: 20,
+    marginBottom: Spacing.md,
+    fontWeight: '400',
   },
   productPrice: {
     fontSize: 20,
-    fontWeight: '500',
-    color: '#1A1A1A',
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    color: Colors.light.accent,
+    letterSpacing: 0.2,
   },
 });
