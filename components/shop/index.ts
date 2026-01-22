@@ -5,3 +5,4 @@
 
 export { ShopView } from './ShopView';
 export { default as ShopViewDefault } from './ShopView';
+export { BlogSection } from './BlogSection';

@@ -15,8 +15,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useShops, useShopProducts, useCart, useShopAccess } from '@/hooks/shop';
+import { useShops, useShopProducts, useCart, useShopAccess, useShopBlog } from '@/hooks/shop';
 import { useTranslation } from '@/hooks/use-translation';
+import { BlogSection } from './BlogSection';
 
 // ============================================================================
 // Types
@@ -226,6 +227,7 @@ export const ShopView: React.FC = () => {
   const { shops, isLoading: shopsLoading } = useShops();
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
   const [showCart, setShowCart] = useState(false);
+  const [activeTab, setActiveTab] = useState<'products' | 'blog'>('products');
 
   // Seleccionar primera tienda por defecto
   React.useEffect(() => {
@@ -237,6 +239,7 @@ export const ShopView: React.FC = () => {
   const { access, canView, canOrder, isLoading: accessLoading } = useShopAccess(selectedShopId);
   const { products, isLoading: productsLoading } = useShopProducts(selectedShopId);
   const { items, total, itemCount, addToCart, isAddingToCart, orderRequiresApproval } = useCart(selectedShopId);
+  const { posts, isLoading: blogLoading, refetch: refetchBlog } = useShopBlog(selectedShopId, 10);
 
   const handleAddToCart = async (productId: number) => {
     try {
@@ -276,6 +279,36 @@ export const ShopView: React.FC = () => {
       {/* Banner de aprobación requerida */}
       <ApprovalBanner requiresApproval={orderRequiresApproval} />
 
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'products' && styles.tabActive]}
+          onPress={() => setActiveTab('products')}
+        >
+          <Ionicons
+            name="cube-outline"
+            size={20}
+            color={activeTab === 'products' ? '#3b82f6' : '#6b7280'}
+          />
+          <Text style={[styles.tabText, activeTab === 'products' && styles.tabTextActive]}>
+            Productos
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'blog' && styles.tabActive]}
+          onPress={() => setActiveTab('blog')}
+        >
+          <Ionicons
+            name="newspaper-outline"
+            size={20}
+            color={activeTab === 'blog' ? '#3b82f6' : '#6b7280'}
+          />
+          <Text style={[styles.tabText, activeTab === 'blog' && styles.tabTextActive]}>
+            Blog
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Contenido */}
       {accessLoading ? (
         <View style={styles.loading}>
@@ -283,7 +316,7 @@ export const ShopView: React.FC = () => {
         </View>
       ) : !canView ? (
         <AccessDeniedView />
-      ) : (
+      ) : activeTab === 'products' ? (
         <ScrollView style={styles.productsContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.productsGrid}>
             {products.map((product) => (
@@ -297,6 +330,12 @@ export const ShopView: React.FC = () => {
             ))}
           </View>
         </ScrollView>
+      ) : (
+        <BlogSection
+          posts={posts}
+          isLoading={blogLoading}
+          onRefresh={refetchBlog}
+        />
       )}
 
       {/* Resumen del carrito */}
@@ -529,6 +568,35 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#fff',
+  },
+  // Tabs
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: '#3b82f6',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6b7280',
+  },
+  tabTextActive: {
+    color: '#3b82f6',
+    fontWeight: '600',
   },
 });
 

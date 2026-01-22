@@ -11,10 +11,13 @@ export {
   useOrders,
   usePendingApprovals,
   useShopPermissions,
+  useShopBlog,
+  useShopBlogSearch,
 } from './use-shop';
 
 export type {
   ShopType,
   OrderStatus,
   ShippingAddress,
+  BlogPost,
 } from './use-shop';

@@ -203,3 +203,59 @@ export function useShopPermissions(shopId: number | null) {
     isUpdating: updatePermissions.isPending,
   };
 }
+
+// ============================================================================
+// useShopBlog Hook
+// ============================================================================
+
+export interface BlogPost {
+  id: number;
+  title: string;
+  excerpt: string;
+  url: string;
+  date: string;
+  imageUrl?: string;
+  categories: string[];
+}
+
+export function useShopBlog(shopId: number | null, limit: number = 5) {
+  const { data: posts, isLoading, refetch } = trpc.shop.getBlogPosts.useQuery(
+    { shopId: shopId!, limit },
+    { enabled: shopId !== null }
+  );
+
+  return {
+    posts: (posts || []) as BlogPost[],
+    isLoading,
+    refetch,
+  };
+}
+
+// ============================================================================
+// useShopBlogSearch Hook
+// ============================================================================
+
+export function useShopBlogSearch(shopId: number | null) {
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  // Debounce search query
+  useCallback(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const { data: posts, isLoading } = trpc.shop.searchBlogPosts.useQuery(
+    { shopId: shopId!, query: debouncedQuery },
+    { enabled: shopId !== null && debouncedQuery.length > 0 }
+  );
+
+  return {
+    posts: (posts || []) as BlogPost[],
+    isLoading,
+    query,
+    setQuery,
+  };
+}
