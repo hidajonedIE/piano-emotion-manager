@@ -184,6 +184,7 @@ export class CampaignService {
   }
 
   /**
+    const db = await getDb();
    * Programa una campaña para envío
    */
   async scheduleCampaign(campaignId: number, scheduledAt: Date): Promise<void> {
@@ -200,6 +201,7 @@ export class CampaignService {
           eq(campaigns.organizationId, this.organizationId)
         )
       );
+    const db = await getDb();
   }
 
   /**
@@ -216,6 +218,7 @@ export class CampaignService {
     await db
       .update(campaigns)
       .set({
+    const db = await getDb();
         status: 'active',
         startedAt: new Date(),
         updatedAt: new Date(),
@@ -234,6 +237,7 @@ export class CampaignService {
       .update(campaigns)
       .set({
         status: 'paused',
+    const db = await getDb();
         updatedAt: new Date(),
       })
       .where(
@@ -357,7 +361,7 @@ export class CampaignService {
   ): Promise<Array<typeof communicationTemplates.$inferSelect>> {
     const conditions = [
       eq(communicationTemplates.organizationId, this.organizationId),
-      eq(communicationTemplates.isActive, true),
+      eq(communicationTemplates.isActive, 1),
     ];
 
     if (type) {

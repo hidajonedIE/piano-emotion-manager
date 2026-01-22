@@ -1112,3 +1112,4 @@ export * from './accounting-schema.js';
 // DISTRIBUTOR TABLES
 // ============================================================================
 export * from './distributor-schema.js';
+export * from './crm-schema.js';
