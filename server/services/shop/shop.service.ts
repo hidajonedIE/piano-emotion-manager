@@ -261,7 +261,7 @@ export class ShopService {
    * Obtiene tiendas accesibles para el usuario
    */
   async getAccessibleShops(): Promise<Array<typeof shops.$inferSelect & { access: ShopAccessResult }>> {
-    const db = getDb();
+    const db = await getDb();
     
     // Obtener tiendas de la organización del usuario
     const orgShops = await db.query.shops.findMany({
@@ -540,7 +540,7 @@ export class ShopService {
                             access.approvalThreshold !== null && 
                             total > parseFloat(access.approvalThreshold.toString());
 
-    const db = getDb();
+    const db = await getDb();
     await db
       .update(shopOrders)
       .set({
