@@ -241,7 +241,7 @@ export const portalRouter = router({
           createdAt: new Date(),
           updatedAt: new Date(),
         })
-        .returning();
+        ;
 
       return {
         success: true,

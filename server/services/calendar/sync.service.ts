@@ -124,7 +124,7 @@ export class CalendarSyncService {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       tokenExpiresAt: tokens.expiresAt,
-    }).returning();
+    });
 
     // Obtener calendarios disponibles
     await this.fetchExternalCalendars(connection.id, provider, tokens.accessToken);
@@ -154,7 +154,7 @@ export class CalendarSyncService {
       caldavUrl: url,
       caldavUsername: username,
       caldavPassword: password, // En producción, encriptar
-    }).returning();
+    });
 
     return connection;
   }

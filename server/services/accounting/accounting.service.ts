@@ -134,7 +134,7 @@ export class AccountingService {
       color: input.color,
       icon: input.icon,
       notes: input.notes,
-    }).returning();
+    });
 
     return account;
   }
@@ -215,7 +215,7 @@ export class AccountingService {
       notes: input.notes,
       isRecurring: input.isRecurring,
       recurrenceRule: input.recurrenceRule,
-    }).returning();
+    });
 
     // Actualizar saldo de cuenta
     if (input.type === 'income') {
@@ -512,7 +512,7 @@ export class AccountingService {
       startDate,
       endDate,
       totalAmount: totalAmount.toString(),
-    }).returning();
+    });
 
     // Crear líneas de presupuesto
     if (lines.length > 0) {
@@ -625,7 +625,7 @@ export class AccountingService {
       appliesToIncome: options.appliesToIncome ?? true,
       appliesToExpense: options.appliesToExpense ?? true,
       isDefault: options.isDefault ?? false,
-    }).returning();
+    });
 
     return taxRate;
   }

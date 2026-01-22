@@ -291,7 +291,7 @@ export class ReminderService {
     };
 
     // Insertar en la base de datos
-    const result = await this.getDb().insert('reminderRules' as never).values(rule as never).returning();
+    const result = await this.getDb().insert('reminderRules' as never).values(rule as never);
     return result[0] as ReminderRule;
   }
 
@@ -325,7 +325,7 @@ export class ReminderService {
       createdAt: new Date()
     };
 
-    const result = await this.getDb().insert('scheduledReminders' as never).values(reminder as never).returning();
+    const result = await this.getDb().insert('scheduledReminders' as never).values(reminder as never);
     return result[0] as ScheduledReminder;
   }
 

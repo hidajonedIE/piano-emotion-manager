@@ -110,7 +110,7 @@ export class CalendarService {
       color: input.color,
       isRecurring: !!input.recurrence,
       recurrenceRule: input.recurrence,
-    }).returning();
+    });
 
     // Crear recordatorios
     if (input.reminders && input.reminders.length > 0) {
@@ -141,7 +141,7 @@ export class CalendarService {
           eq(calendarEvents.organizationId, this.organizationId)
         )
       )
-      .returning();
+      ;
 
     return updated;
   }
@@ -496,7 +496,7 @@ export class CalendarService {
       startTime: options.startTime,
       endTime: options.endTime,
       isAllDay: options.isAllDay ?? true,
-    }).returning();
+    });
 
     return block;
   }
@@ -563,7 +563,7 @@ export class CalendarService {
           updatedAt: new Date(),
         })
         .where(eq(reminderSettings.userId, this.userId))
-        .returning();
+        ;
       return updated;
     }
 
@@ -571,7 +571,7 @@ export class CalendarService {
       userId: this.userId,
       organizationId: this.organizationId,
       ...settings,
-    }).returning();
+    });
 
     return created;
   }

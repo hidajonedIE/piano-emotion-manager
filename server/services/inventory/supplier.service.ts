@@ -146,7 +146,7 @@ export class SupplierService {
       notes: input.notes,
       rating: input.rating,
       organizationId: input.organizationId,
-    }).returning();
+    });
 
     return supplier;
   }
@@ -166,7 +166,7 @@ export class SupplierService {
         updatedAt: new Date(),
       })
       .where(eq(suppliers.id, id))
-      .returning();
+      ;
 
     return updated;
   }
@@ -315,7 +315,7 @@ export class SupplierService {
       packSize: input.packSize || 1,
       leadTimeDays: input.leadTimeDays,
       isPreferred: input.isPreferred || false,
-    }).returning();
+    });
 
     return supplierProduct;
   }
@@ -340,7 +340,7 @@ export class SupplierService {
         updatedAt: new Date(),
       })
       .where(eq(supplierProducts.id, id))
-      .returning();
+      ;
 
     return updated;
   }
@@ -448,7 +448,7 @@ export class SupplierService {
       internalNotes: input.internalNotes,
       createdByUserId: input.createdByUserId,
       organizationId: input.organizationId,
-    }).returning();
+    });
 
     // Crear líneas
     for (const line of linesWithTotals) {
@@ -520,7 +520,7 @@ export class SupplierService {
     const [updated] = await getDb().update(purchaseOrders)
       .set(updateData)
       .where(eq(purchaseOrders.id, orderId))
-      .returning();
+      ;
 
     return updated;
   }

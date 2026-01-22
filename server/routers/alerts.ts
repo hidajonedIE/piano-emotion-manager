@@ -51,7 +51,7 @@ export const alertsRouter = router({
           pushNotificationsEnabled: false,
           weeklyDigestEnabled: true,
           weeklyDigestDay: 1,
-        }).returning();
+        });
         return newSettings;
       }
 
@@ -96,7 +96,7 @@ export const alertsRouter = router({
             updatedAt: new Date(),
           })
           .where(eq(alertSettings.id, existing.id))
-          .returning();
+          ;
         return updated;
       } else {
         // Crear nueva
@@ -107,7 +107,7 @@ export const alertsRouter = router({
             organizationId: null,
             ...input,
           })
-          .returning();
+          ;
         return created;
       }
     }),
@@ -152,7 +152,7 @@ export const alertsRouter = router({
             updatedAt: new Date(),
           })
           .where(eq(alertSettings.id, existing.id))
-          .returning();
+          ;
         return updated;
       } else {
         // Crear nueva configuración de usuario
@@ -162,7 +162,7 @@ export const alertsRouter = router({
             userId: ctx.userId,
             ...input,
           })
-          .returning();
+          ;
         return created;
       }
     }),
@@ -249,7 +249,7 @@ export const alertsRouter = router({
           eq(alertHistory.id, input.alertId),
           eq(alertHistory.userId, ctx.userId)
         ))
-        .returning();
+        ;
 
       if (!updated) {
         throw new TRPCError({
@@ -284,7 +284,7 @@ export const alertsRouter = router({
           eq(alertHistory.id, input.alertId),
           eq(alertHistory.userId, ctx.userId)
         ))
-        .returning();
+        ;
 
       if (!updated) {
         throw new TRPCError({
@@ -316,7 +316,7 @@ export const alertsRouter = router({
           eq(alertHistory.id, input.alertId),
           eq(alertHistory.userId, ctx.userId)
         ))
-        .returning();
+        ;
 
       if (!updated) {
         throw new TRPCError({
@@ -756,7 +756,7 @@ export const alertsRouter = router({
           partnerId: 1,
           status: 'active',
         })
-        .returning();
+        ;
 
       return alert;
     }),

@@ -126,7 +126,7 @@ export class ContractService {
     const result = await this.db
       .insert('contractTemplates' as never)
       .values(template as never)
-      .returning();
+      ;
     return result[0] as ContractTemplate;
   }
 
@@ -197,7 +197,7 @@ export class ContractService {
     const result = await this.db
       .insert('maintenanceContracts' as never)
       .values(contract as never)
-      .returning();
+      ;
     return result[0] as MaintenanceContract;
   }
 

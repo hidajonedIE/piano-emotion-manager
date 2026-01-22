@@ -195,7 +195,7 @@ export class ShopService {
       approvalThreshold: input.approvalThreshold?.toString(),
       logoUrl: input.logoUrl,
       color: input.color,
-    }).returning();
+    });
 
     // Configurar permisos por defecto
     await this.setDefaultPermissions(shop.id);
@@ -373,7 +373,7 @@ export class ShopService {
         organizationId: this.organizationId,
         userId: this.userId,
         shopId,
-      }).returning();
+      });
     }
 
     return cart;
@@ -485,7 +485,7 @@ export class ShopService {
       total: total.toString(),
       shippingAddress,
       notes,
-    }).returning();
+    });
 
     // Crear líneas de pedido
     await getDb().insert(shopOrderLines).values(

@@ -334,7 +334,7 @@ export class WorkflowService {
       createdBy
     };
 
-    const result = await this.getDb().insert('workflows' as never).values(workflow as never).returning();
+    const result = await this.getDb().insert('workflows' as never).values(workflow as never);
     return result[0] as Workflow;
   }
 
@@ -442,7 +442,7 @@ export class WorkflowService {
       createdAt: new Date()
     };
 
-    const result = await this.getDb().insert('workflowExecutions' as never).values(execution as never).returning();
+    const result = await this.getDb().insert('workflowExecutions' as never).values(execution as never);
     return result[0] as WorkflowExecution;
   }
 

@@ -109,7 +109,7 @@ export class StockService {
         availableQuantity: '0',
         totalCost: '0',
         averageCost: '0',
-      }).returning();
+      });
       currentStock = newStock;
     }
 
@@ -163,7 +163,7 @@ export class StockService {
       notes: input.notes,
       userId: input.userId,
       organizationId: input.organizationId,
-    }).returning();
+    });
 
     // Actualizar stock
     await getDb().update(warehouseStock)

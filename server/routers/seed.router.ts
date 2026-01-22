@@ -14,7 +14,7 @@ export const seedRouter = router({
       phone: '+34 612 345 678',
       address: 'Calle Mayor 15, Madrid',
       ownerId,
-    }).returning();
+    });
 
     const [client2] = await getDb().insert(clients).values({
       name: 'Juan Martínez',
@@ -22,7 +22,7 @@ export const seedRouter = router({
       phone: '+34 623 456 789',
       address: 'Avenida Diagonal 123, Barcelona',
       ownerId,
-    }).returning();
+    });
 
     // Insert test pianos
     const [piano1] = await getDb().insert(pianos).values({
@@ -33,7 +33,7 @@ export const seedRouter = router({
       type: 'vertical',
       clientId: client1.id,
       ownerId,
-    }).returning();
+    });
 
     const [piano2] = await getDb().insert(pianos).values({
       brand: 'Kawai',
@@ -43,7 +43,7 @@ export const seedRouter = router({
       type: 'vertical',
       clientId: client2.id,
       ownerId,
-    }).returning();
+    });
 
     // Insert test services - one URGENT and one PENDING
     // Urgent: last service was 14 months ago

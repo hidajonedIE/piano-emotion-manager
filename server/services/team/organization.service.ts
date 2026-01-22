@@ -102,7 +102,7 @@ export class OrganizationService {
       email: input.email,
       subscriptionPlan: 'free',
       maxMembers: 1,
-    }).returning();
+    });
     
     // Añadir al propietario como miembro con rol 'owner'
     await getDb().insert(organizationMembers).values({
@@ -194,7 +194,7 @@ export class OrganizationService {
         updatedAt: new Date(),
       })
       .where(eq(organizations.id, id))
-      .returning();
+      ;
     
     return updated;
   }
@@ -229,7 +229,7 @@ export class OrganizationService {
       expiresAt,
       invitedBy: input.invitedBy,
       message: input.message,
-    }).returning();
+    });
     
     // Enviar email de invitación
     await this.sendInvitationEmail(invitation, org!.name);
@@ -288,7 +288,7 @@ export class OrganizationService {
       invitedAt: invitation.createdAt,
       invitedBy: invitation.invitedBy,
       joinedAt: new Date(),
-    }).returning();
+    });
     
     // Registrar actividad
     await this.logActivity({
@@ -337,7 +337,7 @@ export class OrganizationService {
       .update(organizationMembers)
       .set({ role: newRole as any })
       .where(eq(organizationMembers.id, memberId))
-      .returning();
+      ;
     
     // Registrar actividad
     await this.logActivity({
@@ -389,7 +389,7 @@ export class OrganizationService {
         suspendedReason: reason,
       })
       .where(eq(organizationMembers.id, memberId))
-      .returning();
+      ;
     
     // Registrar actividad
     await this.logActivity({

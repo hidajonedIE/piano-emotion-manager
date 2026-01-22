@@ -156,7 +156,7 @@ export class ProductService {
       isSerialTracked: input.isSerialTracked || false,
       isBatchTracked: input.isBatchTracked || false,
       organizationId: input.organizationId,
-    }).returning();
+    });
 
     return product;
   }
@@ -202,7 +202,7 @@ export class ProductService {
         updatedAt: new Date(),
       })
       .where(eq(products.id, id))
-      .returning();
+      ;
 
     return updated;
   }

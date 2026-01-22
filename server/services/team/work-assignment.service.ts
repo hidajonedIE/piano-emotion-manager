@@ -129,7 +129,7 @@ export class WorkAssignmentService {
       assignmentNotes: input.assignmentNotes,
       latitude: input.latitude,
       longitude: input.longitude,
-    }).returning();
+    });
     
     // Enviar notificación al técnico
     try {
@@ -293,7 +293,7 @@ export class WorkAssignmentService {
         reassignmentReason: input.reason,
       })
       .where(eq(workAssignments.id, input.assignmentId))
-      .returning();
+      ;
     
     // Notificar a ambos técnicos sobre la reasignación
     try {
@@ -354,7 +354,7 @@ export class WorkAssignmentService {
         acceptedAt: new Date(),
       })
       .where(eq(workAssignments.id, assignmentId))
-      .returning();
+      ;
     
     return updated;
   }
@@ -382,7 +382,7 @@ export class WorkAssignmentService {
         technicianId: null as any, // Dejar sin asignar
       })
       .where(eq(workAssignments.id, assignmentId))
-      .returning();
+      ;
     
     // Notificar al manager sobre el rechazo
     try {
@@ -441,7 +441,7 @@ export class WorkAssignmentService {
         actualStartTime: new Date(),
       })
       .where(eq(workAssignments.id, assignmentId))
-      .returning();
+      ;
     
     return updated;
   }
@@ -472,7 +472,7 @@ export class WorkAssignmentService {
         technicianNotes: notes,
       })
       .where(eq(workAssignments.id, assignmentId))
-      .returning();
+      ;
     
     return updated;
   }
@@ -485,7 +485,7 @@ export class WorkAssignmentService {
       .update(workAssignments)
       .set({ workAssignmentStatus: 'cancelled' })
       .where(eq(workAssignments.id, assignmentId))
-      .returning();
+      ;
     
     return updated;
   }

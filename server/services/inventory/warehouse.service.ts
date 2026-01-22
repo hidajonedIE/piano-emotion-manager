@@ -114,7 +114,7 @@ export class WarehouseService {
       allowNegativeStock: input.allowNegativeStock || false,
       valuationMethod: input.valuationMethod || 'average',
       organizationId: input.organizationId,
-    }).returning();
+    });
 
     return warehouse;
   }
@@ -167,7 +167,7 @@ export class WarehouseService {
         updatedAt: new Date(),
       })
       .where(eq(warehouses.id, id))
-      .returning();
+      ;
 
     return updated;
   }

@@ -128,7 +128,7 @@ export async function getOrCreateUserFromClerk(
         createdAt: new Date(),
         updatedAt: new Date(),
       })
-      .returning();
+      ;
 
     debugLog.point13 = `Usuario creado exitosamente en BD: ID=${newUser.id}, Email=${newUser.email}`;
     return { user: newUser, debugLog };
