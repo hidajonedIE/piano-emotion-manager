@@ -589,7 +589,7 @@ export const shopRouter = router({
       if (!database) {
         throw new Error('Database not available');
       }
-    const [tracking] = await db
+    const [tracking] = await database
       .select()
       .from(shopPurchaseTracking)
       .where(eq(shopPurchaseTracking.organizationId, ctx.user.partnerId))
@@ -637,7 +637,7 @@ export const shopRouter = router({
       if (!database) {
         throw new Error('Database not available');
       }
-      const [wooConfig] = await db
+      const [wooConfig] = await database
         .select()
         .from(distributorWooCommerceConfig)
         .limit(1);
