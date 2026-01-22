@@ -5,6 +5,7 @@ export interface HeaderConfig {
   subtitle?: string;
   icon?: string;
   iconColor?: string;
+  showLogo?: boolean;
   showBackButton?: boolean;
   rightAction?: ReactNode;
 }
