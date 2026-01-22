@@ -1,6 +1,6 @@
 /**
  * Vista Elegante de Tienda
- * Diseño moderno y profesional para tienda de componentes de piano premium
+ * Diseño moderno, cálido y profesional para tienda de componentes de piano premium
  */
 
 import React, { useState } from 'react';
@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useShops, useShopProducts } from '@/hooks/shop';
 import { BlogSection } from './BlogSection';
-import { Colors, BorderRadius, Spacing } from '@/constants/theme';
+import { Colors, BorderRadius, Spacing, Shadows } from '@/constants/theme';
 
 const { width } = Dimensions.get('window');
 const isDesktop = width >= 1024;
@@ -114,19 +114,21 @@ export function ShopViewElegant() {
   const renderProducts = () => {
     if (productsLoading) {
       return (
-        <View style={styles.productsLoadingContainer}>
-          <Text style={styles.productsLoadingText}>Cargando productos...</Text>
+        <View style={styles.loadingSection}>
+          <Text style={styles.loadingText}>Cargando productos...</Text>
         </View>
       );
     }
 
-    if (!products || products.length === 0) {
+    if (products.length === 0) {
       return (
-        <View style={styles.emptyProductsContainer}>
-          <Text style={styles.emptyProductsTitle}>Próximamente</Text>
-          <Text style={styles.emptyProductsText}>
+        <View style={styles.emptySection}>
+          <View style={styles.emptyIconContainer}>
+            <Text style={styles.emptyIcon}>📦</Text>
+          </View>
+          <Text style={styles.emptyTitle}>Próximamente</Text>
+          <Text style={styles.emptyMessage}>
             Estamos preparando nuestro catálogo de productos premium.
-            {selectedCategory && '\n\nSelecciona otra categoría o explora nuestro blog.'}
           </Text>
         </View>
       );
@@ -137,7 +139,7 @@ export function ShopViewElegant() {
         <Text style={styles.sectionTitle}>Productos</Text>
         <View style={styles.productsGrid}>
           {products.map((product) => (
-            <TouchableOpacity key={product.id} style={styles.productCard}>
+            <View key={product.id} style={styles.productCard}>
               {product.imageUrl && (
                 <Image
                   source={{ uri: product.imageUrl }}
@@ -147,12 +149,21 @@ export function ShopViewElegant() {
               )}
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{product.name}</Text>
-                <Text style={styles.productDescription} numberOfLines={2}>
-                  {product.description}
-                </Text>
-                <Text style={styles.productPrice}>€{product.price}</Text>
+                {product.description && (
+                  <Text style={styles.productDescription} numberOfLines={2}>
+                    {product.description}
+                  </Text>
+                )}
+                <View style={styles.productFooter}>
+                  <Text style={styles.productPrice}>
+                    €{product.price.toFixed(2)}
+                  </Text>
+                  <TouchableOpacity style={styles.addToCartButton}>
+                    <Text style={styles.addToCartText}>Añadir</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
       </View>
@@ -161,10 +172,8 @@ export function ShopViewElegant() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {/* Tabs */}
       {renderTabs()}
-
-      {/* Content */}
+      
       {activeTab === 'products' ? (
         <>
           {renderCategories()}
@@ -185,11 +194,18 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingBottom: Spacing.xxl,
   },
+
+  // Loading & Empty States
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.light.background,
+    padding: Spacing.xxl,
+  },
+  loadingSection: {
+    paddingVertical: Spacing.xxl * 2,
+    alignItems: 'center',
   },
   loadingText: {
     fontSize: 16,
@@ -203,38 +219,70 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.background,
     padding: Spacing.xxl,
   },
+  emptySection: {
+    paddingVertical: Spacing.xxl * 2,
+    paddingHorizontal: isDesktop ? 60 : Spacing.lg,
+    alignItems: 'center',
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.light.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    ...Shadows.md,
+  },
+  emptyIcon: {
+    fontSize: 40,
+  },
   emptyText: {
     fontSize: 18,
-    color: Colors.light.textDisabled,
+    color: Colors.light.textSecondary,
+    fontWeight: '400',
     textAlign: 'center',
-    fontWeight: '300',
   },
-  
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: Spacing.sm,
+    textAlign: 'center',
+  },
+  emptyMessage: {
+    fontSize: 16,
+    color: Colors.light.textSecondary,
+    fontWeight: '400',
+    textAlign: 'center',
+    maxWidth: 400,
+  },
+
   // Tabs
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: Colors.light.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.light.border,
     paddingHorizontal: isDesktop ? 60 : Spacing.lg,
+    backgroundColor: Colors.light.surface,
   },
   tab: {
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.xl,
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
   tabActive: {
-    borderBottomColor: Colors.light.tint,
+    borderBottomColor: Colors.light.accent,
   },
   tabText: {
     fontSize: 15,
-    fontWeight: '400',
+    fontWeight: '500',
     color: Colors.light.textSecondary,
     letterSpacing: 0.3,
   },
   tabTextActive: {
-    color: Colors.light.tint,
+    color: Colors.light.accent,
     fontWeight: '600',
   },
 
@@ -259,17 +307,19 @@ const styles = StyleSheet.create({
   categoryCard: {
     width: isDesktop ? 'calc(25% - 16px)' : 'calc(50% - 16px)',
     minWidth: isDesktop ? 240 : 150,
-    backgroundColor: Colors.light.cardBackground,
-    borderRadius: 4,
+    backgroundColor: Colors.light.surface,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
-    borderColor: Colors.light.cardBorder,
+    borderColor: Colors.light.border,
     padding: Spacing.lg,
     margin: Spacing.sm,
     minHeight: 120,
+    ...Shadows.sm,
   },
   categoryCardActive: {
-    backgroundColor: Colors.light.tint,
-    borderColor: Colors.light.tint,
+    backgroundColor: Colors.light.accent,
+    borderColor: Colors.light.accent,
+    ...Shadows.md,
   },
   categoryName: {
     fontSize: 18,
@@ -282,89 +332,76 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   categoryDescription: {
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: '400',
     color: Colors.light.textSecondary,
     lineHeight: 20,
-    fontWeight: '400',
   },
   categoryDescriptionActive: {
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
 
   // Products
   productsSection: {
     paddingHorizontal: isDesktop ? 60 : Spacing.lg,
-    paddingBottom: Spacing.xl,
-  },
-  productsLoadingContainer: {
-    paddingVertical: 80,
-    alignItems: 'center',
-  },
-  productsLoadingText: {
-    fontSize: 16,
-    color: Colors.light.textSecondary,
-    fontWeight: '400',
-  },
-  emptyProductsContainer: {
-    paddingVertical: 80,
-    paddingHorizontal: isDesktop ? 120 : Spacing.xxl,
-    alignItems: 'center',
-  },
-  emptyProductsTitle: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: Colors.light.text,
-    marginBottom: Spacing.md,
-    letterSpacing: -0.3,
-  },
-  emptyProductsText: {
-    fontSize: 16,
-    color: Colors.light.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    fontWeight: '400',
+    paddingTop: Spacing.xl,
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -Spacing.md,
+    marginHorizontal: -Spacing.sm,
   },
   productCard: {
-    width: isDesktop ? 'calc(33.333% - 24px)' : 'calc(50% - 24px)',
+    width: isDesktop ? 'calc(33.333% - 16px)' : 'calc(50% - 16px)',
     minWidth: isDesktop ? 280 : 150,
-    backgroundColor: Colors.light.cardBackground,
-    borderRadius: 4,
+    backgroundColor: Colors.light.surface,
+    borderRadius: BorderRadius.sm,
     borderWidth: 1,
-    borderColor: Colors.light.cardBorder,
-    margin: Spacing.md,
+    borderColor: Colors.light.border,
+    margin: Spacing.sm,
     overflow: 'hidden',
+    ...Shadows.sm,
   },
   productImage: {
     width: '100%',
-    height: isDesktop ? 320 : 200,
-    backgroundColor: Colors.light.separator,
+    height: 200,
+    backgroundColor: Colors.light.background,
   },
   productInfo: {
     padding: Spacing.lg,
   },
   productName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.light.text,
     marginBottom: Spacing.sm,
-    letterSpacing: 0.2,
   },
   productDescription: {
     fontSize: 14,
+    fontWeight: '400',
     color: Colors.light.textSecondary,
     lineHeight: 20,
     marginBottom: Spacing.md,
-    fontWeight: '400',
+  },
+  productFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   productPrice: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.light.accent,
-    letterSpacing: 0.2,
+  },
+  addToCartButton: {
+    backgroundColor: Colors.light.accent,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+  },
+  addToCartText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
