@@ -68,9 +68,27 @@ export const shopRouter = router({
    * Obtiene tiendas accesibles
    */
   getShops: protectedProcedure.query(async ({ ctx }) => {
-    const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
+    try {
+      console.log('[getShops] START');
+      console.log('[getShops] ctx.user:', JSON.stringify(ctx.user));
+      console.log('[getShops] partnerId:', ctx.user.partnerId);
+      console.log('[getShops] userId:', ctx.user.id);
+      
+      const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
+      console.log('[getShops] orgRole obtained:', orgRole);
+      
       const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
-    return service.getAccessibleShops();
+      console.log('[getShops] service created');
+      
+      const shops = await service.getAccessibleShops();
+      console.log('[getShops] shops found:', shops?.length || 0);
+      console.log('[getShops] shops:', JSON.stringify(shops));
+      
+      return shops;
+    } catch (error) {
+      console.error('[getShops] ERROR:', error);
+      throw error;
+    }
   }),
 
   /**
