@@ -506,7 +506,7 @@ export class AccountingService {
     const totalAmount = lines.reduce((sum, line) => sum + line.plannedAmount, 0);
     const db = await getDb();
 
-    const [budget] = await db.insert(budgets).values({
+    const result = await db.insert(budgets).values({
       organizationId: this.organizationId,
       name,
       startDate,
@@ -514,17 +514,20 @@ export class AccountingService {
       totalAmount: totalAmount.toString(),
     });
 
+    const budgetId = Number(result.insertId);
+
     // Crear líneas de presupuesto
     if (lines.length > 0) {
       await db.insert(budgetLines).values(
         lines.map((line) => ({
-          budgetId: budget.id,
+          budgetId,
           category: line.category,
           plannedAmount: line.plannedAmount.toString(),
         }))
       );
     }
 
+    const [budget] = await db.select().from(budgets).where(eq(budgets.id, budgetId));
     return budget;
   }
 
@@ -618,7 +621,7 @@ export class AccountingService {
     options: { appliesToIncome?: boolean; appliesToExpense?: boolean; isDefault?: boolean } = {}
   ): Promise<typeof taxRates.$inferSelect> {
     const db = await getDb();
-    const [taxRate] = await db.insert(taxRates).values({
+    const result = await db.insert(taxRates).values({
       organizationId: this.organizationId,
       name,
       rate: rate.toString(),
@@ -627,6 +630,7 @@ export class AccountingService {
       isDefault: options.isDefault ?? false,
     });
 
+    const [taxRate] = await db.select().from(taxRates).where(eq(taxRates.id, Number(result.insertId)));
     return taxRate;
   }
 }
