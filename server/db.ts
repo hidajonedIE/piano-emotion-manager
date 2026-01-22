@@ -3,6 +3,10 @@ import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import { users } from "../drizzle/schema.js";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import * as schema from "../drizzle/schema.js";
+import * as shopSchema from "../drizzle/shop-schema.js";
+import * as crmSchema from "../drizzle/crm-schema.js";
+import * as distributorSchema from "../drizzle/distributor-schema.js";
 
 type InsertUser = InferInsertModel<typeof users>;
 import { ENV } from "./_core/env.js";
@@ -34,7 +38,7 @@ export async function getDb() {
         idleTimeout: 60000,             // 60 seconds idle timeout
         connectTimeout: 10000,          // 10 seconds connect timeout
       });
-      _db = drizzle(pool);
+      _db = drizzle(pool, { schema: { ...schema, ...shopSchema, ...crmSchema, ...distributorSchema } });
       console.log("[Database] ✓ Connection pool created successfully");
     } catch (error) {
       console.error("[Database] ❌ Failed to connect:", error instanceof Error ? error.message : error);
