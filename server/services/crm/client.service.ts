@@ -135,7 +135,7 @@ export class ClientService {
         organizationId: this.organizationId,
         status: 'active',
         firstContactDate: new Date().toISOString().split('T')[0],
-      }).returning();
+      });
       profile = newProfile;
     }
 
@@ -163,7 +163,7 @@ export class ClientService {
         updatedAt: new Date(),
       })
       .where(eq(clientProfiles.id, profile.id))
-      .returning();
+      ;
 
     return updated;
   }
@@ -268,7 +268,7 @@ export class ClientService {
       name,
       color,
       description,
-    }).returning();
+    });
     return tag;
   }
 
@@ -332,7 +332,7 @@ export class ClientService {
       requiresFollowUp: input.requiresFollowUp,
       followUpDate: input.followUpDate?.toISOString().split('T')[0],
       followUpNotes: input.followUpNotes,
-    }).returning();
+    });
 
     // Actualizar última fecha de contacto
     await db
@@ -407,7 +407,7 @@ export class ClientService {
       reminderDate: input.reminderDate,
       relatedType: input.relatedType,
       relatedId: input.relatedId,
-    }).returning();
+    });
 
     return task;
   }
@@ -491,7 +491,7 @@ export class ClientService {
       name,
       description,
       filters: filters as any,
-    }).returning();
+    });
 
     return segment;
   }

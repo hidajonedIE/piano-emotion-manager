@@ -78,7 +78,7 @@ export class CampaignService {
       targetStatuses: input.targetStatuses,
       targetFilters: input.targetFilters,
       scheduledAt: input.scheduledAt,
-    }).returning();
+    });
 
     return campaign;
   }
@@ -135,7 +135,7 @@ export class CampaignService {
           eq(campaigns.organizationId, this.organizationId)
         )
       )
-      .returning();
+      ;
 
     return updated;
   }
