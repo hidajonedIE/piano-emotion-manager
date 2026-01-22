@@ -655,3 +655,6 @@ export type ShopRouter = typeof shopRouter;
       shopId 
     };
   }),
+});
+
+export type ShopRouter = typeof shopRouter;
