@@ -1,11 +1,13 @@
-import { createClerkClient, verifyToken } from "@clerk/backend";
+import { createClerkClient } from "@clerk/backend";
 import type { VercelRequest } from '@vercel/node';
 
 console.log('[Clerk] CLERK_SECRET_KEY presente:', !!process.env.CLERK_SECRET_KEY);
 console.log('[Clerk] CLERK_SECRET_KEY length:', process.env.CLERK_SECRET_KEY?.length || 0);
+console.log('[Clerk] CLERK_PUBLISHABLE_KEY presente:', !!process.env.CLERK_PUBLISHABLE_KEY);
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
 });
 
 export async function verifyClerkSession(req: VercelRequest | {
@@ -29,29 +31,50 @@ export async function verifyClerkSession(req: VercelRequest | {
 
     const token = authHeader.substring(7);
     debugLog.point2 = `Token extraído del header (primeros 50 caracteres): ${token.substring(0, 50)}...`;
-    console.log('[Clerk] Token extracted, verifying...');
+    console.log('[Clerk] Token extracted, authenticating request...');
 
-    // Verify the token using Clerk's verifyToken method
-    let verifiedToken: any;
+    // Use authenticateRequest instead of verifyToken
+    // This automatically handles JWKS fetching and kid matching
+    let authResult: any;
     try {
-      verifiedToken = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY,
+      // Create a minimal Request object that authenticateRequest expects
+      const requestUrl = req.url || 'https://pianoemotion.com/api/trpc';
+      const requestObj = new Request(requestUrl, {
+        method: req.method || 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
-      debugLog.point3 = "Token verificado exitosamente con Clerk";
-      console.log('[Clerk] Token verified successfully:', { sub: verifiedToken.sub, sid: verifiedToken.sid });
+
+      authResult = await clerkClient.authenticateRequest(requestObj, {
+        authorizedParties: ['https://pianoemotion.com', 'http://localhost:3000'],
+      });
+
+      debugLog.point3 = `authenticateRequest result: isSignedIn=${authResult.isSignedIn}, isInterstitial=${authResult.isInterstitial}`;
+      console.log('[Clerk] authenticateRequest completed:', { 
+        isSignedIn: authResult.isSignedIn,
+        isInterstitial: authResult.isInterstitial,
+      });
     } catch (error) {
-      debugLog.point3 = `ERROR al verificar token con Clerk: ${error instanceof Error ? error.message : String(error)}`;
-      console.error('[Clerk] Token verification failed:', error);
+      debugLog.point3 = `ERROR al autenticar request con Clerk: ${error instanceof Error ? error.message : String(error)}`;
+      console.error('[Clerk] authenticateRequest failed:', error);
       return null;
     }
 
-    // Extract the user ID from the verified token
-    const tokenUserId = verifiedToken.sub;
-    debugLog.point4 = `ID extraído del token verificado (sub): ${tokenUserId}`;
+    // Check if the request is authenticated
+    if (!authResult.isSignedIn) {
+      debugLog.point4 = "ERROR: Usuario no autenticado según authenticateRequest";
+      console.error('[Clerk] User not signed in');
+      return null;
+    }
+
+    // Get the user ID from the auth result
+    const tokenUserId = authResult.toAuth().userId;
+    debugLog.point4 = `ID extraído del auth result: ${tokenUserId}`;
 
     if (!tokenUserId) {
-      debugLog.point5 = `ERROR: No se encontró 'sub' en el token verificado`;
-      console.error('[Clerk] No sub found in verified token');
+      debugLog.point5 = `ERROR: No se encontró userId en el auth result`;
+      console.error('[Clerk] No userId found in auth result');
       return null;
     }
 
@@ -68,16 +91,17 @@ export async function verifyClerkSession(req: VercelRequest | {
       const clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
       console.error('[Clerk] Error fetching user from Clerk API:', clerkErrorMessage);
       debugLog.point6 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
-      debugLog.point7 = `FALLBACK: Usando datos del token verificado como usuario`;
+      debugLog.point7 = `FALLBACK: Usando datos del auth result como usuario`;
       
-      // Use the verified token data as fallback
+      // Use the auth result data as fallback
+      const authData = authResult.toAuth();
       clerkUser = {
         id: tokenUserId,
-        emailAddresses: [{ emailAddress: verifiedToken.email || '' }],
-        firstName: verifiedToken.given_name || "",
-        lastName: verifiedToken.family_name || ""
+        emailAddresses: [{ emailAddress: authData.sessionClaims?.email || '' }],
+        firstName: authData.sessionClaims?.given_name || "",
+        lastName: authData.sessionClaims?.family_name || ""
       };
-      console.log('[Clerk] Using fallback user from verified token');
+      console.log('[Clerk] Using fallback user from auth result');
     }
     
     // Return the user object
