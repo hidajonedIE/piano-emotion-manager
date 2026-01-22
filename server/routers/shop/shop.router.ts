@@ -7,43 +7,17 @@ import { z } from 'zod';
 import { router, protectedProcedure } from '../../trpc.js';
 import { createShopService } from '../../services/shop/index.js';
 import { getDb } from '../../../drizzle/db.js';
-const db = getDb();
 import { 
   shopProducts, 
   shopStockAlerts,
   shopTierConfig,
-  shopPurchaseTracking,
-  shopOrders
+  shopPurchaseTracking
 } from '../../../drizzle/shop-schema.js';
 import { distributorWooCommerceConfig } from '../../../drizzle/distributor-schema.js';
-import { organizationMembers } from '../../../drizzle/schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { WooCommerceProductsService } from '../../services/shop/woocommerce-products.service.js';
 import { WordPressBlogService } from '../../services/shop/wordpress-blog.service.js';
 import { StockMonitoringService } from '../../services/shop/stock-monitoring.service.js';
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Obtiene el rol de organización del usuario
- */
-async function getUserOrganizationRole(userId: number, partnerId: number): Promise<string> {
-  const [member] = await db
-    .select()
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.userId, userId),
-        eq(organizationMembers.organizationId, partnerId)
-      )
-    )
-    .limit(1);
-  
-  // Si no hay membresía, usar 'owner' como fallback para permitir acceso
-  return member?.organizationRole || 'owner';
-}
 
 // ============================================================================
 // Input Schemas
@@ -95,7 +69,7 @@ export const shopRouter = router({
    */
   getShops: protectedProcedure.query(async ({ ctx }) => {
     const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
     return service.getAccessibleShops();
   }),
 
@@ -106,7 +80,7 @@ export const shopRouter = router({
     .input(shopInputSchema)
     .mutation(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.createShop(input);
     }),
 
@@ -120,7 +94,7 @@ export const shopRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       await service.updateShopPermissions(input.shopId, input.permissions);
       return { success: true };
     }),
@@ -132,7 +106,7 @@ export const shopRouter = router({
     .input(z.object({ shopId: z.number() }))
     .query(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.checkShopAccess(input.shopId);
     }),
 
@@ -153,7 +127,7 @@ export const shopRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.getProducts(input.shopId, {
         category: input.category,
         search: input.search,
@@ -173,7 +147,7 @@ export const shopRouter = router({
     .input(z.object({ shopId: z.number() }))
     .query(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.getCartContents(input.shopId);
     }),
 
@@ -188,7 +162,7 @@ export const shopRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       await service.addToCart(input.shopId, input.productId, input.quantity);
       return { success: true };
     }),
@@ -208,7 +182,7 @@ export const shopRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.createOrderFromCart(input.shopId, input.shippingAddress, input.notes);
     }),
 
@@ -219,7 +193,7 @@ export const shopRouter = router({
     .input(z.object({ orderId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.confirmOrder(input.orderId);
     }),
 
@@ -235,7 +209,7 @@ export const shopRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.getOrders(input);
     }),
 
@@ -244,7 +218,7 @@ export const shopRouter = router({
    */
   getPendingApprovals: protectedProcedure.query(async ({ ctx }) => {
     const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
     return service.getPendingApprovals();
   }),
 
@@ -252,6 +226,7 @@ export const shopRouter = router({
    * Obtiene pedidos en estado draft (pendientes de confirmación del técnico)
    */
   getDraftOrders: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
     const orders = await db
       .select()
       .from(shopOrders)
@@ -274,7 +249,7 @@ export const shopRouter = router({
     .input(z.object({ orderId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       await service.approveOrder(input.orderId);
       return { success: true };
     }),
@@ -289,7 +264,7 @@ export const shopRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       await service.rejectOrder(input.orderId, input.reason);
       return { success: true };
     }),
@@ -301,6 +276,7 @@ export const shopRouter = router({
     .input(z.object({ orderId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       // Verificar que el pedido existe y está en draft
+      const db = await getDb();
       const [order] = await db
         .select()
         .from(shopOrders)
@@ -340,7 +316,7 @@ export const shopRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       const orgRole = await getUserOrganizationRole(ctx.user.id, ctx.user.partnerId);
-    const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
+      const service = createShopService(ctx.user.partnerId, ctx.user.id, orgRole);
       return service.canPlaceOrder(input.shopId, input.total);
     }),
 
@@ -355,6 +331,7 @@ export const shopRouter = router({
     .input(z.object({ shopId: z.number() }))
     .mutation(async ({ input }) => {
       // Obtener configuración de WooCommerce
+      const db = await getDb();
       const [wooConfig] = await db
         .select()
         .from(distributorWooCommerceConfig)
@@ -374,6 +351,7 @@ export const shopRouter = router({
       
       let syncedCount = 0;
       for (const product of products) {
+        const db = await getDb();
         const [existing] = await db
           .select()
           .from(shopProducts)
@@ -445,6 +423,7 @@ export const shopRouter = router({
    * Obtener alertas de stock activas
    */
   getStockAlerts: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
     const alerts = await db
       .select()
       .from(shopStockAlerts)
@@ -503,6 +482,7 @@ export const shopRouter = router({
    * Obtener tier actual del usuario
    */
   getCurrentTier: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
     const [tracking] = await db
       .select()
       .from(shopPurchaseTracking)
@@ -526,6 +506,7 @@ export const shopRouter = router({
    * Obtener progreso hacia siguiente tier
    */
   getTierProgress: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
     const [tracking] = await db
       .select()
       .from(shopPurchaseTracking)
@@ -545,6 +526,7 @@ export const shopRouter = router({
   getBlogPosts: protectedProcedure
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ input }) => {
+      const db = await getDb();
       const [wooConfig] = await db
         .select()
         .from(distributorWooCommerceConfig)
@@ -566,6 +548,7 @@ export const shopRouter = router({
   searchBlogPosts: protectedProcedure
     .input(z.object({ query: z.string() }))
     .query(async ({ input }) => {
+      const db = await getDb();
       const [wooConfig] = await db
         .select()
         .from(distributorWooCommerceConfig)
