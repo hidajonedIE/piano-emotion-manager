@@ -112,6 +112,8 @@ export async function verifyClerkSession(req: VercelRequest | {
     }
     
     // Return the user object
+    console.log('[Clerk] clerkUser object:', JSON.stringify(clerkUser));
+    console.log('[Clerk] clerkUser.emailAddresses:', clerkUser.emailAddresses);
     const returnUser = {
       id: clerkUser.id,
       email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
