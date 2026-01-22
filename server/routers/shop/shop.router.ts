@@ -6,7 +6,8 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../../trpc.js';
 import { createShopService } from '../../services/shop/index.js';
-import { db } from '../../../drizzle/db.js';
+import { getDb } from '../../../drizzle/db.js';
+const db = getDb();
 import { 
   shopProducts, 
   shopStockAlerts,

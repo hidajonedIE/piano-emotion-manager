@@ -3,7 +3,8 @@
  * Detecta cuando el inventario está bajo y genera pedidos semi-automáticos
  */
 
-import { db } from '../../../drizzle/db.js';
+import { getDb } from '../../../drizzle/db.js';
+const db = getDb();
 import { 
   shopProductInventoryLinks, 
   shopStockAlerts,
