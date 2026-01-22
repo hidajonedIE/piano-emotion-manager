@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet } from 'react-native';
 import { useHeader } from '@/contexts/HeaderContext';
-import { ShopView } from '@/components/shop';
+import { ShopViewModern } from '@/components/shop';
 
 export default function StoreScreen() {
   const { setHeaderConfig } = useHeader();
@@ -26,7 +26,7 @@ export default function StoreScreen() {
 
   return (
     <View style={styles.container}>
-      <ShopView />
+      <ShopViewModern />
     </View>
   );
 }
