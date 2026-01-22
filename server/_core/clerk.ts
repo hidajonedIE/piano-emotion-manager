@@ -153,7 +153,7 @@ export async function getOrCreateUserFromClerk(
     debugLog.point12 = "Usuario NO encontrado en BD, creando nuevo usuario";
     
     // Create new user
-    const [newUser] = await db
+    await db
       .insert(usersTable)
       .values({
         openId: clerkUser.id,
@@ -162,8 +162,14 @@ export async function getOrCreateUserFromClerk(
         partnerId: 1, // Default to partner 1
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
-      ;
+      });
+
+    // Fetch the newly created user
+    const [newUser] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.openId, clerkUser.id))
+      .limit(1);
 
     debugLog.point13 = `Usuario creado exitosamente en BD: ID=${newUser.id}, Email=${newUser.email}`;
     return { user: newUser, debugLog };
