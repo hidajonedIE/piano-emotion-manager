@@ -667,11 +667,11 @@ export class ShopService {
     const page = options.page || 1;
     const pageSize = options.pageSize || 20;
 
-    const [orders, countResult] = await Promise.all([
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const [orders, countResult] = await Promise.all([
       db.query.shopOrders.findMany({
+        where: and(...conditions),
         orderBy: [desc(shopOrders.createdAt)],
         limit: pageSize,
         offset: (page - 1) * pageSize,
