@@ -1,5 +1,6 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
+import { setGlobalTokenGetter } from './trpc';
 
 /**
  * Context to provide Clerk session token to tRPC client
@@ -15,6 +16,11 @@ const ClerkTokenContext = createContext<ClerkTokenContextType | null>(null);
  */
 export function ClerkTokenProvider({ children }: { children: ReactNode }) {
   const { getToken } = useAuth();
+
+  // Register the token getter globally for tRPC
+  useEffect(() => {
+    setGlobalTokenGetter(getToken);
+  }, [getToken]);
 
   return (
     <ClerkTokenContext.Provider value={{ getToken }}>

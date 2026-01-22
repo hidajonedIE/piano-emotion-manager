@@ -13,6 +13,18 @@ import { getApiBaseUrl } from "@/constants/oauth";
  */
 export const trpc = createTRPCReact<AppRouter>();
 
+// Global token getter function that will be set by ClerkTokenProvider
+let globalGetToken: (() => Promise<string | null>) | null = null;
+
+/**
+ * Set the global token getter function.
+ * This should be called by ClerkTokenProvider when it mounts.
+ */
+export function setGlobalTokenGetter(getToken: () => Promise<string | null>) {
+  globalGetToken = getToken;
+  console.log('[tRPC] Global token getter set');
+}
+
 /**
  * Creates the tRPC client with proper configuration.
  * Call this once in your app's root layout.
@@ -29,38 +41,20 @@ export function createTRPCClient() {
           try {
             let token: string | null = null;
             
-            // Check if we're in a browser environment
-            if (typeof window !== 'undefined') {
-              // Try to get token from Clerk
-              // Use the global Clerk object which should be available after ClerkProvider loads
-              if ((window as any).Clerk) {
-                const clerk = (window as any).Clerk;
-                
-                // Try to get the session
-                if (clerk.session) {
-                  try {
-                    token = await clerk.session.getToken();
-                  } catch (e) {
-                    console.warn('[tRPC headers] Could not get token from Clerk session:', e);
-                  }
-                }
-                
-                // If no token yet, try the user object
-                if (!token && clerk.user) {
-                  try {
-                    token = await clerk.user.getToken();
-                  } catch (e) {
-                    console.warn('[tRPC headers] Could not get token from Clerk user:', e);
-                  }
-                }
-              }
+            // Use the global token getter if available
+            if (globalGetToken) {
+              token = await globalGetToken();
             }
             
-            console.log('[tRPC headers] Token obtained:', token ? `${token.substring(0, 50)}...` : 'NO TOKEN');
-            
-            return {
-              ...(token && { authorization: `Bearer ${token}` }),
-            };
+            if (token) {
+              console.log('[tRPC headers] Token obtained:', `${token.substring(0, 50)}...`);
+              return {
+                authorization: `Bearer ${token}`,
+              };
+            } else {
+              console.warn('[tRPC headers] No token available');
+              return {};
+            }
           } catch (e) {
             console.error('[tRPC headers] Error getting Clerk token:', e);
             return {};

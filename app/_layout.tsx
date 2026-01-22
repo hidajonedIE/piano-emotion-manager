@@ -32,6 +32,7 @@ import { AIAssistant } from "@/components/ai/AIAssistant";
 import { AuthGuard } from "@/components/auth-guard";
 import { OnboardingGuard } from "@/components/onboarding-guard";
 import { ClerkProvider } from "@/components/clerk-provider";
+import { ClerkTokenProvider } from "@/lib/clerk-token-provider";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -125,7 +126,8 @@ export default function RootLayout() {
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ClerkProvider>
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <ClerkTokenProvider>
+          <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
               <DistributorProvider>
@@ -177,7 +179,8 @@ export default function RootLayout() {
               </DistributorProvider>
             </ThemeProvider>
           </QueryClientProvider>
-        </trpc.Provider>
+          </trpc.Provider>
+        </ClerkTokenProvider>
       </ClerkProvider>
     </GestureHandlerRootView>
   );
