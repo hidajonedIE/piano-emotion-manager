@@ -11,7 +11,7 @@ export default function SignUpScreen() {
       <SignUp 
         routing="virtual"
         signInUrl="/login"
-        afterSignUpUrl="/(tabs)"
+        afterSignUpUrl="/(drawer)"
       />
     </View>
   );

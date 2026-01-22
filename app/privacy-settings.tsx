@@ -285,7 +285,7 @@ export default function PrivacySettingsScreen() {
           {/* Derecho de rectificación */}
           <Pressable
             style={[styles.rightItem, { borderBottomColor: borderColor }]}
-            onPress={() => router.push('/(tabs)/clients')}
+            onPress={() => router.push('/(drawer)/clients')}
           >
             <View style={[styles.rightIcon, { backgroundColor: `${warning}15` }]}>
               <IconSymbol name="pencil" size={20} color={warning} />

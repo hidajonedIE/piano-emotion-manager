@@ -18,7 +18,7 @@ export default function LoginScreen() {
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (isSignedIn) {
-      router.replace("/(tabs)");
+      router.replace("/(drawer)");
     }
   }, [isSignedIn, router]);
 
@@ -33,7 +33,7 @@ export default function LoginScreen() {
             routing="path"
             path="/login"
             signUpUrl="/sign-up"
-            afterSignInUrl="/(tabs)"
+            afterSignInUrl="/(drawer)"
             appearance={{
               elements: {
                 rootBox: {

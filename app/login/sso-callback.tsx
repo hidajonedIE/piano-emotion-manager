@@ -18,7 +18,7 @@ export default function SSOCallback() {
     if (isSignedIn) {
       // Usuario autenticado correctamente, redirigir al dashboard
       console.log('[SSOCallback] User signed in, redirecting to dashboard');
-      router.replace('/(tabs)');
+      router.replace('/(drawer)');
     } else {
       // No autenticado, volver al login
       console.log('[SSOCallback] User not signed in, redirecting to login');
@@ -34,8 +34,8 @@ export default function SSOCallback() {
       return (
         <View style={styles.container}>
           <AuthenticateWithRedirectCallback 
-            afterSignInUrl="/(tabs)"
-            afterSignUpUrl="/(tabs)"
+            afterSignInUrl="/(drawer)"
+            afterSignUpUrl="/(drawer)"
           />
         </View>
       );

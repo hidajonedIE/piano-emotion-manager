@@ -14,7 +14,7 @@ export default function OAuthNativeCallback() {
     // El hook useOAuth() de Clerk maneja automáticamente el callback
     // Solo necesitamos redirigir al usuario después de que se complete
     const timer = setTimeout(() => {
-      router.replace('/(tabs)');
+      router.replace('/(drawer)');
     }, 1000);
 
     return () => clearTimeout(timer);
