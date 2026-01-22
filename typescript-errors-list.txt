@@ -1,0 +1,41 @@
+Errores de TypeScript extraídos del deployment:
+
+## Errores en server/services/crm/campaign.service.ts:
+- Línea 149: Cannot find name 'db'
+- Línea 228: Cannot find name 'db'
+- Línea 247: Cannot find name 'db'
+- Línea 305: Cannot find name 'db'
+- Línea 316: Property 'execute' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 325: Cannot find name 'db'
+- Línea 336: Property 'execute' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 360: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 376: Property 'insert' does not exist on type 'Promise<MySql2Database<...>>'
+
+## Errores en server/services/crm/client.service.ts:
+- Línea 123: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 131: Property 'insert' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 149: Cannot find name 'db'
+- Línea 208: Cannot find name 'db'
+- Línea 229: Cannot find name 'db'
+- Línea 252: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 262: Property 'insert' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 276: Cannot find name 'db'
+- Línea 282: Property 'insert' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 296: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 314: Property 'insert' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 331: Cannot find name 'db'
+- Línea 354: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 370: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 388: Property 'insert' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 420: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 430: Cannot find name 'db'
+- Línea 453: Property 'query' does not exist on type 'Promise<MySql2Database<...>>'
+- Línea 475: Property 'insert' does not exist on type 'Promise<MySql2Database<...>>'
+
+## Errores en server/services/reports/pdf-generator.service.ts:
+- Línea 333: Argument of type 'unknown' is not assignable to parameter of type 'RevenueDataItem[]'
+- Línea 335: Argument of type 'unknown' is not assignable to parameter of type 'ServiceDataItem[]'
+- Línea 337: Argument of type 'unknown' is not assignable to parameter of type 'PianoDataItem[]'
+
+PATRÓN COMÚN:
+El problema principal es que `getDb()` devuelve una Promise, pero el código está intentando usar métodos de base de datos directamente sin await.

@@ -63,7 +63,8 @@ export class CampaignService {
    * Crea una nueva campaña
    */
   async createCampaign(input: CampaignInput): Promise<typeof campaigns.$inferSelect> {
-    const [campaign] = await getDb().insert(campaigns).values({
+    const db = await getDb();
+    const [campaign] = await db.insert(campaigns).values({
       organizationId: this.organizationId,
       createdBy: this.userId,
       name: input.name,
@@ -94,7 +95,8 @@ export class CampaignService {
       conditions.push(eq(campaigns.status, status));
     }
 
-    return getDb().query.campaigns.findMany({
+    const db = await getDb();
+    return db.query.campaigns.findMany({
       where: and(...conditions),
       orderBy: [desc(campaigns.createdAt)],
     });
@@ -104,7 +106,8 @@ export class CampaignService {
    * Obtiene una campaña por ID
    */
   async getCampaign(campaignId: number): Promise<typeof campaigns.$inferSelect | undefined> {
-    return getDb().query.campaigns.findFirst({
+    const db = await getDb();
+    return db.query.campaigns.findFirst({
       where: and(
         eq(campaigns.id, campaignId),
         eq(campaigns.organizationId, this.organizationId)
@@ -155,14 +158,16 @@ export class CampaignService {
     }
 
     // Obtener clientes que cumplen criterios
-    const eligibleClients = await getDb().query.clientProfiles.findMany({
+    const db = await getDb();
+    const eligibleClients = await db.query.clientProfiles.findMany({
       where: and(...conditions),
     });
 
     // Si hay filtro por tags, filtrar adicionalmente
     let filteredClients = eligibleClients;
     if (campaign.targetTags && campaign.targetTags.length > 0) {
-      const tagAssignments = await getDb().query.clientTagAssignments.findMany({
+      const db = await getDb();
+      const tagAssignments = await db.query.clientTagAssignments.findMany({
         where: inArray(clientTagAssignments.tagId, campaign.targetTags),
       });
       const clientIdsWithTags = new Set(tagAssignments.map((a) => a.clientId));
@@ -313,7 +318,8 @@ export class CampaignService {
       );
 
     // Actualizar contador de campaña
-    await getDb().execute(
+    const db = await getDb();
+    await db.execute(
       sql`UPDATE campaigns SET opened_count = opened_count + 1 WHERE id = ${campaignId}`
     );
   }
@@ -333,7 +339,8 @@ export class CampaignService {
       );
 
     // Actualizar contador de campaña
-    await getDb().execute(
+    const db = await getDb();
+    await db.execute(
       sql`UPDATE campaigns SET clicked_count = clicked_count + 1 WHERE id = ${campaignId}`
     );
   }
@@ -357,7 +364,8 @@ export class CampaignService {
       conditions.push(eq(communicationTemplates.type, type as any));
     }
 
-    return getDb().query.communicationTemplates.findMany({
+    const db = await getDb();
+    return db.query.communicationTemplates.findMany({
       where: and(...conditions),
       orderBy: [asc(communicationTemplates.name)],
     });
@@ -373,7 +381,8 @@ export class CampaignService {
     subject?: string,
     variables?: string[]
   ): Promise<typeof communicationTemplates.$inferSelect> {
-    const [template] = await getDb().insert(communicationTemplates).values({
+    const db = await getDb();
+    const [template] = await db.insert(communicationTemplates).values({
       organizationId: this.organizationId,
       name,
       type: type as any,

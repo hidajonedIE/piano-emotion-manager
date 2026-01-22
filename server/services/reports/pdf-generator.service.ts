@@ -330,11 +330,11 @@ export class PDFGeneratorService {
       case 'summary':
         return this.generateSummarySection(section.title, data as DashboardMetrics);
       case 'revenue':
-        return this.generateRevenueSection(section.title, data);
+        return this.generateRevenueSection(section.title, data as RevenueDataItem[]);
       case 'services':
-        return this.generateServicesSection(section.title, data);
+        return this.generateServicesSection(section.title, data as ServiceDataItem[]);
       case 'pianos':
-        return this.generatePianosSection(section.title, data);
+        return this.generatePianosSection(section.title, data as PianoDataItem[]);
       default:
         return '';
     }
