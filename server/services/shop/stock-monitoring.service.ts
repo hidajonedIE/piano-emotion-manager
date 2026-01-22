@@ -3,14 +3,14 @@
  * Detecta cuando el inventario está bajo y genera pedidos semi-automáticos
  */
 
-import { db } from '../../drizzle/db.js';
+import { db } from '../../../drizzle/db.js';
 import { 
   shopProductInventoryLinks, 
   shopStockAlerts,
   shopOrders,
   shopOrderLines,
   inventory 
-} from '../../drizzle/shop-schema.js';
+} from '../../../drizzle/shop-schema.js';
 import { eq, and, lt, isNull } from 'drizzle-orm';
 
 export interface StockAlert {
@@ -310,4 +310,4 @@ export class StockMonitoringService {
 }
 
 // Importar shopProducts si no está definido
-import { shopProducts } from '../../drizzle/shop-schema.js';
+import { shopProducts } from '../../../drizzle/shop-schema.js';
