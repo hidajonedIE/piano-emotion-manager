@@ -22,8 +22,8 @@ export async function verifyClerkSession(req: VercelRequest | {
     // Log all headers for debugging
     console.log('[Clerk] Request headers:', JSON.stringify(req.headers));
     
-    // Get the token from the Authorization header
-    const authHeader = req.headers?.["authorization"] as string | undefined;
+    // Get the token from the Authorization header (case-insensitive)
+    const authHeader = (req.headers?.["authorization"] || req.headers?.["Authorization"]) as string | undefined;
     debugLog.point1 = `Authorization header presente: ${!!authHeader}`;
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -138,14 +138,14 @@ export async function getOrCreateUserFromClerk(
   eq: any,
   debugLog: Record<string, string> = {}
 ) {
-  debugLog.point10 = `Buscando usuario en base de datos con openId (Clerk ID): ${clerkUser.id}`;
+  debugLog.point10 = `Buscando usuario en base de datos con openId (email): ${clerkUser.email}`;
   
   try {
     // Try to find existing user
     const [existingUser] = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.openId, clerkUser.id))
+      .where(eq(usersTable.openId, clerkUser.email))
       .limit(1);
 
     if (existingUser) {
@@ -159,7 +159,7 @@ export async function getOrCreateUserFromClerk(
     await db
       .insert(usersTable)
       .values({
-        openId: clerkUser.id,
+        openId: clerkUser.email,
         email: clerkUser.email,
         name: clerkUser.name,
         partnerId: 1, // Default to partner 1
@@ -171,7 +171,7 @@ export async function getOrCreateUserFromClerk(
     const [newUser] = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.openId, clerkUser.id))
+      .where(eq(usersTable.openId, clerkUser.email))
       .limit(1);
 
     debugLog.point13 = `Usuario creado exitosamente en BD: ID=${newUser.id}, Email=${newUser.email}`;
