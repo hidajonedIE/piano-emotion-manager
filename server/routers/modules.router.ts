@@ -21,12 +21,12 @@ async function getUserPlan(userId: string | undefined): Promise<SubscriptionPlan
   }
 
   try {
-    const db = await getDb();
+    const db = await db.getDb();
     
     console.log('[getUserPlan] Looking for user with Clerk ID:', userId);
     
     // Buscar usuario por openId (Clerk ID) en lugar de por id numérico
-    const result = await getDb().select().from(users).where(eq(users.openId, userId)).limit(1);
+    const result = await db.getDb().select().from(users).where(eq(users.openId, userId)).limit(1);
     const user = result.length > 0 ? result[0] : null;
 
     console.log('[getUserPlan] User found:', user ? { id: user.id, email: user.email, plan: user.subscriptionPlan, status: user.subscriptionStatus } : 'null');
@@ -121,8 +121,8 @@ export const modulesRouter = router({
     }
 
     try {
-      const db = await getDb();
-      const user = await getDb().query.users.findFirst({
+      const db = await db.getDb();
+      const user = await db.getDb().query.users.findFirst({
         where: eq(users.openId, userId),
       });
 

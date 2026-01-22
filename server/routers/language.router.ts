@@ -71,7 +71,7 @@ function isLanguageSupported(code: string): code is SupportedLanguage {
  * Obtener idiomas disponibles para un partner
  */
 async function getPartnerAvailableLanguages(partnerId: number): Promise<SupportedLanguage[]> {
-  const database = await getDb();
+  const database = await db.getDb();
   if (!database) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
@@ -101,7 +101,7 @@ async function getPartnerAvailableLanguages(partnerId: number): Promise<Supporte
  * Flujo: preferredLanguage > partner defaultLanguage > DEFAULT_LANGUAGE
  */
 async function getUserLanguage(userId: number, partnerId: number): Promise<SupportedLanguage> {
-  const database = await getDb();
+  const database = await db.getDb();
   if (!database) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
@@ -185,7 +185,7 @@ export const languageRouter = router({
   updateUserLanguage: protectedProcedure
     .input(z.object({ language: languageCodeSchema }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -222,7 +222,7 @@ export const languageRouter = router({
    */
   getPartnerLanguageConfig: adminProcedure
     .query(async ({ ctx }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -260,7 +260,7 @@ export const languageRouter = router({
   updatePartnerDefaultLanguage: adminProcedure
     .input(z.object({ language: languageCodeSchema }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -301,7 +301,7 @@ export const languageRouter = router({
       enableAll: z.boolean().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -347,7 +347,7 @@ export const languageRouter = router({
    */
   getLanguageStats: adminProcedure
     .query(async ({ ctx }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

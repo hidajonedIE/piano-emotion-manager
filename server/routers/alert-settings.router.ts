@@ -97,7 +97,7 @@ export const alertSettingsRouter = router({
 
       try {
         // Obtener conexión a la base de datos
-        const database = await getDb();
+        const database = await db.getDb();
         
         if (!database) {
           console.error('[ALERT_SETTINGS] Database connection is null');
@@ -149,7 +149,7 @@ export const alertSettingsRouter = router({
 
       try {
         // Obtener conexión a la base de datos
-        const database = await getDb();
+        const database = await db.getDb();
         
         if (!database) {
           console.error('[ALERT_SETTINGS] Database connection is null');
@@ -226,7 +226,7 @@ export const alertSettingsRouter = router({
 
       try {
         // Obtener conexión a la base de datos
-        const database = await getDb();
+        const database = await db.getDb();
         
         if (!database) {
           console.error('[ALERT_SETTINGS] Database connection is null');

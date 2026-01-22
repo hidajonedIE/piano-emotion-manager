@@ -72,7 +72,7 @@ async function getUserOrganizationRole(userId: number, partnerId: number | null)
       return 'owner';
     }
     
-    const database = await getDb();
+    const database = await db.getDb();
     console.log('[getUserOrganizationRole] Database obtained');
     
     const { organizationMembers } = await import('../../../drizzle/schema.js');
@@ -287,7 +287,7 @@ export const shopRouter = router({
    * Obtiene pedidos en estado draft (pendientes de confirmación del técnico)
    */
   getDraftOrders: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await db.getDb();
     const orders = await db
       .select()
       .from(shopOrders)
@@ -337,7 +337,7 @@ export const shopRouter = router({
     .input(z.object({ orderId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       // Verificar que el pedido existe y está en draft
-      const db = await getDb();
+      const db = await db.getDb();
       const [order] = await db
         .select()
         .from(shopOrders)
@@ -392,7 +392,7 @@ export const shopRouter = router({
     .input(z.object({ shopId: z.number() }))
     .mutation(async ({ input }) => {
       // Obtener configuración de WooCommerce
-      const db = await getDb();
+      const db = await db.getDb();
       const [wooConfig] = await db
         .select()
         .from(distributorWooCommerceConfig)
@@ -412,7 +412,7 @@ export const shopRouter = router({
       
       let syncedCount = 0;
       for (const product of products) {
-        const db = await getDb();
+        const db = await db.getDb();
         const [existing] = await db
           .select()
           .from(shopProducts)
@@ -484,7 +484,7 @@ export const shopRouter = router({
    * Obtener alertas de stock activas
    */
   getStockAlerts: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await db.getDb();
     const alerts = await db
       .select()
       .from(shopStockAlerts)
@@ -543,7 +543,7 @@ export const shopRouter = router({
    * Obtener tier actual del usuario
    */
   getCurrentTier: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await db.getDb();
     const [tracking] = await db
       .select()
       .from(shopPurchaseTracking)
@@ -567,7 +567,7 @@ export const shopRouter = router({
    * Obtener progreso hacia siguiente tier
    */
   getTierProgress: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await db.getDb();
     const [tracking] = await db
       .select()
       .from(shopPurchaseTracking)
@@ -587,7 +587,7 @@ export const shopRouter = router({
   getBlogPosts: protectedProcedure
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       const [wooConfig] = await db
         .select()
         .from(distributorWooCommerceConfig)
@@ -609,7 +609,7 @@ export const shopRouter = router({
   searchBlogPosts: protectedProcedure
     .input(z.object({ query: z.string() }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       const [wooConfig] = await db
         .select()
         .from(distributorWooCommerceConfig)

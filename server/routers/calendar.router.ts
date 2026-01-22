@@ -53,11 +53,11 @@ export const calendarRouter = router({
         const tokens = await googleOAuth.exchangeCodeForTokens(input.code);
         
         // Check if connection already exists
-        const existing = await getDb().getConnectionByUserAndProvider(ctx.userId, 'google');
+        const existing = await db.getDb().getConnectionByUserAndProvider(ctx.userId, 'google');
         
         if (existing) {
           // Update existing connection
-          await getDb().updateConnection(existing.id, {
+          await db.getDb().updateConnection(existing.id, {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             expiresAt: tokens.expiresAt,
@@ -73,7 +73,7 @@ export const calendarRouter = router({
         // Create new connection
         const connectionId = nanoid();
         
-        await getDb().createConnection({
+        await db.getDb().createConnection({
           id: connectionId,
           userId: ctx.userId,
           provider: 'google',
@@ -90,7 +90,7 @@ export const calendarRouter = router({
           lastSyncAt: null,
         });
         
-        const connection = await getDb().getConnectionById(connectionId);
+        const connection = await db.getDb().getConnectionById(connectionId);
         
         if (!connection) {
           throw new Error('Failed to create connection');
@@ -127,11 +127,11 @@ export const calendarRouter = router({
         const tokens = await microsoftOAuth.exchangeCodeForTokens(input.code);
         
         // Check if connection already exists
-        const existing = await getDb().getConnectionByUserAndProvider(ctx.userId, 'microsoft');
+        const existing = await db.getDb().getConnectionByUserAndProvider(ctx.userId, 'microsoft');
         
         if (existing) {
           // Update existing connection
-          await getDb().updateConnection(existing.id, {
+          await db.getDb().updateConnection(existing.id, {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             expiresAt: tokens.expiresAt,
@@ -147,7 +147,7 @@ export const calendarRouter = router({
         // Create new connection
         const connectionId = nanoid();
         
-        await getDb().createConnection({
+        await db.getDb().createConnection({
           id: connectionId,
           userId: ctx.userId,
           provider: 'microsoft',
@@ -164,7 +164,7 @@ export const calendarRouter = router({
           lastSyncAt: null,
         });
         
-        const connection = await getDb().getConnectionById(connectionId);
+        const connection = await db.getDb().getConnectionById(connectionId);
         
         if (!connection) {
           throw new Error('Failed to create connection');
@@ -190,7 +190,7 @@ export const calendarRouter = router({
    * Get all calendar connections for current user
    */
   getConnections: protectedProcedure.query(async ({ ctx }) => {
-    const connections = await getDb().getConnectionsByUserId(ctx.userId);
+    const connections = await db.getDb().getConnectionsByUserId(ctx.userId);
     
     // Remove sensitive data
     return connections.map(conn => ({
@@ -213,7 +213,7 @@ export const calendarRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const connection = await getDb().getConnectionById(input.connectionId);
+      const connection = await db.getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -233,7 +233,7 @@ export const calendarRouter = router({
       }
       
       // Delete connection
-      await getDb().deleteConnection(connection.id);
+      await db.getDb().deleteConnection(connection.id);
       
       return { success: true };
     }),
@@ -248,7 +248,7 @@ export const calendarRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const connection = await getDb().getConnectionById(input.connectionId);
+      const connection = await db.getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -273,7 +273,7 @@ export const calendarRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const connection = await getDb().getConnectionById(input.connectionId);
+      const connection = await db.getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -282,7 +282,7 @@ export const calendarRouter = router({
         });
       }
       
-      const logs = await getDb().getSyncLogsByConnection(
+      const logs = await db.getDb().getSyncLogsByConnection(
         input.connectionId,
         input.limit || 50
       );
@@ -294,7 +294,7 @@ export const calendarRouter = router({
    * Get sync statistics
    */
   getSyncStats: protectedProcedure.query(async ({ ctx }) => {
-    const connections = await getDb().getConnectionsByUserId(ctx.userId);
+    const connections = await db.getDb().getConnectionsByUserId(ctx.userId);
     
     const stats = {
       totalConnections: connections.length,
@@ -322,7 +322,7 @@ export const calendarRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const connections = await getDb().getConnectionsByUserId(ctx.userId);
+      const connections = await db.getDb().getConnectionsByUserId(ctx.userId);
       
       const allConflicts: any[] = [];
       
@@ -358,7 +358,7 @@ export const calendarRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const connection = await getDb().getConnectionById(input.connectionId);
+      const connection = await db.getDb().getConnectionById(input.connectionId);
       
       if (!connection || connection.userId !== ctx.userId) {
         throw new TRPCError({
@@ -367,7 +367,7 @@ export const calendarRouter = router({
         });
       }
       
-      await getDb().updateConnection(connection.id, {
+      await db.getDb().updateConnection(connection.id, {
         syncEnabled: input.enabled,
       });
       

@@ -194,7 +194,7 @@ export const invoicesRouter = router({
         dateTo 
       } = input || {};
       
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
       // Construir condiciones WHERE con filtrado por organización
@@ -276,7 +276,7 @@ export const invoicesRouter = router({
    */
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) return [];
     
     const items = await database
@@ -299,7 +299,7 @@ export const invoicesRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const [invoice] = await database
@@ -328,7 +328,7 @@ export const invoicesRouter = router({
   getByNumber: orgProcedure
     .input(z.object({ invoiceNumber: z.string() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const [invoice] = await database
@@ -354,7 +354,7 @@ export const invoicesRouter = router({
   getByClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return [];
 
       const items = await database
@@ -378,7 +378,7 @@ export const invoicesRouter = router({
   create: orgProcedure
     .input(invoiceBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
@@ -419,7 +419,7 @@ export const invoicesRouter = router({
       id: z.number(),
     }).merge(invoiceBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la factura para verificar permisos
@@ -477,7 +477,7 @@ export const invoicesRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la factura para verificar permisos
@@ -516,7 +516,7 @@ export const invoicesRouter = router({
       status: invoiceStatusSchema,
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la factura para verificar permisos
@@ -558,7 +558,7 @@ export const invoicesRouter = router({
       dateTo: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return null;
 
       const whereClauses = [
@@ -586,7 +586,7 @@ export const invoicesRouter = router({
    * Generar siguiente número de factura
    */
   getNextInvoiceNumber: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) return "INV-0001";
 
     const allInvoices = await database

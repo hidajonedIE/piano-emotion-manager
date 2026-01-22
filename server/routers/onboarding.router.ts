@@ -201,7 +201,7 @@ export const onboardingRouter = router({
   checkSlugAvailability: publicProcedure
     .input(checkSlugSchema)
     .query(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -228,7 +228,7 @@ export const onboardingRouter = router({
   checkEmailAvailability: publicProcedure
     .input(checkEmailSchema)
     .query(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -260,7 +260,7 @@ export const onboardingRouter = router({
   suggestSlug: publicProcedure
     .input(z.object({ name: z.string().min(1).max(255) }))
     .query(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -320,7 +320,7 @@ export const onboardingRouter = router({
   validateStep1: publicProcedure
     .input(step1Schema)
     .mutation(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -461,7 +461,7 @@ export const onboardingRouter = router({
   completeRegistration: publicProcedure
     .input(completeRegistrationSchema)
     .mutation(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -722,7 +722,7 @@ export const onboardingRouter = router({
    */
   getOnboardingStatus: protectedProcedure
     .query(async ({ ctx }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

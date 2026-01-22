@@ -4,11 +4,11 @@ import { clients, pianos, services } from "../../drizzle/schema.js";
 
 export const seedRouter = router({
   seedTestData: protectedProcedure.mutation(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await db.getDb();
     const ownerId = ctx.user.email;
 
     // Insert test clients
-    const [client1] = await getDb().insert(clients).values({
+    const [client1] = await db.getDb().insert(clients).values({
       name: 'María García',
       email: 'maria.garcia@example.com',
       phone: '+34 612 345 678',
@@ -16,7 +16,7 @@ export const seedRouter = router({
       ownerId,
     });
 
-    const [client2] = await getDb().insert(clients).values({
+    const [client2] = await db.getDb().insert(clients).values({
       name: 'Juan Martínez',
       email: 'juan.martinez@example.com',
       phone: '+34 623 456 789',
@@ -25,7 +25,7 @@ export const seedRouter = router({
     });
 
     // Insert test pianos
-    const [piano1] = await getDb().insert(pianos).values({
+    const [piano1] = await db.getDb().insert(pianos).values({
       brand: 'Yamaha',
       model: 'U1',
       serialNumber: 'Y123456',
@@ -35,7 +35,7 @@ export const seedRouter = router({
       ownerId,
     });
 
-    const [piano2] = await getDb().insert(pianos).values({
+    const [piano2] = await db.getDb().insert(pianos).values({
       brand: 'Kawai',
       model: 'K-300',
       serialNumber: 'K789012',
@@ -50,7 +50,7 @@ export const seedRouter = router({
     const urgentDate = new Date();
     urgentDate.setMonth(urgentDate.getMonth() - 14);
     
-    await getDb().insert(services).values({
+    await db.getDb().insert(services).values({
       pianoId: piano1.id,
       serviceType: 'afinacion',
       date: urgentDate,
@@ -63,7 +63,7 @@ export const seedRouter = router({
     const pendingDate = new Date();
     pendingDate.setMonth(pendingDate.getMonth() - 11);
     
-    await getDb().insert(services).values({
+    await db.getDb().insert(services).values({
       pianoId: piano2.id,
       serviceType: 'afinacion',
       date: pendingDate,

@@ -24,7 +24,7 @@ export const exportRouter = router({
       }).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       const userId = ctx.user.id;
 
       // Get clients
@@ -74,7 +74,7 @@ export const exportRouter = router({
       }).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       const userId = ctx.user.id;
 
       // Get services with client info
@@ -140,7 +140,7 @@ export const exportRouter = router({
       }).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       const userId = ctx.user.id;
 
       // Get invoices with client info
@@ -203,7 +203,7 @@ export const exportRouter = router({
       format: z.enum(['pdf', 'excel']),
     }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       const userId = ctx.user.id;
 
       // Get inventory items

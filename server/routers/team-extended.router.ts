@@ -453,7 +453,7 @@ export const zonesRouter = router({
  * Obtener miembro por userId y organizationId
  */
 async function getMemberByUserId(userId: number, organizationId: number) {
-  const [member] = await (await getDb())!
+  const [member] = await (await db.getDb())!
     .select()
     .from(organizationMembers)
     .where(
@@ -472,7 +472,7 @@ async function getMemberByUserId(userId: number, organizationId: number) {
  * Obtener ausencias de un miembro
  */
 async function getAbsencesByMember(memberId: number, startDate?: string, endDate?: string) {
-  const db = await getDb();
+  const db = await db.getDb();
   if (!db) return [];
   let query = db
     .select()
@@ -516,7 +516,7 @@ async function getOrganizationAbsences(
     conditions.push(eq(memberAbsences.status, status as any));
   }
 
-  const absences = await (await getDb())!
+  const absences = await (await db.getDb())!
     .select({
       absence: memberAbsences,
       member: organizationMembers,
@@ -543,7 +543,7 @@ async function createAbsenceRequest(data: {
   endDate: Date;
   reason?: string;
 }) {
-  const [result] = await (await getDb())!.insert(memberAbsences).values({
+  const [result] = await (await db.getDb())!.insert(memberAbsences).values({
     memberId: data.memberId,
     organizationId: data.organizationId,
     absenceType: data.absenceType as any,
@@ -560,7 +560,7 @@ async function createAbsenceRequest(data: {
  * Aprobar ausencia
  */
 async function approveAbsence(absenceId: number, approvedBy: number) {
-  await (await getDb())!
+  await (await db.getDb())!
     .update(memberAbsences)
     .set({
       status: "approved",
@@ -576,7 +576,7 @@ async function approveAbsence(absenceId: number, approvedBy: number) {
  * Rechazar ausencia
  */
 async function rejectAbsence(absenceId: number, rejectedBy: number, reason: string) {
-  await (await getDb())!
+  await (await db.getDb())!
     .update(memberAbsences)
     .set({
       status: "rejected",
@@ -594,7 +594,7 @@ async function rejectAbsence(absenceId: number, rejectedBy: number, reason: stri
  */
 async function cancelAbsence(absenceId: number, cancelledBy: number) {
   // Verificar que la ausencia pertenece al usuario
-  const [absence] = await (await getDb())!
+  const [absence] = await (await db.getDb())!
     .select()
     .from(memberAbsences)
     .where(eq(memberAbsences.id, absenceId))
@@ -605,7 +605,7 @@ async function cancelAbsence(absenceId: number, cancelledBy: number) {
   }
 
   // Obtener el miembro para verificar
-  const [member] = await (await getDb())!
+  const [member] = await (await db.getDb())!
     .select()
     .from(organizationMembers)
     .where(eq(organizationMembers.id, absence.memberId))
@@ -620,7 +620,7 @@ async function cancelAbsence(absenceId: number, cancelledBy: number) {
     throw new TRPCError({ code: "BAD_REQUEST", message: "Solo se pueden cancelar ausencias pendientes" });
   }
 
-  await (await getDb())!.delete(memberAbsences).where(eq(memberAbsences.id, absenceId));
+  await (await db.getDb())!.delete(memberAbsences).where(eq(memberAbsences.id, absenceId));
 
   return { id: absenceId, status: "cancelled" };
 }
@@ -662,7 +662,7 @@ async function getTechnicianMetrics(organizationId: number, technicianId: number
   const { startDate, endDate } = getDateRangeForPeriod(period);
 
   // Obtener métricas agregadas del período
-  const metrics = await (await getDb())!
+  const metrics = await (await db.getDb())!
     .select({
       servicesCompleted: sql<number>`SUM(${technicianMetrics.servicesCompleted})`,
       totalRevenue: sql<number>`SUM(${technicianMetrics.totalRevenue})`,
@@ -699,7 +699,7 @@ async function getOrganizationMetrics(organizationId: number, period: string) {
   const { startDate, endDate } = getDateRangeForPeriod(period);
 
   // Métricas agregadas de todos los técnicos
-  const metrics = await (await getDb())!
+  const metrics = await (await db.getDb())!
     .select({
       totalServices: sql<number>`SUM(${technicianMetrics.servicesCompleted})`,
       totalRevenue: sql<number>`SUM(${technicianMetrics.totalRevenue})`,
@@ -714,7 +714,7 @@ async function getOrganizationMetrics(organizationId: number, period: string) {
     );
 
   // Contar miembros activos
-  const [activeMembers] = await (await getDb())!
+  const [activeMembers] = await (await db.getDb())!
     .select({ count: sql<number>`COUNT(*)` })
     .from(organizationMembers)
     .where(
@@ -725,7 +725,7 @@ async function getOrganizationMetrics(organizationId: number, period: string) {
     );
 
   // Contar asignaciones pendientes
-  const [pendingAssignments] = await (await getDb())!
+  const [pendingAssignments] = await (await db.getDb())!
     .select({ count: sql<number>`COUNT(*)` })
     .from(workAssignments)
     .where(
@@ -770,7 +770,7 @@ async function getTechnicianRanking(organizationId: number, period: string, metr
       orderByColumn = sql`SUM(${technicianMetrics.servicesCompleted})`;
   }
 
-  const ranking = await (await getDb())!
+  const ranking = await (await db.getDb())!
     .select({
       memberId: technicianMetrics.memberId,
       memberName: organizationMembers.displayName,
@@ -817,7 +817,7 @@ async function getDashboardStats(organizationId: number) {
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
   // Citas de hoy
-  const [todayAppointmentsResult] = await (await getDb())!
+  const [todayAppointmentsResult] = await (await db.getDb())!
     .select({ count: sql<number>`COUNT(*)` })
     .from(workAssignments)
     .where(
@@ -828,7 +828,7 @@ async function getDashboardStats(organizationId: number) {
     );
 
   // Asignaciones pendientes
-  const [pendingResult] = await (await getDb())!
+  const [pendingResult] = await (await db.getDb())!
     .select({ count: sql<number>`COUNT(*)` })
     .from(workAssignments)
     .where(
@@ -839,7 +839,7 @@ async function getDashboardStats(organizationId: number) {
     );
 
   // Miembros activos
-  const [activeMembersResult] = await (await getDb())!
+  const [activeMembersResult] = await (await db.getDb())!
     .select({ count: sql<number>`COUNT(*)` })
     .from(organizationMembers)
     .where(
@@ -850,7 +850,7 @@ async function getDashboardStats(organizationId: number) {
     );
 
   // Ingresos del mes
-  const [monthlyRevenueResult] = await (await getDb())!
+  const [monthlyRevenueResult] = await (await db.getDb())!
     .select({ total: sql<number>`SUM(${technicianMetrics.totalRevenue})` })
     .from(technicianMetrics)
     .where(
@@ -872,7 +872,7 @@ async function getDashboardStats(organizationId: number) {
  * Obtener zonas de servicio
  */
 async function getServiceZones(organizationId: number) {
-  const zones = await (await getDb())!
+  const zones = await (await db.getDb())!
     .select()
     .from(serviceZones)
     .where(eq(serviceZones.organizationId, organizationId))
@@ -881,7 +881,7 @@ async function getServiceZones(organizationId: number) {
   // Obtener técnicos asignados a cada zona
   const zonesWithTechnicians = await Promise.all(
     zones.map(async (zone) => {
-      const technicians = await (await getDb())!
+      const technicians = await (await db.getDb())!
         .select({
           memberId: technicianZones.memberId,
           isPrimary: technicianZones.isPrimary,
@@ -911,7 +911,7 @@ async function createServiceZone(data: {
   postalCodes: string[];
   color?: string;
 }) {
-  const [result] = await (await getDb())!.insert(serviceZones).values({
+  const [result] = await (await db.getDb())!.insert(serviceZones).values({
     organizationId: data.organizationId,
     name: data.name,
     description: data.description,
@@ -934,7 +934,7 @@ async function updateServiceZone(zoneId: number, data: ServiceZoneUpdate) {
   if (data.color !== undefined) updateData.color = data.color;
   if (data.isActive !== undefined) updateData.isActive = data.isActive;
 
-  await (await getDb())!
+  await (await db.getDb())!
     .update(serviceZones)
     .set(updateData)
     .where(eq(serviceZones.id, zoneId));
@@ -947,10 +947,10 @@ async function updateServiceZone(zoneId: number, data: ServiceZoneUpdate) {
  */
 async function deleteServiceZone(zoneId: number) {
   // Primero eliminar asignaciones de técnicos
-  await (await getDb())!.delete(technicianZones).where(eq(technicianZones.zoneId, zoneId));
+  await (await db.getDb())!.delete(technicianZones).where(eq(technicianZones.zoneId, zoneId));
   
   // Luego eliminar la zona
-  await (await getDb())!.delete(serviceZones).where(eq(serviceZones.id, zoneId));
+  await (await db.getDb())!.delete(serviceZones).where(eq(serviceZones.id, zoneId));
 
   return { success: true };
 }
@@ -960,7 +960,7 @@ async function deleteServiceZone(zoneId: number) {
  */
 async function assignTechnicianToZone(zoneId: number, memberId: number, organizationId: number, isPrimary?: boolean) {
   // Verificar si ya existe la asignación
-  const [existing] = await (await getDb())!
+  const [existing] = await (await db.getDb())!
     .select()
     .from(technicianZones)
     .where(
@@ -973,7 +973,7 @@ async function assignTechnicianToZone(zoneId: number, memberId: number, organiza
 
   if (existing) {
     // Actualizar si ya existe
-    await (await getDb())!
+    await (await db.getDb())!
       .update(technicianZones)
       .set({ isPrimary: isPrimary || false })
       .where(eq(technicianZones.id, existing.id));
@@ -982,7 +982,7 @@ async function assignTechnicianToZone(zoneId: number, memberId: number, organiza
   }
 
   // Crear nueva asignación
-  await (await getDb())!.insert(technicianZones).values({
+  await (await db.getDb())!.insert(technicianZones).values({
     organizationId,
     zoneId,
     memberId,
@@ -996,7 +996,7 @@ async function assignTechnicianToZone(zoneId: number, memberId: number, organiza
  * Desasignar técnico de zona
  */
 async function removeTechnicianFromZone(zoneId: number, memberId: number) {
-  await (await getDb())!
+  await (await db.getDb())!
     .delete(technicianZones)
     .where(
       and(

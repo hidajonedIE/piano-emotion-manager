@@ -95,7 +95,7 @@ export const partnersRouter = router({
     )
     .query(async ({ input }) => {
       const { limit = 30, cursor, search, status, sortBy = "name", sortOrder = "asc" } = input || {};
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return { items: [], total: 0 };
 
       const whereClauses = [];
@@ -147,7 +147,7 @@ export const partnersRouter = router({
   getById: adminProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const [partner] = await database
@@ -165,7 +165,7 @@ export const partnersRouter = router({
   getCurrent: protectedProcedure.query(async ({ ctx }) => {
     if (!ctx.partnerId) throw new Error("No partner ID in context");
     
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) throw new Error("Database not available");
 
     const [partner] = await database
@@ -183,7 +183,7 @@ export const partnersRouter = router({
   create: adminProcedure
     .input(partnerBaseSchema)
     .mutation(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Verificar que el slug no exista
@@ -221,7 +221,7 @@ export const partnersRouter = router({
     )
     .mutation(async ({ input }) => {
       const { id, ...updateData } = input;
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Si se está actualizando el slug, verificar que no exista
@@ -255,7 +255,7 @@ export const partnersRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       await database
@@ -272,7 +272,7 @@ export const partnersRouter = router({
   getSettings: protectedProcedure
     .input(z.object({ partnerId: z.number().optional() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const partnerId = input.partnerId || ctx.partnerId;
@@ -297,7 +297,7 @@ export const partnersRouter = router({
     )
     .mutation(async ({ input }) => {
       const { partnerId, ...data } = input;
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Verificar si ya existe configuración
@@ -329,7 +329,7 @@ export const partnersRouter = router({
   getPricing: protectedProcedure
     .input(z.object({ partnerId: z.number().optional() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const partnerId = input.partnerId || ctx.partnerId;
@@ -354,7 +354,7 @@ export const partnersRouter = router({
     )
     .mutation(async ({ input }) => {
       const { partnerId, planCode, ...data } = input;
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Verificar si ya existe
@@ -393,7 +393,7 @@ export const partnersRouter = router({
   listUsers: protectedProcedure
     .input(z.object({ partnerId: z.number().optional() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const partnerId = input.partnerId || ctx.partnerId;
@@ -430,7 +430,7 @@ export const partnersRouter = router({
     )
     .mutation(async ({ input }) => {
       const { partnerId, userId, ...data } = input;
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Verificar que el usuario no esté ya asignado
@@ -466,7 +466,7 @@ export const partnersRouter = router({
     )
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       await database
@@ -483,7 +483,7 @@ export const partnersRouter = router({
   removeUser: adminProcedure
     .input(z.object({ id: z.number() })) // ID del registro en partner_users
     .mutation(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       await database
@@ -499,7 +499,7 @@ export const partnersRouter = router({
   getStats: protectedProcedure
     .input(z.object({ partnerId: z.number().optional() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const partnerId = input.partnerId || ctx.partnerId;

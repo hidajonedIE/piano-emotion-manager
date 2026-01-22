@@ -443,7 +443,7 @@ export const quotesRouter = router({
         isExpired
       } = input || {};
       
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
       // Construir condiciones WHERE con filtrado por organización
@@ -527,7 +527,7 @@ export const quotesRouter = router({
    */
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) return [];
     
     const items = await database
@@ -550,7 +550,7 @@ export const quotesRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const [quote] = await database
@@ -579,7 +579,7 @@ export const quotesRouter = router({
   byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return [];
 
       const items = await database
@@ -601,7 +601,7 @@ export const quotesRouter = router({
    * Obtener siguiente número de presupuesto
    */
   getNextNumber: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) return "PRES-2025-0001";
 
     const year = new Date().getFullYear();
@@ -631,7 +631,7 @@ export const quotesRouter = router({
   create: orgProcedure
     .input(quoteBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
@@ -679,7 +679,7 @@ export const quotesRouter = router({
       id: z.number(),
     }).merge(quoteBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el presupuesto para verificar permisos
@@ -750,7 +750,7 @@ export const quotesRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el presupuesto para verificar permisos
@@ -790,7 +790,7 @@ export const quotesRouter = router({
       rejectionReason: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el presupuesto para verificar permisos
@@ -851,7 +851,7 @@ export const quotesRouter = router({
       includeOptionalItems: z.boolean().default(false),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el presupuesto
@@ -965,7 +965,7 @@ export const quotesRouter = router({
   duplicate: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el presupuesto original
@@ -1064,7 +1064,7 @@ export const quotesRouter = router({
       pianoDescription: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const template = DEFAULT_TEMPLATES.find(t => t.id === input.templateId);
@@ -1140,7 +1140,7 @@ export const quotesRouter = router({
       daysAhead: z.number().int().min(1).max(30).default(7),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return [];
 
       const daysAhead = input?.daysAhead || 7;
@@ -1175,7 +1175,7 @@ export const quotesRouter = router({
       dateTo: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return null;
 
       const whereClauses = [

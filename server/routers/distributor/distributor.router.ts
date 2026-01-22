@@ -27,7 +27,7 @@ function validateUserEmail(email: string | null | undefined): string {
 
 // Helper function to get or create distributor for current user
 async function getDistributorIdForUser(userId: number, userEmail: string): Promise<number> {
-  const db = await getDb();
+  const db = await db.getDb();
   
   console.log('[getDistributorIdForUser] Looking for distributor with email:', userEmail);
   

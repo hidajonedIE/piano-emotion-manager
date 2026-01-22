@@ -24,7 +24,7 @@ export const invitationsRouter = router({
         });
       }
 
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -93,7 +93,7 @@ export const invitationsRouter = router({
       });
     }
 
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -124,7 +124,7 @@ export const invitationsRouter = router({
 
       // Cache disabled
 
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -168,7 +168,7 @@ export const invitationsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -212,7 +212,7 @@ export const invitationsRouter = router({
         });
       }
 
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',

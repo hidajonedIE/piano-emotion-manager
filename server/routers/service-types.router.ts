@@ -25,7 +25,7 @@ export const serviceTypesRouter = router({
    * Obtener todos los tipos de servicio del usuario
    */
   list: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await db.getDb();
     if (!db) throw new Error('Database not available');
 
     const userId = ctx.user.id;
@@ -180,7 +180,7 @@ export const serviceTypesRouter = router({
   create: protectedProcedure
     .input(serviceTypeSchema)
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       if (!db) throw new Error('Database not available');
 
       const userId = ctx.user.id;
@@ -202,7 +202,7 @@ export const serviceTypesRouter = router({
       }
 
       // Crear el nuevo tipo de servicio
-      const result = await getDb().insert(serviceTypes).values({
+      const result = await db.getDb().insert(serviceTypes).values({
         userId,
         partnerId: 1,
         code: input.code,
@@ -230,7 +230,7 @@ export const serviceTypesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       if (!db) throw new Error('Database not available');
 
       const userId = ctx.user.id;
@@ -285,7 +285,7 @@ export const serviceTypesRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       if (!db) throw new Error('Database not available');
 
       const userId = ctx.user.id;
@@ -337,7 +337,7 @@ export const serviceTypesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await db.getDb();
       if (!db) throw new Error('Database not available');
 
       const userId = ctx.user.id;

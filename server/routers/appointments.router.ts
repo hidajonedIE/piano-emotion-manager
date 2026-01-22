@@ -339,7 +339,7 @@ export const appointmentsRouter = router({
         technicianId
       } = input || {};
       
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return { items: [], total: 0, stats: null, nextCursor: undefined };
 
       // Construir condiciones WHERE con filtrado por organización
@@ -438,7 +438,7 @@ export const appointmentsRouter = router({
    */
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) return [];
     
     const items = await database
@@ -463,7 +463,7 @@ export const appointmentsRouter = router({
       const centerDate = new Date(input.date);
       const { start, end } = getDateRange(input.view, centerDate);
       
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) {
         return {
           view: input.view,
@@ -546,7 +546,7 @@ export const appointmentsRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       const [result] = await database
@@ -598,7 +598,7 @@ export const appointmentsRouter = router({
   byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return [];
 
       const items = await database
@@ -622,7 +622,7 @@ export const appointmentsRouter = router({
   byPiano: orgProcedure
     .input(z.object({ pianoId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return [];
 
       const items = await database
@@ -649,7 +649,7 @@ export const appointmentsRouter = router({
     }).optional())
     .query(async ({ ctx, input }) => {
       const daysAhead = input?.daysAhead || 7;
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return [];
 
       const now = new Date();
@@ -685,7 +685,7 @@ export const appointmentsRouter = router({
    * Obtener citas de hoy
    */
   getToday: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb();
+    const database = await db.getDb();
     if (!database) return [];
 
     const today = new Date();
@@ -728,7 +728,7 @@ export const appointmentsRouter = router({
       technicianId: z.string().optional().nullable(),
     }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return [];
 
       // Obtener todas las citas del mismo día
@@ -767,7 +767,7 @@ export const appointmentsRouter = router({
   create: orgProcedure
     .input(appointmentBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Generar citas (una o múltiples si hay recurrencia)
@@ -843,7 +843,7 @@ export const appointmentsRouter = router({
       id: z.number(),
     }).merge(appointmentBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la cita para verificar permisos
@@ -921,7 +921,7 @@ export const appointmentsRouter = router({
       status: appointmentStatusSchema,
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la cita para verificar permisos
@@ -960,7 +960,7 @@ export const appointmentsRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener la cita para verificar permisos
@@ -999,7 +999,7 @@ export const appointmentsRouter = router({
       dateTo: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb();
+      const database = await db.getDb();
       if (!database) return null;
 
       const whereClauses = [
