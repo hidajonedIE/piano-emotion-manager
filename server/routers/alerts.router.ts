@@ -63,7 +63,7 @@ export const alertsRouter = router({
       try {
         // Obtener conexión a la base de datos (copiado de appointments.router)
         console.log('[ALERTS] Getting database connection...');
-        const database = await getDb().getDb();
+        const database = await db.getDb();
         
         if (!database) {
           console.log('[ALERTS] ERROR: Database connection is null');
