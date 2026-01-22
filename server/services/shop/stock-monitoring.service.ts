@@ -3,8 +3,7 @@
  * Detecta cuando el inventario está bajo y genera pedidos semi-automáticos
  */
 
-import { getDb } from '../../../drizzle/db.js';
-const db = getDb();
+import { getDb } from '../../db.js';
 import { 
   shopProductInventoryLinks, 
   shopStockAlerts,
@@ -39,7 +38,7 @@ export class StockMonitoringService {
   async checkAllInventory(organizationId: number): Promise<StockAlert[]> {
     try {
       // Obtener todos los items de inventario de la organización
-      const inventoryItems = await db
+      const inventoryItems = await (await getDb())
         .select()
         .from(inventory)
         .where(eq(inventory.organizationId, organizationId));
@@ -48,7 +47,7 @@ export class StockMonitoringService {
       
       for (const item of inventoryItems) {
         // Verificar si hay un link con productos de tienda
-        const links = await db
+        const links = await (await getDb())
           .select()
           .from(shopProductInventoryLinks)
           .where(eq(shopProductInventoryLinks.inventoryId, item.id));
@@ -59,7 +58,7 @@ export class StockMonitoringService {
           
           if (currentStock < link.lowStockThreshold) {
             // Verificar si ya existe una alerta no resuelta
-            const existingAlerts = await db
+            const existingAlerts = await (await getDb())
               .select()
               .from(shopStockAlerts)
               .where(
@@ -71,7 +70,7 @@ export class StockMonitoringService {
             
             if (existingAlerts.length === 0) {
               // Crear nueva alerta
-              const [newAlert] = await db
+              const [newAlert] = await (await getDb())
                 .insert(shopStockAlerts)
                 .values({
                   organizationId,
@@ -84,7 +83,7 @@ export class StockMonitoringService {
                 });
               
               // Obtener información del producto
-              const product = await db
+              const product = await (await getDb())
                 .select()
                 .from(shopProducts)
                 .where(eq(shopProducts.id, link.shopProductId))
@@ -135,7 +134,7 @@ export class StockMonitoringService {
   ): Promise<AutoOrderResult> {
     try {
       // Obtener información del producto
-      const product = await db
+      const product = await (await getDb())
         .select()
         .from(shopProducts)
         .where(eq(shopProducts.id, shopProductId))
@@ -158,7 +157,7 @@ export class StockMonitoringService {
       const total = subtotal + vatAmount;
       
       // Crear pedido en estado draft
-      const [order] = await db
+      const [order] = await (await getDb())
         .insert(shopOrders)
         .values({
           organizationId,
@@ -180,7 +179,7 @@ export class StockMonitoringService {
       const orderId = order.insertId;
       
       // Crear línea de pedido
-      await db
+      await (await getDb())
         .insert(shopOrderLines)
         .values({
           orderId,
@@ -195,7 +194,7 @@ export class StockMonitoringService {
         });
       
       // Actualizar alerta con el ID del pedido
-      await db
+      await (await getDb())
         .update(shopStockAlerts)
         .set({ autoOrderId: orderId })
         .where(eq(shopStockAlerts.id, alertId));
@@ -219,7 +218,7 @@ export class StockMonitoringService {
    */
   async getActiveAlerts(organizationId: number): Promise<any[]> {
     try {
-      const alerts = await db
+      const alerts = await (await getDb())
         .select()
         .from(shopStockAlerts)
         .where(
@@ -241,7 +240,7 @@ export class StockMonitoringService {
    */
   async resolveAlert(alertId: number): Promise<void> {
     try {
-      await db
+      await (await getDb())
         .update(shopStockAlerts)
         .set({
           isResolved: true,
@@ -268,7 +267,7 @@ export class StockMonitoringService {
   ): Promise<void> {
     try {
       // Verificar si ya existe el link
-      const existing = await db
+      const existing = await (await getDb())
         .select()
         .from(shopProductInventoryLinks)
         .where(
@@ -280,7 +279,7 @@ export class StockMonitoringService {
       
       if (existing.length > 0) {
         // Actualizar configuración existente
-        await db
+        await (await getDb())
           .update(shopProductInventoryLinks)
           .set({
             lowStockThreshold: config.lowStockThreshold,
@@ -291,7 +290,7 @@ export class StockMonitoringService {
           .where(eq(shopProductInventoryLinks.id, existing[0].id));
       } else {
         // Crear nuevo link
-        await db
+        await (await getDb())
           .insert(shopProductInventoryLinks)
           .values({
             shopProductId,
