@@ -22,16 +22,12 @@ const isDesktop = width >= 1024;
 type TabType = 'products' | 'blog';
 
 export function ShopViewElegant() {
-  const { data: shops, isLoading: shopsLoading } = useShops();
+  const { shops, isLoading: shopsLoading } = useShops();
   const shop = shops?.[0];
   
   const [activeTab, setActiveTab] = useState<TabType>('products');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
-  const { data: products, isLoading: productsLoading } = useShopProducts({
-    shopId: shop?.id || 0,
-    category: selectedCategory,
-  });
+  const { products, isLoading: productsLoading, category: selectedCategory, setCategory: setSelectedCategory } = useShopProducts(shop?.id || null);
 
   const categories = [
     { id: 'macillos', name: 'Macillos', description: 'Macillos de precisión para mecanismos de piano' },
