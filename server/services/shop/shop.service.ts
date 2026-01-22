@@ -261,13 +261,32 @@ export class ShopService {
    * Obtiene tiendas accesibles para el usuario
    */
   async getAccessibleShops(): Promise<Array<typeof shops.$inferSelect & { access: ShopAccessResult }>> {
-    const allShops = await getDb().query.shops.findMany({
+    const db = getDb();
+    
+    // Obtener tiendas de la organización del usuario
+    const orgShops = await db.query.shops.findMany({
       where: and(
         eq(shops.organizationId, this.organizationId),
         eq(shops.isActive, true)
       ),
       orderBy: [desc(shops.isDefault), asc(shops.name)],
     });
+    
+    // Obtener tiendas tipo 'platform' (disponibles globalmente)
+    const platformShops = await db.query.shops.findMany({
+      where: and(
+        eq(shops.type, 'platform'),
+        eq(shops.isActive, true)
+      ),
+      orderBy: [desc(shops.isDefault), asc(shops.name)],
+    });
+    
+    // Combinar y eliminar duplicados
+    const allShopsMap = new Map();
+    [...orgShops, ...platformShops].forEach(shop => {
+      allShopsMap.set(shop.id, shop);
+    });
+    const allShops = Array.from(allShopsMap.values());
 
     const result = [];
     for (const shop of allShops) {
@@ -454,13 +473,13 @@ export class ShopService {
       vatAmount += lineVat;
     }
 
-    // Crear pedido
+    // Crear pedido en estado draft (requiere confirmación del técnico)
     const [order] = await getDb().insert(shopOrders).values({
       organizationId: this.organizationId,
       shopId,
       createdBy: this.userId,
-      status: 'pending',
-      approvalStatus: orderCheck.requiresApproval ? 'pending' : 'not_required',
+      status: 'draft', // Pedido en borrador hasta que el técnico lo confirme
+      approvalStatus: 'not_required', // Se determinará al confirmar
       subtotal: subtotal.toString(),
       vatAmount: vatAmount.toString(),
       total: total.toString(),
@@ -487,6 +506,49 @@ export class ShopService {
     await getDb().delete(shopCartItems).where(eq(shopCartItems.cartId, cart.id));
 
     return order;
+  }
+
+  /**
+   * Confirma un pedido (técnico confirma antes de hacerse efectivo)
+   */
+  async confirmOrder(orderId: number): Promise<void> {
+    const order = await getDb().query.shopOrders.findFirst({
+      where: and(
+        eq(shopOrders.id, orderId),
+        eq(shopOrders.organizationId, this.organizationId),
+        eq(shopOrders.createdBy, this.userId) // Solo el creador puede confirmar
+      ),
+    });
+
+    if (!order) {
+      throw new Error('Pedido no encontrado o no tienes permiso para confirmarlo');
+    }
+
+    if (order.status !== 'draft') {
+      throw new Error('Solo se pueden confirmar pedidos en estado borrador');
+    }
+
+    // Verificar acceso
+    const access = await this.checkShopAccess(order.shopId);
+    if (!access.canOrder) {
+      throw new Error('No tienes permiso para hacer pedidos');
+    }
+
+    // Determinar si requiere aprobación
+    const total = parseFloat(order.total);
+    const requiresApproval = access.requiresApproval && 
+                            access.approvalThreshold !== null && 
+                            total > parseFloat(access.approvalThreshold.toString());
+
+    const db = getDb();
+    await db
+      .update(shopOrders)
+      .set({
+        status: requiresApproval ? 'pending' : 'approved',
+        approvalStatus: requiresApproval ? 'pending' : 'not_required',
+        updatedAt: new Date(),
+      })
+      .where(eq(shopOrders.id, orderId));
   }
 
   /**
