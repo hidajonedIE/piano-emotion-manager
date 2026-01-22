@@ -92,8 +92,13 @@ export async function verifyClerkSession(req: VercelRequest | {
     try {
       console.log('[Clerk] Fetching user details from Clerk API...');
       clerkUser = await clerkClient.users.getUser(tokenUserId);
-      debugLog.point6 = `EXITO: Usuario encontrado en Clerk. Email: ${clerkUser.emailAddresses[0]?.emailAddress}`;
       console.log('[Clerk] User fetched successfully from Clerk API');
+      console.log('[Clerk] clerkUser type:', typeof clerkUser);
+      console.log('[Clerk] clerkUser keys:', Object.keys(clerkUser || {}));
+      
+      const userEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || 'NO_EMAIL';
+      debugLog.point6 = `EXITO: Usuario encontrado en Clerk. Email: ${userEmail}`;
+      console.log('[Clerk] User email extracted:', userEmail);
     } catch (clerkError) {
       const clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
       console.error('[Clerk] Error fetching user from Clerk API:', clerkErrorMessage);
@@ -112,8 +117,20 @@ export async function verifyClerkSession(req: VercelRequest | {
     }
     
     // Return the user object
+    console.log('[Clerk] About to build returnUser object...');
+    console.log('[Clerk] clerkUser is null?', clerkUser === null);
+    console.log('[Clerk] clerkUser is undefined?', clerkUser === undefined);
+    
+    if (!clerkUser) {
+      console.error('[Clerk] ERROR: clerkUser is null or undefined!');
+      debugLog.error = 'clerkUser is null or undefined after fetch';
+      return null;
+    }
+    
     console.log('[Clerk] clerkUser object:', JSON.stringify(clerkUser));
     console.log('[Clerk] clerkUser.emailAddresses:', clerkUser.emailAddresses);
+    console.log('[Clerk] Building returnUser...');
+    
     const returnUser = {
       id: clerkUser.id,
       email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
