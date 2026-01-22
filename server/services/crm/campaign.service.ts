@@ -122,6 +122,7 @@ export class CampaignService {
     campaignId: number,
     input: Partial<CampaignInput>
   ): Promise<typeof campaigns.$inferSelect> {
+    const db = await getDb();
     const [updated] = await db
       .update(campaigns)
       .set({
@@ -184,10 +185,10 @@ export class CampaignService {
   }
 
   /**
-    const db = await getDb();
    * Programa una campaña para envío
    */
   async scheduleCampaign(campaignId: number, scheduledAt: Date): Promise<void> {
+    const db = await getDb();
     await db
       .update(campaigns)
       .set({
@@ -201,7 +202,6 @@ export class CampaignService {
           eq(campaigns.organizationId, this.organizationId)
         )
       );
-    const db = await getDb();
   }
 
   /**
@@ -215,10 +215,10 @@ export class CampaignService {
     await this.calculateRecipients(campaignId);
 
     // Actualizar estado
+    const db = await getDb();
     await db
       .update(campaigns)
       .set({
-    const db = await getDb();
         status: 'active',
         startedAt: new Date(),
         updatedAt: new Date(),
@@ -233,11 +233,11 @@ export class CampaignService {
    * Pausa una campaña activa
    */
   async pauseCampaign(campaignId: number): Promise<void> {
+    const db = await getDb();
     await db
       .update(campaigns)
       .set({
         status: 'paused',
-    const db = await getDb();
         updatedAt: new Date(),
       })
       .where(
@@ -253,6 +253,7 @@ export class CampaignService {
    * Cancela una campaña
    */
   async cancelCampaign(campaignId: number): Promise<void> {
+    const db = await getDb();
     await db
       .update(campaigns)
       .set({
@@ -311,6 +312,7 @@ export class CampaignService {
    * Registra apertura de email
    */
   async trackOpen(campaignId: number, clientId: number): Promise<void> {
+    const db = await getDb();
     await db
       .update(campaignRecipients)
       .set({ openedAt: new Date() })
@@ -332,6 +334,7 @@ export class CampaignService {
    * Registra clic en enlace
    */
   async trackClick(campaignId: number, clientId: number): Promise<void> {
+    const db = await getDb();
     await db
       .update(campaignRecipients)
       .set({ clickedAt: new Date() })
@@ -361,7 +364,7 @@ export class CampaignService {
   ): Promise<Array<typeof communicationTemplates.$inferSelect>> {
     const conditions = [
       eq(communicationTemplates.organizationId, this.organizationId),
-      eq(communicationTemplates.isActive, 1),
+      eq(communicationTemplates.isActive, true),
     ];
 
     if (type) {
