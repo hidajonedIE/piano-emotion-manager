@@ -747,3 +747,4 @@ export function decryptPassword(encryptedPassword: string): string {
   
   return decrypted;
 }
+// Force rebuild Thu Jan 22 06:34:22 EST 2026
