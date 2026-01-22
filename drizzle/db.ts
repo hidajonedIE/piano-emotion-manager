@@ -3,3 +3,4 @@
  */
 export { getDb } from '../server/db.js';
 export * from './schema.js';
+export * from './crm-schema.js';
