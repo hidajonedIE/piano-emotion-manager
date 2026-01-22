@@ -72,7 +72,7 @@ async function getUserOrganizationRole(userId: number, partnerId: number | null)
       return 'owner';
     }
     
-    const database = await db.getDb();
+    const database = await getDb();
     console.log('[getUserOrganizationRole] Database obtained');
     
     const { organizationMembers } = await import('../../../drizzle/schema.js');

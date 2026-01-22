@@ -269,12 +269,14 @@ export const ShopView: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Selector de tiendas */}
-      <ShopSelector
-        shops={shops}
-        selectedShopId={selectedShopId}
-        onSelect={setSelectedShopId}
-      />
+      {/* Selector de tiendas - solo mostrar si hay más de una tienda */}
+      {shops.length > 1 && (
+        <ShopSelector
+          shops={shops}
+          selectedShopId={selectedShopId}
+          onSelect={setSelectedShopId}
+        />
+      )}
 
       {/* Banner de aprobación requerida */}
       <ApprovalBanner requiresApproval={orderRequiresApproval} />
