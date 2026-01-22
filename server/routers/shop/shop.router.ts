@@ -15,9 +15,9 @@ import {
   distributorWoocommerceConfig
 } from '../../../drizzle/shop-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
-import { WooCommerceProductsService } from '../../services/woocommerce-products.service.js';
-import { WordPressBlogService } from '../../services/wordpress-blog.service.js';
-import { StockMonitoringService } from '../../services/stock-monitoring.service.js';
+import { WooCommerceProductsService } from '../../services/shop/woocommerce-products.service.js';
+import { WordPressBlogService } from '../../services/shop/wordpress-blog.service.js';
+import { StockMonitoringService } from '../../services/shop/stock-monitoring.service.js';
 
 // ============================================================================
 // Input Schemas
