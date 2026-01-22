@@ -1,16 +1,11 @@
 /**
- * API endpoint para corregir el ownerId de los clientes
+ * API endpoint para corregir datos de migración (DEPRECATED)
  * 
- * Este endpoint actualiza el ownerId de todos los clientes que tienen
- * 'jnavarrete-inboundemotion' al openId del usuario autenticado en Clerk
+ * Este endpoint ya no es necesario ya que el schema actual usa partnerId y organizationId
+ * en lugar de ownerId. Se mantiene por compatibilidad pero devuelve un mensaje informativo.
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { verifyClerkSession } from '../server/_core/clerk.js';
-import { getDb } from '../server/db.js';
-import { users, clients } from '../drizzle/schema.js';
-import { eq } from 'drizzle-orm';
-
-const OLD_OWNER_ID = 'jnavarrete-inboundemotion';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Solo permitir método POST para evitar ejecuciones accidentales
@@ -25,70 +20,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Verificar que el usuario esté autenticado con Clerk
     const clerkUser = await verifyClerkSession(req);
 
-    if (!clerkUser) {
+    if (!clerkUser || !clerkUser.user) {
       return res.status(401).json({
         error: 'Not authenticated',
         message: 'You must be logged in to execute this fix'
       });
     }
 
-    const correctOpenId = clerkUser.id;
-
-    // 2. Conectar a la base de datos
-    const db = await getDb();
-    if (!db) {
-      return res.status(500).json({
-        error: 'Database connection failed',
-        message: 'Could not connect to database'
-      });
-    }
-
-    // 3. Verificar cuántos clientes tienen el ownerId incorrecto
-    const clientsToUpdate = await db
-      .select()
-      .from(clients)
-      .where(eq(clients.ownerId, OLD_OWNER_ID));
-
-    if (clientsToUpdate.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: 'No clients to update. ownerId is already correct.',
-        user: {
-          id: clerkUser.id,
-          email: clerkUser.email,
-          name: clerkUser.name,
-        },
-        clientsUpdated: 0
-      });
-    }
-
-    // 4. Actualizar los clientes
-    await db
-      .update(clients)
-      .set({ ownerId: correctOpenId })
-      .where(eq(clients.ownerId, OLD_OWNER_ID));
-
-    // 5. Verificar la actualización
-    const updatedClients = await db
-      .select()
-      .from(clients)
-      .where(eq(clients.ownerId, correctOpenId));
-
     return res.status(200).json({
       success: true,
-      message: 'ownerId updated successfully',
+      message: 'This endpoint is deprecated. The schema now uses partnerId and organizationId instead of ownerId.',
+      deprecated: true,
       user: {
-        id: clerkUser.id,
-        email: clerkUser.email,
-        name: clerkUser.name,
+        id: clerkUser.user.id || 'unknown',
+        email: clerkUser.user.primaryEmailAddress?.emailAddress || 'unknown',
+        name: `${clerkUser.user.firstName || ''} ${clerkUser.user.lastName || ''}`.trim() || 'unknown',
       },
-      oldOwnerId: OLD_OWNER_ID,
-      newOwnerId: correctOpenId,
-      clientsUpdated: clientsToUpdate.length,
-      totalClientsWithNewOwnerId: updatedClients.length,
     });
   } catch (error) {
-    console.error('Error fixing ownerId:', error);
+    console.error('Error in deprecated endpoint:', error);
     return res.status(500).json({
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error',

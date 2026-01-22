@@ -17,7 +17,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: 'Unauthorized - Not authenticated' });
     }
 
-    const ownerId = clerkUser.id;
+    if (!clerkUser.user) {
+      return res.status(401).json({ error: 'Unauthorized - User data not available' });
+    }
+
+    const userId = clerkUser.user.id;
     const db = await getDb();
 
     // Insert test clients
@@ -103,7 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       success: true,
       message: 'Test data inserted successfully',
       data: {
-        userId: ownerId,
+        userId: userId,
         clientsCreated: 2,
         pianosCreated: 2,
         servicesCreated: 2,

@@ -17,7 +17,7 @@ export async function getHelpSections() {
     const connection = await pool.getConnection();
     const [rows] = await connection.query('SELECT * FROM help_sections ORDER BY `display_order` ASC');
     connection.release();
-    return rows;
+    return Array.isArray(rows) ? rows : [];
   } catch (error) {
     console.error('Error fetching help sections:', error);
     return [];
@@ -39,7 +39,7 @@ export async function getHelpItems(sectionId?: string) {
 
     const [rows] = await connection.query(query, params);
     connection.release();
-    return rows;
+    return Array.isArray(rows) ? rows : [];
   } catch (error) {
     console.error('Error fetching help items:', error);
     return [];
@@ -51,9 +51,12 @@ export async function getHelpSectionsWithItems() {
     const sections = await getHelpSections();
     const items = await getHelpItems();
 
-    return sections.map((section: any) => ({
+    const sectionsArray = Array.isArray(sections) ? sections : [];
+    const itemsArray = Array.isArray(items) ? items : [];
+
+    return sectionsArray.map((section: any) => ({
       ...section,
-      content: items.filter((item: any) => item.section_id === section.id),
+      content: itemsArray.filter((item: any) => item.section_id === section.id),
     }));
   } catch (error) {
     console.error('Error fetching help sections with items:', error);
