@@ -129,8 +129,8 @@ export const clientProfiles = mysqlTable('client_profiles', {
   organizationId: int('organization_id').notNull(),
   
   // Estado y origen
-  status: clientStatusEnum('status').default('active').notNull(),
-  source: clientSourceEnum('source'),
+  status: varchar('status', { length: 50 }).default('active').notNull(),
+  source: varchar('source', { length: 50 }),
   sourceDetails: text('source_details'),
   
   // Puntuación y valor
@@ -140,7 +140,7 @@ export const clientProfiles = mysqlTable('client_profiles', {
   totalServices: int('total_services').default(0),
   
   // Preferencias
-  preferredContactMethod: communicationTypeEnum('preferred_contact_method').default('email'),
+  preferredContactMethod: varchar('preferred_contact_method', { length: 50 }).default('email'),
   preferredContactTime: varchar('preferred_contact_time', { length: 50 }),
   language: varchar('language', { length: 5 }).default('es'),
   
@@ -156,7 +156,7 @@ export const clientProfiles = mysqlTable('client_profiles', {
   specialRequirements: text('special_requirements'),
   
   // Marketing
-  marketingConsent: tinyint('marketing_consent').default(false),
+  marketingConsent: tinyint('marketing_consent').default(0),
   marketingConsentDate: timestamp('marketing_consent_date'),
   unsubscribedAt: timestamp('unsubscribed_at'),
   
@@ -184,7 +184,7 @@ export const communications = mysqlTable('communications', {
   userId: int('user_id'), // Quién realizó la comunicación
   
   type: varchar('type', { length: 50 }).notNull(),
-  direction: communicationDirectionEnum('direction').notNull(),
+  direction: varchar('direction', { length: 50 }).notNull(),
   
   subject: varchar('subject', { length: 255 }),
   content: text('content'),
@@ -201,11 +201,11 @@ export const communications = mysqlTable('communications', {
   callRecordingUrl: text('call_recording_url'),
   
   // Estado
-  isRead: tinyint('is_read').default(false),
-  isImportant: tinyint('is_important').default(false),
+  isRead: tinyint('is_read').default(0),
+  isImportant: tinyint('is_important').default(0),
   
   // Seguimiento
-  requiresFollowUp: tinyint('requires_follow_up').default(false),
+  requiresFollowUp: tinyint('requires_follow_up').default(0),
   followUpDate: date('follow_up_date'),
   followUpNotes: text('follow_up_notes'),
   
@@ -231,15 +231,15 @@ export const crmTasks = mysqlTable('crm_tasks', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   
-  status: taskStatusEnum('status').default('pending').notNull(),
-  priority: taskPriorityEnum('priority').default('medium').notNull(),
+  status: varchar('status', { length: 50 }).default('pending').notNull(),
+  priority: varchar('priority', { length: 50 }).default('medium').notNull(),
   
   dueDate: timestamp('due_date'),
   completedAt: timestamp('completed_at'),
   
   // Recordatorios
   reminderDate: timestamp('reminder_date'),
-  reminderSent: tinyint('reminder_sent').default(false),
+  reminderSent: tinyint('reminder_sent').default(0),
   
   // Relación con otras entidades
   relatedType: varchar('related_type', { length: 50 }), // 'service', 'invoice', 'piano'
@@ -265,8 +265,8 @@ export const campaigns = mysqlTable('campaigns', {
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   
-  type: campaignTypeEnum('type').notNull(),
-  status: campaignStatusEnum('status').default('draft').notNull(),
+  type: varchar('type', { length: 50 }).notNull(),
+  status: varchar('status', { length: 50 }).default('draft').notNull(),
   
   // Contenido
   subject: varchar('subject', { length: 255 }),
@@ -342,8 +342,8 @@ export const communicationTemplates = mysqlTable('communication_templates', {
   // Variables disponibles
   variables: json('variables').$type<string[]>(),
   
-  isActive: tinyint('is_active').default(true),
-  isDefault: tinyint('is_default').default(false),
+  isActive: tinyint('is_active').default(1),
+  isDefault: tinyint('is_default').default(0),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -379,7 +379,7 @@ export const clientSegments = mysqlTable('client_segments', {
   clientCount: int('client_count').default(0),
   lastCalculatedAt: timestamp('last_calculated_at'),
   
-  isActive: tinyint('is_active').default(true),
+  isActive: tinyint('is_active').default(1),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
