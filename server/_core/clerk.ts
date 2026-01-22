@@ -19,6 +19,9 @@ export async function verifyClerkSession(req: VercelRequest | {
   const debugLog: Record<string, string> = {};
   
   try {
+    // Log all headers for debugging
+    console.log('[Clerk] Request headers:', JSON.stringify(req.headers));
+    
     // Get the token from the Authorization header
     const authHeader = req.headers?.["authorization"] as string | undefined;
     debugLog.point1 = `Authorization header presente: ${!!authHeader}`;
