@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
 import { nanoid } from 'nanoid';
-import * as db from '../_core/calendar/getDb().js';
+import * as db from '../db.js';
 import * as googleOAuth from '../_core/calendar/oauth-google.js';
 import * as microsoftOAuth from '../_core/calendar/oauth-microsoft.js';
 import * as googleCalendar from '../_core/calendar/google-calendar.js';
