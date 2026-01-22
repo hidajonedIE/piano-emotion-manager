@@ -38,7 +38,11 @@ export async function verifyClerkSession(req: VercelRequest | {
     let authResult: any;
     try {
       // Create a minimal Request object that authenticateRequest expects
-      const requestUrl = req.url || 'https://pianoemotion.com/api/trpc';
+      // If req.url is relative, make it absolute
+      let requestUrl = req.url || '/api/trpc';
+      if (requestUrl.startsWith('/')) {
+        requestUrl = `https://pianoemotion.com${requestUrl}`;
+      }
       const requestObj = new Request(requestUrl, {
         method: req.method || 'GET',
         headers: {
