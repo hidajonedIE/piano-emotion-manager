@@ -156,7 +156,7 @@ export const remindersRouter = router({
         overdue
       } = input || {};
       
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
       // Construir condiciones WHERE con filtrado por organización
@@ -236,7 +236,7 @@ export const remindersRouter = router({
    * Lista completa sin paginación (para selects)
    */
   listAll: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
     
     const items = await database
@@ -256,7 +256,7 @@ export const remindersRouter = router({
   get: orgProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       const [reminder] = await database
@@ -282,7 +282,7 @@ export const remindersRouter = router({
   byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       const items = await database
@@ -306,7 +306,7 @@ export const remindersRouter = router({
   byPiano: orgProcedure
     .input(z.object({ pianoId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       const items = await database
@@ -328,7 +328,7 @@ export const remindersRouter = router({
    * Obtener recordatorios pendientes
    */
   getPending: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
 
     const items = await database
@@ -350,7 +350,7 @@ export const remindersRouter = router({
    * Obtener recordatorios vencidos
    */
   getOverdue: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
 
     const now = new Date();
@@ -380,7 +380,7 @@ export const remindersRouter = router({
       daysAhead: z.number().int().min(1).max(30).default(7),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       const daysAhead = input?.daysAhead || 7;
@@ -410,7 +410,7 @@ export const remindersRouter = router({
    * Obtener recordatorios de hoy
    */
   getToday: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
 
     const today = new Date();
@@ -443,7 +443,7 @@ export const remindersRouter = router({
   create: orgProcedure
     .input(reminderBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
@@ -474,7 +474,7 @@ export const remindersRouter = router({
       id: z.number(),
     }).merge(reminderBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el recordatorio para verificar permisos
@@ -523,7 +523,7 @@ export const remindersRouter = router({
   markAsCompleted: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el recordatorio para verificar permisos
@@ -562,7 +562,7 @@ export const remindersRouter = router({
   markAsPending: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el recordatorio para verificar permisos
@@ -601,7 +601,7 @@ export const remindersRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el recordatorio para verificar permisos
@@ -637,7 +637,7 @@ export const remindersRouter = router({
       dateTo: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return null;
 
       const whereClauses = [

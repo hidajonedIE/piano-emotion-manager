@@ -141,7 +141,7 @@ export const clientsRouter = router({
      .query(withCache(
       async ({ ctx, input }) => {
       const { limit, cursor, search, region, routeGroup, sortBy, sortOrder } = input;
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return { items: [], total: 0 };
 
       // Usar el partnerId del contexto (ya está disponible desde la autenticación)
@@ -231,7 +231,7 @@ export const clientsRouter = router({
   
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
     
     return database
@@ -253,7 +253,7 @@ export const clientsRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       const [client] = await database
@@ -317,7 +317,7 @@ export const clientsRouter = router({
       id: z.number(),
     }).merge(clientBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Primero obtener el cliente para verificar permisos
@@ -374,7 +374,7 @@ export const clientsRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Primero obtener el cliente para verificar permisos
@@ -409,7 +409,7 @@ export const clientsRouter = router({
     }),
   
   getRegions: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
 
     const regionsQuery = await database
@@ -431,7 +431,7 @@ export const clientsRouter = router({
   }),
   
   getRouteGroups: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
 
     const groupsQuery = await database
@@ -459,7 +459,7 @@ export const clientsRouter = router({
       excludeId: z.number().optional(),
     }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       const whereClauses = [
@@ -484,7 +484,7 @@ export const clientsRouter = router({
   
   getStats: orgProcedure.query(async ({ ctx }) => {
     console.log('[getStats] partnerId:', ctx.partnerId, 'orgContext:', ctx.orgContext);
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return { total: 0, active: 0, vip: 0, withPianos: 0 };
 
     const { pianos } = await import("../../drizzle/schema.js");

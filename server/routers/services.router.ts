@@ -125,7 +125,7 @@ export const servicesRouter = router({
     .query(withCache(
       async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "date", sortOrder = "desc", search, serviceType, status, clientId, pianoId, dateFrom, dateTo } = input || {};
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return { items: [], total: 0 };
 
       console.log('[services.list] ===== INICIO CONSULTA =====');
@@ -227,7 +227,7 @@ export const servicesRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return undefined;
 
       const [result] = await database
@@ -284,7 +284,7 @@ export const servicesRouter = router({
   byPiano: orgProcedure
     .input(z.object({ pianoId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       return database
@@ -305,7 +305,7 @@ export const servicesRouter = router({
   byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       return database
@@ -343,7 +343,7 @@ export const servicesRouter = router({
       id: z.number(),
     }).merge(serviceBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el servicio para verificar permisos
@@ -377,7 +377,7 @@ export const servicesRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el servicio para verificar permisos
@@ -413,7 +413,7 @@ export const servicesRouter = router({
       dateTo: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return { total: 0, totalRevenue: 0, byType: [], byStatus: [] };
 
       // TEMPORAL: Filtro simplificado sin multi-tenant

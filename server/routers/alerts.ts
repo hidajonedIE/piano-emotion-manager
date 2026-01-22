@@ -26,7 +26,7 @@ export const alertsRouter = router({
    */
   getGlobalSettings: protectedProcedure
     .query(async ({ ctx }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const settings = await database.query.alertSettings.findFirst({
@@ -73,7 +73,7 @@ export const alertsRouter = router({
       weeklyDigestDay: z.number().min(1).max(7),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       // Verificar que el usuario es admin
@@ -117,7 +117,7 @@ export const alertsRouter = router({
    */
   getUserSettings: protectedProcedure
     .query(async ({ ctx }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const settings = await database.query.alertSettings.findFirst({
@@ -138,7 +138,7 @@ export const alertsRouter = router({
       weeklyDigestDay: z.number().min(1).max(7),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const existing = await database.query.alertSettings.findFirst({
@@ -178,7 +178,7 @@ export const alertsRouter = router({
       offset: z.number().min(0).default(0),
     }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const conditions = [eq(alertHistory.userId, ctx.userId)];
@@ -236,7 +236,7 @@ export const alertsRouter = router({
       alertId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const [updated] = await database.update(alertHistory)
@@ -270,7 +270,7 @@ export const alertsRouter = router({
       serviceId: z.number().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const [updated] = await database.update(alertHistory)
@@ -304,7 +304,7 @@ export const alertsRouter = router({
       alertId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const [updated] = await database.update(alertHistory)
@@ -333,7 +333,7 @@ export const alertsRouter = router({
    */
   getStatistics: protectedProcedure
     .query(async ({ ctx }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       // Contar alertas activas por prioridad
@@ -746,7 +746,7 @@ export const alertsRouter = router({
       daysSinceLastService: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
 
       const [alert] = await database.insert(alertHistory)

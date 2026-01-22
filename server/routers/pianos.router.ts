@@ -107,7 +107,7 @@ export const pianosRouter = router({
     .query(withCache(
       async ({ ctx, input }) => {
       const { limit = 30, cursor, sortBy = "brand", sortOrder = "asc", search, category, brand, condition, clientId, yearFrom, yearTo } = input || {};
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return { items: [], total: 0 };
 
       console.log('[PIANOS DEBUG] ctx.partnerId:', ctx.partnerId);
@@ -165,7 +165,7 @@ export const pianosRouter = router({
   
   listAll: orgProcedure.query(withCache(
     async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
     
     return database
@@ -187,7 +187,7 @@ export const pianosRouter = router({
     .input(z.object({ id: z.number() }))
     .query(withCache(
       async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       const [piano] = await database
@@ -212,7 +212,7 @@ export const pianosRouter = router({
   byClient: orgProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       return database
@@ -252,7 +252,7 @@ export const pianosRouter = router({
       id: z.number(),
     }).merge(pianoBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el piano para verificar permisos
@@ -289,7 +289,7 @@ export const pianosRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el piano para verificar permisos
@@ -323,7 +323,7 @@ export const pianosRouter = router({
     }),
   
   getBrands: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return KNOWN_BRANDS.sort();
 
     const brandsQuery = await database
@@ -347,7 +347,7 @@ export const pianosRouter = router({
       daysAhead: z.number().int().min(0).max(365).default(30),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return [];
 
       const daysAhead = input?.daysAhead || 30;
@@ -394,7 +394,7 @@ export const pianosRouter = router({
       environment: environmentSchema,
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el piano para verificar permisos
@@ -429,7 +429,7 @@ export const pianosRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el piano para verificar permisos
@@ -465,7 +465,7 @@ export const pianosRouter = router({
   getStats: protectedProcedure
     .query(withCache(
       async ({ ctx }) => {
-        const database = await getDb().getDb();
+        const database = await getDb();
         if (!database) return { total: 0, vertical: 0, grand: 0 };
 
         const whereClauses = [

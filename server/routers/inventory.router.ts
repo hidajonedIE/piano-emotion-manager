@@ -205,7 +205,7 @@ export const inventoryRouter = router({
         outOfStock 
       } = input || {};
       
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) return { items: [], total: 0, stats: null };
 
       // Construir condiciones WHERE con filtrado por organización
@@ -293,7 +293,7 @@ export const inventoryRouter = router({
    * Lista completa sin paginación (para selects)
    */
   listAll: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
     
     return database
@@ -311,7 +311,7 @@ export const inventoryRouter = router({
   get: orgProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       const [item] = await database
@@ -335,7 +335,7 @@ export const inventoryRouter = router({
   create: orgProcedure
     .input(inventoryItemBaseSchema)
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Preparar datos con partnerId, odId y organizationId
@@ -366,7 +366,7 @@ export const inventoryRouter = router({
       id: z.number(),
     }).merge(inventoryItemBaseSchema.partial()))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el item para verificar permisos
@@ -415,7 +415,7 @@ export const inventoryRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const database = await getDb().getDb();
+      const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       // Obtener el item para verificar permisos
@@ -446,7 +446,7 @@ export const inventoryRouter = router({
    * Obtener items con stock bajo
    */
   getLowStock: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
 
     const items = await database
@@ -467,7 +467,7 @@ export const inventoryRouter = router({
    * Obtener items sin stock
    */
   getOutOfStock: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return [];
 
     const items = await database
@@ -484,7 +484,7 @@ export const inventoryRouter = router({
    * Obtener estadísticas de inventario
    */
   getStats: orgProcedure.query(async ({ ctx }) => {
-    const database = await getDb().getDb();
+    const database = await getDb();
     if (!database) return null;
 
     const items = await database
