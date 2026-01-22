@@ -1,5 +1,4 @@
-import { createClerkClient } from "@clerk/backend";
-import { jwtDecode } from "jwt-decode";
+import { createClerkClient, verifyToken } from "@clerk/backend";
 import type { VercelRequest } from '@vercel/node';
 
 console.log('[Clerk] CLERK_SECRET_KEY presente:', !!process.env.CLERK_SECRET_KEY);
@@ -24,55 +23,61 @@ export async function verifyClerkSession(req: VercelRequest | {
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       debugLog.point2 = "ERROR: No se encontró token en Authorization header";
+      console.log('[Clerk] No authorization header found');
       return null;
     }
 
     const token = authHeader.substring(7);
     debugLog.point2 = `Token extraído del header (primeros 50 caracteres): ${token.substring(0, 50)}...`;
+    console.log('[Clerk] Token extracted, verifying...');
 
-    // Decode the token to get the user ID
-    let decoded: any;
+    // Verify the token using Clerk's verifyToken method
+    let verifiedToken: any;
     try {
-      decoded = jwtDecode(token);
-      debugLog.point3 = "Token decodificado exitosamente";
+      verifiedToken = await verifyToken(token, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+      });
+      debugLog.point3 = "Token verificado exitosamente con Clerk";
+      console.log('[Clerk] Token verified successfully:', { sub: verifiedToken.sub, sid: verifiedToken.sid });
     } catch (error) {
-      debugLog.point3 = `ERROR al decodificar token: ${error instanceof Error ? error.message : String(error)}`;
+      debugLog.point3 = `ERROR al verificar token con Clerk: ${error instanceof Error ? error.message : String(error)}`;
+      console.error('[Clerk] Token verification failed:', error);
       return null;
     }
 
-    // Extract the user ID from the token
-    const tokenUserId = decoded.sub;
-    debugLog.point4 = `ID extraído del token (sub): ${tokenUserId}`;
-    debugLog.point5 = `Email en token: ${decoded.email || "undefined"}`;
-    debugLog.point6 = `Nombre en token: ${decoded.name || "undefined"}`;
+    // Extract the user ID from the verified token
+    const tokenUserId = verifiedToken.sub;
+    debugLog.point4 = `ID extraído del token verificado (sub): ${tokenUserId}`;
 
     if (!tokenUserId) {
-      debugLog.point7 = `ERROR: No se encontró 'sub' en el token. Claves disponibles: ${Object.keys(decoded).join(", ")}`;
+      debugLog.point5 = `ERROR: No se encontró 'sub' en el token verificado`;
+      console.error('[Clerk] No sub found in verified token');
       return null;
     }
 
     // Try to get user details from Clerk
-    debugLog.point7 = `Intentando obtener usuario desde Clerk con ID: ${tokenUserId}`;
+    debugLog.point5 = `Intentando obtener usuario desde Clerk con ID: ${tokenUserId}`;
     
     let clerkUser: any = null;
     try {
-      console.log('[Clerk] Intentando obtener usuario con ID:', tokenUserId);
+      console.log('[Clerk] Fetching user details from Clerk API...');
       clerkUser = await clerkClient.users.getUser(tokenUserId);
-      debugLog.point8 = `EXITO: Usuario encontrado en Clerk. Email: ${clerkUser.emailAddresses[0]?.emailAddress}`;
+      debugLog.point6 = `EXITO: Usuario encontrado en Clerk. Email: ${clerkUser.emailAddresses[0]?.emailAddress}`;
+      console.log('[Clerk] User fetched successfully from Clerk API');
     } catch (clerkError) {
       const clerkErrorMessage = clerkError instanceof Error ? clerkError.message : String(clerkError);
-      console.log('[Clerk] Error al obtener usuario:', clerkErrorMessage);
-      console.log('[Clerk] ACTIVANDO FALLBACK: Usando datos del token como usuario');
-      debugLog.point8 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
-      debugLog.point9 = `FALLBACK: Usando datos del token como usuario`;
+      console.error('[Clerk] Error fetching user from Clerk API:', clerkErrorMessage);
+      debugLog.point6 = `ERROR al obtener usuario desde Clerk: ${clerkErrorMessage}`;
+      debugLog.point7 = `FALLBACK: Usando datos del token verificado como usuario`;
       
+      // Use the verified token data as fallback
       clerkUser = {
         id: tokenUserId,
-        emailAddresses: [{ emailAddress: decoded.email }],
-        firstName: decoded.name?.split(' ')[0] || "",
-        lastName: decoded.name?.split(' ').slice(1).join(' ') || ""
+        emailAddresses: [{ emailAddress: verifiedToken.email || '' }],
+        firstName: verifiedToken.given_name || "",
+        lastName: verifiedToken.family_name || ""
       };
-      console.log('[Clerk] FALLBACK clerkUser creado:', clerkUser);
+      console.log('[Clerk] Using fallback user from verified token');
     }
     
     // Return the user object
@@ -83,11 +88,13 @@ export async function verifyClerkSession(req: VercelRequest | {
       clerkId: clerkUser.id
     };
     
-    debugLog.point9 = `USUARIO FINAL RETORNADO: ID=${returnUser.id}, Email=${returnUser.email}`;
+    debugLog.point8 = `USUARIO FINAL RETORNADO: ID=${returnUser.id}, Email=${returnUser.email}`;
+    console.log('[Clerk] Returning user:', { id: returnUser.id, email: returnUser.email });
     
     return { user: returnUser, debugLog };
   } catch (error) {
     debugLog.error = `ERROR GENERAL: ${error instanceof Error ? error.message : String(error)}`;
+    console.error('[Clerk] General error in verifyClerkSession:', error);
     return null;
   }
 }
