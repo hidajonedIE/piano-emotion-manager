@@ -16,9 +16,9 @@ export default function StoreScreen() {
   useFocusEffect(
     React.useCallback(() => {
     setHeaderConfig({
-      title: 'Store',
+      title: 'Piano Emotion Store',
       subtitle: 'Tienda de pianos y accesorios',
-      icon: 'cart.fill',
+      showLogo: true,
       showBackButton: false,
     });
     }, [setHeaderConfig])
