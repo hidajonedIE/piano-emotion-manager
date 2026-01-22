@@ -22,43 +22,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Insert test clients
     const client1Result = await db.insert(clients).values({
+      odId: `client_${Date.now()}_1`,
       name: 'María García',
       email: 'maria.garcia@example.com',
       phone: '+34 612 345 678',
       address: 'Calle Mayor 15, Madrid',
-      ownerId,
+      partnerId: 1,
     });
     const client1Id = Number(client1Result[0].insertId);
 
     const client2Result = await db.insert(clients).values({
+      odId: `client_${Date.now()}_2`,
       name: 'Juan Martínez',
       email: 'juan.martinez@example.com',
       phone: '+34 623 456 789',
       address: 'Avenida Diagonal 123, Barcelona',
-      ownerId,
+      partnerId: 1,
     });
     const client2Id = Number(client2Result[0].insertId);
 
     // Insert test pianos
     const piano1Result = await db.insert(pianos).values({
+      odId: `piano_${Date.now()}_1`,
       brand: 'Yamaha',
       model: 'U1',
       serialNumber: 'Y123456',
       year: 2015,
-      type: 'vertical',
+      category: 'vertical',
+      pianoType: 'Upright',
       clientId: client1Id,
-      ownerId,
+      partnerId: 1,
     });
     const piano1Id = Number(piano1Result[0].insertId);
 
     const piano2Result = await db.insert(pianos).values({
+      odId: `piano_${Date.now()}_2`,
       brand: 'Kawai',
       model: 'K-300',
       serialNumber: 'K789012',
       year: 2018,
-      type: 'vertical',
+      category: 'vertical',
+      pianoType: 'Upright',
       clientId: client2Id,
-      ownerId,
+      partnerId: 1,
     });
     const piano2Id = Number(piano2Result[0].insertId);
 
@@ -68,12 +74,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     urgentDate.setMonth(urgentDate.getMonth() - 14);
     
     await db.insert(services).values({
+      odId: `service_${Date.now()}_1`,
       pianoId: piano1Id,
-      serviceType: 'afinacion',
+      clientId: client1Id,
+      serviceType: 'tuning',
       date: urgentDate.toISOString(),
       notes: 'Afinación realizada hace 14 meses - URGENTE',
-      cost: 80,
-      ownerId,
+      cost: '80.00',
+      partnerId: 1,
     });
 
     // Pending: last service was 11 months ago
@@ -81,12 +89,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     pendingDate.setMonth(pendingDate.getMonth() - 11);
     
     await db.insert(services).values({
+      odId: `service_${Date.now()}_2`,
       pianoId: piano2Id,
-      serviceType: 'afinacion',
+      clientId: client2Id,
+      serviceType: 'tuning',
       date: pendingDate.toISOString(),
       notes: 'Afinación realizada hace 11 meses - PENDIENTE',
-      cost: 85,
-      ownerId,
+      cost: '85.00',
+      partnerId: 1,
     });
 
     return res.status(200).json({
