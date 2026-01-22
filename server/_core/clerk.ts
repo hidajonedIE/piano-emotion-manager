@@ -138,14 +138,14 @@ export async function getOrCreateUserFromClerk(
   eq: any,
   debugLog: Record<string, string> = {}
 ) {
-  debugLog.point10 = `Buscando usuario en base de datos con openId (email): ${clerkUser.email}`;
+  debugLog.point10 = `Buscando usuario en base de datos con openId (Clerk ID): ${clerkUser.id}`;
   
   try {
     // Try to find existing user
     const [existingUser] = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.openId, clerkUser.email))
+      .where(eq(usersTable.openId, clerkUser.id))
       .limit(1);
 
     if (existingUser) {
@@ -159,7 +159,7 @@ export async function getOrCreateUserFromClerk(
     await db
       .insert(usersTable)
       .values({
-        openId: clerkUser.email,
+        openId: clerkUser.id,
         email: clerkUser.email,
         name: clerkUser.name,
         partnerId: 1, // Default to partner 1
@@ -171,7 +171,7 @@ export async function getOrCreateUserFromClerk(
     const [newUser] = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.openId, clerkUser.email))
+      .where(eq(usersTable.openId, clerkUser.id))
       .limit(1);
 
     debugLog.point13 = `Usuario creado exitosamente en BD: ID=${newUser.id}, Email=${newUser.email}`;
