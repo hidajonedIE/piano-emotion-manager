@@ -24,10 +24,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({
       success: true,
       user: {
-        id: clerkUser.id,
-        email: clerkUser.email,
-        name: clerkUser.name,
+        id: clerkUser.user.id,
+        email: clerkUser.user.email,
+        name: clerkUser.user.name,
       },
+      debugLog: clerkUser.debugLog,
       message: 'This is the Clerk user ID that should be used as ownerId in the database'
     });
   } catch (error) {

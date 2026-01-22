@@ -6,27 +6,26 @@
  */
 
 import {
-  pgTable,
-  serial,
+  mysqlTable,
+  int,
   varchar,
   text,
-  integer,
   decimal,
-  boolean,
+  tinyint,
   timestamp,
   date,
-  pgEnum,
+  mysqlEnum,
   json,
   index,
   uniqueIndex,
-} from 'drizzle-orm/pg-core';
+} from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 
 // ============================================================================
 // Enums
 // ============================================================================
 
-export const clientStatusEnum = pgEnum('client_status', [
+export const clientStatusEnum = mysqlEnum('client_status', [
   'lead',           // Prospecto
   'active',         // Cliente activo
   'inactive',       // Cliente inactivo
@@ -34,7 +33,7 @@ export const clientStatusEnum = pgEnum('client_status', [
   'churned',        // Cliente perdido
 ]);
 
-export const clientSourceEnum = pgEnum('client_source', [
+export const clientSourceEnum = mysqlEnum('client_source', [
   'referral',       // Referido
   'website',        // Sitio web
   'social_media',   // Redes sociales
@@ -45,7 +44,7 @@ export const clientSourceEnum = pgEnum('client_source', [
   'other',          // Otro
 ]);
 
-export const communicationTypeEnum = pgEnum('communication_type', [
+export const communicationTypeEnum = mysqlEnum('communication_type', [
   'email',
   'phone',
   'sms',
@@ -55,26 +54,26 @@ export const communicationTypeEnum = pgEnum('communication_type', [
   'note',
 ]);
 
-export const communicationDirectionEnum = pgEnum('communication_direction', [
+export const communicationDirectionEnum = mysqlEnum('communication_direction', [
   'inbound',        // Entrante
   'outbound',       // Saliente
 ]);
 
-export const taskStatusEnum = pgEnum('crm_task_status', [
+export const taskStatusEnum = mysqlEnum('crm_task_status', [
   'pending',
   'in_progress',
   'completed',
   'cancelled',
 ]);
 
-export const taskPriorityEnum = pgEnum('crm_task_priority', [
+export const taskPriorityEnum = mysqlEnum('crm_task_priority', [
   'low',
   'medium',
   'high',
   'urgent',
 ]);
 
-export const campaignStatusEnum = pgEnum('campaign_status', [
+export const campaignStatusEnum = mysqlEnum('campaign_status', [
   'draft',
   'scheduled',
   'active',
@@ -83,7 +82,7 @@ export const campaignStatusEnum = pgEnum('campaign_status', [
   'cancelled',
 ]);
 
-export const campaignTypeEnum = pgEnum('campaign_type', [
+export const campaignTypeEnum = mysqlEnum('campaign_type', [
   'email',
   'sms',
   'whatsapp',
@@ -97,8 +96,8 @@ export const campaignTypeEnum = pgEnum('campaign_type', [
 /**
  * Etiquetas para segmentación de clientes
  */
-export const clientTags = pgTable('client_tags', {
-  id: serial('id').primaryKey(),
+export const clientTags = mysqlTable('client_tags', {
+  id: int().autoincrement()('id').primaryKey(),
   organizationId: integer('organization_id').notNull(),
   name: varchar('name', { length: 50 }).notNull(),
   color: varchar('color', { length: 7 }).default('#3b82f6'),
@@ -111,8 +110,8 @@ export const clientTags = pgTable('client_tags', {
 /**
  * Relación cliente-etiqueta
  */
-export const clientTagAssignments = pgTable('client_tag_assignments', {
-  id: serial('id').primaryKey(),
+export const clientTagAssignments = mysqlTable('client_tag_assignments', {
+  id: int().autoincrement()('id').primaryKey(),
   clientId: integer('client_id').notNull(),
   tagId: integer('tag_id').notNull(),
   assignedAt: timestamp('assigned_at').defaultNow().notNull(),
@@ -124,8 +123,8 @@ export const clientTagAssignments = pgTable('client_tag_assignments', {
 /**
  * Información extendida de clientes (CRM)
  */
-export const clientProfiles = pgTable('client_profiles', {
-  id: serial('id').primaryKey(),
+export const clientProfiles = mysqlTable('client_profiles', {
+  id: int().autoincrement()('id').primaryKey(),
   clientId: integer('client_id').notNull().unique(),
   organizationId: integer('organization_id').notNull(),
   
@@ -178,8 +177,8 @@ export const clientProfiles = pgTable('client_profiles', {
 /**
  * Historial de comunicaciones
  */
-export const communications = pgTable('communications', {
-  id: serial('id').primaryKey(),
+export const communications = mysqlTable('communications', {
+  id: int().autoincrement()('id').primaryKey(),
   organizationId: integer('organization_id').notNull(),
   clientId: integer('client_id').notNull(),
   userId: integer('user_id'), // Quién realizó la comunicación
@@ -222,8 +221,8 @@ export const communications = pgTable('communications', {
 /**
  * Tareas de CRM
  */
-export const crmTasks = pgTable('crm_tasks', {
-  id: serial('id').primaryKey(),
+export const crmTasks = mysqlTable('crm_tasks', {
+  id: int().autoincrement()('id').primaryKey(),
   organizationId: integer('organization_id').notNull(),
   clientId: integer('client_id'),
   assignedTo: integer('assigned_to'),
@@ -258,8 +257,8 @@ export const crmTasks = pgTable('crm_tasks', {
 /**
  * Campañas de marketing
  */
-export const campaigns = pgTable('campaigns', {
-  id: serial('id').primaryKey(),
+export const campaigns = mysqlTable('campaigns', {
+  id: int().autoincrement()('id').primaryKey(),
   organizationId: integer('organization_id').notNull(),
   createdBy: integer('created_by').notNull(),
   
@@ -303,8 +302,8 @@ export const campaigns = pgTable('campaigns', {
 /**
  * Destinatarios de campaña
  */
-export const campaignRecipients = pgTable('campaign_recipients', {
-  id: serial('id').primaryKey(),
+export const campaignRecipients = mysqlTable('campaign_recipients', {
+  id: int().autoincrement()('id').primaryKey(),
   campaignId: integer('campaign_id').notNull(),
   clientId: integer('client_id').notNull(),
   
@@ -330,8 +329,8 @@ export const campaignRecipients = pgTable('campaign_recipients', {
 /**
  * Plantillas de comunicación
  */
-export const communicationTemplates = pgTable('communication_templates', {
-  id: serial('id').primaryKey(),
+export const communicationTemplates = mysqlTable('communication_templates', {
+  id: int().autoincrement()('id').primaryKey(),
   organizationId: integer('organization_id').notNull(),
   
   name: varchar('name', { length: 255 }).notNull(),
@@ -355,8 +354,8 @@ export const communicationTemplates = pgTable('communication_templates', {
 /**
  * Segmentos de clientes guardados
  */
-export const clientSegments = pgTable('client_segments', {
-  id: serial('id').primaryKey(),
+export const clientSegments = mysqlTable('client_segments', {
+  id: int().autoincrement()('id').primaryKey(),
   organizationId: integer('organization_id').notNull(),
   createdBy: integer('created_by').notNull(),
   

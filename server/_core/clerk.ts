@@ -1,5 +1,6 @@
 import { createClerkClient } from "@clerk/backend";
 import { jwtDecode } from "jwt-decode";
+import type { VercelRequest } from '@vercel/node';
 
 console.log('[Clerk] CLERK_SECRET_KEY presente:', !!process.env.CLERK_SECRET_KEY);
 console.log('[Clerk] CLERK_SECRET_KEY length:', process.env.CLERK_SECRET_KEY?.length || 0);
@@ -8,7 +9,7 @@ const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
 
-export async function verifyClerkSession(req: {
+export async function verifyClerkSession(req: VercelRequest | {
   headers?: Record<string, string>;
   cookies?: Record<string, string>;
   url?: string;
@@ -18,7 +19,7 @@ export async function verifyClerkSession(req: {
   
   try {
     // Get the token from the Authorization header
-    const authHeader = req.headers?.["authorization"];
+    const authHeader = req.headers?.["authorization"] as string | undefined;
     debugLog.point1 = `Authorization header presente: ${!!authHeader}`;
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {

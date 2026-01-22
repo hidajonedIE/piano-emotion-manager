@@ -92,11 +92,6 @@ export interface DailySchedule {
 // ==========================================
 
 export class WorkAssignmentService {
-  private organizationId: number;
-
-  constructor(organizationId: number) {
-    this.organizationId = organizationId;
-  }
   
   /**
    * Crear una nueva asignación de trabajo
@@ -119,7 +114,7 @@ export class WorkAssignmentService {
       appointmentId: input.appointmentId,
       serviceId: input.serviceId,
       technicianId: input.technicianId,
-      workAssignmentStatus: 'assigned',
+      status: 'assigned',
       priority: input.priority || 'normal',
       scheduledDate: input.scheduledDate,
       scheduledStartTime: input.scheduledStartTime,
@@ -153,7 +148,6 @@ export class WorkAssignmentService {
    * Obtener asignación por ID
    */
   async getById(id: number): Promise<WorkAssignment | null> {
-    const db = await getDb();
     const [assignment] = await db
       .select()
       .from(workAssignments)
@@ -171,7 +165,6 @@ export class WorkAssignmentService {
     startDate: Date,
     endDate: Date
   ): Promise<WorkAssignment[]> {
-    const db = await getDb();
     return db
       .select()
       .from(workAssignments)
@@ -198,7 +191,6 @@ export class WorkAssignmentService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
     
-    const db = await getDb();
     const assignments = await db
       .select({
         assignment: workAssignments,
@@ -281,14 +273,13 @@ export class WorkAssignmentService {
       throw new Error(`El técnico no está disponible: ${availability.absenceReason || 'Carga máxima alcanzada'}`);
     }
     
-    const db = await getDb();
     // Actualizar asignación
     const [updated] = await db
       .update(workAssignments)
       .set({
         previousTechnicianId: assignment.technicianId,
         technicianId: input.newTechnicianId,
-        workAssignmentStatus: 'reassigned',
+        status: 'reassigned',
         reassignedAt: new Date(),
         reassignmentReason: input.reason,
       })
@@ -346,11 +337,10 @@ export class WorkAssignmentService {
       throw new Error('Esta asignación no te pertenece');
     }
     
-    const db = await getDb();
     const [updated] = await db
       .update(workAssignments)
       .set({
-        workAssignmentStatus: 'accepted',
+        status: 'accepted',
         acceptedAt: new Date(),
       })
       .where(eq(workAssignments.id, assignmentId))
@@ -372,11 +362,10 @@ export class WorkAssignmentService {
       throw new Error('Esta asignación no te pertenece');
     }
     
-    const db = await getDb();
     const [updated] = await db
       .update(workAssignments)
       .set({
-        workAssignmentStatus: 'unassigned',
+        status: 'unassigned',
         rejectedAt: new Date(),
         rejectionReason: reason,
         technicianId: null as any, // Dejar sin asignar
@@ -433,11 +422,10 @@ export class WorkAssignmentService {
       throw new Error('Esta asignación no te pertenece');
     }
     
-    const db = await getDb();
     const [updated] = await db
       .update(workAssignments)
       .set({
-        workAssignmentStatus: 'in_progress',
+        status: 'in_progress',
         actualStartTime: new Date(),
       })
       .where(eq(workAssignments.id, assignmentId))
@@ -463,11 +451,10 @@ export class WorkAssignmentService {
       throw new Error('Esta asignación no te pertenece');
     }
     
-    const db = await getDb();
     const [updated] = await db
       .update(workAssignments)
       .set({
-        workAssignmentStatus: 'completed',
+        status: 'completed',
         actualEndTime: new Date(),
         technicianNotes: notes,
       })
@@ -483,7 +470,7 @@ export class WorkAssignmentService {
   async cancel(assignmentId: number, cancelledBy: number): Promise<WorkAssignment> {
     const [updated] = await db
       .update(workAssignments)
-      .set({ workAssignmentStatus: 'cancelled' })
+      .set({ status: 'cancelled' })
       .where(eq(workAssignments.id, assignmentId))
       .returning();
     
@@ -498,7 +485,6 @@ export class WorkAssignmentService {
     technicianId: number,
     date: Date
   ): Promise<TechnicianAvailability> {
-    const db = await getDb();
     // Obtener miembro
     const [member] = await db
       .select()
@@ -567,9 +553,9 @@ export class WorkAssignmentService {
           gte(workAssignments.scheduledDate, startOfDay),
           lte(workAssignments.scheduledDate, endOfDay),
           or(
-            eq(workAssignments.workAssignmentStatus, 'assigned'),
-            eq(workAssignments.workAssignmentStatus, 'accepted'),
-            eq(workAssignments.workAssignmentStatus, 'in_progress')
+            eq(workAssignments.status, 'assigned'),
+            eq(workAssignments.status, 'accepted'),
+            eq(workAssignments.status, 'in_progress')
           )
         )
       );
@@ -625,12 +611,11 @@ export class WorkAssignmentService {
     // Ordenar por menor carga
     available.sort((a, b) => a.currentLoad - b.currentLoad);
     
-    const db = await getDb();
     // Considerar zona y especialidad del técnico
     // Si se proporciona ubicación del cliente, priorizar técnicos de esa zona
-    if (postalCode) {
+    if (input.clientLocation) {
       try {
-        const { serviceZones, technicianZoneAssignments } = await import('../../../drizzle/schema.js');
+        const { serviceZones, technicianZoneAssignments } = await import('@/drizzle/schema');
         
         // Obtener técnicos con zonas asignadas
         const technicianZones = await db
@@ -654,8 +639,8 @@ export class WorkAssignmentService {
         
         // Priorizar técnicos que tienen zona asignada
         available.sort((a, b) => {
-          const aHasZone = techZoneMap.has(a.userId) ? 1 : 0;
-          const bHasZone = techZoneMap.has(b.userId) ? 1 : 0;
+          const aHasZone = techZoneMap.has(a.technicianId) ? 1 : 0;
+          const bHasZone = techZoneMap.has(b.technicianId) ? 1 : 0;
           
           // Primero los que tienen zona, luego por carga
           if (aHasZone !== bHasZone) return bHasZone - aHasZone;
@@ -667,9 +652,9 @@ export class WorkAssignmentService {
     }
     
     // Si se proporciona tipo de servicio, priorizar por especialidad
-    if (serviceType) {
+    if (input.serviceType) {
       try {
-        const { organizationMembers } = await import('../../../drizzle/schema.js');
+        const { organizationMembers } = await import('@/drizzle/schema');
         
         // Obtener especialidades de técnicos
         const members = await db
@@ -689,13 +674,13 @@ export class WorkAssignmentService {
         }
         
         // Priorizar técnicos con la especialidad requerida
-        const serviceTypeLower = serviceType.toLowerCase();
+        const serviceType = input.serviceType.toLowerCase();
         available.sort((a, b) => {
-          const aSpecs = specialtyMap.get(a.userId) || [];
-          const bSpecs = specialtyMap.get(b.userId) || [];
+          const aSpecs = specialtyMap.get(a.technicianId) || [];
+          const bSpecs = specialtyMap.get(b.technicianId) || [];
           
-          const aHasSpec = aSpecs.some(s => s.toLowerCase().includes(serviceTypeLower)) ? 1 : 0;
-          const bHasSpec = bSpecs.some(s => s.toLowerCase().includes(serviceTypeLower)) ? 1 : 0;
+          const aHasSpec = aSpecs.some(s => s.toLowerCase().includes(serviceType)) ? 1 : 0;
+          const bHasSpec = bSpecs.some(s => s.toLowerCase().includes(serviceType)) ? 1 : 0;
           
           if (aHasSpec !== bHasSpec) return bHasSpec - aHasSpec;
           return a.currentLoad - b.currentLoad;
@@ -722,10 +707,9 @@ export class WorkAssignmentService {
     pending: number;
     averageDuration: number;
   }> {
-    const db = await getDb();
     const stats = await db
       .select({
-        status: workAssignments.workAssignmentStatus,
+        status: workAssignments.status,
         count: sql<number>`count(*)`,
         avgDuration: sql<number>`avg(${workAssignments.estimatedDuration})`,
       })
@@ -737,7 +721,7 @@ export class WorkAssignmentService {
           lte(workAssignments.scheduledDate, endDate)
         )
       )
-      .groupBy(workAssignments.workAssignmentStatus);
+      .groupBy(workAssignments.status);
     
     const result = {
       total: 0,

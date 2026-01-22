@@ -4,7 +4,7 @@ import { invoices } from '../drizzle/schema.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const db = getDb();
+    const db = await getDb();
     
     // Obtener todas las facturas
     const allInvoices = await db.query.invoices.findMany({

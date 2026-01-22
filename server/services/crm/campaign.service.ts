@@ -382,14 +382,21 @@ export class CampaignService {
     variables?: string[]
   ): Promise<typeof communicationTemplates.$inferSelect> {
     const db = await getDb();
-    const [template] = await db.insert(communicationTemplates).values({
+    const result = await db.insert(communicationTemplates).values({
       organizationId: this.organizationId,
       name,
       type: type as any,
       subject,
       content,
       variables,
-    }).returning();
+    });
+
+    // Get the inserted template
+    const [template] = await db
+      .select()
+      .from(communicationTemplates)
+      .where(eq(communicationTemplates.id, Number(result[0].insertId)))
+      .limit(1);
 
     return template;
   }
