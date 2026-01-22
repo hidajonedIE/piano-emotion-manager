@@ -8,9 +8,9 @@ import {
   shopProductInventoryLinks, 
   shopStockAlerts,
   shopOrders,
-  shopOrderLines,
-  inventory 
+  shopOrderLines
 } from '../../../drizzle/shop-schema.js';
+import { inventory } from '../../../drizzle/schema.js';
 import { eq, and, lt, isNull } from 'drizzle-orm';
 
 export interface StockAlert {

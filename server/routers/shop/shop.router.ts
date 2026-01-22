@@ -11,9 +11,9 @@ import {
   shopProducts, 
   shopStockAlerts,
   shopTierConfig,
-  shopPurchaseTracking,
-  distributorWoocommerceConfig
+  shopPurchaseTracking
 } from '../../../drizzle/shop-schema.js';
+import { distributorWooCommerceConfig } from '../../../drizzle/distributor-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { WooCommerceProductsService } from '../../services/shop/woocommerce-products.service.js';
 import { WordPressBlogService } from '../../services/shop/wordpress-blog.service.js';
@@ -317,7 +317,7 @@ export const shopRouter = router({
       // Obtener configuración de WooCommerce
       const [wooConfig] = await db
         .select()
-        .from(distributorWoocommerceConfig)
+        .from(distributorWooCommerceConfig)
         .limit(1);
       
       if (!wooConfig || !wooConfig.consumerKey || !wooConfig.consumerSecret) {
@@ -507,7 +507,7 @@ export const shopRouter = router({
     .query(async ({ input }) => {
       const [wooConfig] = await db
         .select()
-        .from(distributorWoocommerceConfig)
+        .from(distributorWooCommerceConfig)
         .limit(1);
       
       if (!wooConfig) {
@@ -528,7 +528,7 @@ export const shopRouter = router({
     .query(async ({ input }) => {
       const [wooConfig] = await db
         .select()
-        .from(distributorWoocommerceConfig)
+        .from(distributorWooCommerceConfig)
         .limit(1);
       
       if (!wooConfig) {
