@@ -97,8 +97,8 @@ export const campaignTypeEnum = mysqlEnum('campaign_type', [
  * Etiquetas para segmentación de clientes
  */
 export const clientTags = mysqlTable('client_tags', {
-  id: int().autoincrement()('id').primaryKey(),
-  organizationId: integer('organization_id').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  organizationId: int('organization_id').notNull(),
   name: varchar('name', { length: 50 }).notNull(),
   color: varchar('color', { length: 7 }).default('#3b82f6'),
   description: text('description'),
@@ -111,11 +111,11 @@ export const clientTags = mysqlTable('client_tags', {
  * Relación cliente-etiqueta
  */
 export const clientTagAssignments = mysqlTable('client_tag_assignments', {
-  id: int().autoincrement()('id').primaryKey(),
-  clientId: integer('client_id').notNull(),
-  tagId: integer('tag_id').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  clientId: int('client_id').notNull(),
+  tagId: int('tag_id').notNull(),
   assignedAt: timestamp('assigned_at').defaultNow().notNull(),
-  assignedBy: integer('assigned_by'),
+  assignedBy: int('assigned_by'),
 }, (table) => ({
   clientTagIdx: uniqueIndex('client_tag_idx').on(table.clientId, table.tagId),
 }));
@@ -124,9 +124,9 @@ export const clientTagAssignments = mysqlTable('client_tag_assignments', {
  * Información extendida de clientes (CRM)
  */
 export const clientProfiles = mysqlTable('client_profiles', {
-  id: int().autoincrement()('id').primaryKey(),
-  clientId: integer('client_id').notNull().unique(),
-  organizationId: integer('organization_id').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  clientId: int('client_id').notNull().unique(),
+  organizationId: int('organization_id').notNull(),
   
   // Estado y origen
   status: clientStatusEnum('status').default('active').notNull(),
@@ -134,10 +134,10 @@ export const clientProfiles = mysqlTable('client_profiles', {
   sourceDetails: text('source_details'),
   
   // Puntuación y valor
-  score: integer('score').default(0), // Lead scoring
+  score: int('score').default(0), // Lead scoring
   lifetimeValue: decimal('lifetime_value', { precision: 12, scale: 2 }).default('0'),
   averageTicket: decimal('average_ticket', { precision: 10, scale: 2 }).default('0'),
-  totalServices: integer('total_services').default(0),
+  totalServices: int('total_services').default(0),
   
   // Preferencias
   preferredContactMethod: communicationTypeEnum('preferred_contact_method').default('email'),
@@ -156,13 +156,13 @@ export const clientProfiles = mysqlTable('client_profiles', {
   specialRequirements: text('special_requirements'),
   
   // Marketing
-  marketingConsent: boolean('marketing_consent').default(false),
+  marketingConsent: tinyint('marketing_consent').default(false),
   marketingConsentDate: timestamp('marketing_consent_date'),
   unsubscribedAt: timestamp('unsubscribed_at'),
   
   // Referidos
-  referredBy: integer('referred_by'), // ID de otro cliente
-  referralCount: integer('referral_count').default(0),
+  referredBy: int('referred_by'), // ID de otro cliente
+  referralCount: int('referral_count').default(0),
   
   // Metadatos
   customFields: json('custom_fields').$type<Record<string, any>>(),
@@ -178,12 +178,12 @@ export const clientProfiles = mysqlTable('client_profiles', {
  * Historial de comunicaciones
  */
 export const communications = mysqlTable('communications', {
-  id: int().autoincrement()('id').primaryKey(),
-  organizationId: integer('organization_id').notNull(),
-  clientId: integer('client_id').notNull(),
-  userId: integer('user_id'), // Quién realizó la comunicación
+  id: int('id').autoincrement().primaryKey(),
+  organizationId: int('organization_id').notNull(),
+  clientId: int('client_id').notNull(),
+  userId: int('user_id'), // Quién realizó la comunicación
   
-  type: communicationTypeEnum('type').notNull(),
+  type: varchar('type', { length: 50 }).notNull(),
   direction: communicationDirectionEnum('direction').notNull(),
   
   subject: varchar('subject', { length: 255 }),
@@ -197,15 +197,15 @@ export const communications = mysqlTable('communications', {
   
   // Para llamadas
   phoneNumber: varchar('phone_number', { length: 20 }),
-  callDuration: integer('call_duration'), // En segundos
+  callDuration: int('call_duration'), // En segundos
   callRecordingUrl: text('call_recording_url'),
   
   // Estado
-  isRead: boolean('is_read').default(false),
-  isImportant: boolean('is_important').default(false),
+  isRead: tinyint('is_read').default(false),
+  isImportant: tinyint('is_important').default(false),
   
   // Seguimiento
-  requiresFollowUp: boolean('requires_follow_up').default(false),
+  requiresFollowUp: tinyint('requires_follow_up').default(false),
   followUpDate: date('follow_up_date'),
   followUpNotes: text('follow_up_notes'),
   
@@ -222,11 +222,11 @@ export const communications = mysqlTable('communications', {
  * Tareas de CRM
  */
 export const crmTasks = mysqlTable('crm_tasks', {
-  id: int().autoincrement()('id').primaryKey(),
-  organizationId: integer('organization_id').notNull(),
-  clientId: integer('client_id'),
-  assignedTo: integer('assigned_to'),
-  createdBy: integer('created_by').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  organizationId: int('organization_id').notNull(),
+  clientId: int('client_id'),
+  assignedTo: int('assigned_to'),
+  createdBy: int('created_by').notNull(),
   
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
@@ -239,11 +239,11 @@ export const crmTasks = mysqlTable('crm_tasks', {
   
   // Recordatorios
   reminderDate: timestamp('reminder_date'),
-  reminderSent: boolean('reminder_sent').default(false),
+  reminderSent: tinyint('reminder_sent').default(false),
   
   // Relación con otras entidades
   relatedType: varchar('related_type', { length: 50 }), // 'service', 'invoice', 'piano'
-  relatedId: integer('related_id'),
+  relatedId: int('related_id'),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -258,9 +258,9 @@ export const crmTasks = mysqlTable('crm_tasks', {
  * Campañas de marketing
  */
 export const campaigns = mysqlTable('campaigns', {
-  id: int().autoincrement()('id').primaryKey(),
-  organizationId: integer('organization_id').notNull(),
-  createdBy: integer('created_by').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  organizationId: int('organization_id').notNull(),
+  createdBy: int('created_by').notNull(),
   
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
@@ -271,7 +271,7 @@ export const campaigns = mysqlTable('campaigns', {
   // Contenido
   subject: varchar('subject', { length: 255 }),
   content: text('content'),
-  templateId: integer('template_id'),
+  templateId: int('template_id'),
   
   // Segmentación
   targetTags: json('target_tags').$type<number[]>(),
@@ -284,13 +284,13 @@ export const campaigns = mysqlTable('campaigns', {
   completedAt: timestamp('completed_at'),
   
   // Métricas
-  totalRecipients: integer('total_recipients').default(0),
-  sentCount: integer('sent_count').default(0),
-  deliveredCount: integer('delivered_count').default(0),
-  openedCount: integer('opened_count').default(0),
-  clickedCount: integer('clicked_count').default(0),
-  bouncedCount: integer('bounced_count').default(0),
-  unsubscribedCount: integer('unsubscribed_count').default(0),
+  totalRecipients: int('total_recipients').default(0),
+  sentCount: int('sent_count').default(0),
+  deliveredCount: int('delivered_count').default(0),
+  openedCount: int('opened_count').default(0),
+  clickedCount: int('clicked_count').default(0),
+  bouncedCount: int('bounced_count').default(0),
+  unsubscribedCount: int('unsubscribed_count').default(0),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -303,9 +303,9 @@ export const campaigns = mysqlTable('campaigns', {
  * Destinatarios de campaña
  */
 export const campaignRecipients = mysqlTable('campaign_recipients', {
-  id: int().autoincrement()('id').primaryKey(),
-  campaignId: integer('campaign_id').notNull(),
-  clientId: integer('client_id').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  campaignId: int('campaign_id').notNull(),
+  clientId: int('client_id').notNull(),
   
   email: varchar('email', { length: 255 }),
   phone: varchar('phone', { length: 20 }),
@@ -330,11 +330,11 @@ export const campaignRecipients = mysqlTable('campaign_recipients', {
  * Plantillas de comunicación
  */
 export const communicationTemplates = mysqlTable('communication_templates', {
-  id: int().autoincrement()('id').primaryKey(),
-  organizationId: integer('organization_id').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  organizationId: int('organization_id').notNull(),
   
   name: varchar('name', { length: 255 }).notNull(),
-  type: communicationTypeEnum('type').notNull(),
+  type: varchar('type', { length: 50 }).notNull(),
   
   subject: varchar('subject', { length: 255 }),
   content: text('content').notNull(),
@@ -342,8 +342,8 @@ export const communicationTemplates = mysqlTable('communication_templates', {
   // Variables disponibles
   variables: json('variables').$type<string[]>(),
   
-  isActive: boolean('is_active').default(true),
-  isDefault: boolean('is_default').default(false),
+  isActive: tinyint('is_active').default(true),
+  isDefault: tinyint('is_default').default(false),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -355,9 +355,9 @@ export const communicationTemplates = mysqlTable('communication_templates', {
  * Segmentos de clientes guardados
  */
 export const clientSegments = mysqlTable('client_segments', {
-  id: int().autoincrement()('id').primaryKey(),
-  organizationId: integer('organization_id').notNull(),
-  createdBy: integer('created_by').notNull(),
+  id: int('id').autoincrement().primaryKey(),
+  organizationId: int('organization_id').notNull(),
+  createdBy: int('created_by').notNull(),
   
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
@@ -376,10 +376,10 @@ export const clientSegments = mysqlTable('client_segments', {
   }>().notNull(),
   
   // Conteo de clientes (actualizado periódicamente)
-  clientCount: integer('client_count').default(0),
+  clientCount: int('client_count').default(0),
   lastCalculatedAt: timestamp('last_calculated_at'),
   
-  isActive: boolean('is_active').default(true),
+  isActive: tinyint('is_active').default(true),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -437,14 +437,6 @@ export const campaignRecipientsRelations = relations(campaignRecipients, ({ one 
 // Type Exports
 // ============================================================================
 
-export type ClientStatus = typeof clientStatusEnum.enumValues[number];
-export type ClientSource = typeof clientSourceEnum.enumValues[number];
-export type CommunicationType = typeof communicationTypeEnum.enumValues[number];
-export type CommunicationDirection = typeof communicationDirectionEnum.enumValues[number];
-export type CRMTaskStatus = typeof taskStatusEnum.enumValues[number];
-export type CRMTaskPriority = typeof taskPriorityEnum.enumValues[number];
-export type CampaignStatus = typeof campaignStatusEnum.enumValues[number];
-export type CampaignType = typeof campaignTypeEnum.enumValues[number];
 
 export type ClientTag = typeof clientTags.$inferSelect;
 export type NewClientTag = typeof clientTags.$inferInsert;
