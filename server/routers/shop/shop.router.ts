@@ -56,6 +56,49 @@ const permissionSchema = z.object({
 });
 
 // ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Obtiene el rol de organización del usuario
+ */
+async function getUserOrganizationRole(userId: number, partnerId: number | null): Promise<string> {
+  try {
+    console.log('[getUserOrganizationRole] START - userId:', userId, 'partnerId:', partnerId);
+    
+    // Si no hay partnerId, usar 'owner' como fallback
+    if (!partnerId) {
+      console.log('[getUserOrganizationRole] No partnerId, returning owner');
+      return 'owner';
+    }
+    
+    const database = await getDb();
+    console.log('[getUserOrganizationRole] Database obtained');
+    
+    const { organizationMembers } = await import('../../../drizzle/schema.js');
+    
+    const [member] = await database
+      .select()
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.organizationId, partnerId)
+        )
+      )
+      .limit(1);
+    
+    const role = member?.organizationRole || 'owner';
+    console.log('[getUserOrganizationRole] Role found:', role);
+    return role;
+  } catch (error) {
+    console.error('[getUserOrganizationRole] ERROR:', error);
+    // Fallback seguro en caso de error
+    return 'owner';
+  }
+}
+
+// ============================================================================
 // Router
 // ============================================================================
 
