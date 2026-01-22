@@ -38,7 +38,10 @@ export async function getDb() {
         idleTimeout: 60000,             // 60 seconds idle timeout
         connectTimeout: 10000,          // 10 seconds connect timeout
       });
-      _db = drizzle(pool, { schema: { ...schema, ...shopSchema, ...crmSchema, ...distributorSchema } });
+      _db = drizzle(pool, { 
+        schema: { ...schema, ...shopSchema, ...crmSchema, ...distributorSchema },
+        mode: "default"
+      });
       console.log("[Database] ✓ Connection pool created successfully");
     } catch (error) {
       console.error("[Database] ❌ Failed to connect:", error instanceof Error ? error.message : error);
