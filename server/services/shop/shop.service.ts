@@ -261,9 +261,12 @@ export class ShopService {
    * Obtiene tiendas accesibles para el usuario
    */
   async getAccessibleShops(): Promise<Array<typeof shops.$inferSelect & { access: ShopAccessResult }>> {
+    console.log('[SHOP DEBUG] getAccessibleShops called, organizationId:', this.organizationId, 'userRole:', this.userRole);
     const db = await getDb();
+    console.log('[SHOP DEBUG] db obtained');
     
     // Obtener tiendas de la organización del usuario
+    console.log('[SHOP DEBUG] Querying orgShops for organizationId:', this.organizationId);
     const orgShops = await db.query.shops.findMany({
       where: and(
         eq(shops.organizationId, this.organizationId),
@@ -271,8 +274,10 @@ export class ShopService {
       ),
       orderBy: [desc(shops.isDefault), asc(shops.name)],
     });
+    console.log('[SHOP DEBUG] orgShops found:', orgShops.length, orgShops);
     
     // Obtener tiendas tipo 'platform' (disponibles globalmente)
+    console.log('[SHOP DEBUG] Querying platformShops');
     const platformShops = await db.query.shops.findMany({
       where: and(
         eq(shops.type, 'platform'),
@@ -280,6 +285,7 @@ export class ShopService {
       ),
       orderBy: [desc(shops.isDefault), asc(shops.name)],
     });
+    console.log('[SHOP DEBUG] platformShops found:', platformShops.length, platformShops);
     
     // Combinar y eliminar duplicados
     const allShopsMap = new Map();
