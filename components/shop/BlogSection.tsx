@@ -15,16 +15,14 @@ import {
   Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { BlogPost } from '@/hooks/shop/use-shop';
+import { useShopBlog, type BlogPost } from '@/hooks/shop/use-shop';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface BlogSectionProps {
-  posts: BlogPost[];
-  isLoading: boolean;
-  onRefresh?: () => void;
+  shopId: number;
 }
 
 // ============================================================================
@@ -108,7 +106,8 @@ const EmptyState: React.FC = () => {
 // Main Component
 // ============================================================================
 
-export const BlogSection: React.FC<BlogSectionProps> = ({ posts, isLoading, onRefresh }) => {
+export const BlogSection: React.FC<BlogSectionProps> = ({ shopId }) => {
+  const { posts, isLoading, refetch } = useShopBlog(shopId, 5);
   const handlePostPress = (post: BlogPost) => {
     if (post.url) {
       Linking.openURL(post.url);
@@ -142,11 +141,9 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts, isLoading, onRe
             Artículos técnicos y novedades sobre pianos
           </Text>
         </View>
-        {onRefresh && (
-          <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
-            <Ionicons name="refresh" size={20} color="#3b82f6" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={refetch} style={styles.refreshButton}>
+          <Ionicons name="refresh" size={20} color="#3b82f6" />
+        </TouchableOpacity>
       </View>
 
       {/* Posts Grid */}
