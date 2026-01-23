@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#1A1A2E',
   },
   metricTitle: {
     fontSize: 12,
