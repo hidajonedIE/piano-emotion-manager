@@ -179,7 +179,7 @@ export function ShopViewElegant() {
       />
       <View style={styles.headerTextContainer}>
         <Text style={styles.headerTitle}>PIANO EMOTION STORE</Text>
-        <Text style={styles.headerSubtitle}>Componentes para reparación, restauración y afinación de pianos</Text>
+        <Text style={styles.headerSubtitle}>Artículos y componentes para la reparación, restauración y afinación de pianos</Text>
       </View>
     </View>
   );
