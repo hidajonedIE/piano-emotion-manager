@@ -65,7 +65,7 @@ export default function PredictionsScreen() {
   const contentScrollRef = useRef<ScrollView>(null);
 
   const revenueQuery = trpc.advanced.predictions.getRevenue.useQuery(
-    { months: 3 },
+    { months: 6 },
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
   );
   
