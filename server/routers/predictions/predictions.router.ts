@@ -8,10 +8,11 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../../trpc.js';
 import { PredictionService } from '../../services/analytics/prediction.service.js';
-import { db } from '../../db.js';
+import { getDb } from '../../db.js';
 
 // Crear instancia del servicio de predicciones
-const createPredictionService = (organizationId: string) => {
+const createPredictionService = async (organizationId: string) => {
+  const db = await getDb();
   return new PredictionService(db);
 };
 
@@ -28,7 +29,7 @@ export const predictionsRouter = router({
     const { requireAIFeature, recordAIUsage } = await import('../../_core/subscription-middleware.js');
     await requireAIFeature(ctx.user.openId, 'prediction');
     
-    const service = createPredictionService(ctx.organizationId);
+    const service = await createPredictionService(ctx.organizationId);
     const result = await service.getPredictionsSummary(ctx.organizationId);
     
     // ✅ REGISTRAR USO
@@ -47,7 +48,7 @@ export const predictionsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const service = createPredictionService(ctx.organizationId);
+      const service = await createPredictionService(ctx.organizationId);
       return service.predictRevenue(ctx.organizationId, input.months);
     }),
 
@@ -55,7 +56,7 @@ export const predictionsRouter = router({
    * Obtiene clientes en riesgo de pérdida (churn)
    */
   getChurnRisk: protectedProcedure.query(async ({ ctx }) => {
-    const service = createPredictionService(ctx.organizationId);
+    const service = await createPredictionService(ctx.organizationId);
     return service.predictClientChurn(ctx.organizationId);
   }),
 
@@ -63,7 +64,7 @@ export const predictionsRouter = router({
    * Obtiene predicciones de mantenimiento de pianos
    */
   getMaintenance: protectedProcedure.query(async ({ ctx }) => {
-    const service = createPredictionService(ctx.organizationId);
+    const service = await createPredictionService(ctx.organizationId);
     return service.predictMaintenance(ctx.organizationId);
   }),
 
@@ -77,7 +78,7 @@ export const predictionsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const service = createPredictionService(ctx.organizationId);
+      const service = await createPredictionService(ctx.organizationId);
       return service.predictWorkload(ctx.organizationId, input.weeks);
     }),
 
@@ -85,7 +86,7 @@ export const predictionsRouter = router({
    * Obtiene predicciones de demanda de inventario
    */
   getInventoryDemand: protectedProcedure.query(async ({ ctx }) => {
-    const service = createPredictionService(ctx.organizationId);
+    const service = await createPredictionService(ctx.organizationId);
     return service.predictInventoryDemand(ctx.organizationId);
   }),
 });
