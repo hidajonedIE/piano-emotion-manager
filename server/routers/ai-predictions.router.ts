@@ -1,19 +1,23 @@
 /**
- * AI Predictions Router (ACTUALIZADO)
+ * AI Predictions Router (OPTIMIZADO)
  * Endpoints para predicciones inteligentes del dashboard
- * Ahora usa el sistema robusto de predicciones
+ * Usa servicios optimizados que terminan en < 5s
  * Piano Emotion Manager
  */
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import { collectAllPredictionsData } from '../services/predictions/predictions-data.service.js';
-import { generateAllPredictions } from '../services/predictions/gemini-predictions.service.js';
+import { getRevenueData } from '../services/predictions/revenue-data.service.js';
+import { getChurnRiskData } from '../services/predictions/churn-data.service.js';
+import { getMaintenanceData } from '../services/predictions/maintenance-data.service.js';
+import { generateRevenuePrediction } from '../services/predictions/revenue-prediction.service.js';
+import { generateChurnRiskPrediction } from '../services/predictions/churn-prediction.service.js';
+import { generateMaintenancePrediction } from '../services/predictions/maintenance-prediction.service.js';
 
 export const aiPredictionsRouter = router({
   /**
    * Obtiene predicciones IA para el dashboard
-   * Ahora usa el sistema robusto y unificado
+   * Optimizado para terminar en < 8s (3 predicciones en paralelo)
    */
   getDashboardPredictions: protectedProcedure
     .input(
@@ -25,41 +29,47 @@ export const aiPredictionsRouter = router({
       console.log('[getDashboardPredictions] Iniciando con organizationId:', ctx.organizationId);
       
       try {
-        // 1. Recopilar todos los datos disponibles usando el nuevo servicio robusto
-        const data = await collectAllPredictionsData(ctx.organizationId);
+        // Ejecutar las 3 recopilaciones de datos en PARALELO
+        const [revenueData, churnData, maintenanceData] = await Promise.all([
+          getRevenueData(ctx.organizationId),
+          getChurnRiskData(ctx.organizationId),
+          getMaintenanceData(ctx.organizationId),
+        ]);
         
         console.log('[getDashboardPredictions] Datos recopilados:', {
-          revenue: data.revenue.current,
-          clients: data.clients.total,
-          pianos: data.pianos.total,
-          hasInventory: !!data.inventory,
-          hasAppointments: !!data.appointments,
+          revenue: revenueData.current,
+          clientsAtRisk: churnData.totalAtRisk,
+          pianosNeeded: maintenanceData.totalNeeded,
         });
         
-        // 2. Generar todas las predicciones
-        const predictions = await generateAllPredictions(data);
+        // Generar las 3 predicciones en PARALELO
+        const [revenuePred, churnPred, maintenancePred] = await Promise.all([
+          generateRevenuePrediction(revenueData),
+          generateChurnRiskPrediction(churnData),
+          generateMaintenancePrediction(maintenanceData),
+        ]);
         
         console.log('[getDashboardPredictions] Predicciones generadas exitosamente');
         
-        // 3. Adaptar el formato para el dashboard (mantener compatibilidad con el frontend)
+        // Adaptar el formato para el dashboard (mantener compatibilidad con el frontend)
         return {
           success: true,
           predictions: {
             // Predicción de ingresos del próximo mes
-            revenueGrowth: predictions.revenue.months[0]?.estimated 
-              ? `${Math.round(predictions.revenue.months[0].estimated)} €`
+            revenueGrowth: revenuePred.nextMonth?.estimated 
+              ? `${Math.round(revenuePred.nextMonth.estimated)} €`
               : 'N/A',
             
             // Número de clientes en riesgo
-            clientsAtRisk: predictions.churnRisk.totalAtRisk,
+            clientsAtRisk: churnPred.totalAtRisk,
             
             // Número de pianos que necesitan mantenimiento
-            pianosNeedingMaintenance: predictions.maintenance.totalNeeded,
+            pianosNeedingMaintenance: maintenancePred.totalNeeded,
           },
           dataUsed: {
-            revenue: data.revenue,
-            clients: data.clients,
-            pianos: data.pianos,
+            revenue: revenueData,
+            clients: churnData,
+            pianos: maintenanceData,
           },
         };
       } catch (error) {

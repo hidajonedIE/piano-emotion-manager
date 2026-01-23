@@ -1,198 +1,114 @@
 /**
- * Predictions Router (REESCRITO)
- * Router robusto para predicciones AI avanzadas
+ * Predictions Router (OPTIMIZADO - Sin Timeouts)
+ * Endpoints separados con consultas optimizadas
  * Piano Emotion Manager
  */
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../../_core/trpc.js';
-import { collectAllPredictionsData } from '../../services/predictions/predictions-data.service.js';
-import {
-  generateAllPredictions,
-  generateRevenuePredictions,
-  generateChurnRiskPredictions,
-  generateMaintenancePredictions,
-  generateWorkloadPredictions,
-  generateInventoryPredictions,
-} from '../../services/predictions/gemini-predictions.service.js';
+import { getRevenueData } from '../../services/predictions/revenue-data.service.js';
+import { getChurnRiskData } from '../../services/predictions/churn-data.service.js';
+import { getMaintenanceData } from '../../services/predictions/maintenance-data.service.js';
+import { generateRevenuePrediction } from '../../services/predictions/revenue-prediction.service.js';
+import { generateChurnRiskPrediction } from '../../services/predictions/churn-prediction.service.js';
+import { generateMaintenancePrediction } from '../../services/predictions/maintenance-prediction.service.js';
 
 export const predictionsRouter = router({
   /**
-   * Obtiene TODAS las predicciones disponibles
-   * Este es el endpoint principal que usa la página /predictions
-   */
-  getAllPredictions: protectedProcedure.query(async ({ ctx }) => {
-    console.log('[getAllPredictions] Iniciando para organizationId:', ctx.organizationId);
-    
-    try {
-      // 1. Recopilar todos los datos disponibles
-      const data = await collectAllPredictionsData(ctx.organizationId);
-      
-      console.log('[getAllPredictions] Datos recopilados:', {
-        hasRevenue: !!data.revenue,
-        hasClients: !!data.clients,
-        hasPianos: !!data.pianos,
-        hasInventory: !!data.inventory,
-        hasAppointments: !!data.appointments,
-        hasServices: !!data.services,
-      });
-      
-      // 2. Generar todas las predicciones
-      const predictions = await generateAllPredictions(data);
-      
-      console.log('[getAllPredictions] Predicciones generadas exitosamente');
-      
-      return {
-        success: true,
-        predictions,
-        dataAvailability: {
-          revenue: true,
-          clients: true,
-          pianos: true,
-          inventory: !!data.inventory,
-          appointments: !!data.appointments,
-          services: !!data.services,
-        },
-      };
-    } catch (error) {
-      console.error('[getAllPredictions] Error:', error);
-      throw new Error(`Error al generar predicciones: ${error instanceof Error ? error.message : 'Error desconocido'}`);
-    }
-  }),
-
-  /**
-   * Obtiene solo predicciones de ingresos
+   * Obtiene predicción de ingresos
+   * Tiempo estimado: < 5s
    */
   getRevenue: protectedProcedure.query(async ({ ctx }) => {
-    console.log('[getRevenue] Iniciando para organizationId:', ctx.organizationId);
+    console.log('[predictions.getRevenue] Iniciando para organizationId:', ctx.organizationId);
     
     try {
-      const data = await collectAllPredictionsData(ctx.organizationId);
-      const prediction = await generateRevenuePredictions(data);
-      
+      // 1. Recopilar datos (optimizado: 1 consulta)
+      const data = await getRevenueData(ctx.organizationId);
+      console.log('[predictions.getRevenue] Datos recopilados:', {
+        months: data.historical.length,
+        current: data.current,
+        trend: data.trend
+      });
+
+      // 2. Generar predicción con Gemini
+      const prediction = await generateRevenuePrediction(data);
+      console.log('[predictions.getRevenue] Predicción generada exitosamente');
+
       return {
         success: true,
-        prediction,
+        data: prediction
       };
+
     } catch (error) {
-      console.error('[getRevenue] Error:', error);
-      throw new Error(`Error al generar predicción de ingresos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('[predictions.getRevenue] Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      };
     }
   }),
 
   /**
-   * Obtiene solo predicciones de clientes en riesgo
+   * Obtiene predicción de clientes en riesgo
+   * Tiempo estimado: < 5s
    */
   getChurnRisk: protectedProcedure.query(async ({ ctx }) => {
-    console.log('[getChurnRisk] Iniciando para organizationId:', ctx.organizationId);
+    console.log('[predictions.getChurnRisk] Iniciando para organizationId:', ctx.organizationId);
     
     try {
-      const data = await collectAllPredictionsData(ctx.organizationId);
-      const prediction = await generateChurnRiskPredictions(data);
-      
+      // 1. Recopilar datos (optimizado: 1 consulta con JOIN)
+      const data = await getChurnRiskData(ctx.organizationId);
+      console.log('[predictions.getChurnRisk] Datos recopilados:', {
+        totalAtRisk: data.totalAtRisk
+      });
+
+      // 2. Generar predicción con Gemini
+      const prediction = await generateChurnRiskPrediction(data);
+      console.log('[predictions.getChurnRisk] Predicción generada exitosamente');
+
       return {
         success: true,
-        prediction,
+        data: prediction
       };
+
     } catch (error) {
-      console.error('[getChurnRisk] Error:', error);
-      throw new Error(`Error al generar predicción de riesgo: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('[predictions.getChurnRisk] Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      };
     }
   }),
 
   /**
-   * Obtiene solo predicciones de mantenimiento
+   * Obtiene predicción de mantenimiento
+   * Tiempo estimado: < 5s
    */
   getMaintenance: protectedProcedure.query(async ({ ctx }) => {
-    console.log('[getMaintenance] Iniciando para organizationId:', ctx.organizationId);
+    console.log('[predictions.getMaintenance] Iniciando para organizationId:', ctx.organizationId);
     
     try {
-      const data = await collectAllPredictionsData(ctx.organizationId);
-      const prediction = await generateMaintenancePredictions(data);
-      
-      return {
-        success: true,
-        prediction,
-      };
-    } catch (error) {
-      console.error('[getMaintenance] Error:', error);
-      throw new Error(`Error al generar predicción de mantenimiento: ${error instanceof Error ? error.message : 'Error desconocido'}`);
-    }
-  }),
+      // 1. Recopilar datos (optimizado: 1 consulta con JOINs)
+      const data = await getMaintenanceData(ctx.organizationId);
+      console.log('[predictions.getMaintenance] Datos recopilados:', {
+        totalNeeded: data.totalNeeded
+      });
 
-  /**
-   * Obtiene solo predicciones de carga de trabajo
-   */
-  getWorkload: protectedProcedure.query(async ({ ctx }) => {
-    console.log('[getWorkload] Iniciando para organizationId:', ctx.organizationId);
-    
-    try {
-      const data = await collectAllPredictionsData(ctx.organizationId);
-      
-      if (!data.appointments) {
-        return {
-          success: false,
-          error: 'NO_APPOINTMENTS_DATA',
-          message: 'No hay datos de citas disponibles. Programa citas para ver predicciones de carga de trabajo.',
-        };
-      }
-      
-      const prediction = await generateWorkloadPredictions(data);
-      
-      return {
-        success: true,
-        prediction,
-      };
-    } catch (error) {
-      console.error('[getWorkload] Error:', error);
-      
-      if (error instanceof Error && error.message.includes('No hay datos de citas')) {
-        return {
-          success: false,
-          error: 'NO_APPOINTMENTS_DATA',
-          message: 'No hay datos de citas disponibles. Programa citas para ver predicciones de carga de trabajo.',
-        };
-      }
-      
-      throw new Error(`Error al generar predicción de carga: ${error instanceof Error ? error.message : 'Error desconocido'}`);
-    }
-  }),
+      // 2. Generar predicción con Gemini
+      const prediction = await generateMaintenancePrediction(data);
+      console.log('[predictions.getMaintenance] Predicción generada exitosamente');
 
-  /**
-   * Obtiene solo predicciones de inventario
-   */
-  getInventoryDemand: protectedProcedure.query(async ({ ctx }) => {
-    console.log('[getInventoryDemand] Iniciando para organizationId:', ctx.organizationId);
-    
-    try {
-      const data = await collectAllPredictionsData(ctx.organizationId);
-      
-      if (!data.inventory) {
-        return {
-          success: false,
-          error: 'NO_INVENTORY_DATA',
-          message: 'No hay datos de inventario disponibles. Configura tu inventario para ver predicciones de demanda.',
-        };
-      }
-      
-      const prediction = await generateInventoryPredictions(data);
-      
       return {
         success: true,
-        prediction,
+        data: prediction
       };
+
     } catch (error) {
-      console.error('[getInventoryDemand] Error:', error);
-      
-      if (error instanceof Error && error.message.includes('No hay datos de inventario')) {
-        return {
-          success: false,
-          error: 'NO_INVENTORY_DATA',
-          message: 'No hay datos de inventario disponibles. Configura tu inventario para ver predicciones de demanda.',
-        };
-      }
-      
-      throw new Error(`Error al generar predicción de inventario: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('[predictions.getMaintenance] Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      };
     }
   }),
 });
