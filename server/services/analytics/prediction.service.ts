@@ -1,10 +1,11 @@
 /**
-import type { MySql2Database } from 'drizzle-orm/mysql2';
-type DatabaseConnection = MySql2Database<Record<string, never>>;
  * Servicio de Predicción de Demanda
  * 
  * Analíticas predictivas para anticipar necesidades del negocio
  */
+
+import type { MySql2Database } from 'drizzle-orm/mysql2';
+type DatabaseConnection = MySql2Database<Record<string, never>>;
 
 // Tipos de predicción
 type PredictionType = 
