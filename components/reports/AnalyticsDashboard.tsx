@@ -140,7 +140,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     dateRange,
     changePeriod,
   } = useDashboardMetrics(selectedPeriod);
-  const { data: revenueData } = useRevenueChart(dateRange, 'month');
+  const { data: revenueData, isLoading: revenueLoading } = useRevenueChart(dateRange, 'month');
   const { data: rawServicesData } = useServicesByType(dateRange);
   const { downloadPDF } = useReportExport();
 
@@ -265,11 +265,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <Text style={styles.chartTitle}>{t('reports.revenueEvolution')}</Text>
           </View>
           <View style={styles.chartContent}>
-            {revenueData && revenueData.length > 0 ? (
+            {revenueLoading ? (
+              <View style={styles.emptyChart}>
+                <Text style={styles.emptyChartText}>Cargando...</Text>
+              </View>
+            ) : revenueData && revenueData.length > 0 ? (
               <View style={styles.barsContainer}>
                 {revenueData.slice(0, 6).map((item, index) => {
-                  const maxValue = Math.max(...revenueData.map(d => d.value));
-                  const height = (item.value / maxValue) * 100;
+                  const maxValue = Math.max(...revenueData.map(d => d.revenue));
+                  const height = maxValue > 0 ? (item.revenue / maxValue) * 100 : 0;
                   return (
                     <View key={index} style={styles.barWrapper}>
                       <View
@@ -281,7 +285,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                           },
                         ]}
                       />
-                      <Text style={styles.barLabel}>{item.label}</Text>
+                      <Text style={styles.barLabel}>{item.period}</Text>
                     </View>
                   );
                 })}
@@ -301,18 +305,33 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </View>
           <View style={styles.servicesListCompact}>
             {servicesData && servicesData.length > 0 ? (
-              servicesData.slice(0, 5).map((service, index) => (
-                <View key={index} style={styles.serviceItemCompact}>
-                  <View style={styles.serviceInfo}>
-                    <View style={[styles.serviceDot, { backgroundColor: service.color }]} />
-                    <Text style={styles.serviceName}>{service.name}</Text>
+              servicesData.slice(0, 5).map((service, index) => {
+                const maxCount = Math.max(...servicesData.map(s => s.count));
+                const barWidth = maxCount > 0 ? (service.count / maxCount) * 100 : 0;
+                return (
+                  <View key={index} style={styles.serviceItemCompact}>
+                    <View style={styles.serviceInfo}>
+                      <View style={[styles.serviceDot, { backgroundColor: service.color }]} />
+                      <Text style={styles.serviceName}>{service.name}</Text>
+                    </View>
+                    <View style={styles.serviceBarContainer}>
+                      <View
+                        style={[
+                          styles.serviceBar,
+                          {
+                            width: `${barWidth}%`,
+                            backgroundColor: service.color,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.serviceStats}>
+                      <Text style={styles.serviceCount}>{service.count}</Text>
+                      <Text style={styles.servicePercent}>{service.percentage}%</Text>
+                    </View>
                   </View>
-                  <View style={styles.serviceStats}>
-                    <Text style={styles.serviceCount}>{service.count}</Text>
-                    <Text style={styles.servicePercent}>{service.percentage}%</Text>
-                  </View>
-                </View>
-              ))
+                );
+              })
             ) : (
               <View style={styles.emptyChart}>
                 <Text style={styles.emptyChartText}>Sin datos</Text>
@@ -569,10 +588,24 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
+    gap: 8,
   },
   serviceInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 100,
+  },
+  serviceBarContainer: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  serviceBar: {
+    height: '100%',
+    borderRadius: 4,
+    minWidth: 2,
   },
   serviceDot: {
     width: 8,
@@ -587,6 +620,8 @@ const styles = StyleSheet.create({
   serviceStats: {
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 60,
+    justifyContent: 'flex-end',
   },
   serviceCount: {
     fontSize: 12,
