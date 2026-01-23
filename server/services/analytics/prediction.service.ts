@@ -56,6 +56,10 @@ export class PredictionService {
     this.db = db;
   }
 
+  private getDb(): DatabaseConnection {
+    return this.db;
+  }
+
   // ============================================
   // PREDICCIÓN DE INGRESOS
   // ============================================
@@ -67,7 +71,8 @@ export class PredictionService {
     // Obtener datos históricos de los últimos 12 meses
     const historicalData = await this.getHistoricalRevenue(organizationId, 12);
     
-    if (historicalData.length < 3) {
+    // CORREGIDO: Reducir el mínimo de 3 a 1 mes
+    if (historicalData.length < 1) {
       return [{
         type: 'revenue',
         period: 'Próximos meses',
@@ -115,15 +120,16 @@ export class PredictionService {
   }
 
   private async getHistoricalRevenue(organizationId: string, months: number): Promise<number[]> {
+    // CORREGIDO: Usar services en lugar de invoices para tener datos disponibles
     const result = await this.getDb().execute(`
       SELECT 
-        DATE_TRUNC('month', created_at) as month,
-        COALESCE(SUM(total), 0) as total
-      FROM invoices
+        DATE_FORMAT(date, '%Y-%m') as month,
+        COALESCE(SUM(cost), 0) as total
+      FROM services
       WHERE organization_id = $1 
-        AND status = 'paid'
-        AND created_at >= NOW() - INTERVAL '${months} months'
-      GROUP BY DATE_TRUNC('month', created_at)
+        AND status = 'completed'
+        AND date >= DATE_SUB(NOW(), INTERVAL ${months} MONTH)
+      GROUP BY DATE_FORMAT(date, '%Y-%m')
       ORDER BY month
     `, [organizationId]);
 
@@ -408,25 +414,28 @@ export class PredictionService {
    * Predice la carga de trabajo para las próximas semanas
    */
   async predictWorkload(organizationId: string, weeks: number = 4): Promise<any[]> {
+    // CORREGIDO: Usar sintaxis MySQL y mejorar lógica
     // Obtener citas programadas
     const appointmentsResult = await this.getDb().execute(`
       SELECT 
-        DATE_TRUNC('week', date) as week,
+        YEARWEEK(date, 1) as week,
         COUNT(*) as appointments
       FROM appointments
-      WHERE organization_id = $1 AND date >= CURRENT_DATE
-      GROUP BY DATE_TRUNC('week', date)
+      WHERE organization_id = $1 AND date >= CURDATE()
+      GROUP BY YEARWEEK(date, 1)
       ORDER BY week
     `, [organizationId]);
 
-    // Obtener histórico de servicios por semana
+    // Obtener histórico de servicios por día de la semana
     const historicalResult = await this.getDb().execute(`
       SELECT 
-        EXTRACT(DOW FROM created_at) as day_of_week,
+        DAYOFWEEK(date) as day_of_week,
         COUNT(*) as services
       FROM services
-      WHERE organization_id = $1 AND created_at >= NOW() - INTERVAL '3 months'
-      GROUP BY EXTRACT(DOW FROM created_at)
+      WHERE organization_id = $1 
+        AND date >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
+        AND status = 'completed'
+      GROUP BY DAYOFWEEK(date)
     `, [organizationId]);
 
     const dayDistribution = new Array(7).fill(0);
@@ -445,30 +454,39 @@ export class PredictionService {
 
     const predictions = [];
     const now = new Date();
+    const avgWeeklyServices = totalServices > 0 ? totalServices / 13 : 5; // 3 meses = ~13 semanas, default 5
 
     for (let w = 0; w < weeks; w++) {
       const weekStart = new Date(now.getTime() + w * 7 * 24 * 60 * 60 * 1000);
       const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
 
-      // Buscar citas programadas para esta semana
+      // Buscar citas programadas para esta semana (usando YEARWEEK)
+      const currentYearWeek = this.getYearWeek(weekStart);
       const scheduledAppointments = (appointmentsResult.rows || []).find((r: { week: string; appointments?: string }) => {
-        const weekDate = new Date(r.week);
-        return weekDate >= weekStart && weekDate <= weekEnd;
+        return parseInt(r.week) === currentYearWeek;
       });
 
-      const scheduled = parseInt(scheduledAppointments?.appointments) || 0;
+      const scheduled = parseInt(scheduledAppointments?.appointments || '0') || 0;
       
       // Estimar servicios adicionales basados en histórico
-      const avgWeeklyServices = totalServices / 13; // 3 meses = ~13 semanas
-      const estimatedAdditional = Math.round(avgWeeklyServices * 0.3); // 30% de servicios no programados
+      const estimatedAdditional = Math.max(0, Math.round(avgWeeklyServices * 0.3)); // 30% de servicios no programados
 
       predictions.push({
-        week: `Semana del ${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`,
+        week: `Semana del ${weekStart.getDate()} ${weekStart.toLocaleDateString('es-ES', { month: 'short' })}`,
         scheduledAppointments: scheduled,
         estimatedTotal: scheduled + estimatedAdditional,
         busyDays: this.getBusyDays(dayDistribution),
         recommendation: this.getWorkloadRecommendation(scheduled + estimatedAdditional, avgWeeklyServices),
       });
+    }
+
+    // Si no hay datos, devolver predicción básica
+    if (predictions.every(p => p.scheduledAppointments === 0 && p.estimatedTotal === 0)) {
+      return predictions.map(p => ({
+        ...p,
+        estimatedTotal: Math.round(avgWeeklyServices),
+        recommendation: 'Sin datos suficientes - estimación basada en promedio',
+      }));
     }
 
     return predictions;
@@ -484,6 +502,15 @@ export class PredictionService {
       .sort((a, b) => b.value - a.value)
       .slice(0, 3)
       .map(d => d.day);
+  }
+
+  private getYearWeek(date: Date): number {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return d.getUTCFullYear() * 100 + weekNo;
   }
 
   private getWorkloadRecommendation(estimated: number, average: number): string {

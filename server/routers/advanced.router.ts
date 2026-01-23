@@ -6,6 +6,8 @@ import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
 import { getUserByClerkId } from "../db.js";
 import { storageRouter } from "./storage/index.js";
+import { predictionsRouter } from "./predictions/predictions.router.js";
+import { aiPredictionsEnhancedRouter } from "./ai-predictions-enhanced.router.js";
 
 // Funciones auxiliares para el chat
 function generateSuggestions(message: string): string[] {
@@ -147,8 +149,14 @@ export const advancedRouter = router({
       .query(async () => []),
   }),
 
-  // Predictions - Analíticas predictivas locales (sin coste de API)
-  predictions: router({
+  // Predictions - Analíticas predictivas con algoritmos locales
+  predictions: predictionsRouter,
+  
+  // AI Predictions Enhanced - Predicciones completas con Gemini
+  aiPredictionsEnhanced: aiPredictionsEnhancedRouter,
+  
+  // Predictions Legacy - Mantener por compatibilidad
+  predictionsLegacy: router({
     getSummary: protectedProcedure.query(async () => {
       return {
         revenue: {
