@@ -235,8 +235,8 @@ export function useServicesByType(dateRange: DateRange) {
         {
           data: data.map((d) => d.count),
           backgroundColor: [
-            '#3b82f6', '#22c55e', '#f59e0b', '#ef4444',
-            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+            '#1e40af', '#047857', '#c2410c', '#991b1b',
+            '#6d28d9', '#be123c', '#0e7490', '#4d7c0f',
           ],
         },
       ],

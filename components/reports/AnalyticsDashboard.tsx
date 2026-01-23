@@ -37,17 +37,17 @@ const COLORS = {
   white: '#ffffff',
   background: '#f5f5f5',
   
-  // Métricas - colores suaves no estridentes
-  services: '#003a8c',     // Azul Cobalto
-  income: '#059669',       // Verde esmeralda suave (más oscuro y profesional)
-  clients: '#e07a5f',      // Terracota
-  pianos: '#1A1A2E',       // Azul oscuro
+  // Métricas - colores elegantes y profesionales
+  services: '#003a8c',     // Azul Cobalto (mantener)
+  income: '#047857',       // Verde bosque oscuro (elegante)
+  clients: '#e07a5f',      // Terracota (mantener)
+  pianos: '#1A1A2E',       // Azul oscuro (mantener)
   
-  // Colores para estadísticas - tonos suaves
-  success: '#059669',      // Verde esmeralda suave
-  warning: '#d97706',      // Ámbar más oscuro
-  error: '#dc2626',        // Rojo más oscuro
-  info: '#2563eb',         // Azul más oscuro
+  // Colores para estadísticas - paleta corporativa elegante
+  success: '#047857',      // Verde bosque oscuro
+  warning: '#c2410c',      // Terracota oscuro
+  error: '#991b1b',        // Rojo ladrillo oscuro
+  info: '#1e40af',         // Azul navy elegante
 };
 
 // ============================================================================
