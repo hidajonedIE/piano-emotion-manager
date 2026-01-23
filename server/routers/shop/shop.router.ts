@@ -8,6 +8,7 @@ import { router, protectedProcedure } from '../../trpc.js';
 import { createShopService } from '../../services/shop/index.js';
 import { getDb } from '../../../drizzle/db.js';
 import { 
+  shops,
   shopProducts, 
   shopStockAlerts,
   shopTierConfig,
@@ -606,22 +607,25 @@ export const shopRouter = router({
    * Obtener posts del blog
    */
   getBlogPosts: protectedProcedure
-    .input(z.object({ limit: z.number().optional() }))
+    .input(z.object({ shopId: z.number(), limit: z.number().optional() }))
     .query(async ({ input }) => {
       const database = await getDb();
       if (!database) {
         throw new Error('Database not available');
       }
-      const [wooConfig] = await database
+      
+      // Obtener la tienda por ID
+      const [shop] = await database
         .select()
-        .from(distributorWooCommerceConfig)
+        .from(shops)
+        .where(eq(shops.id, input.shopId))
         .limit(1);
       
-      if (!wooConfig) {
+      if (!shop || !shop.url) {
         return [];
       }
       
-      const blogService = new WordPressBlogService(wooConfig.url);
+      const blogService = new WordPressBlogService(shop.url);
       const posts = await blogService.getRecentPosts(input.limit || 5);
       
       return posts;
@@ -631,22 +635,25 @@ export const shopRouter = router({
    * Buscar posts del blog
    */
   searchBlogPosts: protectedProcedure
-    .input(z.object({ query: z.string() }))
+    .input(z.object({ shopId: z.number(), query: z.string() }))
     .query(async ({ input }) => {
       const database = await getDb();
       if (!database) {
         throw new Error('Database not available');
       }
-      const [wooConfig] = await database
+      
+      // Obtener la tienda por ID
+      const [shop] = await database
         .select()
-        .from(distributorWooCommerceConfig)
+        .from(shops)
+        .where(eq(shops.id, input.shopId))
         .limit(1);
       
-      if (!wooConfig) {
+      if (!shop || !shop.url) {
         return [];
       }
       
-      const blogService = new WordPressBlogService(wooConfig.url);
+      const blogService = new WordPressBlogService(shop.url);
       const posts = await blogService.searchPosts(input.query);
       
       return posts;
