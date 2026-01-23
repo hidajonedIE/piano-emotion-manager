@@ -11,6 +11,8 @@ const LANGUAGE_STORAGE_KEY = '@piano_emotion_language';
 const i18n = new I18n(translations);
 i18n.enableFallback = true;
 i18n.defaultLocale = defaultLanguage;
+// Configure i18n to use dot notation for flat translation keys
+i18n.missingBehavior = 'guess';
 
 /**
  * Get the best matching supported language from device locale
