@@ -565,9 +565,9 @@ export class AnalyticsService {
       distribution.push({
         city: result.city,
         region: result.city, // TODO: Agregar campo region en tabla clients
-        clients: Number(result.count),
+        clientCount: Number(result.count),
+        pianoCount: 0, // TODO: Agregar conteo de pianos por ciudad
         revenue: cityRevenue,
-        percentage: total > 0 ? (Number(result.count) / total) * 100 : 0,
       });
     }
 
