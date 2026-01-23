@@ -88,9 +88,10 @@ export function RouteOptimizer({ appointments, getClient, onAppointmentPress }: 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const optimized = routeStops.map((stop, index) => {
-        // Estimaciones simuladas basadas en posición
-        const baseTime = 15 + Math.random() * 20; // 15-35 min entre visitas
-        const baseDistance = 5 + Math.random() * 15; // 5-20 km entre visitas
+        // TODO: Integrar con API de Google Maps para cálculo real de rutas
+        // Por ahora, usar estimaciones fijas conservadoras
+        const baseTime = 25; // 25 min entre visitas (estimación conservadora)
+        const baseDistance = 10; // 10 km entre visitas (estimación conservadora)
         
         // Calcular hora estimada de llegada
         let estimatedArrival = stop.appointment.startTime;

@@ -305,9 +305,57 @@ export class AnalyticsService {
     limit: number = 10,
     sortBy: 'revenue' | 'services' = 'revenue'
   ): Promise<TopClient[]> {
-    // En producción, consultar BD con joins
-    // Placeholder con datos de ejemplo
-    return [];
+    const db = getDb();
+    const startStr = dateRange.startDate.toISOString();
+    const endStr = dateRange.endDate.toISOString();
+
+    // Agrupar servicios por cliente
+    const results = await db
+      .select({
+        clientId: services.clientId,
+        totalRevenue: sum(services.cost),
+        serviceCount: count(),
+      })
+      .from(services)
+      .where(
+        and(
+          gte(services.date, startStr),
+          lte(services.date, endStr)
+        )
+      )
+      .groupBy(services.clientId);
+
+    // Obtener información de clientes
+    const topClients: TopClient[] = [];
+    for (const result of results) {
+      if (!result.clientId) continue;
+      
+      const clientInfo = await db
+        .select()
+        .from(clients)
+        .where(eq(clients.id, result.clientId))
+        .limit(1);
+
+      if (clientInfo.length > 0) {
+        topClients.push({
+          clientId: result.clientId,
+          clientName: clientInfo[0].name || 'Sin nombre',
+          totalRevenue: Number(result.totalRevenue || 0),
+          serviceCount: Number(result.serviceCount || 0),
+          averageTicket: Number(result.totalRevenue || 0) / Number(result.serviceCount || 1),
+        });
+      }
+    }
+
+    // Ordenar según criterio
+    const sorted = topClients.sort((a, b) => {
+      if (sortBy === 'revenue') {
+        return b.totalRevenue - a.totalRevenue;
+      }
+      return b.serviceCount - a.serviceCount;
+    });
+
+    return sorted.slice(0, limit);
   }
 
   /**
@@ -316,38 +364,113 @@ export class AnalyticsService {
   async getTechnicianPerformance(
     dateRange: DateRange
   ): Promise<TechnicianPerformance[]> {
-    // En producción, consultar BD
-    return [];
+    const db = getDb();
+    const startStr = dateRange.startDate.toISOString();
+    const endStr = dateRange.endDate.toISOString();
+
+    // Obtener asignaciones de trabajo en el período
+    const assignments = await db
+      .select({
+        technicianId: workAssignments.technicianId,
+        completedCount: count(),
+      })
+      .from(workAssignments)
+      .where(
+        and(
+          gte(workAssignments.scheduledDate, startStr),
+          lte(workAssignments.scheduledDate, endStr),
+          eq(workAssignments.status, 'completed')
+        )
+      )
+      .groupBy(workAssignments.technicianId);
+
+    // Obtener información de técnicos y calcular ingresos
+    const performance: TechnicianPerformance[] = [];
+    for (const assignment of assignments) {
+      if (!assignment.technicianId) continue;
+
+      const techInfo = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, assignment.technicianId))
+        .limit(1);
+
+      if (techInfo.length > 0) {
+        // Calcular ingresos de servicios del técnico
+        const revenueResult = await db
+          .select({ total: sum(services.cost) })
+          .from(services)
+          .innerJoin(workAssignments, eq(services.id, workAssignments.serviceId))
+          .where(
+            and(
+              eq(workAssignments.technicianId, assignment.technicianId),
+              gte(services.date, startStr),
+              lte(services.date, endStr)
+            )
+          );
+
+        const totalRevenue = Number(revenueResult[0]?.total || 0);
+        const servicesCompleted = Number(assignment.completedCount || 0);
+
+        performance.push({
+          technicianId: assignment.technicianId,
+          technicianName: techInfo[0].name || 'Sin nombre',
+          servicesCompleted,
+          totalRevenue,
+          averageRating: 0, // TODO: Implementar sistema de ratings
+          efficiency: servicesCompleted > 0 ? (servicesCompleted / 30) * 100 : 0, // Asumiendo 30 días
+        });
+      }
+    }
+
+    return performance.sort((a, b) => b.totalRevenue - a.totalRevenue);
   }
 
   /**
    * Obtiene distribución de pianos por marca
    */
   async getPianosByBrand(): Promise<PianosByBrand[]> {
-    // En producción, consultar BD
-    const brands = [
-      'Steinway & Sons', 'Yamaha', 'Kawai', 'Bösendorfer', 
-      'Bechstein', 'Fazioli', 'Petrof', 'Otros'
-    ];
+    const db = getDb();
 
-    let total = 0;
-    const results: PianosByBrand[] = [];
+    // Agrupar pianos por marca
+    const results = await db
+      .select({
+        brand: pianos.brand,
+        count: count(),
+      })
+      .from(pianos)
+      .groupBy(pianos.brand);
 
-    for (const brand of brands) {
-      const count = Math.floor(Math.random() * 30) + 5;
-      total += count;
-      results.push({
-        brand,
-        count,
-        percentage: 0,
-        averageAge: Math.floor(Math.random() * 40) + 5,
+    const total = results.reduce((sum, r) => sum + Number(r.count), 0);
+
+    // Calcular edad promedio por marca
+    const brandsWithAge: PianosByBrand[] = [];
+    for (const result of results) {
+      if (!result.brand) continue;
+
+      const pianosOfBrand = await db
+        .select({ year: pianos.year })
+        .from(pianos)
+        .where(eq(pianos.brand, result.brand));
+
+      const currentYear = new Date().getFullYear();
+      const ages = pianosOfBrand
+        .filter(p => p.year)
+        .map(p => currentYear - Number(p.year));
+      
+      const averageAge = ages.length > 0 
+        ? ages.reduce((sum, age) => sum + age, 0) / ages.length 
+        : 0;
+
+      brandsWithAge.push({
+        brand: result.brand,
+        count: Number(result.count),
+        percentage: total > 0 ? (Number(result.count) / total) * 100 : 0,
+        averageAge: Math.round(averageAge),
       });
     }
 
-    return results.map(r => ({
-      ...r,
-      percentage: (r.count / total) * 100,
-    })).sort((a, b) => b.count - a.count);
+    return brandsWithAge.sort((a, b) => b.count - a.count);
   }
 
   /**
@@ -361,13 +484,38 @@ export class AnalyticsService {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
+      // Calcular clientes nuevos en el mes
+      const db = getDb();
+      const startStr = date.toISOString();
+      const endStr = monthEnd.toISOString();
+
+      const newClientsResult = await db
+        .select({ count: count() })
+        .from(clients)
+        .where(
+          and(
+            gte(clients.createdAt, startStr),
+            lte(clients.createdAt, endStr)
+          )
+        );
+
+      const newPianosResult = await db
+        .select({ count: count() })
+        .from(pianos)
+        .where(
+          and(
+            gte(pianos.createdAt, startStr),
+            lte(pianos.createdAt, endStr)
+          )
+        );
+
       trends.push({
         month: date.toLocaleDateString('es-ES', { month: 'short' }),
         year: date.getFullYear(),
         revenue: await this.getTotalRevenue(date, monthEnd),
         services: await this.getServiceCount(date, monthEnd),
-        newClients: Math.floor(Math.random() * 10) + 1,
-        newPianos: Math.floor(Math.random() * 15) + 2,
+        newClients: Number(newClientsResult[0]?.count || 0),
+        newPianos: Number(newPianosResult[0]?.count || 0),
       });
     }
 
@@ -378,8 +526,52 @@ export class AnalyticsService {
    * Obtiene distribución geográfica
    */
   async getGeographicDistribution(): Promise<GeographicDistribution[]> {
-    // En producción, consultar BD agrupando por ciudad/región
-    return [];
+    const db = getDb();
+
+    // Agrupar clientes por ciudad
+    const results = await db
+      .select({
+        city: clients.city,
+        count: count(),
+      })
+      .from(clients)
+      .groupBy(clients.city);
+
+    const total = results.reduce((sum, r) => sum + Number(r.count), 0);
+
+    // Calcular ingresos por ciudad
+    const distribution: GeographicDistribution[] = [];
+    for (const result of results) {
+      if (!result.city) continue;
+
+      // Obtener servicios de clientes de esta ciudad
+      const clientsInCity = await db
+        .select({ id: clients.id })
+        .from(clients)
+        .where(eq(clients.city, result.city));
+
+      const clientIds = clientsInCity.map(c => c.id);
+
+      let cityRevenue = 0;
+      if (clientIds.length > 0) {
+        const revenueResult = await db
+          .select({ total: sum(services.cost) })
+          .from(services)
+          .where(sql`${services.clientId} IN (${clientIds.join(',')})`);  
+        
+        cityRevenue = Number(revenueResult[0]?.total || 0);
+      }
+
+      distribution.push({
+        city: result.city,
+        region: result.city, // TODO: Agregar campo region en tabla clients
+        clients: Number(result.count),
+        revenue: cityRevenue,
+        percentage: total > 0 ? (Number(result.count) / total) * 100 : 0,
+      });
+    }
+
+    return distribution.sort((a, b) => b.revenue - a.revenue);
   }
 
   /**

@@ -101,13 +101,34 @@ export default function DashboardScreen() {
 
     const monthlyRevenue = monthServices.reduce((sum, s) => sum + (s.cost || 0), 0);
 
+    // Filtrar appointments del mes seleccionado
+    const monthAppointments = appointments.filter((apt) => {
+      const aptDate = new Date(apt.date);
+      return (
+        aptDate.getMonth() === selectedMonth.getMonth() &&
+        aptDate.getFullYear() === selectedMonth.getFullYear()
+      );
+    });
+
+    // Contar clientes únicos con servicios/appointments en el mes
+    const uniqueClientIds = new Set(
+      [...monthServices.map(s => s.clientId), ...monthAppointments.map(a => a.clientId)]
+        .filter(id => id !== null && id !== undefined)
+    );
+
+    // Contar pianos únicos con servicios/appointments en el mes
+    const uniquePianoIds = new Set(
+      [...monthServices.map(s => s.pianoId), ...monthAppointments.map(a => a.pianoId)]
+        .filter(id => id !== null && id !== undefined)
+    );
+
     return {
       services: monthServices.length,
       revenue: monthlyRevenue,
-      clients: clients.length,
-      pianos: pianos.length,
+      clients: uniqueClientIds.size,
+      pianos: uniquePianoIds.size,
     };
-  }, [services, clients, pianos, selectedMonth]);
+  }, [services, clients, pianos, appointments, selectedMonth]);
 
   // Próximas citas (3 más cercanas)
   const upcomingAppointments = useMemo(() => {
@@ -262,24 +283,71 @@ export default function DashboardScreen() {
                 </Pressable>
               </View>
 
-              <View style={styles.predictionsRow}>
+                <View style={styles.aiIndicators}>
                 <CircularIndicator
                   color={COLORS.income}
                   icon="trending-up"
                   label="Ingresos prev."
-                  value="+12%"
+                  value={(() => {
+                    // Calcular tendencia de ingresos comparando mes actual vs mes anterior
+                    const currentMonth = selectedMonth;
+                    const prevMonth = new Date(currentMonth);
+                    prevMonth.setMonth(prevMonth.getMonth() - 1);
+                    
+                    const currentRevenue = monthStats.revenue;
+                    const prevServices = services.filter((s) => {
+                      const serviceDate = new Date(s.date);
+                      return (
+                        serviceDate.getMonth() === prevMonth.getMonth() &&
+                        serviceDate.getFullYear() === prevMonth.getFullYear()
+                      );
+                    });
+                    const prevRevenue = prevServices.reduce((sum, s) => sum + (s.cost || 0), 0);
+                    
+                    if (prevRevenue === 0) return "N/A";
+                    const change = ((currentRevenue - prevRevenue) / prevRevenue) * 100;
+                    return change >= 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
+                  })()}
                 />
                 <CircularIndicator
                   color={COLORS.aiWarning}
                   icon="help-circle-outline"
                   label="Clientes riesgo"
-                  value="3"
+                  value={(() => {
+                    // Clientes sin servicios en los últimos 6 meses
+                    const sixMonthsAgo = new Date();
+                    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                    
+                    const recentClientIds = new Set(
+                      services
+                        .filter(s => new Date(s.date) >= sixMonthsAgo)
+                        .map(s => s.clientId)
+                        .filter(id => id !== null)
+                    );
+                    
+                    const atRiskClients = clients.filter(c => !recentClientIds.has(c.id));
+                    return atRiskClients.length.toString();
+                  })()}
                 />
                 <CircularIndicator
                   color={COLORS.pianos}
                   icon="build-outline"
                   label="Mant. próximo"
-                  value="5"
+                  value={(() => {
+                    // Pianos que necesitan mantenimiento (sin servicio en los últimos 12 meses)
+                    const twelveMonthsAgo = new Date();
+                    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+                    
+                    const recentPianoIds = new Set(
+                      services
+                        .filter(s => new Date(s.date) >= twelveMonthsAgo)
+                        .map(s => s.pianoId)
+                        .filter(id => id !== null)
+                    );
+                    
+                    const needsMaintenance = pianos.filter(p => !recentPianoIds.has(p.id));
+                    return needsMaintenance.length.toString();
+                  })()}
                 />
               </View>
             </View>
