@@ -29,8 +29,8 @@ export const predictionsRouter = router({
     const { requireAIFeature, recordAIUsage } = await import('../../_core/subscription-middleware.js');
     await requireAIFeature(ctx.user.openId, 'prediction');
     
-    const service = await createPredictionService(ctx.organizationId);
-    const result = await service.getPredictionsSummary(ctx.organizationId);
+    const service = await createPredictionService(ctx.partnerId?.toString() || '');
+    const result = await service.getPredictionsSummary(ctx.partnerId?.toString() || '');
     
     // ✅ REGISTRAR USO
     await recordAIUsage(ctx.user.openId, 'prediction');
@@ -48,8 +48,8 @@ export const predictionsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const service = await createPredictionService(ctx.organizationId);
-      return service.predictRevenue(ctx.organizationId, input.months);
+      const service = await createPredictionService(ctx.partnerId?.toString() || '');
+      return service.predictRevenue(ctx.partnerId?.toString() || '', input.months);
     }),
 
   /**
@@ -63,8 +63,8 @@ export const predictionsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const service = await createPredictionService(ctx.organizationId);
-      const allResults = await service.predictClientChurn(ctx.organizationId);
+      const service = await createPredictionService(ctx.partnerId?.toString() || '');
+      const allResults = await service.predictClientChurn(ctx.partnerId?.toString() || '');
       
       // Calcular paginación
       const total = allResults.length;
@@ -96,8 +96,8 @@ export const predictionsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const service = await createPredictionService(ctx.organizationId);
-      const allResults = await service.predictMaintenance(ctx.organizationId);
+      const service = await createPredictionService(ctx.partnerId?.toString() || '');
+      const allResults = await service.predictMaintenance(ctx.partnerId?.toString() || '');
       
       // Calcular paginación
       const total = allResults.length;
@@ -128,8 +128,8 @@ export const predictionsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const service = await createPredictionService(ctx.organizationId);
-      return service.predictWorkload(ctx.organizationId, input.weeks);
+      const service = await createPredictionService(ctx.partnerId?.toString() || '');
+      return service.predictWorkload(ctx.partnerId?.toString() || '', input.weeks);
     }),
 
   /**
@@ -143,8 +143,8 @@ export const predictionsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const service = await createPredictionService(ctx.organizationId);
-      const allResults = await service.predictInventoryDemand(ctx.organizationId);
+      const service = await createPredictionService(ctx.partnerId?.toString() || '');
+      const allResults = await service.predictInventoryDemand(ctx.partnerId?.toString() || '');
       
       // Calcular paginación
       const total = allResults.length;
