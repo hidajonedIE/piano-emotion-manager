@@ -157,7 +157,7 @@ export default function OnboardingStep2Screen() {
   const handleSkip = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await markStepAsSkipped(8);
-    router.push('/(tabs)');
+    router.push('/(drawer)');
   };
 
   const handlePresetSelect = (preset: typeof PRESET_COLORS[0]) => {

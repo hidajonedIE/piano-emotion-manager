@@ -101,7 +101,7 @@ export default function OnboardingWelcomeScreen() {
           style={styles.skipButton}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.replace('/(tabs)');
+            router.replace('/(drawer)');
           }}
         >
           <ThemedText style={styles.skipText}>

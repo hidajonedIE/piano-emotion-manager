@@ -13,7 +13,7 @@ export default function SignUpScreen() {
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      router.replace('/(tabs)');
+      router.replace('/(drawer)');
     }
   }, [isLoaded, isSignedIn]);
 

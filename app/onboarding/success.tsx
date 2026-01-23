@@ -50,7 +50,7 @@ export default function OnboardingSuccessScreen() {
 
   const handleContinue = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.replace('/(tabs)');
+    router.replace('/(drawer)');
   };
 
   return (

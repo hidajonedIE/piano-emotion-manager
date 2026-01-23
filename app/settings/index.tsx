@@ -696,7 +696,7 @@ export default function SettingsIndexScreen() {
 
             <Pressable
               style={[styles.actionButton, { backgroundColor: '#F59E0B', marginTop: Spacing.md }]}
-              onPress={() => router.push('/(tabs)/inventory' as any)}
+              onPress={() => router.push('/(drawer)/inventory' as any)}
             >
               <IconSymbol name="shippingbox.fill" size={20} color="#FFFFFF" />
               <ThemedText style={styles.actionButtonText}>Ir al Inventario</ThemedText>
