@@ -216,13 +216,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         />
         <MetricCard
           title={t('reports.services')}
-          value={metrics?.services || 0}
+          value={metrics?.services?.total || 0}
           icon="construct-outline"
           color={COLORS.services}
         />
         <MetricCard
           title={t('reports.clients')}
-          value={metrics?.clients || 0}
+          value={metrics?.clients?.total || 0}
           change={metrics?.clientsChange}
           icon="people-outline"
           color={COLORS.clients}
