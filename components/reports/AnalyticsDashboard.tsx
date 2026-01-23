@@ -122,7 +122,13 @@ const CircularIndicator: React.FC<CircularIndicatorProps> = ({ value, label, col
 // Main Component
 // ============================================================================
 
-export default function AnalyticsDashboard() {
+interface AnalyticsDashboardProps {
+  onNavigateToReports?: () => void;
+}
+
+export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
+  onNavigateToReports,
+}) => {
   const { t } = useTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodPreset>('thisMonth');
   const [refreshing, setRefreshing] = useState(false);
