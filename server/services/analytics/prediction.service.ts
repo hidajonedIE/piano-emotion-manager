@@ -555,7 +555,7 @@ export class PredictionService {
 
     const predictions = [];
 
-    for (const item of result.rows || []) {
+    for (const item of (result as any) || []) {
       const monthlyUsage = (parseFloat(item.total_used) || 0) / 3;
       const currentStock = parseFloat(item.current_stock) || 0;
       const minStock = parseFloat(item.min_stock) || 0;
