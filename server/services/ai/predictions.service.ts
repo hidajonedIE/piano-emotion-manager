@@ -76,6 +76,8 @@ IMPORTANTE: Las predicciones deben ser FUTURAS, no análisis del presente. Usa l
       systemPrompt: 'Eres un analista de datos preciso. Responde SOLO con JSON válido, sin texto adicional.'
     });
 
+    console.log('[AI Predictions] Respuesta de Gemini recibida:', response.substring(0, 200));
+
     // Limpiar la respuesta para extraer solo el JSON
     let jsonStr = response.trim();
     
@@ -96,25 +98,46 @@ IMPORTANTE: Las predicciones deben ser FUTURAS, no análisis del presente. Usa l
       throw new Error('Respuesta de IA incompleta');
     }
 
+    console.log('[AI Predictions] Predicciones generadas exitosamente:', predictions);
     return predictions;
   } catch (error) {
-    console.error('Error generando predicciones con IA:', error);
+    console.error('[AI Predictions] Error generando predicciones con IA:', error);
+    console.log('[AI Predictions] Usando fallback con datos:', data);
     
-    // Fallback: cálculos simples si Gemini falla
-    const revenueChange = data.previousMonthRevenue > 0 
-      ? ((data.currentMonthRevenue - data.previousMonthRevenue) / data.previousMonthRevenue) * 100
-      : 0;
+    // Fallback: cálculos predictivos más robustos
+    // 1. Predicción de ingresos basada en tendencia de últimos 6 meses
+    const last6Months = data.last6MonthsRevenue.filter(r => r > 0);
+    let revenueGrowth = 'N/A';
+    
+    if (last6Months.length >= 2) {
+      // Calcular tendencia promedio
+      const growthRates = [];
+      for (let i = 1; i < last6Months.length; i++) {
+        const rate = ((last6Months[i] - last6Months[i-1]) / last6Months[i-1]) * 100;
+        growthRates.push(rate);
+      }
+      const avgGrowth = growthRates.reduce((a, b) => a + b, 0) / growthRates.length;
+      revenueGrowth = avgGrowth >= 0 ? `+${avgGrowth.toFixed(0)}%` : `${avgGrowth.toFixed(0)}%`;
+    } else if (data.previousMonthRevenue > 0 && data.currentMonthRevenue > 0) {
+      const change = ((data.currentMonthRevenue - data.previousMonthRevenue) / data.previousMonthRevenue) * 100;
+      revenueGrowth = change >= 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
+    }
+    
+    // 2. Clientes en riesgo: los que no han tenido servicios en 6+ meses
+    const clientsAtRisk = Math.max(0, data.clientsWithoutRecentServices);
+    
+    // 3. Pianos que necesitarán mantenimiento: estimación basada en ciclo de 12 meses
+    // Si un piano no ha tenido mantenimiento en 12+ meses, probablemente lo necesite pronto
+    const pianosNeedingMaintenance = Math.max(0, data.pianosWithoutRecentMaintenance);
     
     return {
-      revenueGrowth: data.previousMonthRevenue > 0 
-        ? (revenueChange >= 0 ? `+${revenueChange.toFixed(0)}%` : `${revenueChange.toFixed(0)}%`)
-        : 'N/A',
-      clientsAtRisk: data.clientsWithoutRecentServices,
-      pianosNeedingMaintenance: data.pianosWithoutRecentMaintenance,
+      revenueGrowth,
+      clientsAtRisk,
+      pianosNeedingMaintenance,
       insights: {
-        revenue: 'Análisis basado en datos históricos',
-        clients: 'Clientes sin actividad reciente detectados',
-        maintenance: 'Pianos requieren revisión periódica'
+        revenue: revenueGrowth !== 'N/A' ? `Tendencia ${revenueGrowth}` : 'Datos insuficientes',
+        clients: clientsAtRisk > 0 ? `${clientsAtRisk} clientes inactivos` : 'Retención óptima',
+        maintenance: pianosNeedingMaintenance > 0 ? `${pianosNeedingMaintenance} pianos pendientes` : 'Mantenimientos al día'
       }
     };
   }
