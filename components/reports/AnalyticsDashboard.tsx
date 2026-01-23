@@ -148,7 +148,17 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const servicesData = useMemo(() => {
     if (!rawServicesData) return [];
     const total = rawServicesData.reduce((sum, s) => sum + s.count, 0);
-    const colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+    // Usar colores de la paleta del dashboard para consistencia visual
+    const colors = [
+      COLORS.services,  // Azul Cobalto
+      COLORS.income,    // Verde Esmeralda
+      COLORS.accent,    // Terracota
+      COLORS.pianos,    // Morado
+      COLORS.clients,   // Cian Oscuro
+      '#f59e0b',        // Naranja (complementario)
+      '#ec4899',        // Rosa (complementario)
+      '#84cc16',        // Lima (complementario)
+    ];
     return rawServicesData.map((service, index) => ({
       name: service.typeName,
       count: service.count,
