@@ -673,19 +673,7 @@ export class AnalyticsService {
     const startStr = startDate.toISOString();
     const endStr = endDate.toISOString();
     
-    // Contar total de services (servicios reales que generan ingresos)
-    const totalResult = await db
-      .select({ count: count() })
-      .from(services)
-      .where(
-        and(
-          gte(services.date, startStr),
-          lte(services.date, endStr)
-        )
-      );
-    const total = Number(totalResult[0]?.count || 0);
-
-    // Contar completados (services con status='completed' o que tengan cost > 0)
+    // Contar servicios completados (tabla services)
     const completedResult = await db
       .select({ count: count() })
       .from(services)
@@ -697,10 +685,34 @@ export class AnalyticsService {
       );
     const completed = Number(completedResult[0]?.count || 0);
 
-    // Para services, todos los registrados se consideran completados
-    // No hay estados cancelled o pending en la tabla services
-    const cancelled = 0;
-    const pending = 0;
+    // Contar appointments pendientes (scheduled o confirmed)
+    const pendingResult = await db
+      .select({ count: count() })
+      .from(appointments)
+      .where(
+        and(
+          gte(appointments.date, startStr),
+          lte(appointments.date, endStr),
+          sql`${appointments.status} IN ('scheduled', 'confirmed')`
+        )
+      );
+    const pending = Number(pendingResult[0]?.count || 0);
+
+    // Contar appointments cancelados
+    const cancelledResult = await db
+      .select({ count: count() })
+      .from(appointments)
+      .where(
+        and(
+          gte(appointments.date, startStr),
+          lte(appointments.date, endStr),
+          eq(appointments.status, 'cancelled')
+        )
+      );
+    const cancelled = Number(cancelledResult[0]?.count || 0);
+
+    // Total = completados + pendientes + cancelados
+    const total = completed + pending + cancelled;
 
     return { total, completed, pending, cancelled };
   }
