@@ -289,7 +289,7 @@ export default function DashboardScreen() {
                 </Pressable>
               </View>
 
-                <View style={styles.aiIndicators}>
+                <View style={styles.predictionsRow}>
                 <CircularIndicator
                   color={COLORS.income}
                   icon="trending-up"
