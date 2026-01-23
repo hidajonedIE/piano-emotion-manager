@@ -170,8 +170,23 @@ export function ShopViewElegant() {
     );
   };
 
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Image
+        source={require('@/assets/images/icon.png')}
+        style={styles.headerIcon}
+        resizeMode="contain"
+      />
+      <View style={styles.headerTextContainer}>
+        <Text style={styles.headerTitle}>PIANO EMOTION STORE</Text>
+        <Text style={styles.headerSubtitle}>Componentes para reparación, restauración y afinación de pianos</Text>
+      </View>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      {renderHeader()}
       {renderTabs()}
       
       {activeTab === 'products' ? (
@@ -193,6 +208,36 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: Spacing.xxl,
+  },
+
+  // Header
+  header: {
+    backgroundColor: '#003d82',
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: isDesktop ? 60 : Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    ...Shadows.lg,
+  },
+  headerIcon: {
+    width: 48,
+    height: 48,
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: isDesktop ? 28 : 22,
+    fontWeight: '700',
+    color: '#ffffff',
+    letterSpacing: 1.2,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: isDesktop ? 16 : 14,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontWeight: '400',
   },
 
   // Loading & Empty States
