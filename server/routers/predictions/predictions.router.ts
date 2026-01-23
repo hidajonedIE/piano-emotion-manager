@@ -1,65 +1,200 @@
 /**
- * Router de Predicciones
+ * Predictions Router (REESCRITO)
+ * Router robusto para predicciones AI avanzadas
  * Piano Emotion Manager
- * 
- * Endpoints para el servicio de predicciones basado en IA
  */
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../../_core/trpc.js';
-import { collectBusinessData, generateEnhancedPredictions } from '../../services/ai/enhanced-predictions.service.js';
+import { collectAllPredictionsData } from '../../services/predictions/predictions-data.service.js';
+import {
+  generateAllPredictions,
+  generateRevenuePredictions,
+  generateChurnRiskPredictions,
+  generateMaintenancePredictions,
+  generateWorkloadPredictions,
+  generateInventoryPredictions,
+} from '../../services/predictions/gemini-predictions.service.js';
 
 export const predictionsRouter = router({
-  getRevenue: protectedProcedure
-    .input(z.object({ months: z.number().min(1).max(12).optional().default(6) }))
-    .query(async ({ ctx }) => {
-      const businessData = await collectBusinessData(ctx.partnerId || 0);
-      const predictions = await generateEnhancedPredictions(businessData);
+  /**
+   * Obtiene TODAS las predicciones disponibles
+   * Este es el endpoint principal que usa la página /predictions
+   */
+  getAllPredictions: protectedProcedure.query(async ({ ctx }) => {
+    console.log('[getAllPredictions] Iniciando para organizationId:', ctx.organizationId);
+    
+    try {
+      // 1. Recopilar todos los datos disponibles
+      const data = await collectAllPredictionsData(ctx.organizationId);
+      
+      console.log('[getAllPredictions] Datos recopilados:', {
+        hasRevenue: !!data.revenue,
+        hasClients: !!data.clients,
+        hasPianos: !!data.pianos,
+        hasInventory: !!data.inventory,
+        hasAppointments: !!data.appointments,
+        hasServices: !!data.services,
+      });
+      
+      // 2. Generar todas las predicciones
+      const predictions = await generateAllPredictions(data);
+      
+      console.log('[getAllPredictions] Predicciones generadas exitosamente');
+      
       return {
-        predictions: [
-          { period: predictions.revenue.nextMonth.period, value: predictions.revenue.nextMonth.value, confidence: predictions.revenue.nextMonth.confidence, trend: predictions.revenue.trend },
-          { period: predictions.revenue.nextQuarter.period, value: predictions.revenue.nextQuarter.value, confidence: predictions.revenue.nextQuarter.confidence, trend: predictions.revenue.trend },
-        ],
-        currentRevenue: businessData.revenue.current,
+        success: true,
+        predictions,
+        dataAvailability: {
+          revenue: true,
+          clients: true,
+          pianos: true,
+          inventory: !!data.inventory,
+          appointments: !!data.appointments,
+          services: !!data.services,
+        },
       };
-    }),
-  getChurnRisk: protectedProcedure
-    .input(z.object({ page: z.number().optional().default(1), limit: z.number().optional().default(30) }))
-    .query(async ({ ctx, input }) => {
-      const businessData = await collectBusinessData(ctx.partnerId || 0);
-      const predictions = await generateEnhancedPredictions(businessData);
-      const clients = predictions.clientChurn.atRiskClients || [];
-      const total = clients.length;
-      const start = (input.page - 1) * input.limit;
-      return { data: clients.slice(start, start + input.limit), pagination: { page: input.page, limit: input.limit, total, totalPages: Math.ceil(total / input.limit), hasMore: input.page < Math.ceil(total / input.limit) } };
-    }),
-  getMaintenance: protectedProcedure
-    .input(z.object({ page: z.number().optional().default(1), limit: z.number().optional().default(10) }))
-    .query(async ({ ctx, input }) => {
-      const businessData = await collectBusinessData(ctx.partnerId || 0);
-      const predictions = await generateEnhancedPredictions(businessData);
-      const pianos = predictions.maintenance.upcomingMaintenance || [];
-      const total = pianos.length;
-      const start = (input.page - 1) * input.limit;
-      return { data: pianos.slice(start, start + input.limit), pagination: { page: input.page, limit: input.limit, total, totalPages: Math.ceil(total / input.limit), hasMore: input.page < Math.ceil(total / input.limit) } };
-    }),
-  getWorkload: protectedProcedure
-    .input(z.object({ weeks: z.number().optional().default(4) }))
-    .query(async ({ ctx }) => {
-      const businessData = await collectBusinessData(ctx.partnerId || 0);
-      const predictions = await generateEnhancedPredictions(businessData);
-      return { predictions: [{ period: predictions.workload.nextWeek.period, value: predictions.workload.nextWeek.value, confidence: predictions.workload.nextWeek.confidence }, { period: predictions.workload.nextMonth.period, value: predictions.workload.nextMonth.value, confidence: predictions.workload.nextMonth.confidence }] };
-    }),
-  getInventoryDemand: protectedProcedure
-    .input(z.object({ page: z.number().optional().default(1), limit: z.number().optional().default(10) }))
-    .query(async ({ ctx, input }) => {
-      const businessData = await collectBusinessData(ctx.partnerId || 0);
-      const predictions = await generateEnhancedPredictions(businessData);
-      const items = predictions.inventory.topDemandItems || [];
-      const total = items.length;
-      const start = (input.page - 1) * input.limit;
-      return { data: items.slice(start, start + input.limit), pagination: { page: input.page, limit: input.limit, total, totalPages: Math.ceil(total / input.limit), hasMore: input.page < Math.ceil(total / input.limit) } };
-    }),
+    } catch (error) {
+      console.error('[getAllPredictions] Error:', error);
+      throw new Error(`Error al generar predicciones: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  }),
+
+  /**
+   * Obtiene solo predicciones de ingresos
+   */
+  getRevenue: protectedProcedure.query(async ({ ctx }) => {
+    console.log('[getRevenue] Iniciando para organizationId:', ctx.organizationId);
+    
+    try {
+      const data = await collectAllPredictionsData(ctx.organizationId);
+      const prediction = await generateRevenuePredictions(data);
+      
+      return {
+        success: true,
+        prediction,
+      };
+    } catch (error) {
+      console.error('[getRevenue] Error:', error);
+      throw new Error(`Error al generar predicción de ingresos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  }),
+
+  /**
+   * Obtiene solo predicciones de clientes en riesgo
+   */
+  getChurnRisk: protectedProcedure.query(async ({ ctx }) => {
+    console.log('[getChurnRisk] Iniciando para organizationId:', ctx.organizationId);
+    
+    try {
+      const data = await collectAllPredictionsData(ctx.organizationId);
+      const prediction = await generateChurnRiskPredictions(data);
+      
+      return {
+        success: true,
+        prediction,
+      };
+    } catch (error) {
+      console.error('[getChurnRisk] Error:', error);
+      throw new Error(`Error al generar predicción de riesgo: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  }),
+
+  /**
+   * Obtiene solo predicciones de mantenimiento
+   */
+  getMaintenance: protectedProcedure.query(async ({ ctx }) => {
+    console.log('[getMaintenance] Iniciando para organizationId:', ctx.organizationId);
+    
+    try {
+      const data = await collectAllPredictionsData(ctx.organizationId);
+      const prediction = await generateMaintenancePredictions(data);
+      
+      return {
+        success: true,
+        prediction,
+      };
+    } catch (error) {
+      console.error('[getMaintenance] Error:', error);
+      throw new Error(`Error al generar predicción de mantenimiento: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  }),
+
+  /**
+   * Obtiene solo predicciones de carga de trabajo
+   */
+  getWorkload: protectedProcedure.query(async ({ ctx }) => {
+    console.log('[getWorkload] Iniciando para organizationId:', ctx.organizationId);
+    
+    try {
+      const data = await collectAllPredictionsData(ctx.organizationId);
+      
+      if (!data.appointments) {
+        return {
+          success: false,
+          error: 'NO_APPOINTMENTS_DATA',
+          message: 'No hay datos de citas disponibles. Programa citas para ver predicciones de carga de trabajo.',
+        };
+      }
+      
+      const prediction = await generateWorkloadPredictions(data);
+      
+      return {
+        success: true,
+        prediction,
+      };
+    } catch (error) {
+      console.error('[getWorkload] Error:', error);
+      
+      if (error instanceof Error && error.message.includes('No hay datos de citas')) {
+        return {
+          success: false,
+          error: 'NO_APPOINTMENTS_DATA',
+          message: 'No hay datos de citas disponibles. Programa citas para ver predicciones de carga de trabajo.',
+        };
+      }
+      
+      throw new Error(`Error al generar predicción de carga: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  }),
+
+  /**
+   * Obtiene solo predicciones de inventario
+   */
+  getInventoryDemand: protectedProcedure.query(async ({ ctx }) => {
+    console.log('[getInventoryDemand] Iniciando para organizationId:', ctx.organizationId);
+    
+    try {
+      const data = await collectAllPredictionsData(ctx.organizationId);
+      
+      if (!data.inventory) {
+        return {
+          success: false,
+          error: 'NO_INVENTORY_DATA',
+          message: 'No hay datos de inventario disponibles. Configura tu inventario para ver predicciones de demanda.',
+        };
+      }
+      
+      const prediction = await generateInventoryPredictions(data);
+      
+      return {
+        success: true,
+        prediction,
+      };
+    } catch (error) {
+      console.error('[getInventoryDemand] Error:', error);
+      
+      if (error instanceof Error && error.message.includes('No hay datos de inventario')) {
+        return {
+          success: false,
+          error: 'NO_INVENTORY_DATA',
+          message: 'No hay datos de inventario disponibles. Configura tu inventario para ver predicciones de demanda.',
+        };
+      }
+      
+      throw new Error(`Error al generar predicción de inventario: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  }),
 });
 
 export type PredictionsRouter = typeof predictionsRouter;

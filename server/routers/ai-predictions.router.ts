@@ -1,210 +1,80 @@
 /**
- * AI Predictions Router
+ * AI Predictions Router (ACTUALIZADO)
  * Endpoints para predicciones inteligentes del dashboard
+ * Ahora usa el sistema robusto de predicciones
  * Piano Emotion Manager
  */
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import { generatePredictions, type PredictionsData } from '../services/ai/predictions.service.js';
-import { collectBusinessData, generateEnhancedPredictions } from '../services/ai/enhanced-predictions.service.js';
-import { getDb } from '../db.js';
-import { services, clients, pianos } from '../../drizzle/schema.js';
-import { and, gte, lte, count, sum } from 'drizzle-orm';
+import { collectAllPredictionsData } from '../services/predictions/predictions-data.service.js';
+import { generateAllPredictions } from '../services/predictions/gemini-predictions.service.js';
 
 export const aiPredictionsRouter = router({
   /**
    * Obtiene predicciones IA para el dashboard
+   * Ahora usa el sistema robusto y unificado
    */
   getDashboardPredictions: protectedProcedure
     .input(
       z.object({
-        currentMonth: z.string(), // ISO date string del mes actual
+        currentMonth: z.string(), // ISO date string del mes actual (no se usa pero se mantiene por compatibilidad)
       })
     )
     .query(async ({ ctx, input }) => {
       console.log('[getDashboardPredictions] Iniciando con organizationId:', ctx.organizationId);
       
-      // Usar el servicio mejorado que recopila TODOS los datos
       try {
-        const businessData = await collectBusinessData(ctx.organizationId);
+        // 1. Recopilar todos los datos disponibles usando el nuevo servicio robusto
+        const data = await collectAllPredictionsData(ctx.organizationId);
+        
         console.log('[getDashboardPredictions] Datos recopilados:', {
-          revenue: businessData.revenue.current,
-          clients: businessData.clients.total,
-          services: businessData.services.total,
+          revenue: data.revenue.current,
+          clients: data.clients.total,
+          pianos: data.pianos.total,
+          hasInventory: !!data.inventory,
+          hasAppointments: !!data.appointments,
         });
         
-        const enhancedPredictions = await generateEnhancedPredictions(businessData);
+        // 2. Generar todas las predicciones
+        const predictions = await generateAllPredictions(data);
+        
         console.log('[getDashboardPredictions] Predicciones generadas exitosamente');
         
-        // Adaptar el formato para el dashboard
+        // 3. Adaptar el formato para el dashboard (mantener compatibilidad con el frontend)
         return {
           success: true,
           predictions: {
-            revenueGrowth: enhancedPredictions.revenue.nextMonth.value > 0 
-              ? `${Math.round(enhancedPredictions.revenue.nextMonth.value)} €`
+            // Predicción de ingresos del próximo mes
+            revenueGrowth: predictions.revenue.months[0]?.estimated 
+              ? `${Math.round(predictions.revenue.months[0].estimated)} €`
               : 'N/A',
-            clientsAtRisk: enhancedPredictions.clientChurn.highRiskCount,
-            pianosNeedingMaintenance: enhancedPredictions.maintenance.upcomingCount,
+            
+            // Número de clientes en riesgo
+            clientsAtRisk: predictions.churnRisk.totalAtRisk,
+            
+            // Número de pianos que necesitan mantenimiento
+            pianosNeedingMaintenance: predictions.maintenance.totalNeeded,
           },
-          dataUsed: businessData,
+          dataUsed: {
+            revenue: data.revenue,
+            clients: data.clients,
+            pianos: data.pianos,
+          },
         };
       } catch (error) {
         console.error('[getDashboardPredictions] Error:', error);
-        // Fallback con el método anterior
+        
+        // Si falla, retornar valores por defecto en lugar de romper el dashboard
+        return {
+          success: false,
+          predictions: {
+            revenueGrowth: 'N/A',
+            clientsAtRisk: 0,
+            pianosNeedingMaintenance: 0,
+          },
+          error: error instanceof Error ? error.message : 'Error desconocido',
+        };
       }
-      
-      const db = await getDb();
-      const currentMonthDate = new Date(input.currentMonth);
-      
-      // Calcular fechas
-      const currentMonthStart = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1);
-      const currentMonthEnd = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0);
-      
-      const previousMonthStart = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1);
-      const previousMonthEnd = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 0);
-      
-      const sixMonthsAgo = new Date(currentMonthDate);
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
-      const twelveMonthsAgo = new Date(currentMonthDate);
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-      
-      // Obtener ingresos del mes actual
-      const currentMonthRevenueResult = await db
-        .select({ total: sum(services.cost) })
-        .from(services)
-        .where(
-          and(
-            gte(services.date, currentMonthStart.toISOString()),
-            lte(services.date, currentMonthEnd.toISOString())
-          )
-        );
-      
-      const currentMonthRevenue = Number(currentMonthRevenueResult[0]?.total || 0);
-      
-      // Obtener ingresos del mes anterior
-      const previousMonthRevenueResult = await db
-        .select({ total: sum(services.cost) })
-        .from(services)
-        .where(
-          and(
-            gte(services.date, previousMonthStart.toISOString()),
-            lte(services.date, previousMonthEnd.toISOString())
-          )
-        );
-      
-      const previousMonthRevenue = Number(previousMonthRevenueResult[0]?.total || 0);
-      
-      // Obtener ingresos de los últimos 6 meses
-      const last6MonthsRevenue: number[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const monthStart = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - i, 1);
-        const monthEnd = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - i + 1, 0);
-        
-        const monthRevenueResult = await db
-          .select({ total: sum(services.cost) })
-          .from(services)
-          .where(
-            and(
-              gte(services.date, monthStart.toISOString()),
-              lte(services.date, monthEnd.toISOString())
-            )
-          );
-        
-        last6MonthsRevenue.push(Number(monthRevenueResult[0]?.total || 0));
-      }
-      
-      // Obtener total de clientes
-      const totalClientsResult = await db.select({ count: count() }).from(clients);
-      const totalClients = Number(totalClientsResult[0]?.count || 0);
-      
-      // Obtener clientes sin servicios recientes (6+ meses)
-      const recentClientIds = new Set(
-        (await db
-          .select({ clientId: services.clientId })
-          .from(services)
-          .where(gte(services.date, sixMonthsAgo.toISOString())))
-          .map(s => s.clientId)
-          .filter(id => id !== null)
-      );
-      
-      const clientsWithoutRecentServices = totalClients - recentClientIds.size;
-      
-      // Obtener nuevos clientes de los últimos 6 meses
-      const clientsLast6Months: number[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const monthStart = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - i, 1);
-        const monthEnd = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - i + 1, 0);
-        
-        const newClientsResult = await db
-          .select({ count: count() })
-          .from(clients)
-          .where(
-            and(
-              gte(clients.createdAt, monthStart.toISOString()),
-              lte(clients.createdAt, monthEnd.toISOString())
-            )
-          );
-        
-        clientsLast6Months.push(Number(newClientsResult[0]?.count || 0));
-      }
-      
-      // Obtener total de pianos
-      const totalPianosResult = await db.select({ count: count() }).from(pianos);
-      const totalPianos = Number(totalPianosResult[0]?.count || 0);
-      
-      // Obtener pianos sin mantenimiento reciente (12+ meses)
-      const recentPianoIds = new Set(
-        (await db
-          .select({ pianoId: services.pianoId })
-          .from(services)
-          .where(gte(services.date, twelveMonthsAgo.toISOString())))
-          .map(s => s.pianoId)
-          .filter(id => id !== null)
-      );
-      
-      const pianosWithoutRecentMaintenance = totalPianos - recentPianoIds.size;
-      
-      // Obtener servicios de los últimos 12 meses
-      const servicesLast12Months: number[] = [];
-      for (let i = 11; i >= 0; i--) {
-        const monthStart = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - i, 1);
-        const monthEnd = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - i + 1, 0);
-        
-        const monthServicesResult = await db
-          .select({ count: count() })
-          .from(services)
-          .where(
-            and(
-              gte(services.date, monthStart.toISOString()),
-              lte(services.date, monthEnd.toISOString())
-            )
-          );
-        
-        servicesLast12Months.push(Number(monthServicesResult[0]?.count || 0));
-      }
-      
-      // Preparar datos para Gemini
-      const predictionsData: PredictionsData = {
-        currentMonthRevenue,
-        previousMonthRevenue,
-        last6MonthsRevenue,
-        totalClients,
-        clientsWithoutRecentServices,
-        clientsLast6Months,
-        totalPianos,
-        pianosWithoutRecentMaintenance,
-        servicesLast12Months,
-      };
-      
-      // Generar predicciones con Gemini
-      const predictions = await generatePredictions(predictionsData);
-      
-      return {
-        success: true,
-        predictions,
-        dataUsed: predictionsData, // Para debugging
-      };
     }),
 });
