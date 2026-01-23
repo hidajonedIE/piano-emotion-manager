@@ -191,21 +191,21 @@ export class WordPressBlogService {
       '&quot;': '"',
       '&#039;': "'",
       '&apos;': "'",
-      '&#8211;': '–', // en dash
-      '&#8212;': '—', // em dash
-      '&#8216;': ''', // left single quote
-      '&#8217;': ''', // right single quote
-      '&#8220;': '"', // left double quote
-      '&#8221;': '"', // right double quote
-      '&#8230;': '…', // ellipsis
+      '&#8211;': '\u2013', // en dash
+      '&#8212;': '\u2014', // em dash
+      '&#8216;': '\u2018', // left single quote
+      '&#8217;': '\u2019', // right single quote
+      '&#8220;': '\u201c', // left double quote
+      '&#8221;': '\u201d', // right double quote
+      '&#8230;': '\u2026', // ellipsis
       '&nbsp;': ' ',
-      '&ndash;': '–',
-      '&mdash;': '—',
-      '&lsquo;': ''',
-      '&rsquo;': ''',
-      '&ldquo;': '"',
-      '&rdquo;': '"',
-      '&hellip;': '…',
+      '&ndash;': '\u2013',
+      '&mdash;': '\u2014',
+      '&lsquo;': '\u2018',
+      '&rsquo;': '\u2019',
+      '&ldquo;': '\u201c',
+      '&rdquo;': '\u201d',
+      '&hellip;': '\u2026',
     };
     
     let decoded = text;
