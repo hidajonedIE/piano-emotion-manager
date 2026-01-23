@@ -305,17 +305,17 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <Text style={styles.sectionTitle}>{t('reports.quickStats')}</Text>
         <View style={styles.quickStatsRow}>
           <CircularIndicator
-            value={`${metrics?.completionRate || 0}%`}
+            value={`${metrics?.services?.completionRate?.toFixed(0) || 0}%`}
             label={t('reports.completionRate')}
             color={COLORS.income}
           />
           <CircularIndicator
-            value={`${metrics?.retention || 0}%`}
+            value={`${metrics?.clients?.retention?.toFixed(0) || 0}%`}
             label={t('reports.retention')}
             color="#f59e0b"
           />
           <CircularIndicator
-            value={metrics?.pianos || 0}
+            value={metrics?.pianos?.total || 0}
             label={t('reports.pianos')}
             color={COLORS.pianos}
           />
