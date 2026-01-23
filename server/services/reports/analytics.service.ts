@@ -267,6 +267,8 @@ export class AnalyticsService {
     };
 
     // Consultar servicios agrupados por tipo
+    const startStr = startDate.toISOString();
+    const endStr = endDate.toISOString();
     const results = await db
       .select({
         type: services.serviceType,
@@ -277,8 +279,8 @@ export class AnalyticsService {
       .where(
         and(
           eq(services.organizationId, this.organizationId),
-          gte(services.date, startDate.toISOString()),
-          lte(services.date, endDate.toISOString())
+          gte(services.date, startStr),
+          lte(services.date, endStr)
         )
       )
       .groupBy(services.serviceType);
@@ -445,14 +447,16 @@ export class AnalyticsService {
 
   private async getTotalRevenue(startDate: Date, endDate: Date): Promise<number> {
     const db = getDb();
+    const startStr = startDate.toISOString();
+    const endStr = endDate.toISOString();
     const result = await db
       .select({ total: sum(services.cost) })
       .from(services)
       .where(
         and(
           eq(services.organizationId, this.organizationId),
-          gte(services.date, startDate.toISOString()),
-          lte(services.date, endDate.toISOString())
+          gte(services.date, startStr),
+          lte(services.date, endStr)
         )
       );
     return Number(result[0]?.total || 0);
@@ -460,14 +464,16 @@ export class AnalyticsService {
 
   private async getServiceCount(startDate: Date, endDate: Date): Promise<number> {
     const db = getDb();
+    const startStr = startDate.toISOString();
+    const endStr = endDate.toISOString();
     const result = await db
       .select({ count: count() })
       .from(services)
       .where(
         and(
           eq(services.organizationId, this.organizationId),
-          gte(services.date, startDate.toISOString()),
-          lte(services.date, endDate.toISOString())
+          gte(services.date, startStr),
+          lte(services.date, endStr)
         )
       );
     return Number(result[0]?.count || 0);
@@ -475,6 +481,8 @@ export class AnalyticsService {
 
   private async getServiceStats(startDate: Date, endDate: Date) {
     const db = getDb();
+    const startStr = startDate.toISOString();
+    const endStr = endDate.toISOString();
     
     // Contar total de appointments
     const totalResult = await db
@@ -483,8 +491,8 @@ export class AnalyticsService {
       .where(
         and(
           eq(appointments.organizationId, this.organizationId),
-          gte(appointments.date, startDate.toISOString()),
-          lte(appointments.date, endDate.toISOString())
+          gte(appointments.date, startStr),
+          lte(appointments.date, endStr)
         )
       );
     const total = Number(totalResult[0]?.count || 0);
@@ -497,8 +505,8 @@ export class AnalyticsService {
         and(
           eq(appointments.organizationId, this.organizationId),
           eq(appointments.status, 'completed'),
-          gte(appointments.date, startDate.toISOString()),
-          lte(appointments.date, endDate.toISOString())
+          gte(appointments.date, startStr),
+          lte(appointments.date, endStr)
         )
       );
     const completed = Number(completedResult[0]?.count || 0);
@@ -511,8 +519,8 @@ export class AnalyticsService {
         and(
           eq(appointments.organizationId, this.organizationId),
           eq(appointments.status, 'cancelled'),
-          gte(appointments.date, startDate.toISOString()),
-          lte(appointments.date, endDate.toISOString())
+          gte(appointments.date, startStr),
+          lte(appointments.date, endStr)
         )
       );
     const cancelled = Number(cancelledResult[0]?.count || 0);
@@ -525,6 +533,8 @@ export class AnalyticsService {
 
   private async getClientStats(startDate: Date, endDate: Date) {
     const db = getDb();
+    const startStr = startDate.toISOString();
+    const endStr = endDate.toISOString();
     
     // Total de clientes
     const totalResult = await db
@@ -540,8 +550,8 @@ export class AnalyticsService {
       .where(
         and(
           eq(clients.organizationId, this.organizationId),
-          gte(clients.createdAt, startDate.toISOString()),
-          lte(clients.createdAt, endDate.toISOString())
+          gte(clients.createdAt, startStr),
+          lte(clients.createdAt, endStr)
         )
       );
     const newClients = Number(newResult[0]?.count || 0);
@@ -553,8 +563,8 @@ export class AnalyticsService {
       .where(
         and(
           eq(appointments.organizationId, this.organizationId),
-          gte(appointments.date, startDate.toISOString()),
-          lte(appointments.date, endDate.toISOString())
+          gte(appointments.date, startStr),
+          lte(appointments.date, endStr)
         )
       );
     const active = activeResult.length;
@@ -572,6 +582,8 @@ export class AnalyticsService {
 
   private async getPianoStats(startDate: Date, endDate: Date) {
     const db = getDb();
+    const startStr = startDate.toISOString();
+    const endStr = endDate.toISOString();
     
     // Total de pianos
     const totalResult = await db
@@ -587,8 +599,8 @@ export class AnalyticsService {
       .where(
         and(
           eq(appointments.organizationId, this.organizationId),
-          gte(appointments.date, startDate.toISOString()),
-          lte(appointments.date, endDate.toISOString())
+          gte(appointments.date, startStr),
+          lte(appointments.date, endStr)
         )
       );
     const serviced = servicedResult.filter(r => r.pianoId !== null).length;
