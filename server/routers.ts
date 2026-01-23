@@ -36,6 +36,7 @@ import {
 } from "./routers/index.js";
 import { licenseRouter } from "./routers/license/index.js";
 import { aiGenerationRouter } from "./routers/ai-generation.router.js";
+import { aiPredictionsRouter } from "./routers/ai-predictions.router.js";
 import { calendarRouter } from "./routers/calendar.router.js";
 import { clientPortalRouter } from "./routers/client-portal.router.js";
 import { portalAdminRouter } from "./routers/portal-admin.router.js";
@@ -85,6 +86,9 @@ export const appRouter = router({
   
   // Generación de contenido con IA
   aiGeneration: aiGenerationRouter,
+  
+  // Predicciones IA para dashboard
+  aiPredictions: aiPredictionsRouter,
   
   // Seed de datos de prueba
   seed: seedRouter,

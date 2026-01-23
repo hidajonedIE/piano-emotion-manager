@@ -32,6 +32,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useClientsData, usePianosData, useServicesData, useAppointmentsData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
 import { useAlertsOptimized } from '@/hooks/use-alerts-optimized';
+import { trpc } from '@/utils/trpc';
 
 // Colores del diseño Elegant Professional
 const COLORS = {
@@ -83,6 +84,11 @@ export default function DashboardScreen() {
   const { services } = useServicesData();
   const { appointments } = useAppointmentsData();
   const { alerts, stats: alertStats } = useAlertsOptimized(15);
+  
+  // Predicciones IA generadas por Gemini
+  const { data: aiPredictions, isLoading: loadingPredictions } = trpc.aiPredictions.getDashboardPredictions.useQuery({
+    currentMonth: selectedMonth.toISOString(),
+  });
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
@@ -288,66 +294,19 @@ export default function DashboardScreen() {
                   color={COLORS.income}
                   icon="trending-up"
                   label="Ingresos prev."
-                  value={(() => {
-                    // Calcular tendencia de ingresos comparando mes actual vs mes anterior
-                    const currentMonth = selectedMonth;
-                    const prevMonth = new Date(currentMonth);
-                    prevMonth.setMonth(prevMonth.getMonth() - 1);
-                    
-                    const currentRevenue = monthStats.revenue;
-                    const prevServices = services.filter((s) => {
-                      const serviceDate = new Date(s.date);
-                      return (
-                        serviceDate.getMonth() === prevMonth.getMonth() &&
-                        serviceDate.getFullYear() === prevMonth.getFullYear()
-                      );
-                    });
-                    const prevRevenue = prevServices.reduce((sum, s) => sum + (s.cost || 0), 0);
-                    
-                    if (prevRevenue === 0) return "N/A";
-                    const change = ((currentRevenue - prevRevenue) / prevRevenue) * 100;
-                    return change >= 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
-                  })()}
+                  value={loadingPredictions ? "..." : (aiPredictions?.predictions.revenueGrowth || "N/A")}
                 />
                 <CircularIndicator
                   color={COLORS.aiWarning}
                   icon="help-circle-outline"
                   label="Clientes riesgo"
-                  value={(() => {
-                    // Clientes sin servicios en los últimos 6 meses
-                    const sixMonthsAgo = new Date();
-                    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-                    
-                    const recentClientIds = new Set(
-                      services
-                        .filter(s => new Date(s.date) >= sixMonthsAgo)
-                        .map(s => s.clientId)
-                        .filter(id => id !== null)
-                    );
-                    
-                    const atRiskClients = clients.filter(c => !recentClientIds.has(c.id));
-                    return atRiskClients.length.toString();
-                  })()}
+                  value={loadingPredictions ? "..." : (aiPredictions?.predictions.clientsAtRisk.toString() || "0")}
                 />
                 <CircularIndicator
                   color={COLORS.pianos}
                   icon="build-outline"
                   label="Mant. próximo"
-                  value={(() => {
-                    // Pianos que necesitan mantenimiento (sin servicio en los últimos 12 meses)
-                    const twelveMonthsAgo = new Date();
-                    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-                    
-                    const recentPianoIds = new Set(
-                      services
-                        .filter(s => new Date(s.date) >= twelveMonthsAgo)
-                        .map(s => s.pianoId)
-                        .filter(id => id !== null)
-                    );
-                    
-                    const needsMaintenance = pianos.filter(p => !recentPianoIds.has(p.id));
-                    return needsMaintenance.length.toString();
-                  })()}
+                  value={loadingPredictions ? "..." : (aiPredictions?.predictions.pianosNeedingMaintenance.toString() || "0")}
                 />
               </View>
             </View>
