@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
 import { generatePredictions, type PredictionsData } from '../services/ai/predictions.service.js';
+import { collectBusinessData, generateEnhancedPredictions } from '../services/ai/enhanced-predictions.service.js';
 import { getDb } from '../db.js';
 import { services, clients, pianos } from '../../drizzle/schema.js';
 import { and, gte, lte, count, sum } from 'drizzle-orm';
@@ -21,8 +22,39 @@ export const aiPredictionsRouter = router({
         currentMonth: z.string(), // ISO date string del mes actual
       })
     )
-    .query(async ({ input }) => {
-      const db = getDb();
+    .query(async ({ ctx, input }) => {
+      console.log('[getDashboardPredictions] Iniciando con organizationId:', ctx.organizationId);
+      
+      // Usar el servicio mejorado que recopila TODOS los datos
+      try {
+        const businessData = await collectBusinessData(ctx.organizationId);
+        console.log('[getDashboardPredictions] Datos recopilados:', {
+          revenue: businessData.revenue.current,
+          clients: businessData.clients.total,
+          services: businessData.services.total,
+        });
+        
+        const enhancedPredictions = await generateEnhancedPredictions(businessData);
+        console.log('[getDashboardPredictions] Predicciones generadas exitosamente');
+        
+        // Adaptar el formato para el dashboard
+        return {
+          success: true,
+          predictions: {
+            revenueGrowth: enhancedPredictions.revenue.nextMonth.value > 0 
+              ? `${Math.round(enhancedPredictions.revenue.nextMonth.value)} €`
+              : 'N/A',
+            clientsAtRisk: enhancedPredictions.clientChurn.highRiskCount,
+            pianosNeedingMaintenance: enhancedPredictions.maintenance.upcomingCount,
+          },
+          dataUsed: businessData,
+        };
+      } catch (error) {
+        console.error('[getDashboardPredictions] Error:', error);
+        // Fallback con el método anterior
+      }
+      
+      const db = await getDb();
       const currentMonthDate = new Date(input.currentMonth);
       
       // Calcular fechas
