@@ -139,32 +139,47 @@ export const aiPredictionsEnhancedRouter = router({
   getRevenue: protectedProcedure
     .input(z.object({ months: z.number().min(1).max(12).optional().default(3) }))  
     .query(async ({ ctx, input }) => {
-      const businessData = await collectBusinessData(ctx.organizationId);
-      const predictions = await generateEnhancedPredictions(businessData);
-      
-      // Retornar en formato compatible con widget (array de predicciones)
-      return predictions.revenue.predictions || [];
+      try {
+        const businessData = await collectBusinessData(ctx.organizationId);
+        const predictions = await generateEnhancedPredictions(businessData);
+        
+        // Retornar en formato compatible con widget (array de predicciones)
+        return predictions.revenue.predictions || [];
+      } catch (error) {
+        console.error('[getRevenue] Error:', error);
+        return [];
+      }
     }),
 
   /**
    * Alias de getChurnPredictions para compatibilidad con widgets
    */
   getChurnRisk: protectedProcedure.query(async ({ ctx }) => {
-    const businessData = await collectBusinessData(ctx.organizationId);
-    const predictions = await generateEnhancedPredictions(businessData);
-    
-    // Retornar array de clientes en riesgo
-    return predictions.clientChurn.topRiskClients || [];
+    try {
+      const businessData = await collectBusinessData(ctx.organizationId);
+      const predictions = await generateEnhancedPredictions(businessData);
+      
+      // Retornar array de clientes en riesgo
+      return predictions.clientChurn.topRiskClients || [];
+    } catch (error) {
+      console.error('[getChurnRisk] Error:', error);
+      return [];
+    }
   }),
 
   /**
    * Alias de getMaintenancePredictions para compatibilidad con widgets
    */
   getMaintenance: protectedProcedure.query(async ({ ctx }) => {
-    const businessData = await collectBusinessData(ctx.organizationId);
-    const predictions = await generateEnhancedPredictions(businessData);
-    
-    // Retornar array de mantenimientos previstos
-    return predictions.maintenance.predictions || [];
+    try {
+      const businessData = await collectBusinessData(ctx.organizationId);
+      const predictions = await generateEnhancedPredictions(businessData);
+      
+      // Retornar array de mantenimientos previstos
+      return predictions.maintenance.predictions || [];
+    } catch (error) {
+      console.error('[getMaintenance] Error:', error);
+      return [];
+    }
   }),
 });
