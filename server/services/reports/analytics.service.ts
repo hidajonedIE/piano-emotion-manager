@@ -619,12 +619,14 @@ export class AnalyticsService {
     const db = getDb();
     
     // Contar técnicos distintos asignados a trabajos de esta organización
-    const result = await db
-      .selectDistinct({ technicianId: workAssignments.technicianId })
+    const result = await (await db)
+      .select({ technicianId: workAssignments.technicianId })
       .from(workAssignments)
       .where(eq(workAssignments.organizationId, this.organizationId));
     
-    return result.length || 1; // Mínimo 1 para evitar división por cero
+    // Contar técnicos únicos
+    const uniqueTechnicians = new Set(result.map(r => r.technicianId));
+    return uniqueTechnicians.size || 1; // Mínimo 1 para evitar división por cero
   }
 
   private getWeekNumber(date: Date): number {
