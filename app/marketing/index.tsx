@@ -173,7 +173,6 @@ export default function MarketingScreen() {
         
         <TouchableOpacity 
           style={styles.menuCard}
-          onPress={() => router.push('/marketing/send?type=maintenance')}
         >
           <View style={[styles.menuIcon, { backgroundColor: '#25D366' }]}>
             <Ionicons name="paper-plane" size={24} color="#fff" />

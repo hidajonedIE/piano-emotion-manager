@@ -23,7 +23,8 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useLanguage } from '@/contexts/language-context';
-import { BorderRadius, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, Borders, Shadows, Spacing } from '@/constants/theme';
+import { trpc } from '@/lib/trpc';
 
 // Tipos
 type TabType = 'members' | 'assignments' | 'zones' | 'absences';
@@ -74,131 +75,7 @@ type Absence = {
   notes?: string;
 };
 
-// Datos de ejemplo
-const MOCK_MEMBERS: TeamMember[] = [
-  {
-    id: '1',
-    name: 'Carlos García',
-    email: 'carlos@pianoemotion.com',
-    role: 'owner',
-    status: 'active',
-    phone: '+34 612 345 678',
-    color: '#3B82F6',
-    specialties: ['Afinación', 'Restauración'],
-    lastActiveAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'María López',
-    email: 'maria@pianoemotion.com',
-    role: 'senior_tech',
-    status: 'active',
-    phone: '+34 623 456 789',
-    color: '#10B981',
-    specialties: ['Afinación', 'Regulación'],
-    assignedZones: ['28001-28010'],
-    lastActiveAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Pedro Martínez',
-    email: 'pedro@pianoemotion.com',
-    role: 'technician',
-    status: 'active',
-    phone: '+34 634 567 890',
-    color: '#F59E0B',
-    specialties: ['Afinación'],
-    assignedZones: ['28011-28020'],
-    lastActiveAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: '4',
-    name: 'Ana Fernández',
-    email: 'ana@pianoemotion.com',
-    role: 'apprentice',
-    status: 'pending_invitation',
-    color: '#8B5CF6',
-  },
-];
-
-const MOCK_ASSIGNMENTS: WorkAssignment[] = [
-  {
-    id: '1',
-    technicianId: '2',
-    technicianName: 'María López',
-    clientName: 'Juan Pérez',
-    pianoInfo: 'Yamaha U3',
-    serviceType: 'Afinación',
-    scheduledDate: new Date().toISOString().split('T')[0],
-    scheduledTime: '10:00',
-    status: 'assigned',
-    priority: 'normal',
-  },
-  {
-    id: '2',
-    technicianId: '3',
-    technicianName: 'Pedro Martínez',
-    clientName: 'Laura Sánchez',
-    pianoInfo: 'Steinway B',
-    serviceType: 'Regulación',
-    scheduledDate: new Date().toISOString().split('T')[0],
-    scheduledTime: '15:00',
-    status: 'in_progress',
-    priority: 'high',
-  },
-  {
-    id: '3',
-    technicianId: '',
-    technicianName: 'Sin asignar',
-    clientName: 'Roberto Díaz',
-    pianoInfo: 'Kawai K-500',
-    serviceType: 'Afinación',
-    scheduledDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-    scheduledTime: '11:00',
-    status: 'unassigned',
-    priority: 'urgent',
-  },
-];
-
-const MOCK_ZONES: ServiceZone[] = [
-  {
-    id: '1',
-    name: 'Centro Madrid',
-    postalCodes: ['28001', '28002', '28003', '28004', '28005'],
-    assignedTechnicians: ['2'],
-    color: '#3B82F6',
-  },
-  {
-    id: '2',
-    name: 'Norte Madrid',
-    postalCodes: ['28034', '28035', '28036', '28037'],
-    assignedTechnicians: ['3'],
-    color: '#10B981',
-  },
-];
-
-const MOCK_ABSENCES: Absence[] = [
-  {
-    id: '1',
-    memberId: '2',
-    memberName: 'María López',
-    type: 'vacation',
-    startDate: '2025-01-15',
-    endDate: '2025-01-22',
-    status: 'approved',
-    notes: 'Vacaciones de invierno',
-  },
-  {
-    id: '2',
-    memberId: '3',
-    memberName: 'Pedro Martínez',
-    type: 'training',
-    startDate: '2025-01-10',
-    endDate: '2025-01-10',
-    status: 'pending',
-    notes: 'Curso de restauración',
-  },
-];
+// NO MOCK DATA - Solo datos reales de la base de datos
 
 const ROLE_LABELS: Record<TeamMember['role'], string> = {
   owner: 'Propietario',
@@ -250,6 +127,20 @@ export default function TeamsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
 
+  // Obtener datos reales del backend
+  const organizationsQuery = trpc.team.organizations.list.useQuery();
+  const currentOrgId = organizationsQuery.data?.[0]?.id;
+  
+  const membersQuery = trpc.team.members.list.useQuery(
+    { organizationId: currentOrgId! },
+    { enabled: !!currentOrgId }
+  );
+  
+  const assignmentsQuery = trpc.team.workAssignments.list.useQuery(
+    { organizationId: currentOrgId! },
+    { enabled: !!currentOrgId }
+  );
+
   // Colores del tema
   const cardBg = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -259,180 +150,274 @@ export default function TeamsScreen() {
   const warning = useThemeColor({}, 'warning');
   const error = useThemeColor({}, 'error');
 
+  const members = membersQuery.data || [];
+  const assignments = assignmentsQuery.data || [];
+
   // Estadísticas
   const stats = useMemo(() => ({
-    totalMembers: MOCK_MEMBERS.length,
-    activeMembers: MOCK_MEMBERS.filter(m => m.status === 'active').length,
-    pendingInvitations: MOCK_MEMBERS.filter(m => m.status === 'pending_invitation').length,
-    unassignedWork: MOCK_ASSIGNMENTS.filter(a => a.status === 'unassigned').length,
-    todayAssignments: MOCK_ASSIGNMENTS.filter(a => 
+    totalMembers: members.length,
+    activeMembers: members.filter((m: any) => m.status === 'active').length,
+    pendingInvitations: members.filter((m: any) => m.status === 'pending_invitation').length,
+    unassignedWork: assignments.filter((a: any) => a.status === 'unassigned').length,
+    todayAssignments: assignments.filter((a: any) => 
       a.scheduledDate === new Date().toISOString().split('T')[0]
     ).length,
-    pendingAbsences: MOCK_ABSENCES.filter(a => a.status === 'pending').length,
-  }), []);
+    pendingAbsences: 0, // TODO: Implementar cuando haya endpoint de ausencias
+  }), [members, assignments]);
 
   // Filtrar miembros
   const filteredMembers = useMemo(() => {
-    if (!searchQuery) return MOCK_MEMBERS;
+    if (!searchQuery) return members;
     const query = searchQuery.toLowerCase();
-    return MOCK_MEMBERS.filter(m =>
-      m.name.toLowerCase().includes(query) ||
-      m.email.toLowerCase().includes(query) ||
-      ROLE_LABELS[m.role].toLowerCase().includes(query)
+    return members.filter((m: any) =>
+      m.name?.toLowerCase().includes(query) ||
+      m.email?.toLowerCase().includes(query) ||
+      m.role?.toLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [members, searchQuery]);
 
-  // Filtrar asignaciones
-  const filteredAssignments = useMemo(() => {
-    if (!searchQuery) return MOCK_ASSIGNMENTS;
-    const query = searchQuery.toLowerCase();
-    return MOCK_ASSIGNMENTS.filter(a =>
-      a.clientName.toLowerCase().includes(query) ||
-      a.technicianName.toLowerCase().includes(query) ||
-      a.serviceType.toLowerCase().includes(query)
-    );
-  }, [searchQuery]);
-
-  const handleInviteMember = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      'Invitar miembro',
-      'Introduce el email del nuevo miembro para enviar una invitación.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-      ]
-    );
-  };
-
-  const handleAssignWork = (assignmentId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      'Asignar trabajo',
-      'Selecciona un técnico para asignar este trabajo.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-      ]
-    );
-  };
-
+  // Tabs
   const tabs: { key: TabType; label: string; icon: string; badge?: number }[] = [
-    { key: 'members', label: 'Miembros', icon: 'person.3.fill', badge: stats.pendingInvitations > 0 ? stats.pendingInvitations : undefined },
-    { key: 'assignments', label: 'Asignaciones', icon: 'list.clipboard.fill', badge: stats.unassignedWork > 0 ? stats.unassignedWork : undefined },
-    { key: 'zones', label: 'Zonas', icon: 'map.fill' },
-    { key: 'absences', label: 'Ausencias', icon: 'calendar.badge.clock', badge: stats.pendingAbsences > 0 ? stats.pendingAbsences : undefined },
+    { key: 'members', label: 'Miembros', icon: 'person.3', badge: stats.totalMembers },
+    { key: 'assignments', label: 'Asignaciones', icon: 'calendar.badge.clock', badge: stats.unassignedWork },
+    { key: 'zones', label: 'Zonas', icon: 'map' },
+    { key: 'absences', label: 'Ausencias', icon: 'calendar.badge.exclamationmark', badge: stats.pendingAbsences },
   ];
 
-  const getStatusColor = (status: TeamMember['status']) => {
-    switch (status) {
-      case 'active': return success;
-      case 'pending_invitation': return warning;
-      case 'suspended': return error;
-      case 'inactive': return textSecondary;
-      default: return textSecondary;
+  const handleTabChange = (tab: TabType) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setActiveTab(tab);
+  };
+
+  const handleInviteMember = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setShowInviteModal(true);
+  };
+
+  // Renderizar contenido según tab activo
+  const renderContent = () => {
+    if (membersQuery.isLoading || assignmentsQuery.isLoading) {
+      return (
+        <View style={styles.emptyState}>
+          <ThemedText style={styles.emptyText}>Cargando...</ThemedText>
+        </View>
+      );
+    }
+
+    if (membersQuery.isError || assignmentsQuery.isError) {
+      return (
+        <View style={styles.emptyState}>
+          <ThemedText style={styles.emptyText}>Error al cargar datos</ThemedText>
+        </View>
+      );
+    }
+
+    switch (activeTab) {
+      case 'members':
+        return renderMembersTab();
+      case 'assignments':
+        return renderAssignmentsTab();
+      case 'zones':
+        return renderZonesTab();
+      case 'absences':
+        return renderAbsencesTab();
+      default:
+        return null;
     }
   };
 
-  const getPriorityColor = (priority: WorkAssignment['priority']) => {
-    switch (priority) {
-      case 'urgent': return error;
-      case 'high': return warning;
-      case 'normal': return accent;
-      case 'low': return textSecondary;
-      default: return textSecondary;
+  const renderMembersTab = () => {
+    if (filteredMembers.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <IconSymbol name="person.3" size={64} color={textSecondary} />
+          <ThemedText style={styles.emptyText}>
+            {searchQuery ? 'No se encontraron miembros' : 'No hay miembros en el equipo'}
+          </ThemedText>
+          {!searchQuery && (
+            <Pressable
+              style={[styles.emptyButton, { backgroundColor: accent }]}
+              onPress={handleInviteMember}
+            >
+              <ThemedText style={styles.emptyButtonText}>Invitar miembro</ThemedText>
+            </Pressable>
+          )}
+        </View>
+      );
     }
+
+    return (
+      <View style={styles.listContainer}>
+        {filteredMembers.map((member: any) => (
+          <View key={member.id} style={[styles.memberCard, { backgroundColor: cardBg, borderColor }]}>
+            <View style={styles.memberHeader}>
+              <View style={[styles.memberAvatar, { backgroundColor: member.color || accent }]}>
+                <ThemedText style={styles.memberAvatarText}>
+                  {member.name?.charAt(0).toUpperCase() || '?'}
+                </ThemedText>
+              </View>
+              <View style={styles.memberInfo}>
+                <ThemedText style={styles.memberName}>{member.name || 'Sin nombre'}</ThemedText>
+                <ThemedText style={[styles.memberEmail, { color: textSecondary }]}>
+                  {member.email || 'Sin email'}
+                </ThemedText>
+              </View>
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: member.status === 'active' ? success : warning }
+              ]}>
+                <ThemedText style={styles.statusText}>
+                  {STATUS_LABELS[member.status as TeamMember['status']] || member.status}
+                </ThemedText>
+              </View>
+            </View>
+            <View style={styles.memberDetails}>
+              <View style={styles.memberDetailRow}>
+                <IconSymbol name="briefcase" size={16} color={textSecondary} />
+                <ThemedText style={[styles.memberDetailText, { color: textSecondary }]}>
+                  {ROLE_LABELS[member.role as TeamMember['role']] || member.role}
+                </ThemedText>
+              </View>
+              {member.phone && (
+                <View style={styles.memberDetailRow}>
+                  <IconSymbol name="phone" size={16} color={textSecondary} />
+                  <ThemedText style={[styles.memberDetailText, { color: textSecondary }]}>
+                    {member.phone}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+          </View>
+        ))}
+      </View>
+    );
   };
 
-  const getAssignmentStatusColor = (status: WorkAssignment['status']) => {
-    switch (status) {
-      case 'completed': return success;
-      case 'in_progress': return accent;
-      case 'assigned':
-      case 'accepted': return warning;
-      case 'unassigned': return error;
-      case 'cancelled': return textSecondary;
-      default: return textSecondary;
+  const renderAssignmentsTab = () => {
+    if (assignments.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <IconSymbol name="calendar.badge.clock" size={64} color={textSecondary} />
+          <ThemedText style={styles.emptyText}>No hay asignaciones de trabajo</ThemedText>
+        </View>
+      );
     }
+
+    return (
+      <View style={styles.listContainer}>
+        {assignments.map((assignment: any) => (
+          <View key={assignment.id} style={[styles.assignmentCard, { backgroundColor: cardBg, borderColor }]}>
+            <View style={styles.assignmentHeader}>
+              <ThemedText style={styles.assignmentClient}>{assignment.clientName}</ThemedText>
+              <View style={[
+                styles.priorityBadge,
+                { backgroundColor: assignment.priority === 'urgent' ? error : assignment.priority === 'high' ? warning : accent }
+              ]}>
+                <ThemedText style={styles.priorityText}>
+                  {PRIORITY_LABELS[assignment.priority as WorkAssignment['priority']]}
+                </ThemedText>
+              </View>
+            </View>
+            <ThemedText style={[styles.assignmentPiano, { color: textSecondary }]}>
+              {assignment.pianoInfo}
+            </ThemedText>
+            <ThemedText style={[styles.assignmentService, { color: textSecondary }]}>
+              {assignment.serviceType}
+            </ThemedText>
+            <View style={styles.assignmentFooter}>
+              <View style={styles.assignmentDate}>
+                <IconSymbol name="calendar" size={16} color={textSecondary} />
+                <ThemedText style={[styles.assignmentDateText, { color: textSecondary }]}>
+                  {assignment.scheduledDate} {assignment.scheduledTime}
+                </ThemedText>
+              </View>
+              {assignment.technicianName && (
+                <View style={styles.assignmentTechnician}>
+                  <IconSymbol name="person" size={16} color={textSecondary} />
+                  <ThemedText style={[styles.assignmentTechnicianText, { color: textSecondary }]}>
+                    {assignment.technicianName}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderZonesTab = () => {
+    return (
+      <View style={styles.emptyState}>
+        <IconSymbol name="map" size={64} color={textSecondary} />
+        <ThemedText style={styles.emptyText}>Funcionalidad de zonas en desarrollo</ThemedText>
+      </View>
+    );
+  };
+
+  const renderAbsencesTab = () => {
+    return (
+      <View style={styles.emptyState}>
+        <IconSymbol name="calendar.badge.exclamationmark" size={64} color={textSecondary} />
+        <ThemedText style={styles.emptyText}>Funcionalidad de ausencias en desarrollo</ThemedText>
+      </View>
+    );
   };
 
   return (
-    <LinearGradient
-      colors={['#F8F9FA', '#EEF2F7', '#E8EDF5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.container}
-    >
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: borderColor }]}>
-        <View style={styles.headerTop}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.back();
-            }}
-          >
-            <IconSymbol name="chevron.left" size={24} color={accent} />
-          </Pressable>
-          <ThemedText type="title" style={styles.headerTitle}>
-            Gestión de Equipos
-          </ThemedText>
-          <Pressable
-            style={[styles.addButton, { backgroundColor: accent }]}
-            onPress={handleInviteMember}
-          >
-            <IconSymbol name="person.badge.plus" size={20} color="#FFFFFF" />
-          </Pressable>
+    <View style={styles.container}>
+      {/* Header con estadísticas */}
+      <View style={[styles.statsContainer, { backgroundColor: cardBg }]}>
+        <View style={styles.statItem}>
+          <ThemedText style={styles.statValue}>{stats.totalMembers}</ThemedText>
+          <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Miembros</ThemedText>
         </View>
-
-        {/* Estadísticas rápidas */}
-        <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: cardBg, borderColor }]}>
-            <ThemedText style={[styles.statValue, { color: accent }]}>{stats.activeMembers}</ThemedText>
-            <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Activos</ThemedText>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: cardBg, borderColor }]}>
-            <ThemedText style={[styles.statValue, { color: warning }]}>{stats.todayAssignments}</ThemedText>
-            <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Hoy</ThemedText>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: cardBg, borderColor }]}>
-            <ThemedText style={[styles.statValue, { color: error }]}>{stats.unassignedWork}</ThemedText>
-            <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Sin asignar</ThemedText>
-          </View>
+        <View style={styles.statItem}>
+          <ThemedText style={styles.statValue}>{stats.activeMembers}</ThemedText>
+          <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Activos</ThemedText>
+        </View>
+        <View style={styles.statItem}>
+          <ThemedText style={styles.statValue}>{stats.unassignedWork}</ThemedText>
+          <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Sin asignar</ThemedText>
+        </View>
+        <View style={styles.statItem}>
+          <ThemedText style={styles.statValue}>{stats.todayAssignments}</ThemedText>
+          <ThemedText style={[styles.statLabel, { color: textSecondary }]}>Hoy</ThemedText>
         </View>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
+      <View style={[styles.tabsContainer, { borderBottomColor: borderColor }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {tabs.map((tab) => (
             <Pressable
               key={tab.key}
               style={[
                 styles.tab,
-                { borderColor },
-                activeTab === tab.key && { backgroundColor: `${accent}15`, borderColor: accent },
+                activeTab === tab.key && [styles.tabActive, { borderBottomColor: accent }]
               ]}
-              onPress={() => {
-                Haptics.selectionAsync();
-                setActiveTab(tab.key);
-              }}
+              onPress={() => handleTabChange(tab.key)}
             >
               <IconSymbol
                 name={tab.icon as any}
-                size={18}
+                size={20}
                 color={activeTab === tab.key ? accent : textSecondary}
               />
               <ThemedText
                 style={[
                   styles.tabLabel,
-                  { color: activeTab === tab.key ? accent : textSecondary },
+                  activeTab === tab.key && { color: accent }
                 ]}
               >
                 {tab.label}
               </ThemedText>
-              {tab.badge && (
-                <View style={[styles.tabBadge, { backgroundColor: error }]}>
-                  <ThemedText style={styles.tabBadgeText}>{tab.badge}</ThemedText>
+              {tab.badge !== undefined && tab.badge > 0 && (
+                <View style={[styles.badge, { backgroundColor: accent }]}>
+                  <ThemedText style={styles.badgeText}>{tab.badge}</ThemedText>
                 </View>
               )}
             </Pressable>
@@ -440,259 +425,35 @@ export default function TeamsScreen() {
         </ScrollView>
       </View>
 
-      {/* Búsqueda */}
-      <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { backgroundColor: cardBg, borderColor }]}>
-          <IconSymbol name="magnifyingglass" size={18} color={textSecondary} />
+      {/* Barra de búsqueda (solo en tab de miembros) */}
+      {activeTab === 'members' && (
+        <View style={[styles.searchContainer, { backgroundColor: cardBg, borderColor }]}>
+          <IconSymbol name="magnifyingglass" size={20} color={textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: useThemeColor({}, 'text') }]}
-            placeholder="Buscar..."
+            placeholder="Buscar miembros..."
             placeholderTextColor={textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <IconSymbol name="xmark.circle.fill" size={18} color={textSecondary} />
-            </Pressable>
-          )}
         </View>
-      </View>
+      )}
 
       {/* Contenido */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Tab: Miembros */}
-        {activeTab === 'members' && (
-          <View>
-            {filteredMembers.map((member) => (
-              <Pressable
-                key={member.id}
-                style={[styles.card, { backgroundColor: cardBg, borderColor }]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  // router.push(`/teams/member/${member.id}`);
-                }}
-              >
-                <View style={styles.cardHeader}>
-                  <View style={[styles.avatar, { backgroundColor: member.color || accent }]}>
-                    <ThemedText style={styles.avatarText}>
-                      {member.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                    </ThemedText>
-                  </View>
-                  <View style={styles.cardInfo}>
-                    <ThemedText type="defaultSemiBold">{member.name}</ThemedText>
-                    <ThemedText style={[styles.cardSubtitle, { color: textSecondary }]}>
-                      {member.email}
-                    </ThemedText>
-                  </View>
-                  <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(member.status)}20` }]}>
-                    <View style={[styles.statusDot, { backgroundColor: getStatusColor(member.status) }]} />
-                    <ThemedText style={[styles.statusText, { color: getStatusColor(member.status) }]}>
-                      {STATUS_LABELS[member.status]}
-                    </ThemedText>
-                  </View>
-                </View>
-                <View style={styles.cardDetails}>
-                  <View style={styles.detailItem}>
-                    <IconSymbol name="person.fill" size={14} color={textSecondary} />
-                    <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                      {ROLE_LABELS[member.role]}
-                    </ThemedText>
-                  </View>
-                  {member.specialties && member.specialties.length > 0 && (
-                    <View style={styles.detailItem}>
-                      <IconSymbol name="wrench.fill" size={14} color={textSecondary} />
-                      <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                        {member.specialties.join(', ')}
-                      </ThemedText>
-                    </View>
-                  )}
-                  {member.assignedZones && member.assignedZones.length > 0 && (
-                    <View style={styles.detailItem}>
-                      <IconSymbol name="map.fill" size={14} color={textSecondary} />
-                      <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                        {member.assignedZones.join(', ')}
-                      </ThemedText>
-                    </View>
-                  )}
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {/* Tab: Asignaciones */}
-        {activeTab === 'assignments' && (
-          <View>
-            {filteredAssignments.map((assignment) => (
-              <Pressable
-                key={assignment.id}
-                style={[styles.card, { backgroundColor: cardBg, borderColor }]}
-                onPress={() => {
-                  if (assignment.status === 'unassigned') {
-                    handleAssignWork(assignment.id);
-                  }
-                }}
-              >
-                <View style={styles.cardHeader}>
-                  <View style={[styles.priorityIndicator, { backgroundColor: getPriorityColor(assignment.priority) }]} />
-                  <View style={styles.cardInfo}>
-                    <ThemedText type="defaultSemiBold">{assignment.clientName}</ThemedText>
-                    <ThemedText style={[styles.cardSubtitle, { color: textSecondary }]}>
-                      {assignment.pianoInfo} • {assignment.serviceType}
-                    </ThemedText>
-                  </View>
-                  <View style={[styles.statusBadge, { backgroundColor: `${getAssignmentStatusColor(assignment.status)}20` }]}>
-                    <ThemedText style={[styles.statusText, { color: getAssignmentStatusColor(assignment.status) }]}>
-                      {ASSIGNMENT_STATUS_LABELS[assignment.status]}
-                    </ThemedText>
-                  </View>
-                </View>
-                <View style={styles.cardDetails}>
-                  <View style={styles.detailItem}>
-                    <IconSymbol name="calendar" size={14} color={textSecondary} />
-                    <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                      {assignment.scheduledDate} a las {assignment.scheduledTime}
-                    </ThemedText>
-                  </View>
-                  <View style={styles.detailItem}>
-                    <IconSymbol name="person.fill" size={14} color={textSecondary} />
-                    <ThemedText style={[styles.detailText, { color: assignment.status === 'unassigned' ? error : textSecondary }]}>
-                      {assignment.technicianName}
-                    </ThemedText>
-                  </View>
-                </View>
-                {assignment.status === 'unassigned' && (
-                  <Pressable
-                    style={[styles.assignButton, { backgroundColor: accent }]}
-                    onPress={() => handleAssignWork(assignment.id)}
-                  >
-                    <IconSymbol name="person.badge.plus" size={16} color="#FFFFFF" />
-                    <ThemedText style={styles.assignButtonText}>Asignar técnico</ThemedText>
-                  </Pressable>
-                )}
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {/* Tab: Zonas */}
-        {activeTab === 'zones' && (
-          <View>
-            {MOCK_ZONES.map((zone) => (
-              <View key={zone.id} style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-                <View style={styles.cardHeader}>
-                  <View style={[styles.zoneColor, { backgroundColor: zone.color }]} />
-                  <View style={styles.cardInfo}>
-                    <ThemedText type="defaultSemiBold">{zone.name}</ThemedText>
-                    <ThemedText style={[styles.cardSubtitle, { color: textSecondary }]}>
-                      {zone.postalCodes.length} códigos postales
-                    </ThemedText>
-                  </View>
-                </View>
-                <View style={styles.cardDetails}>
-                  <View style={styles.detailItem}>
-                    <IconSymbol name="mappin" size={14} color={textSecondary} />
-                    <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                      {zone.postalCodes.join(', ')}
-                    </ThemedText>
-                  </View>
-                  <View style={styles.detailItem}>
-                    <IconSymbol name="person.2.fill" size={14} color={textSecondary} />
-                    <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                      {zone.assignedTechnicians.length} técnico(s) asignado(s)
-                    </ThemedText>
-                  </View>
-                </View>
-              </View>
-            ))}
-            <Pressable
-              style={[styles.addZoneButton, { borderColor: accent }]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                Alert.alert('Nueva zona', 'Crear una nueva zona de servicio');
-              }}
-            >
-              <IconSymbol name="plus" size={20} color={accent} />
-              <ThemedText style={[styles.addZoneText, { color: accent }]}>Añadir zona</ThemedText>
-            </Pressable>
-          </View>
-        )}
-
-        {/* Tab: Ausencias */}
-        {activeTab === 'absences' && (
-          <View>
-            {MOCK_ABSENCES.map((absence) => (
-              <View key={absence.id} style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
-                <View style={styles.cardHeader}>
-                  <View style={styles.cardInfo}>
-                    <ThemedText type="defaultSemiBold">{absence.memberName}</ThemedText>
-                    <ThemedText style={[styles.cardSubtitle, { color: textSecondary }]}>
-                      {ABSENCE_TYPE_LABELS[absence.type]}
-                    </ThemedText>
-                  </View>
-                  <View style={[
-                    styles.statusBadge,
-                    { backgroundColor: absence.status === 'approved' ? `${success}20` : absence.status === 'pending' ? `${warning}20` : `${error}20` }
-                  ]}>
-                    <ThemedText style={[
-                      styles.statusText,
-                      { color: absence.status === 'approved' ? success : absence.status === 'pending' ? warning : error }
-                    ]}>
-                      {absence.status === 'approved' ? 'Aprobada' : absence.status === 'pending' ? 'Pendiente' : 'Rechazada'}
-                    </ThemedText>
-                  </View>
-                </View>
-                <View style={styles.cardDetails}>
-                  <View style={styles.detailItem}>
-                    <IconSymbol name="calendar" size={14} color={textSecondary} />
-                    <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                      {absence.startDate} - {absence.endDate}
-                    </ThemedText>
-                  </View>
-                  {absence.notes && (
-                    <View style={styles.detailItem}>
-                      <IconSymbol name="note.text" size={14} color={textSecondary} />
-                      <ThemedText style={[styles.detailText, { color: textSecondary }]}>
-                        {absence.notes}
-                      </ThemedText>
-                    </View>
-                  )}
-                </View>
-                {absence.status === 'pending' && (
-                  <View style={styles.absenceActions}>
-                    <Pressable
-                      style={[styles.absenceButton, { backgroundColor: success }]}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                        Alert.alert('Aprobar', '¿Aprobar esta ausencia?');
-                      }}
-                    >
-                      <IconSymbol name="checkmark" size={16} color="#FFFFFF" />
-                      <ThemedText style={styles.absenceButtonText}>Aprobar</ThemedText>
-                    </Pressable>
-                    <Pressable
-                      style={[styles.absenceButton, { backgroundColor: error }]}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                        Alert.alert('Rechazar', '¿Rechazar esta ausencia?');
-                      }}
-                    >
-                      <IconSymbol name="xmark" size={16} color="#FFFFFF" />
-                      <ThemedText style={styles.absenceButtonText}>Rechazar</ThemedText>
-                    </Pressable>
-                  </View>
-                )}
-              </View>
-            ))}
-          </View>
-        )}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {renderContent()}
       </ScrollView>
-    </LinearGradient>
+
+      {/* Botón flotante */}
+      {activeTab === 'members' && (
+        <Pressable
+          style={[styles.fab, { backgroundColor: accent }]}
+          onPress={handleInviteMember}
+        >
+          <IconSymbol name="plus" size={24} color="#FFFFFF" />
+        </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -700,225 +461,218 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingTop: Platform.OS === 'web' ? 20 : 60,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-  },
-  headerTop: {
+  statsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.md,
+    justifyContent: 'space-around',
+    padding: Spacing.md,
+    ...Shadows.sm,
   },
-  backButton: {
-    padding: Spacing.sm,
-    marginLeft: -Spacing.sm,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  statCard: {
-    flex: 1,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
+  statItem: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700',
   },
   statLabel: {
-    fontSize: 11,
-    marginTop: 2,
+    fontSize: 12,
+    marginTop: 4,
   },
   tabsContainer: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    marginRight: Spacing.sm,
     gap: Spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomWidth: 2,
   },
   tabLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  tabBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 5,
-  },
-  tabBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '600',
   },
-  searchContainer: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.sm,
+  badge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
   },
-  searchBar: {
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.sm,
+    margin: Spacing.md,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     gap: Spacing.sm,
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
-    padding: 0,
-  },
-  scrollView: {
-    flex: 1,
+    fontSize: 16,
   },
   content: {
-    padding: Spacing.lg,
-    paddingTop: 0,
+    flex: 1,
   },
-  card: {
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
+  listContainer: {
     padding: Spacing.md,
-    marginBottom: Spacing.md,
-    ...Shadows.small,
+    gap: Spacing.md,
   },
-  cardHeader: {
+  memberCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    ...Shadows.sm,
+  },
+  memberHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.sm,
   },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
+  memberAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
-    marginRight: Spacing.md,
+    alignItems: 'center',
   },
-  avatarText: {
+  memberAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  memberInfo: {
+    flex: 1,
+    marginLeft: Spacing.sm,
+  },
+  memberName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  memberEmail: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  statusBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  memberDetails: {
+    gap: Spacing.xs,
+  },
+  memberDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  memberDetailText: {
+    fontSize: 14,
+  },
+  assignmentCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    ...Shadows.sm,
+  },
+  assignmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+  assignmentClient: {
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+  },
+  priorityBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  priorityText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  assignmentPiano: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  assignmentService: {
+    fontSize: 14,
+    marginBottom: Spacing.sm,
+  },
+  assignmentFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  assignmentDate: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  assignmentDateText: {
+    fontSize: 14,
+  },
+  assignmentTechnician: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  assignmentTechnicianText: {
+    fontSize: 14,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: Spacing.md,
+  },
+  emptyButton: {
+    marginTop: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  emptyButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
-  cardInfo: {
-    flex: 1,
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-    gap: 4,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  cardDetails: {
-    gap: Spacing.xs,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  detailText: {
-    fontSize: 13,
-  },
-  priorityIndicator: {
-    width: 4,
-    height: 44,
-    borderRadius: 2,
-    marginRight: Spacing.md,
-  },
-  assignButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  fab: {
+    position: 'absolute',
+    right: Spacing.md,
+    bottom: Spacing.md,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.sm,
-    marginTop: Spacing.md,
-    gap: Spacing.xs,
-  },
-  assignButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  zoneColor: {
-    width: 12,
-    height: 44,
-    borderRadius: 6,
-    marginRight: Spacing.md,
-  },
-  addZoneButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    gap: Spacing.sm,
-  },
-  addZoneText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  absenceActions: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: Spacing.md,
-  },
-  absenceButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.sm,
-    gap: Spacing.xs,
-  },
-  absenceButtonText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
+    ...Shadows.lg,
   },
 });

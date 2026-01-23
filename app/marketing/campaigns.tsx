@@ -126,7 +126,6 @@ export default function CampaignsScreen() {
             setIsCreateModalVisible(false);
             resetForm();
             // Navegar a la pantalla de envío por lotes
-            router.push('/marketing/send?campaignId=new');
           }},
         ]
       );
@@ -165,7 +164,6 @@ export default function CampaignsScreen() {
   
   const openCampaign = (campaign: Campaign) => {
     if (campaign.status === 'in_progress' || campaign.status === 'draft') {
-      router.push(`/marketing/send?campaignId=${campaign.id}`);
     } else {
       // Ver detalles de campaña completada
       Alert.alert('Campaña Completada', `Enviados: ${campaign.sentCount}/${campaign.totalRecipients}`);
@@ -599,7 +597,6 @@ export default function CampaignsScreen() {
           
           <TouchableOpacity 
             style={styles.quickActionCard}
-            onPress={() => router.push('/marketing/send?type=maintenance')}
           >
             <View style={styles.quickActionIcon}>
               <Ionicons name="construct" size={24} color="#fff" />
@@ -615,7 +612,6 @@ export default function CampaignsScreen() {
           
           <TouchableOpacity 
             style={styles.quickActionCard}
-            onPress={() => router.push('/marketing/send?type=reactivation')}
           >
             <View style={[styles.quickActionIcon, { backgroundColor: '#FF9800' }]}>
               <Ionicons name="refresh" size={24} color="#fff" />
