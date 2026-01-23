@@ -154,6 +154,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     downloadPDF('executive', dateRange);
   }, [dateRange, downloadPDF]);
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
   const periods: { key: PeriodPreset; label: string }[] = [
     { key: 'thisWeek', label: t('reports.thisWeek') },
     { key: 'thisMonth', label: t('reports.thisMonth') },
@@ -209,8 +218,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <View style={styles.metricsGrid}>
         <MetricCard
           title={t('reports.revenue')}
-          value={`${metrics?.revenue || 0} €`}
-          change={metrics?.revenueChange}
+          value={formatCurrency(metrics?.revenue?.total || 0)}
+          change={metrics?.revenue?.changePercent}
           icon="cash-outline"
           color={COLORS.income}
         />
@@ -223,13 +232,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <MetricCard
           title={t('reports.clients')}
           value={metrics?.clients?.total || 0}
-          change={metrics?.clientsChange}
+          change={metrics?.clients?.changePercent}
           icon="people-outline"
           color={COLORS.clients}
         />
         <MetricCard
           title={t('reports.avgTicket')}
-          value={`${metrics?.avgTicket || 0} €`}
+          value={formatCurrency(metrics?.averages?.ticketValue || 0)}
           icon="receipt-outline"
           color={COLORS.pianos}
         />
