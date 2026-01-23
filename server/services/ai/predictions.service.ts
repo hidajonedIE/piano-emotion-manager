@@ -38,7 +38,7 @@ export interface AIPredictions {
  * Genera predicciones inteligentes usando Gemini
  */
 export async function generatePredictions(data: PredictionsData): Promise<AIPredictions> {
-  const prompt = `Eres un analista de datos experto en gestión de servicios de pianos. Analiza los siguientes datos y genera predicciones precisas:
+  const prompt = `Eres un analista predictivo experto en gestión de servicios de pianos. Analiza los siguientes datos históricos y genera PREDICCIONES FUTURAS para el próximo mes:
 
 DATOS DE INGRESOS:
 - Ingresos mes actual: ${data.currentMonthRevenue}€
@@ -55,17 +55,19 @@ DATOS DE MANTENIMIENTO:
 - Pianos sin mantenimiento (12+ meses): ${data.pianosWithoutRecentMaintenance}
 - Servicios últimos 12 meses: ${data.servicesLast12Months.join(', ')}
 
-GENERA UN JSON CON ESTE FORMATO EXACTO (sin texto adicional):
+GENERA PREDICCIONES FUTURAS en JSON con este formato exacto:
 {
-  "revenueGrowth": "porcentaje de crecimiento previsto (ej: +12%, -5%, o N/A si no hay datos suficientes)",
-  "clientsAtRisk": número de clientes en riesgo de abandono,
-  "pianosNeedingMaintenance": número de pianos que necesitan mantenimiento urgente,
+  "revenueGrowth": "porcentaje de crecimiento PREVISTO para el próximo mes basado en tendencia (ej: +15%, -8%, o N/A si no hay datos)",
+  "clientsAtRisk": número estimado de clientes que podrían abandonar el próximo mes (basado en inactividad),
+  "pianosNeedingMaintenance": número de pianos que NECESITARÁN mantenimiento en el próximo mes (basado en ciclos históricos),
   "insights": {
-    "revenue": "breve análisis de tendencia de ingresos (máx 50 caracteres)",
-    "clients": "breve análisis de situación de clientes (máx 50 caracteres)",
-    "maintenance": "breve análisis de necesidades de mantenimiento (máx 50 caracteres)"
+    "revenue": "predicción de tendencia futura de ingresos (máx 50 caracteres)",
+    "clients": "predicción sobre retención de clientes (máx 50 caracteres)",
+    "maintenance": "predicción de necesidades de mantenimiento (máx 50 caracteres)"
   }
-}`;
+}
+
+IMPORTANTE: Las predicciones deben ser FUTURAS, no análisis del presente. Usa los datos históricos para predecir el próximo mes.`;
 
   try {
     const response = await invokeGemini(prompt, {
