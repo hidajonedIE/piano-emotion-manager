@@ -134,10 +134,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [refreshing, setRefreshing] = useState(false);
 
   // Hooks
-  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics(selectedPeriod);
-  const { data: revenueData } = useRevenueChart(selectedPeriod);
-  const { data: servicesData } = useServicesByType(selectedPeriod);
-  const { exportReport } = useReportExport();
+  const {
+    metrics,
+    isLoading: metricsLoading,
+    dateRange,
+    changePeriod,
+  } = useDashboardMetrics(selectedPeriod);
+  const { data: revenueData } = useRevenueChart(dateRange, 'month');
+  const { data: servicesData } = useServicesByType(dateRange);
+  const { downloadPDF } = useReportExport();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -146,8 +151,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   }, []);
 
   const handleExport = useCallback(() => {
-    exportReport(selectedPeriod);
-  }, [selectedPeriod, exportReport]);
+    downloadPDF('executive', dateRange);
+  }, [dateRange, downloadPDF]);
 
   const periods: { key: PeriodPreset; label: string }[] = [
     { key: 'thisWeek', label: t('reports.thisWeek') },
