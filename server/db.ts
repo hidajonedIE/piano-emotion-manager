@@ -11,7 +11,7 @@ import * as distributorSchema from "../drizzle/distributor-schema.js";
 type InsertUser = InferInsertModel<typeof users>;
 import { ENV } from "./_core/env.js";
 
-let _db: ReturnType<typeof drizzle> | null = null;
+let _db: ReturnType<typeof drizzle<typeof schema & typeof shopSchema & typeof crmSchema & typeof distributorSchema>> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
