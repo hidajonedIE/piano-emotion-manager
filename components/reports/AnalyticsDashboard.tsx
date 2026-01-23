@@ -141,7 +141,17 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     dateRange,
     changePeriod,
   } = useDashboardMetrics(selectedPeriod, timeOffset);
-  const { data: revenueData, isLoading: revenueLoading } = useRevenueChart(dateRange, 'month');
+  
+  // Crear rango extendido para el gráfico (siempre 6 meses de historia)
+  const extendedDateRange = useMemo(() => {
+    const endDate = dateRange.endDate;
+    const startDate = new Date(endDate);
+    startDate.setMonth(startDate.getMonth() - 5); // 6 meses incluyendo el actual
+    startDate.setDate(1); // Primer día del mes
+    return { startDate, endDate };
+  }, [dateRange]);
+  
+  const { data: revenueData, isLoading: revenueLoading } = useRevenueChart(extendedDateRange, 'month');
   const { data: rawServicesData } = useServicesByType(dateRange);
   const { downloadPDF } = useReportExport();
 
@@ -464,11 +474,14 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+    flexShrink: 0,
+    minWidth: 200,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.white,
+    flexWrap: 'nowrap',
   },
   headerSubtitle: {
     fontSize: 13,
@@ -620,7 +633,8 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   chartHeader: {
-    marginBottom: 8,
+    marginBottom: 16,
+    paddingBottom: 8,
   },
   chartTitle: {
     fontSize: 14,
