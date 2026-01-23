@@ -59,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .set({
         subscriptionPlan: 'premium',
         subscriptionStatus: 'active',
-        updatedAt: new Date()
+        updatedAt: new Date().toISOString()
       })
       .where(eq(users.id, user.id));
 
