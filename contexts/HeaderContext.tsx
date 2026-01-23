@@ -5,6 +5,7 @@ export interface HeaderConfig {
   subtitle?: string;
   icon?: string;
   iconColor?: string;
+  customIcon?: any; // Para imágenes personalizadas (require)
   showLogo?: boolean;
   showBackButton?: boolean;
   rightAction?: ReactNode;

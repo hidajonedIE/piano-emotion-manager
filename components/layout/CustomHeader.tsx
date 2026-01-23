@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Pressable, StyleSheet, Platform } from 'react-native';
+import { View, Pressable, StyleSheet, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -19,6 +19,7 @@ interface CustomHeaderProps {
   subtitle?: string;
   icon?: string;
   iconColor?: string;
+  customIcon?: any; // Para imágenes personalizadas (require)
   onMenuPress?: () => void;
   showMenuButton?: boolean;
   showBackButton?: boolean;
@@ -30,6 +31,7 @@ export default function CustomHeader({
   subtitle,
   icon,
   iconColor = '#FFFFFF',
+  customIcon,
   onMenuPress, 
   showMenuButton = false,
   showBackButton = false,
@@ -69,7 +71,17 @@ export default function CustomHeader({
             </Pressable>
           )}
 
-          {icon && (
+          {customIcon && (
+            <View style={styles.iconContainer}>
+              <Image
+                source={customIcon}
+                style={styles.customIconImage}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+          
+          {!customIcon && icon && (
             <View style={styles.iconContainer}>
               <IconSymbol name={icon as any} size={48} color={iconColor} />
             </View>
@@ -171,6 +183,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  customIconImage: {
+    width: 36,
+    height: 36,
+    tintColor: '#FFFFFF',
   },
   titleContainer: {
     flex: 1,

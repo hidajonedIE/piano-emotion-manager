@@ -18,8 +18,7 @@ export default function StoreScreen() {
     setHeaderConfig({
       title: 'Piano Emotion Store',
       subtitle: 'Artículos y componentes para la reparación, restauración y afinación de pianos',
-      icon: 'music.note',
-      iconColor: '#FFFFFF',
+      customIcon: require('@/assets/images/icon.png'),
       showBackButton: false,
     });
     }, [setHeaderConfig])

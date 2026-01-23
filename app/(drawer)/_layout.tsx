@@ -37,6 +37,7 @@ function DrawerContent() {
             subtitle={headerConfig.subtitle}
             icon={headerConfig.icon}
             iconColor={headerConfig.iconColor}
+            customIcon={headerConfig.customIcon}
             showBackButton={headerConfig.showBackButton}
             rightAction={headerConfig.rightAction}
             onMenuPress={() => navigation.toggleDrawer()}
