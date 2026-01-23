@@ -30,18 +30,18 @@ import { useTranslation } from '@/hooks/use-translation';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
-// Colores del diseño Elegant Professional (igual que dashboard)
+// Colores oficiales del proyecto Piano Emotion Manager
 const COLORS = {
-  primary: '#003a8c',      // Azul Cobalto
-  accent: '#e07a5f',       // Terracota
+  primary: '#1A1A2E',      // Primary Dark (azul oscuro oficial)
+  accent: '#e07a5f',       // Terracota (color oficial)
   white: '#ffffff',
-  background: '#f5f5f5',
+  background: '#FAFAFA',   // Background oficial
   
-  // Métricas
-  services: '#003a8c',     // Azul Cobalto
-  income: '#10b981',       // Verde Esmeralda
-  clients: '#0891b2',      // Cian Oscuro
-  pianos: '#7c3aed',       // Morado
+  // Métricas - usando paleta oficial
+  services: '#1A1A2E',     // Primary Dark
+  income: '#10B981',       // Success (verde oficial)
+  clients: '#e07a5f',      // Accent (terracota oficial)
+  pianos: '#1A1A2E',       // Primary Dark
 };
 
 // ============================================================================
@@ -87,12 +87,12 @@ const MetricCard: React.FC<MetricCardProps> = ({
           <Ionicons
             name={isPositive ? 'trending-up' : 'trending-down'}
             size={12}
-            color={isPositive ? '#22c55e' : '#ef4444'}
+            color={isPositive ? '#10B981' : '#EF4444'}
           />
           <Text
             style={[
               styles.changeText,
-              { color: isPositive ? '#22c55e' : '#ef4444' },
+              { color: isPositive ? '#10B981' : '#EF4444' },
             ]}
           >
             {isPositive ? '+' : ''}{change.toFixed(1)}%
@@ -159,16 +159,16 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const servicesData = useMemo(() => {
     if (!rawServicesData) return [];
     const total = rawServicesData.reduce((sum, s) => sum + s.count, 0);
-    // Usar colores de la paleta del dashboard para consistencia visual
+    // Usar colores oficiales del proyecto
     const colors = [
-      COLORS.services,  // Azul Cobalto
-      COLORS.income,    // Verde Esmeralda
-      COLORS.accent,    // Terracota
-      COLORS.pianos,    // Morado
-      COLORS.clients,   // Cian Oscuro
-      '#f59e0b',        // Naranja (complementario)
-      '#ec4899',        // Rosa (complementario)
-      '#84cc16',        // Lima (complementario)
+      '#1A1A2E',        // Primary Dark
+      '#10B981',        // Success (verde oficial)
+      '#e07a5f',        // Accent (terracota oficial)
+      '#F59E0B',        // Warning (ámbar oficial)
+      '#EF4444',        // Error (rojo oficial)
+      '#6B7280',        // Text Secondary
+      '#9CA3AF',        // Text Disabled
+      '#374151',        // Border Dark
     ];
     return rawServicesData.map((service, index) => ({
       name: service.typeName,
@@ -419,7 +419,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <CircularIndicator
             value={`${metrics?.clients?.retention?.toFixed(0) || 0}%`}
             label={t('reports.retention')}
-            color="#f59e0b"
+            color="#F59E0B"
           />
           <CircularIndicator
             value={metrics?.pianos?.total || 0}
@@ -431,7 +431,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <CircularIndicator
             value={metrics?.services?.pending || 0}
             label="Servicios pendientes"
-            color="#ef4444"
+            color="#EF4444"
           />
           <CircularIndicator
             value={metrics?.clients?.active || 0}
@@ -441,7 +441,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <CircularIndicator
             value={`${metrics?.averages?.servicesPerClient?.toFixed(1) || 0}`}
             label="Servicios/Cliente"
-            color="#8b5cf6"
+            color="#e07a5f"
           />
         </View>
       </View>
