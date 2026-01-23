@@ -505,13 +505,13 @@ const styles = StyleSheet.create({
   servicesList: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
   },
   serviceItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
@@ -552,11 +552,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
   },
   quickStatValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1f2937',
   },
@@ -572,8 +572,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
     marginHorizontal: 16,
-    marginTop: 24,
-    padding: 16,
+    marginTop: 16,
+    padding: 12,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#3b82f6',
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   bottomPadding: {
-    height: 40,
+    height: 20,
   },
 });
 
