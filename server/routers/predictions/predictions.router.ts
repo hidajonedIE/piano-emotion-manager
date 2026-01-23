@@ -88,10 +88,35 @@ export const predictionsRouter = router({
   /**
    * Obtiene predicciones de mantenimiento de pianos
    */
-  getMaintenance: protectedProcedure.query(async ({ ctx }) => {
-    const service = await createPredictionService(ctx.organizationId);
-    return service.predictMaintenance(ctx.organizationId);
-  }),
+  getMaintenance: protectedProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).optional().default(1),
+        limit: z.number().min(1).max(100).optional().default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = await createPredictionService(ctx.organizationId);
+      const allResults = await service.predictMaintenance(ctx.organizationId);
+      
+      // Calcular paginación
+      const total = allResults.length;
+      const totalPages = Math.ceil(total / input.limit);
+      const startIndex = (input.page - 1) * input.limit;
+      const endIndex = startIndex + input.limit;
+      const paginatedResults = allResults.slice(startIndex, endIndex);
+      
+      return {
+        data: paginatedResults,
+        pagination: {
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages,
+          hasMore: input.page < totalPages,
+        },
+      };
+    }),
 
   /**
    * Obtiene predicciones de carga de trabajo
@@ -110,10 +135,35 @@ export const predictionsRouter = router({
   /**
    * Obtiene predicciones de demanda de inventario
    */
-  getInventoryDemand: protectedProcedure.query(async ({ ctx }) => {
-    const service = await createPredictionService(ctx.organizationId);
-    return service.predictInventoryDemand(ctx.organizationId);
-  }),
+  getInventoryDemand: protectedProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).optional().default(1),
+        limit: z.number().min(1).max(100).optional().default(6),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = await createPredictionService(ctx.organizationId);
+      const allResults = await service.predictInventoryDemand(ctx.organizationId);
+      
+      // Calcular paginación
+      const total = allResults.length;
+      const totalPages = Math.ceil(total / input.limit);
+      const startIndex = (input.page - 1) * input.limit;
+      const endIndex = startIndex + input.limit;
+      const paginatedResults = allResults.slice(startIndex, endIndex);
+      
+      return {
+        data: paginatedResults,
+        pagination: {
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages,
+          hasMore: input.page < totalPages,
+        },
+      };
+    }),
 });
 
 export type PredictionsRouter = typeof predictionsRouter;

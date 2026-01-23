@@ -75,19 +75,21 @@ export default function PredictionsScreen() {
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false, keepPreviousData: true }
   );
   
+  const [maintenancePage, setMaintenancePage] = useState(1);
   const maintenanceQuery = trpc.advanced.predictions.getMaintenance.useQuery(
-    undefined,
-    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+    { page: maintenancePage, limit: 10 },
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false, keepPreviousData: true }
   );
   
   const workloadQuery = trpc.advanced.predictions.getWorkload.useQuery(
-    { weeks: 4 },
+    { weeks: 8 },
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
   );
   
+  const [inventoryPage, setInventoryPage] = useState(1);
   const inventoryQuery = trpc.advanced.predictions.getInventoryDemand.useQuery(
-    undefined,
-    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+    { page: inventoryPage, limit: 6 },
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false, keepPreviousData: true }
   );
 
   const data = {
@@ -108,8 +110,8 @@ export default function PredictionsScreen() {
           suggestedAction: c.suggestedAction,
         }))
       : MOCK_DATA.churn,
-    maintenance: maintenanceQuery.data && maintenanceQuery.data.length > 0
-      ? maintenanceQuery.data.map((m: any) => ({
+    maintenance: maintenanceQuery.data?.data && maintenanceQuery.data.data.length > 0
+      ? maintenanceQuery.data.data.map((m: any) => ({
           pianoInfo: m.pianoInfo,
           clientName: m.clientName,
           predictedDate: new Date(m.predictedDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -125,9 +127,10 @@ export default function PredictionsScreen() {
           recommendation: w.recommendation,
         }))
       : MOCK_DATA.workload,
-    inventory: inventoryQuery.data && inventoryQuery.data.length > 0
-      ? inventoryQuery.data.map((i: any) => ({
+    inventory: inventoryQuery.data?.data && inventoryQuery.data.data.length > 0
+      ? inventoryQuery.data.data.map((i: any) => ({
           itemName: i.itemName,
+          itemId: i.itemId,
           currentStock: i.currentStock,
           monthlyUsage: i.monthlyUsage,
           monthsUntilMin: i.monthsUntilMin,
@@ -324,51 +327,89 @@ export default function PredictionsScreen() {
     );
   };
 
-  const renderMaintenanceTab = () => (
-    <View style={styles.tabContent}>
-      <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
-        <View style={styles.summaryHeader}>
-          <Ionicons name="construct" size={24} color={colors.primary} />
-          <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
-            Mantenimiento Predictivo
+  const renderMaintenanceTab = () => {
+    const pagination = maintenanceQuery.data?.pagination;
+    
+    return (
+      <View style={styles.tabContent}>
+        <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
+          <View style={styles.summaryHeader}>
+            <Ionicons name="construct" size={24} color={colors.primary} />
+            <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
+              Mantenimiento Predictivo
+            </ThemedText>
+          </View>
+          <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
+            Próximos servicios recomendados por la IA
           </ThemedText>
+          {pagination && (
+            <ThemedText style={[styles.paginationInfo, { color: textSecondary, marginTop: 8 }]}>
+              Mostrando {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} servicios
+            </ThemedText>
+          )}
         </View>
-        <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
-          Próximos servicios recomendados por la IA
-        </ThemedText>
-      </View>
 
-      {data.maintenance.map((item, index) => (
-        <View key={index} style={[styles.maintenanceCard, { backgroundColor: cardBg, borderColor: border }]}>
-          <View style={styles.maintenanceHeader}>
-            <View style={[styles.maintenanceIcon, { backgroundColor: `${colors.primary}15` }]}>
-              <Ionicons name="musical-notes" size={20} color={colors.primary} />
+        {data.maintenance.map((item, index) => (
+          <View key={index} style={[styles.maintenanceCard, { backgroundColor: cardBg, borderColor: border }]}>
+            <View style={styles.maintenanceHeader}>
+              <View style={[styles.maintenanceIcon, { backgroundColor: `${colors.primary}15` }]}>
+                <Ionicons name="musical-notes" size={20} color={colors.primary} />
+              </View>
+              <View style={styles.maintenanceInfo}>
+                <ThemedText style={[styles.pianoInfo, { color: textPrimary }]}>{item.pianoInfo}</ThemedText>
+                <ThemedText style={[styles.clientNameSmall, { color: textSecondary }]}>{item.clientName}</ThemedText>
+              </View>
             </View>
-            <View style={styles.maintenanceInfo}>
-              <ThemedText style={[styles.pianoInfo, { color: textPrimary }]}>{item.pianoInfo}</ThemedText>
-              <ThemedText style={[styles.clientNameSmall, { color: textSecondary }]}>{item.clientName}</ThemedText>
+            <View style={styles.maintenanceDetails}>
+              <View style={styles.maintenanceDetail}>
+                <Ionicons name="calendar-outline" size={16} color={textSecondary} />
+                <ThemedText style={{ marginLeft: 4, color: textSecondary, fontSize: 13 }}>{item.predictedDate}</ThemedText>
+              </View>
+              <View style={styles.maintenanceDetail}>
+                <Ionicons name="settings-outline" size={16} color={textSecondary} />
+                <ThemedText style={{ marginLeft: 4, color: textSecondary, fontSize: 13 }}>{item.serviceType}</ThemedText>
+              </View>
+              <View style={[styles.confidenceSmall, { backgroundColor: '#22C55E20' }]}>
+                <ThemedText style={{ color: '#22C55E', fontSize: 11, fontWeight: '600' }}>{item.confidence}% confianza</ThemedText>
+              </View>
             </View>
+            <TouchableOpacity style={[styles.scheduleButton, { borderColor: colors.primary }]}>
+              <ThemedText style={{ color: colors.primary, fontWeight: '600' }}>Programar Cita</ThemedText>
+            </TouchableOpacity>
           </View>
-          <View style={styles.maintenanceDetails}>
-            <View style={styles.maintenanceDetail}>
-              <Ionicons name="calendar-outline" size={16} color={textSecondary} />
-              <ThemedText style={{ marginLeft: 4, color: textSecondary, fontSize: 13 }}>{item.predictedDate}</ThemedText>
+        ))}
+
+        {/* Controles de Paginación */}
+        {pagination && pagination.totalPages > 1 && (
+          <View style={[styles.paginationControls, { backgroundColor: cardBg, borderColor: border }]}>
+            <TouchableOpacity
+              style={[styles.paginationButton, { opacity: pagination.page === 1 ? 0.5 : 1 }]}
+              onPress={() => setMaintenancePage(Math.max(1, maintenancePage - 1))}
+              disabled={pagination.page === 1}
+            >
+              <Ionicons name="chevron-back" size={20} color={colors.primary} />
+              <ThemedText style={{ color: colors.primary, marginLeft: 4 }}>Anterior</ThemedText>
+            </TouchableOpacity>
+
+            <View style={styles.paginationInfo}>
+              <ThemedText style={{ color: textPrimary, fontWeight: '600' }}>
+                Página {pagination.page} de {pagination.totalPages}
+              </ThemedText>
             </View>
-            <View style={styles.maintenanceDetail}>
-              <Ionicons name="settings-outline" size={16} color={textSecondary} />
-              <ThemedText style={{ marginLeft: 4, color: textSecondary, fontSize: 13 }}>{item.serviceType}</ThemedText>
-            </View>
-            <View style={[styles.confidenceSmall, { backgroundColor: '#22C55E20' }]}>
-              <ThemedText style={{ color: '#22C55E', fontSize: 11, fontWeight: '600' }}>{item.confidence}% confianza</ThemedText>
-            </View>
+
+            <TouchableOpacity
+              style={[styles.paginationButton, { opacity: !pagination.hasMore ? 0.5 : 1 }]}
+              onPress={() => setMaintenancePage(Math.min(pagination.totalPages, maintenancePage + 1))}
+              disabled={!pagination.hasMore}
+            >
+              <ThemedText style={{ color: colors.primary, marginRight: 4 }}>Siguiente</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={[styles.scheduleButton, { borderColor: colors.primary }]}>
-            <ThemedText style={{ color: colors.primary, fontWeight: '600' }}>Programar Cita</ThemedText>
-          </TouchableOpacity>
-        </View>
-      ))}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
 
   const renderWorkloadTab = () => (
     <View style={styles.tabContent}>
@@ -411,53 +452,102 @@ export default function PredictionsScreen() {
     </View>
   );
 
-  const renderInventoryTab = () => (
-    <View style={styles.tabContent}>
-      <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
-        <View style={styles.summaryHeader}>
-          <Ionicons name="cube" size={24} color={colors.primary} />
-          <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
-            Demanda de Inventario
+  const renderInventoryTab = () => {
+    const pagination = inventoryQuery.data?.pagination;
+    
+    const handleOrderItem = (itemName: string, itemId?: string) => {
+      // Navegar a la tienda de inventario con el item seleccionado
+      router.push({
+        pathname: '/inventory',
+        params: { highlightItem: itemId || itemName }
+      });
+    };
+    
+    return (
+      <View style={styles.tabContent}>
+        <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
+          <View style={styles.summaryHeader}>
+            <Ionicons name="cube" size={24} color={colors.primary} />
+            <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
+              Demanda de Inventario
+            </ThemedText>
+          </View>
+          <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
+            Predicción de agotamiento de stock
           </ThemedText>
+          {pagination && (
+            <ThemedText style={[styles.paginationInfo, { color: textSecondary, marginTop: 8 }]}>
+              Mostrando {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} items
+            </ThemedText>
+          )}
         </View>
-        <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
-          Predicción de agotamiento de stock
-        </ThemedText>
-      </View>
 
-      {data.inventory.map((item, index) => (
-        <View key={index} style={[styles.inventoryCard, { backgroundColor: cardBg, borderColor: border }]}>
-          <View style={styles.inventoryHeader}>
-            <ThemedText style={[styles.itemName, { color: textPrimary }]}>{item.itemName}</ThemedText>
-            <View style={[styles.urgencyBadge, { backgroundColor: `${getUrgencyColor(item.urgency)}20` }]}>
-              <Ionicons name="time-outline" size={14} color={getUrgencyColor(item.urgency)} />
-              <ThemedText style={{ color: getUrgencyColor(item.urgency), fontSize: 12, fontWeight: '700', marginLeft: 4 }}>
-                {item.monthsUntilMin < 1 ? 'Crítico' : 'Próximo'}
+        {data.inventory.map((item, index) => (
+          <View key={index} style={[styles.inventoryCard, { backgroundColor: cardBg, borderColor: border }]}>
+            <View style={styles.inventoryHeader}>
+              <ThemedText style={[styles.itemName, { color: textPrimary }]}>{item.itemName}</ThemedText>
+              <View style={[styles.urgencyBadge, { backgroundColor: `${getUrgencyColor(item.urgency)}20` }]}>
+                <Ionicons name="time-outline" size={14} color={getUrgencyColor(item.urgency)} />
+                <ThemedText style={{ color: getUrgencyColor(item.urgency), fontSize: 12, fontWeight: '700', marginLeft: 4 }}>
+                  {item.monthsUntilMin < 1 ? 'Crítico' : 'Próximo'}
+                </ThemedText>
+              </View>
+            </View>
+            <View style={styles.inventoryStats}>
+              <View style={styles.inventoryStat}>
+                <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>{item.currentStock}</ThemedText>
+                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Stock Actual</ThemedText>
+              </View>
+              <View style={styles.inventoryStat}>
+                <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>{item.monthlyUsage}</ThemedText>
+                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Uso Mensual</ThemedText>
+              </View>
+              <View style={styles.inventoryStat}>
+                <ThemedText style={[styles.inventoryValue, { color: getUrgencyColor(item.urgency) }]}>{item.monthsUntilMin}</ThemedText>
+                <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Meses Restantes</ThemedText>
+              </View>
+            </View>
+            <TouchableOpacity 
+              style={[styles.orderButton, { backgroundColor: colors.primary }]}
+              onPress={() => handleOrderItem(item.itemName, item.itemId)}
+            >
+              <Ionicons name="cart-outline" size={18} color="#fff" />
+              <ThemedText style={styles.orderButtonText}>Pedir Repuestos</ThemedText>
+            </TouchableOpacity>
+          </View>
+        ))}
+
+        {/* Controles de Paginación */}
+        {pagination && pagination.totalPages > 1 && (
+          <View style={[styles.paginationControls, { backgroundColor: cardBg, borderColor: border }]}>
+            <TouchableOpacity
+              style={[styles.paginationButton, { opacity: pagination.page === 1 ? 0.5 : 1 }]}
+              onPress={() => setInventoryPage(Math.max(1, inventoryPage - 1))}
+              disabled={pagination.page === 1}
+            >
+              <Ionicons name="chevron-back" size={20} color={colors.primary} />
+              <ThemedText style={{ color: colors.primary, marginLeft: 4 }}>Anterior</ThemedText>
+            </TouchableOpacity>
+
+            <View style={styles.paginationInfo}>
+              <ThemedText style={{ color: textPrimary, fontWeight: '600' }}>
+                Página {pagination.page} de {pagination.totalPages}
               </ThemedText>
             </View>
+
+            <TouchableOpacity
+              style={[styles.paginationButton, { opacity: !pagination.hasMore ? 0.5 : 1 }]}
+              onPress={() => setInventoryPage(Math.min(pagination.totalPages, inventoryPage + 1))}
+              disabled={!pagination.hasMore}
+            >
+              <ThemedText style={{ color: colors.primary, marginRight: 4 }}>Siguiente</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.inventoryStats}>
-            <View style={styles.inventoryStat}>
-              <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>{item.currentStock}</ThemedText>
-              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Stock Actual</ThemedText>
-            </View>
-            <View style={styles.inventoryStat}>
-              <ThemedText style={[styles.inventoryValue, { color: textPrimary }]}>{item.monthlyUsage}</ThemedText>
-              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Uso Mensual</ThemedText>
-            </View>
-            <View style={styles.inventoryStat}>
-              <ThemedText style={[styles.inventoryValue, { color: getUrgencyColor(item.urgency) }]}>{item.monthsUntilMin}</ThemedText>
-              <ThemedText style={[styles.inventoryLabel, { color: textSecondary }]}>Meses Restantes</ThemedText>
-            </View>
-          </View>
-          <TouchableOpacity style={[styles.orderButton, { backgroundColor: colors.primary }]}>
-            <Ionicons name="cart-outline" size={18} color="#fff" />
-            <ThemedText style={styles.orderButtonText}>Pedir Repuestos</ThemedText>
-          </TouchableOpacity>
-        </View>
-      ))}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
