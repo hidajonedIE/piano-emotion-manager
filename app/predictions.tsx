@@ -69,9 +69,10 @@ export default function PredictionsScreen() {
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
   );
   
+  const [churnPage, setChurnPage] = useState(1);
   const churnQuery = trpc.advanced.predictions.getChurnRisk.useQuery(
-    undefined,
-    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+    { page: churnPage, limit: 30 },
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false, keepPreviousData: true }
   );
   
   const maintenanceQuery = trpc.advanced.predictions.getMaintenance.useQuery(
@@ -99,8 +100,8 @@ export default function PredictionsScreen() {
           factors: r.factors,
         }))
       : MOCK_DATA.revenue,
-    churn: churnQuery.data && churnQuery.data.length > 0
-      ? churnQuery.data.map((c: any) => ({
+    churn: churnQuery.data?.data && churnQuery.data.data.length > 0
+      ? churnQuery.data.data.map((c: any) => ({
           clientName: c.clientName,
           riskScore: c.riskScore,
           daysSince: c.daysSinceLastService,
@@ -244,46 +245,84 @@ export default function PredictionsScreen() {
     </View>
   );
 
-  const renderChurnTab = () => (
-    <View style={styles.tabContent}>
-      <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
-        <View style={styles.summaryHeader}>
-          <Ionicons name="warning" size={24} color="#F59E0B" />
-          <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
-            Clientes en Riesgo
+  const renderChurnTab = () => {
+    const pagination = churnQuery.data?.pagination;
+    
+    return (
+      <View style={styles.tabContent}>
+        <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor: border }]}>
+          <View style={styles.summaryHeader}>
+            <Ionicons name="warning" size={24} color="#F59E0B" />
+            <ThemedText style={[styles.summaryTitle, { color: textPrimary }]}>
+              Clientes en Riesgo
+            </ThemedText>
+          </View>
+          <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
+            Clientes que podrían necesitar atención
           </ThemedText>
+          {pagination && (
+            <ThemedText style={[styles.paginationInfo, { color: textSecondary, marginTop: 8 }]}>
+              Mostrando {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} clientes
+            </ThemedText>
+          )}
         </View>
-        <ThemedText style={[styles.summaryDescription, { color: textSecondary }]}>
-          Clientes que podrían necesitar atención
-        </ThemedText>
-      </View>
 
-      {data.churn.map((client, index) => (
-        <View key={index} style={[styles.churnCard, { backgroundColor: cardBg, borderColor: border }]}>
-          <View style={styles.churnHeader}>
-            <View style={styles.churnInfo}>
-              <ThemedText style={[styles.clientName, { color: textPrimary }]}>{client.clientName}</ThemedText>
-              <ThemedText style={[styles.daysSince, { color: textSecondary }]}>
-                Último servicio hace {client.daysSince} días
+        {data.churn.map((client, index) => (
+          <View key={index} style={[styles.churnCard, { backgroundColor: cardBg, borderColor: border }]}>
+            <View style={styles.churnHeader}>
+              <View style={styles.churnInfo}>
+                <ThemedText style={[styles.clientName, { color: textPrimary }]}>{client.clientName}</ThemedText>
+                <ThemedText style={[styles.daysSince, { color: textSecondary }]}>
+                  Último servicio hace {client.daysSince} días
+                </ThemedText>
+              </View>
+              <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(client.riskScore)}20` }]}>
+                <ThemedText style={{ color: getRiskColor(client.riskScore), fontWeight: '700' }}>
+                  {client.riskScore}% riesgo
+                </ThemedText>
+              </View>
+            </View>
+            <View style={[styles.riskBar, { backgroundColor: `${getRiskColor(client.riskScore)}10` }]}>
+              <View style={[styles.riskBarFill, { width: `${client.riskScore}%`, backgroundColor: getRiskColor(client.riskScore) }]} />
+            </View>
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.primary }]}>
+              <Ionicons name="mail-outline" size={18} color="#fff" />
+              <ThemedText style={styles.actionButtonText}>{client.suggestedAction}</ThemedText>
+            </TouchableOpacity>
+          </View>
+        ))}
+
+        {/* Controles de Paginación */}
+        {pagination && pagination.totalPages > 1 && (
+          <View style={[styles.paginationControls, { backgroundColor: cardBg, borderColor: border }]}>
+            <TouchableOpacity
+              style={[styles.paginationButton, { opacity: pagination.page === 1 ? 0.5 : 1 }]}
+              onPress={() => setChurnPage(Math.max(1, churnPage - 1))}
+              disabled={pagination.page === 1}
+            >
+              <Ionicons name="chevron-back" size={20} color={colors.primary} />
+              <ThemedText style={{ color: colors.primary, marginLeft: 4 }}>Anterior</ThemedText>
+            </TouchableOpacity>
+
+            <View style={styles.paginationInfo}>
+              <ThemedText style={{ color: textPrimary, fontWeight: '600' }}>
+                Página {pagination.page} de {pagination.totalPages}
               </ThemedText>
             </View>
-            <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(client.riskScore)}20` }]}>
-              <ThemedText style={{ color: getRiskColor(client.riskScore), fontWeight: '700' }}>
-                {client.riskScore}% riesgo
-              </ThemedText>
-            </View>
+
+            <TouchableOpacity
+              style={[styles.paginationButton, { opacity: !pagination.hasMore ? 0.5 : 1 }]}
+              onPress={() => setChurnPage(Math.min(pagination.totalPages, churnPage + 1))}
+              disabled={!pagination.hasMore}
+            >
+              <ThemedText style={{ color: colors.primary, marginRight: 4 }}>Siguiente</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+            </TouchableOpacity>
           </View>
-          <View style={[styles.riskBar, { backgroundColor: `${getRiskColor(client.riskScore)}10` }]}>
-            <View style={[styles.riskBarFill, { width: `${client.riskScore}%`, backgroundColor: getRiskColor(client.riskScore) }]} />
-          </View>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-            <Ionicons name="mail-outline" size={18} color="#fff" />
-            <ThemedText style={styles.actionButtonText}>{client.suggestedAction}</ThemedText>
-          </TouchableOpacity>
-        </View>
-      ))}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
 
   const renderMaintenanceTab = () => (
     <View style={styles.tabContent}>
@@ -799,5 +838,23 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 14,
     textAlign: 'center',
+  },
+  paginationControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    marginTop: 12,
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  paginationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  paginationInfo: {
+    alignItems: 'center',
   },
 });

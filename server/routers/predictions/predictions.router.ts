@@ -55,10 +55,35 @@ export const predictionsRouter = router({
   /**
    * Obtiene clientes en riesgo de pérdida (churn)
    */
-  getChurnRisk: protectedProcedure.query(async ({ ctx }) => {
-    const service = await createPredictionService(ctx.organizationId);
-    return service.predictClientChurn(ctx.organizationId);
-  }),
+  getChurnRisk: protectedProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).optional().default(1),
+        limit: z.number().min(1).max(100).optional().default(30),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = await createPredictionService(ctx.organizationId);
+      const allResults = await service.predictClientChurn(ctx.organizationId);
+      
+      // Calcular paginación
+      const total = allResults.length;
+      const totalPages = Math.ceil(total / input.limit);
+      const startIndex = (input.page - 1) * input.limit;
+      const endIndex = startIndex + input.limit;
+      const paginatedResults = allResults.slice(startIndex, endIndex);
+      
+      return {
+        data: paginatedResults,
+        pagination: {
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages,
+          hasMore: input.page < totalPages,
+        },
+      };
+    }),
 
   /**
    * Obtiene predicciones de mantenimiento de pianos
