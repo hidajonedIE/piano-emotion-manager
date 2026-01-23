@@ -131,4 +131,40 @@ export const aiPredictionsEnhancedRouter = router({
       generatedAt: new Date().toISOString(),
     };
   }),
+
+  // ===== ALIASES PARA COMPATIBILIDAD CON WIDGETS =====
+  /**
+   * Alias de getRevenuePredictions para compatibilidad con widgets
+   */
+  getRevenue: protectedProcedure
+    .input(z.object({ months: z.number().min(1).max(12).optional().default(3) }))  
+    .query(async ({ ctx, input }) => {
+      const businessData = await collectBusinessData(ctx.organizationId);
+      const predictions = await generateEnhancedPredictions(businessData);
+      
+      // Retornar en formato compatible con widget (array de predicciones)
+      return predictions.revenue.predictions || [];
+    }),
+
+  /**
+   * Alias de getChurnPredictions para compatibilidad con widgets
+   */
+  getChurnRisk: protectedProcedure.query(async ({ ctx }) => {
+    const businessData = await collectBusinessData(ctx.organizationId);
+    const predictions = await generateEnhancedPredictions(businessData);
+    
+    // Retornar array de clientes en riesgo
+    return predictions.clientChurn.topRiskClients || [];
+  }),
+
+  /**
+   * Alias de getMaintenancePredictions para compatibilidad con widgets
+   */
+  getMaintenance: protectedProcedure.query(async ({ ctx }) => {
+    const businessData = await collectBusinessData(ctx.organizationId);
+    const predictions = await generateEnhancedPredictions(businessData);
+    
+    // Retornar array de mantenimientos previstos
+    return predictions.maintenance.predictions || [];
+  }),
 });
