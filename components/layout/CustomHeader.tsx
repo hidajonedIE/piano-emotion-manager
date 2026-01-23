@@ -185,8 +185,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   customIconImage: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     tintColor: '#FFFFFF',
   },
   titleContainer: {
