@@ -242,11 +242,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <Ionicons name="chevron-back" size={20} color={COLORS.white} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.timeNavButton, styles.timeNavButtonCenter, timeOffset === 0 && styles.timeNavButtonDisabled]}
+              style={[styles.timeNavButton, styles.timeNavButtonCenter]}
               onPress={() => setTimeOffset(0)}
-              disabled={timeOffset === 0}
             >
-              <Text style={[styles.timeNavText, timeOffset === 0 && styles.timeNavTextDisabled]}>{getPeriodLabel()}</Text>
+              <Text style={styles.timeNavText}>{getPeriodLabel()}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.timeNavButton}
