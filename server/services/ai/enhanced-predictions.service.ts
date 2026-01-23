@@ -140,7 +140,7 @@ export interface AIPredictionsEnhanced {
  * Recopila todos los datos relevantes de la base de datos
  */
 export async function collectBusinessData(organizationId: string): Promise<BusinessData> {
-  const db = getDb();
+  const db = await getDb();
   const now = new Date();
   
   // Calcular fechas
