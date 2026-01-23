@@ -1,5 +1,4 @@
 {
-  "_comment": "Trigger rebuild with translations and TypeScript fixes",
   "buildCommand": "pnpm run build && npx expo export --platform web --output-dir web-build",
   "installCommand": "pnpm install",
   "outputDirectory": "web-build",
