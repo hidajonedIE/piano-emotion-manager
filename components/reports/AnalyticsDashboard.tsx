@@ -30,18 +30,24 @@ import { useTranslation } from '@/hooks/use-translation';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
-// Colores oficiales del proyecto Piano Emotion Manager
+// Colores del diseño - mantener header y filtros originales
 const COLORS = {
-  primary: '#1A1A2E',      // Primary Dark (azul oscuro oficial)
-  accent: '#e07a5f',       // Terracota (color oficial)
+  primary: '#003a8c',      // Azul Cobalto (original del header)
+  accent: '#e07a5f',       // Terracota
   white: '#ffffff',
-  background: '#FAFAFA',   // Background oficial
+  background: '#f5f5f5',
   
-  // Métricas - usando paleta oficial
-  services: '#1A1A2E',     // Primary Dark
-  income: '#10B981',       // Success (verde oficial)
-  clients: '#e07a5f',      // Accent (terracota oficial)
-  pianos: '#1A1A2E',       // Primary Dark
+  // Métricas - colores suaves no estridentes
+  services: '#003a8c',     // Azul Cobalto
+  income: '#059669',       // Verde esmeralda suave (más oscuro y profesional)
+  clients: '#e07a5f',      // Terracota
+  pianos: '#1A1A2E',       // Azul oscuro
+  
+  // Colores para estadísticas - tonos suaves
+  success: '#059669',      // Verde esmeralda suave
+  warning: '#d97706',      // Ámbar más oscuro
+  error: '#dc2626',        // Rojo más oscuro
+  info: '#2563eb',         // Azul más oscuro
 };
 
 // ============================================================================
@@ -166,16 +172,16 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const servicesData = useMemo(() => {
     if (!rawServicesData) return [];
     const total = rawServicesData.reduce((sum, s) => sum + s.count, 0);
-    // Usar colores oficiales del proyecto
+    // Usar colores suaves y variados para servicios
     const colors = [
-      '#1A1A2E',        // Primary Dark
-      '#10B981',        // Success (verde oficial)
-      '#e07a5f',        // Accent (terracota oficial)
-      '#F59E0B',        // Warning (ámbar oficial)
-      '#EF4444',        // Error (rojo oficial)
-      '#6B7280',        // Text Secondary
-      '#9CA3AF',        // Text Disabled
-      '#374151',        // Border Dark
+      '#1e40af',        // Azul oscuro
+      '#059669',        // Verde esmeralda
+      '#e07a5f',        // Terracota
+      '#d97706',        // Ámbar oscuro
+      '#2563eb',        // Azul
+      '#7c3aed',        // Morado
+      '#db2777',        // Rosa oscuro
+      '#0d9488',        // Teal oscuro
     ];
     return rawServicesData.map((service, index) => ({
       name: service.typeName,
@@ -242,10 +248,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     >
       {/* Header con Period Selector integrado */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>{t('reports.analytics')}</Text>
-          <Text style={styles.headerSubtitle}>Análisis y estadísticas del negocio</Text>
-        </View>
         <View style={styles.headerRight}>
           {/* Navegación temporal */}
           <View style={styles.timeNavigation}>
@@ -428,34 +430,34 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <CircularIndicator
             value={`${metrics?.services?.completionRate?.toFixed(0) || 0}%`}
             label={t('reports.completionRate')}
-            color={COLORS.income}
+            color={COLORS.success}
           />
           <CircularIndicator
             value={`${metrics?.clients?.retention?.toFixed(0) || 0}%`}
             label={t('reports.retention')}
-            color="#F59E0B"
+            color={COLORS.warning}
           />
           <CircularIndicator
             value={metrics?.pianos?.total || 0}
             label={t('reports.pianos')}
-            color={COLORS.pianos}
+            color={COLORS.info}
           />
         </View>
         <View style={styles.quickStatsRow}>
           <CircularIndicator
             value={metrics?.services?.pending || 0}
             label="Servicios pendientes"
-            color="#EF4444"
+            color={COLORS.error}
           />
           <CircularIndicator
             value={metrics?.clients?.active || 0}
             label="Clientes activos"
-            color={COLORS.clients}
+            color={COLORS.info}
           />
           <CircularIndicator
             value={`${metrics?.averages?.servicesPerClient?.toFixed(1) || 0}`}
             label="Servicios/Cliente"
-            color="#e07a5f"
+            color={COLORS.accent}
           />
         </View>
       </View>
@@ -483,7 +485,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   headerLeft: {
