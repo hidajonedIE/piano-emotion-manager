@@ -130,7 +130,7 @@ export async function getUserByOpenId(openId: string) {
     return undefined;
   }
 
-  const result = await getDb().select().from(users).where(eq(users.openId, openId)).limit(1);
+  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
 }
@@ -181,13 +181,13 @@ type InsertQuoteTemplate = InferInsertModel<typeof quoteTemplates>;
 export async function getClients(odId: string): Promise<Client[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(clients).where(eq(clients.odId, odId)).orderBy(desc(clients.updatedAt));
+  return db.select().from(clients).where(eq(clients.odId, odId)).orderBy(desc(clients.updatedAt));
 }
 
 export async function getClient(odId: string, id: number): Promise<Client | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(clients).where(and(eq(clients.odId, odId), eq(clients.id, id)));
+  const result = await db.select().from(clients).where(and(eq(clients.odId, odId), eq(clients.id, id)));
   return result[0];
 }
 
@@ -215,20 +215,20 @@ export async function deleteClient(odId: string, id: number): Promise<void> {
 export async function getPianos(odId: string): Promise<Piano[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(pianos).where(eq(pianos.odId, odId)).orderBy(desc(pianos.updatedAt));
+  return db.select().from(pianos).where(eq(pianos.odId, odId)).orderBy(desc(pianos.updatedAt));
 }
 
 export async function getPiano(odId: string, id: number): Promise<Piano | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(pianos).where(and(eq(pianos.odId, odId), eq(pianos.id, id)));
+  const result = await db.select().from(pianos).where(and(eq(pianos.odId, odId), eq(pianos.id, id)));
   return result[0];
 }
 
 export async function getPianosByClient(odId: string, clientId: number): Promise<Piano[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(pianos).where(and(eq(pianos.odId, odId), eq(pianos.clientId, clientId)));
+  return db.select().from(pianos).where(and(eq(pianos.odId, odId), eq(pianos.clientId, clientId)));
 }
 
 export async function createPiano(data: InsertPiano): Promise<number> {
@@ -255,20 +255,20 @@ export async function deletePiano(odId: string, id: number): Promise<void> {
 export async function getServices(odId: string): Promise<Service[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(services).where(eq(services.odId, odId)).orderBy(desc(services.date));
+  return db.select().from(services).where(eq(services.odId, odId)).orderBy(desc(services.date));
 }
 
 export async function getService(odId: string, id: number): Promise<Service | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(services).where(and(eq(services.odId, odId), eq(services.id, id)));
+  const result = await db.select().from(services).where(and(eq(services.odId, odId), eq(services.id, id)));
   return result[0];
 }
 
 export async function getServicesByPiano(odId: string, pianoId: number): Promise<Service[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(services).where(and(eq(services.odId, odId), eq(services.pianoId, pianoId))).orderBy(desc(services.date));
+  return db.select().from(services).where(and(eq(services.odId, odId), eq(services.pianoId, pianoId))).orderBy(desc(services.date));
 }
 
 export async function createService(data: InsertService): Promise<number> {
@@ -295,13 +295,13 @@ export async function deleteService(odId: string, id: number): Promise<void> {
 export async function getInventory(odId: string): Promise<InventoryItem[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(inventory).where(eq(inventory.odId, odId)).orderBy(inventory.name);
+  return db.select().from(inventory).where(eq(inventory.odId, odId)).orderBy(inventory.name);
 }
 
 export async function getInventoryItem(odId: string, id: number): Promise<InventoryItem | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(inventory).where(and(eq(inventory.odId, odId), eq(inventory.id, id)));
+  const result = await db.select().from(inventory).where(and(eq(inventory.odId, odId), eq(inventory.id, id)));
   return result[0];
 }
 
@@ -329,13 +329,13 @@ export async function deleteInventoryItem(odId: string, id: number): Promise<voi
 export async function getAppointments(odId: string): Promise<Appointment[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(appointments).where(eq(appointments.odId, odId)).orderBy(appointments.date);
+  return db.select().from(appointments).where(eq(appointments.odId, odId)).orderBy(appointments.date);
 }
 
 export async function getAppointment(odId: string, id: number): Promise<Appointment | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(appointments).where(and(eq(appointments.odId, odId), eq(appointments.id, id)));
+  const result = await db.select().from(appointments).where(and(eq(appointments.odId, odId), eq(appointments.id, id)));
   return result[0];
 }
 
@@ -363,13 +363,13 @@ export async function deleteAppointment(odId: string, id: number): Promise<void>
 export async function getInvoices(odId: string): Promise<Invoice[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(invoices).where(eq(invoices.odId, odId)).orderBy(desc(invoices.date));
+  return db.select().from(invoices).where(eq(invoices.odId, odId)).orderBy(desc(invoices.date));
 }
 
 export async function getInvoice(odId: string, id: number): Promise<Invoice | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(invoices).where(and(eq(invoices.odId, odId), eq(invoices.id, id)));
+  const result = await db.select().from(invoices).where(and(eq(invoices.odId, odId), eq(invoices.id, id)));
   return result[0];
 }
 
@@ -397,13 +397,13 @@ export async function deleteInvoice(odId: string, id: number): Promise<void> {
 export async function getServiceRates(odId: string): Promise<ServiceRate[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(serviceRates).where(eq(serviceRates.odId, odId)).orderBy(serviceRates.category, serviceRates.name);
+  return db.select().from(serviceRates).where(eq(serviceRates.odId, odId)).orderBy(serviceRates.category, serviceRates.name);
 }
 
 export async function getServiceRate(odId: string, id: number): Promise<ServiceRate | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(serviceRates).where(and(eq(serviceRates.odId, odId), eq(serviceRates.id, id)));
+  const result = await db.select().from(serviceRates).where(and(eq(serviceRates.odId, odId), eq(serviceRates.id, id)));
   return result[0];
 }
 
@@ -431,7 +431,7 @@ export async function deleteServiceRate(odId: string, id: number): Promise<void>
 export async function getBusinessInfo(odId: string): Promise<BusinessInfo | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(businessInfo).where(eq(businessInfo.odId, odId));
+  const result = await db.select().from(businessInfo).where(eq(businessInfo.odId, odId));
   return result[0];
 }
 
@@ -452,13 +452,13 @@ export async function saveBusinessInfo(data: InsertBusinessInfo): Promise<void> 
 export async function getReminders(odId: string): Promise<Reminder[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(reminders).where(eq(reminders.odId, odId)).orderBy(reminders.dueDate);
+  return db.select().from(reminders).where(eq(reminders.odId, odId)).orderBy(reminders.dueDate);
 }
 
 export async function getReminder(odId: string, id: number): Promise<Reminder | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(reminders).where(and(eq(reminders.odId, odId), eq(reminders.id, id)));
+  const result = await db.select().from(reminders).where(and(eq(reminders.odId, odId), eq(reminders.id, id)));
   return result[0];
 }
 
@@ -487,20 +487,20 @@ export async function deleteReminder(odId: string, id: number): Promise<void> {
 export async function getQuotes(odId: string): Promise<Quote[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(quotes).where(eq(quotes.odId, odId)).orderBy(desc(quotes.date));
+  return db.select().from(quotes).where(eq(quotes.odId, odId)).orderBy(desc(quotes.date));
 }
 
 export async function getQuote(odId: string, id: number): Promise<Quote | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(quotes).where(and(eq(quotes.odId, odId), eq(quotes.id, id)));
+  const result = await db.select().from(quotes).where(and(eq(quotes.odId, odId), eq(quotes.id, id)));
   return result[0];
 }
 
 export async function getQuotesByClient(odId: string, clientId: number): Promise<Quote[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(quotes).where(and(eq(quotes.odId, odId), eq(quotes.clientId, clientId))).orderBy(desc(quotes.date));
+  return db.select().from(quotes).where(and(eq(quotes.odId, odId), eq(quotes.clientId, clientId))).orderBy(desc(quotes.date));
 }
 
 export async function createQuote(data: InsertQuote): Promise<number> {
@@ -525,7 +525,7 @@ export async function deleteQuote(odId: string, id: number): Promise<void> {
 export async function getNextQuoteNumber(odId: string): Promise<number> {
   const db = await getDb();
   if (!db) return 1;
-  const result = await getDb().select().from(quotes).where(eq(quotes.odId, odId)).orderBy(desc(quotes.id)).limit(1);
+  const result = await db.select().from(quotes).where(eq(quotes.odId, odId)).orderBy(desc(quotes.id)).limit(1);
   return result.length > 0 ? result[0].id + 1 : 1;
 }
 
@@ -534,13 +534,13 @@ export async function getNextQuoteNumber(odId: string): Promise<number> {
 export async function getQuoteTemplates(odId: string): Promise<QuoteTemplate[]> {
   const db = await getDb();
   if (!db) return [];
-  return getDb().select().from(quoteTemplates).where(eq(quoteTemplates.odId, odId)).orderBy(quoteTemplates.name);
+  return db.select().from(quoteTemplates).where(eq(quoteTemplates.odId, odId)).orderBy(quoteTemplates.name);
 }
 
 export async function getQuoteTemplate(odId: string, id: number): Promise<QuoteTemplate | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await getDb().select().from(quoteTemplates).where(and(eq(quoteTemplates.odId, odId), eq(quoteTemplates.id, id)));
+  const result = await db.select().from(quoteTemplates).where(and(eq(quoteTemplates.odId, odId), eq(quoteTemplates.id, id)));
   return result[0];
 }
 
@@ -572,6 +572,6 @@ export async function getUserByClerkId(clerkId: string) {
     return undefined;
   }
 
-  const result = await getDb().select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
+  const result = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
