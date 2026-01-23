@@ -4,7 +4,7 @@
  * Diseño alineado con el dashboard principal
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -141,8 +141,21 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     changePeriod,
   } = useDashboardMetrics(selectedPeriod);
   const { data: revenueData } = useRevenueChart(dateRange, 'month');
-  const { data: servicesData } = useServicesByType(dateRange);
+  const { data: rawServicesData } = useServicesByType(dateRange);
   const { downloadPDF } = useReportExport();
+
+  // Transformar servicesData para incluir name, percentage y color
+  const servicesData = useMemo(() => {
+    if (!rawServicesData) return [];
+    const total = rawServicesData.reduce((sum, s) => sum + s.count, 0);
+    const colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+    return rawServicesData.map((service, index) => ({
+      name: service.typeName,
+      count: service.count,
+      percentage: total > 0 ? ((service.count / total) * 100).toFixed(1) : '0',
+      color: colors[index % colors.length],
+    }));
+  }, [rawServicesData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -309,7 +322,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </View>
       </View>
 
-      {/* Estadísticas Rápidas (3 indicadores circulares) */}
+      {/* Estadísticas Rápidas (6 indicadores circulares en 2 filas) */}
       <View style={styles.quickStatsSection}>
         <Text style={styles.sectionTitle}>{t('reports.quickStats')}</Text>
         <View style={styles.quickStatsRow}>
@@ -327,6 +340,23 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             value={metrics?.pianos?.total || 0}
             label={t('reports.pianos')}
             color={COLORS.pianos}
+          />
+        </View>
+        <View style={styles.quickStatsRow}>
+          <CircularIndicator
+            value={metrics?.services?.pending || 0}
+            label="Servicios pendientes"
+            color="#ef4444"
+          />
+          <CircularIndicator
+            value={metrics?.clients?.active || 0}
+            label="Clientes activos"
+            color={COLORS.clients}
+          />
+          <CircularIndicator
+            value={`${metrics?.averages?.servicesPerClient?.toFixed(1) || 0}`}
+            label="Servicios/Cliente"
+            color="#8b5cf6"
           />
         </View>
       </View>
