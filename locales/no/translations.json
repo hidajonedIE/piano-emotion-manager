@@ -1035,5 +1035,11 @@
     "absences": "Fravær",
     "holidays": "Ferier",
     "sickLeave": "Sykmelding"
+  },
+  "reports": {
+    "thisWeek": "Uke",
+    "thisMonth": "Måned",
+    "thisQuarter": "Kvartal",
+    "thisYear": "År"
   }
 }

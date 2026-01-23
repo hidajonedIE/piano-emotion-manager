@@ -1031,5 +1031,11 @@
     "absences": "Fravær",
     "holidays": "Ferier",
     "sickLeave": "Sygeorlov"
+  },
+  "reports": {
+    "thisWeek": "Uge",
+    "thisMonth": "Måned",
+    "thisQuarter": "Kvartal",
+    "thisYear": "År"
   }
 }

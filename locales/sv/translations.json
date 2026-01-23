@@ -1035,5 +1035,11 @@
     "absences": "Frånvaro",
     "holidays": "Semester",
     "sickLeave": "Sjukskrivning"
+  },
+  "reports": {
+    "thisWeek": "Vecka",
+    "thisMonth": "Månad",
+    "thisQuarter": "Kvartal",
+    "thisYear": "År"
   }
 }

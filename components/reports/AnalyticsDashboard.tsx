@@ -134,6 +134,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [timeOffset, setTimeOffset] = useState(0); // 0 = actual, -1 = anterior, +1 = siguiente
 
+  // Si timeOffset cambia y tenemos Semana seleccionada, cambiar a Mes
+  React.useEffect(() => {
+    if (timeOffset !== 0 && selectedPeriod === 'thisWeek') {
+      setSelectedPeriod('thisMonth');
+    }
+  }, [timeOffset, selectedPeriod]);
+
   // Hooks
   const {
     metrics,
@@ -263,28 +270,35 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </View>
           
           <View style={styles.periodSelector}>
-            {periods.map((period) => (
-              <TouchableOpacity
-                key={period.key}
-                style={[
-                  styles.periodButton,
-                  selectedPeriod === period.key && styles.periodButtonActive,
-                ]}
-                onPress={() => {
-                  setSelectedPeriod(period.key);
-                  setTimeOffset(0); // Reset offset al cambiar período
-                }}
-              >
-                <Text
+            {periods.map((period) => {
+              const isDisabled = period.key === 'thisWeek' && timeOffset !== 0;
+              return (
+                <TouchableOpacity
+                  key={period.key}
                   style={[
-                    styles.periodButtonText,
-                    selectedPeriod === period.key && styles.periodButtonTextActive,
+                    styles.periodButton,
+                    selectedPeriod === period.key && styles.periodButtonActive,
+                    isDisabled && styles.periodButtonDisabled,
                   ]}
+                  onPress={() => {
+                    if (isDisabled) return;
+                    setSelectedPeriod(period.key);
+                    setTimeOffset(0); // Reset offset al cambiar período
+                  }}
+                  disabled={isDisabled}
                 >
-                  {period.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.periodButtonText,
+                      selectedPeriod === period.key && styles.periodButtonTextActive,
+                      isDisabled && styles.periodButtonTextDisabled,
+                    ]}
+                  >
+                    {period.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
           <TouchableOpacity style={styles.exportButton} onPress={handleExport}>
             <Ionicons name="download-outline" size={16} color={COLORS.primary} />
@@ -513,6 +527,12 @@ const styles = StyleSheet.create({
   },
   periodButtonTextActive: {
     color: COLORS.primary,
+  },
+  periodButtonDisabled: {
+    opacity: 0.4,
+  },
+  periodButtonTextDisabled: {
+    opacity: 0.5,
   },
   exportButton: {
     flexDirection: 'row',

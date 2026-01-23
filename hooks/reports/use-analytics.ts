@@ -46,8 +46,18 @@ function getDateRangeFromPreset(preset: PeriodPreset, offset: number = 0): DateR
       return { startDate: yesterday, endDate: today };
 
     case 'thisWeek':
-      const refDateWeek = new Date(today);
-      refDateWeek.setDate(refDateWeek.getDate() + (offset * 7));
+      // Si hay offset, usar el primer día del mes offset como referencia
+      // Si offset=0, usar la semana actual
+      let refDateWeek;
+      if (offset === 0) {
+        refDateWeek = new Date(today);
+      } else {
+        // Calcular el mes de referencia basado en el offset
+        const refMonth = now.getMonth() + offset;
+        const refYear = now.getFullYear() + Math.floor(refMonth / 12);
+        const adjustedMonth = ((refMonth % 12) + 12) % 12;
+        refDateWeek = new Date(refYear, adjustedMonth, 1); // Primer día del mes navegado
+      }
       const startOfWeek = new Date(refDateWeek);
       startOfWeek.setDate(refDateWeek.getDate() - refDateWeek.getDay() + 1); // Lunes
       const endOfWeek = new Date(startOfWeek);
