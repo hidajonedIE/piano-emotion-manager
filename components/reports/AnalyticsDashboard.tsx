@@ -187,6 +187,29 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     }).format(value);
   };
 
+  const getPeriodLabel = () => {
+    if (timeOffset === 0) {
+      return selectedPeriod === 'thisMonth' ? 'Este mes' :
+             selectedPeriod === 'thisWeek' ? 'Esta semana' :
+             selectedPeriod === 'thisQuarter' ? 'Este trimestre' :
+             selectedPeriod === 'thisYear' ? 'Este a\u00f1o' : 'Actual';
+    }
+    
+    const start = dateRange.startDate;
+    
+    if (selectedPeriod === 'thisMonth') {
+      return start.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+    } else if (selectedPeriod === 'thisWeek') {
+      return `Semana ${start.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`;
+    } else if (selectedPeriod === 'thisQuarter') {
+      const quarter = Math.floor(start.getMonth() / 3) + 1;
+      return `Q${quarter} ${start.getFullYear()}`;
+    } else if (selectedPeriod === 'thisYear') {
+      return start.getFullYear().toString();
+    }
+    return 'Actual';
+  };
+
   const periods: { key: PeriodPreset; label: string }[] = [
     { key: 'thisWeek', label: t('reports.thisWeek') },
     { key: 'thisMonth', label: t('reports.thisMonth') },
@@ -219,11 +242,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <Ionicons name="chevron-back" size={20} color={COLORS.white} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.timeNavButton, timeOffset === 0 && styles.timeNavButtonDisabled]}
+              style={[styles.timeNavButton, styles.timeNavButtonCenter, timeOffset === 0 && styles.timeNavButtonDisabled]}
               onPress={() => setTimeOffset(0)}
               disabled={timeOffset === 0}
             >
-              <Text style={[styles.timeNavText, timeOffset === 0 && styles.timeNavTextDisabled]}>Hoy</Text>
+              <Text style={[styles.timeNavText, timeOffset === 0 && styles.timeNavTextDisabled]}>{getPeriodLabel()}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.timeNavButton}
@@ -508,6 +531,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     backgroundColor: COLORS.white + '20',
+  },
+  timeNavButtonCenter: {
+    minWidth: 80,
+    alignItems: 'center',
   },
   timeNavButtonDisabled: {
     opacity: 0.5,
