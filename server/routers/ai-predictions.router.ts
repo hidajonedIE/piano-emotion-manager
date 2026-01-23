@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
 import { generatePredictions, type PredictionsData } from '../services/ai/predictions.service.js';
-import { getDb } from '../_core/db.js';
+import { getDb } from '../db.js';
 import { services, clients, pianos } from '../../drizzle/schema.js';
 import { and, gte, lte, count, sum } from 'drizzle-orm';
 
