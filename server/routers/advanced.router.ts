@@ -153,6 +153,9 @@ export const advancedRouter = router({
   // AI Predictions Enhanced - Predicciones completas con Gemini
   aiPredictionsEnhanced: aiPredictionsEnhancedRouter,
   
+  // Alias para compatibilidad con widgets
+  predictions: aiPredictionsEnhancedRouter,
+  
   // Predictions Legacy - Mantener por compatibilidad
   predictionsLegacy: router({
     getSummary: protectedProcedure.query(async () => {
