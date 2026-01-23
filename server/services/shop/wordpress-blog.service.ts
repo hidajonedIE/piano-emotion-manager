@@ -181,6 +181,52 @@ export class WordPressBlogService {
   }
 
   /**
+   * Decodificar HTML entities
+   */
+  private decodeHtmlEntities(text: string): string {
+    const entities: Record<string, string> = {
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#039;': "'",
+      '&apos;': "'",
+      '&#8211;': '–', // en dash
+      '&#8212;': '—', // em dash
+      '&#8216;': ''', // left single quote
+      '&#8217;': ''', // right single quote
+      '&#8220;': '"', // left double quote
+      '&#8221;': '"', // right double quote
+      '&#8230;': '…', // ellipsis
+      '&nbsp;': ' ',
+      '&ndash;': '–',
+      '&mdash;': '—',
+      '&lsquo;': ''',
+      '&rsquo;': ''',
+      '&ldquo;': '"',
+      '&rdquo;': '"',
+      '&hellip;': '…',
+    };
+    
+    let decoded = text;
+    for (const [entity, char] of Object.entries(entities)) {
+      decoded = decoded.replace(new RegExp(entity, 'g'), char);
+    }
+    
+    // Decodificar entidades numéricas restantes
+    decoded = decoded.replace(/&#(\d+);/g, (match, dec) => {
+      return String.fromCharCode(dec);
+    });
+    
+    // Decodificar entidades hexadecimales
+    decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => {
+      return String.fromCharCode(parseInt(hex, 16));
+    });
+    
+    return decoded;
+  }
+
+  /**
    * Simplificar estructura de post de WordPress
    */
   private simplifyPost(post: WordPressPost): SimplifiedPost {
@@ -196,15 +242,18 @@ export class WordPressBlogService {
       categories.push(...post._embedded['wp:term'][0].map(term => term.name));
     }
     
-    // Limpiar excerpt de HTML
-    const excerpt = post.excerpt.rendered
+    // Limpiar y decodificar título
+    const title = this.decodeHtmlEntities(post.title.rendered);
+    
+    // Limpiar excerpt de HTML y decodificar
+    let excerpt = post.excerpt.rendered
       .replace(/<[^>]*>/g, '')
-      .replace(/&[^;]+;/g, ' ')
       .trim();
+    excerpt = this.decodeHtmlEntities(excerpt);
     
     return {
       id: post.id,
-      title: post.title.rendered,
+      title,
       excerpt,
       url: post.link,
       date: new Date(post.date).toLocaleDateString('es-ES', {
