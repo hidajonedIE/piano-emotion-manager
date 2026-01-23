@@ -49,6 +49,7 @@ import { shopRouter } from "./routers/shop/shop.router.js";
 import { teamRouter } from "./routers/team.router.js";
 import { clientRouter } from "./routers/crm/index.js";
 import { analyticsRouter } from "./routers/reports/index.js";
+import { predictionsRouter } from "./routers/predictions/predictions.router.js";
 
 export const appRouter = router({
   // Sistema
@@ -133,6 +134,9 @@ export const appRouter = router({
 
   // Reportes y Analytics
   analytics: analyticsRouter,
+
+  // Predicciones avanzadas
+  predictions: predictionsRouter,
 
 });
 
