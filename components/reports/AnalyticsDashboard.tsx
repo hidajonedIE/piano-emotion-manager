@@ -188,13 +188,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   };
 
   const getPeriodLabel = () => {
-    if (timeOffset === 0) {
-      return selectedPeriod === 'thisMonth' ? 'Este mes' :
-             selectedPeriod === 'thisWeek' ? 'Esta semana' :
-             selectedPeriod === 'thisQuarter' ? 'Este trimestre' :
-             selectedPeriod === 'thisYear' ? 'Este a\u00f1o' : 'Actual';
-    }
-    
     const start = dateRange.startDate;
     
     if (selectedPeriod === 'thisMonth') {
