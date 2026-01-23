@@ -202,7 +202,7 @@ export default function DashboardScreen() {
                   </Pressable>
                   <Pressable style={styles.todayButton} onPress={goToToday}>
                     <Text style={styles.todayText}>
-                      {selectedMonth.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}
+                      {selectedMonth.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).charAt(0).toUpperCase() + selectedMonth.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).slice(1)}
                     </Text>
                   </Pressable>
                   <Pressable

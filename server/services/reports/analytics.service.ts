@@ -278,7 +278,6 @@ export class AnalyticsService {
       .from(services)
       .where(
         and(
-          eq(services.organizationId, this.organizationId),
           gte(services.date, startStr),
           lte(services.date, endStr)
         )
@@ -454,7 +453,6 @@ export class AnalyticsService {
       .from(services)
       .where(
         and(
-          eq(services.organizationId, this.organizationId),
           gte(services.date, startStr),
           lte(services.date, endStr)
         )
@@ -471,7 +469,6 @@ export class AnalyticsService {
       .from(services)
       .where(
         and(
-          eq(services.organizationId, this.organizationId),
           gte(services.date, startStr),
           lte(services.date, endStr)
         )
@@ -490,7 +487,6 @@ export class AnalyticsService {
       .from(appointments)
       .where(
         and(
-          eq(appointments.organizationId, this.organizationId),
           gte(appointments.date, startStr),
           lte(appointments.date, endStr)
         )
@@ -503,7 +499,6 @@ export class AnalyticsService {
       .from(appointments)
       .where(
         and(
-          eq(appointments.organizationId, this.organizationId),
           eq(appointments.status, 'completed'),
           gte(appointments.date, startStr),
           lte(appointments.date, endStr)
@@ -517,7 +512,6 @@ export class AnalyticsService {
       .from(appointments)
       .where(
         and(
-          eq(appointments.organizationId, this.organizationId),
           eq(appointments.status, 'cancelled'),
           gte(appointments.date, startStr),
           lte(appointments.date, endStr)
@@ -539,8 +533,7 @@ export class AnalyticsService {
     // Total de clientes
     const totalResult = await db
       .select({ count: count() })
-      .from(clients)
-      .where(eq(clients.organizationId, this.organizationId));
+      .from(clients);
     const total = Number(totalResult[0]?.count || 0);
 
     // Clientes nuevos en el período
@@ -549,7 +542,6 @@ export class AnalyticsService {
       .from(clients)
       .where(
         and(
-          eq(clients.organizationId, this.organizationId),
           gte(clients.createdAt, startStr),
           lte(clients.createdAt, endStr)
         )
@@ -562,7 +554,6 @@ export class AnalyticsService {
       .from(appointments)
       .where(
         and(
-          eq(appointments.organizationId, this.organizationId),
           gte(appointments.date, startStr),
           lte(appointments.date, endStr)
         )
@@ -588,8 +579,7 @@ export class AnalyticsService {
     // Total de pianos
     const totalResult = await db
       .select({ count: count() })
-      .from(pianos)
-      .where(eq(pianos.organizationId, this.organizationId));
+      .from(pianos);
     const total = Number(totalResult[0]?.count || 0);
 
     // Pianos con servicio en el período (pianos distintos en appointments)
@@ -598,7 +588,6 @@ export class AnalyticsService {
       .from(appointments)
       .where(
         and(
-          eq(appointments.organizationId, this.organizationId),
           gte(appointments.date, startStr),
           lte(appointments.date, endStr)
         )
@@ -621,8 +610,7 @@ export class AnalyticsService {
     // Contar técnicos distintos asignados a trabajos de esta organización
     const result = await (await db)
       .select({ technicianId: workAssignments.technicianId })
-      .from(workAssignments)
-      .where(eq(workAssignments.organizationId, this.organizationId));
+      .from(workAssignments);
     
     // Contar técnicos únicos
     const uniqueTechnicians = new Set(result.map(r => r.technicianId));

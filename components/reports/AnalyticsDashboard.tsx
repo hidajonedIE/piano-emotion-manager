@@ -190,10 +190,14 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const getPeriodLabel = () => {
     const start = dateRange.startDate;
     
+    const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+    
     if (selectedPeriod === 'thisMonth') {
-      return start.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+      const monthStr = start.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+      return capitalize(monthStr);
     } else if (selectedPeriod === 'thisWeek') {
-      return `Semana ${start.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`;
+      const weekStr = start.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+      return `Semana ${capitalize(weekStr)}`;
     } else if (selectedPeriod === 'thisQuarter') {
       const quarter = Math.floor(start.getMonth() / 3) + 1;
       return `Q${quarter} ${start.getFullYear()}`;
