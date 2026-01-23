@@ -32,7 +32,7 @@ export type PeriodPreset =
 // Helper Functions
 // ============================================================================
 
-function getDateRangeFromPreset(preset: PeriodPreset): DateRange {
+function getDateRangeFromPreset(preset: PeriodPreset, offset: number = 0): DateRange {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -46,9 +46,14 @@ function getDateRangeFromPreset(preset: PeriodPreset): DateRange {
       return { startDate: yesterday, endDate: today };
 
     case 'thisWeek':
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Lunes
-      return { startDate: startOfWeek, endDate: now };
+      const refDateWeek = new Date(today);
+      refDateWeek.setDate(refDateWeek.getDate() + (offset * 7));
+      const startOfWeek = new Date(refDateWeek);
+      startOfWeek.setDate(refDateWeek.getDate() - refDateWeek.getDay() + 1); // Lunes
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+      return { startDate: startOfWeek, endDate: offset === 0 ? now : endOfWeek };
 
     case 'lastWeek':
       const lastWeekEnd = new Date(today);
@@ -58,8 +63,13 @@ function getDateRangeFromPreset(preset: PeriodPreset): DateRange {
       return { startDate: lastWeekStart, endDate: lastWeekEnd };
 
     case 'thisMonth':
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      return { startDate: startOfMonth, endDate: now };
+      const refMonth = now.getMonth() + offset;
+      const refYear = now.getFullYear() + Math.floor(refMonth / 12);
+      const adjustedMonth = ((refMonth % 12) + 12) % 12;
+      const startOfMonth = new Date(refYear, adjustedMonth, 1);
+      const endOfMonth = new Date(refYear, adjustedMonth + 1, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      return { startDate: startOfMonth, endDate: offset === 0 ? now : endOfMonth };
 
     case 'lastMonth':
       const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -67,9 +77,15 @@ function getDateRangeFromPreset(preset: PeriodPreset): DateRange {
       return { startDate: lastMonthStart, endDate: lastMonthEnd };
 
     case 'thisQuarter':
-      const quarterMonth = Math.floor(now.getMonth() / 3) * 3;
-      const startOfQuarter = new Date(now.getFullYear(), quarterMonth, 1);
-      return { startDate: startOfQuarter, endDate: now };
+      const currentQuarter = Math.floor(now.getMonth() / 3);
+      const targetQuarter = currentQuarter + offset;
+      const quarterYear = now.getFullYear() + Math.floor(targetQuarter / 4);
+      const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
+      const quarterMonth = adjustedQuarter * 3;
+      const startOfQuarter = new Date(quarterYear, quarterMonth, 1);
+      const endOfQuarter = new Date(quarterYear, quarterMonth + 3, 0);
+      endOfQuarter.setHours(23, 59, 59, 999);
+      return { startDate: startOfQuarter, endDate: offset === 0 ? now : endOfQuarter };
 
     case 'lastQuarter':
       const lastQuarterMonth = Math.floor(now.getMonth() / 3) * 3 - 3;
@@ -78,8 +94,11 @@ function getDateRangeFromPreset(preset: PeriodPreset): DateRange {
       return { startDate: lastQuarterStart, endDate: lastQuarterEnd };
 
     case 'thisYear':
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
-      return { startDate: startOfYear, endDate: now };
+      const targetYear = now.getFullYear() + offset;
+      const startOfYear = new Date(targetYear, 0, 1);
+      const endOfYear = new Date(targetYear, 11, 31);
+      endOfYear.setHours(23, 59, 59, 999);
+      return { startDate: startOfYear, endDate: offset === 0 ? now : endOfYear };
 
     case 'lastYear':
       const lastYearStart = new Date(now.getFullYear() - 1, 0, 1);
@@ -95,7 +114,7 @@ function getDateRangeFromPreset(preset: PeriodPreset): DateRange {
 // useDashboardMetrics Hook
 // ============================================================================
 
-export function useDashboardMetrics(initialPreset: PeriodPreset = 'thisMonth') {
+export function useDashboardMetrics(initialPreset: PeriodPreset = 'thisMonth', offset: number = 0) {
   const [preset, setPreset] = useState<PeriodPreset>(initialPreset);
   const [customRange, setCustomRange] = useState<DateRange | null>(null);
 
@@ -103,8 +122,8 @@ export function useDashboardMetrics(initialPreset: PeriodPreset = 'thisMonth') {
     if (preset === 'custom' && customRange) {
       return customRange;
     }
-    return getDateRangeFromPreset(preset);
-  }, [preset, customRange]);
+    return getDateRangeFromPreset(preset, offset);
+  }, [preset, customRange, offset]);
 
   const { data: metrics, isLoading, error, refetch } = trpc.analytics.getDashboardMetrics.useQuery({
     startDate: dateRange.startDate.toISOString(),

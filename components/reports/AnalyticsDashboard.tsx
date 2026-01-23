@@ -132,6 +132,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const { t } = useTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodPreset>('thisMonth');
   const [refreshing, setRefreshing] = useState(false);
+  const [timeOffset, setTimeOffset] = useState(0); // 0 = actual, -1 = anterior, +1 = siguiente
 
   // Hooks
   const {
@@ -139,7 +140,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     isLoading: metricsLoading,
     dateRange,
     changePeriod,
-  } = useDashboardMetrics(selectedPeriod);
+  } = useDashboardMetrics(selectedPeriod, timeOffset);
   const { data: revenueData, isLoading: revenueLoading } = useRevenueChart(dateRange, 'month');
   const { data: rawServicesData } = useServicesByType(dateRange);
   const { downloadPDF } = useReportExport();
@@ -209,6 +210,29 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <Text style={styles.headerSubtitle}>Análisis y estadísticas del negocio</Text>
         </View>
         <View style={styles.headerRight}>
+          {/* Navegación temporal */}
+          <View style={styles.timeNavigation}>
+            <TouchableOpacity
+              style={styles.timeNavButton}
+              onPress={() => setTimeOffset(timeOffset - 1)}
+            >
+              <Ionicons name="chevron-back" size={20} color={COLORS.white} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.timeNavButton, timeOffset === 0 && styles.timeNavButtonDisabled]}
+              onPress={() => setTimeOffset(0)}
+              disabled={timeOffset === 0}
+            >
+              <Text style={[styles.timeNavText, timeOffset === 0 && styles.timeNavTextDisabled]}>Hoy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.timeNavButton}
+              onPress={() => setTimeOffset(timeOffset + 1)}
+            >
+              <Ionicons name="chevron-forward" size={20} color={COLORS.white} />
+            </TouchableOpacity>
+          </View>
+          
           <View style={styles.periodSelector}>
             {periods.map((period) => (
               <TouchableOpacity
@@ -217,7 +241,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   styles.periodButton,
                   selectedPeriod === period.key && styles.periodButtonActive,
                 ]}
-                onPress={() => setSelectedPeriod(period.key)}
+                onPress={() => {
+                  setSelectedPeriod(period.key);
+                  setTimeOffset(0); // Reset offset al cambiar período
+                }}
               >
                 <Text
                   style={[
@@ -468,6 +495,30 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 12,
     fontWeight: '600',
+  },
+  // Time Navigation
+  timeNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginRight: 8,
+  },
+  timeNavButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: COLORS.white + '20',
+  },
+  timeNavButtonDisabled: {
+    opacity: 0.5,
+  },
+  timeNavText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  timeNavTextDisabled: {
+    opacity: 0.7,
   },
   // Metrics Grid 2x2
   metricsGrid: {
