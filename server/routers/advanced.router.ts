@@ -6,7 +6,7 @@ import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
 import { getUserByClerkId } from "../db.js";
 import { storageRouter } from "./storage/index.js";
-import { predictionsRouter } from "./predictions/predictions.router.js";
+
 import { aiPredictionsEnhancedRouter } from "./ai-predictions-enhanced.router.js";
 
 // Funciones auxiliares para el chat
@@ -149,8 +149,6 @@ export const advancedRouter = router({
       .query(async () => []),
   }),
 
-  // Predictions - Analíticas predictivas con algoritmos locales
-  predictions: predictionsRouter,
   
   // AI Predictions Enhanced - Predicciones completas con Gemini
   aiPredictionsEnhanced: aiPredictionsEnhancedRouter,
