@@ -17,8 +17,9 @@ export default function StoreScreen() {
     React.useCallback(() => {
     setHeaderConfig({
       title: 'Piano Emotion Store',
-      subtitle: 'Tienda de pianos y accesorios',
-      showLogo: true,
+      subtitle: 'Artículos y componentes para la reparación, restauración y afinación de pianos',
+      icon: 'music.note',
+      iconColor: '#FFFFFF',
       showBackButton: false,
     });
     }, [setHeaderConfig])

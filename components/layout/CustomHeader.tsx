@@ -71,7 +71,7 @@ export default function CustomHeader({
 
           {icon && (
             <View style={styles.iconContainer}>
-              <IconSymbol name={icon as any} size={32} color={iconColor} />
+              <IconSymbol name={icon as any} size={48} color={iconColor} />
             </View>
           )}
 
