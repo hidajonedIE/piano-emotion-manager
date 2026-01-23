@@ -7,6 +7,7 @@
 
 import { getDb } from '../../../drizzle/db.js';
 import { eq, and, gte, lte, sql, count, sum, avg, desc } from 'drizzle-orm';
+import { services, clients, pianos } from '../../../drizzle/schema.js';
 
 // ============================================================================
 // Types
@@ -436,16 +437,33 @@ export class AnalyticsService {
   // ============================================================================
 
   private async getTotalRevenue(startDate: Date, endDate: Date): Promise<number> {
-    // En producción, consultar tabla de facturas/servicios
-    // Placeholder: generar valor aleatorio basado en días
-    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    return days * (Math.random() * 200 + 100);
+    const db = getDb();
+    const result = await db
+      .select({ total: sum(services.cost) })
+      .from(services)
+      .where(
+        and(
+          eq(services.organizationId, this.organizationId),
+          gte(services.date, startDate.toISOString()),
+          lte(services.date, endDate.toISOString())
+        )
+      );
+    return Number(result[0]?.total || 0);
   }
 
   private async getServiceCount(startDate: Date, endDate: Date): Promise<number> {
-    // En producción, consultar BD
-    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.floor(days * (Math.random() * 2 + 0.5));
+    const db = getDb();
+    const result = await db
+      .select({ count: count() })
+      .from(services)
+      .where(
+        and(
+          eq(services.organizationId, this.organizationId),
+          gte(services.date, startDate.toISOString()),
+          lte(services.date, endDate.toISOString())
+        )
+      );
+    return Number(result[0]?.count || 0);
   }
 
   private async getServiceStats(startDate: Date, endDate: Date) {
