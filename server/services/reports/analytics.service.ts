@@ -7,7 +7,7 @@
 
 import { getDb } from '../../../drizzle/db.js';
 import { eq, and, gte, lte, sql, count, sum, avg, desc } from 'drizzle-orm';
-import { services, clients, pianos } from '../../../drizzle/schema.js';
+import { services, clients, pianos, appointments, users, workAssignments } from '../../../drizzle/schema.js';
 
 // ============================================================================
 // Types
@@ -251,41 +251,48 @@ export class AnalyticsService {
    */
   async getServicesByType(dateRange: DateRange): Promise<ServicesByType[]> {
     const { startDate, endDate } = dateRange;
+    const db = getDb();
 
-    // Tipos de servicio predefinidos
-    const serviceTypes = [
-      { type: 'tuning', name: 'Afinación' },
-      { type: 'repair', name: 'Reparación' },
-      { type: 'regulation', name: 'Regulación' },
-      { type: 'voicing', name: 'Armonización' },
-      { type: 'cleaning', name: 'Limpieza' },
-      { type: 'evaluation', name: 'Evaluación' },
-      { type: 'moving', name: 'Transporte' },
-      { type: 'other', name: 'Otros' },
-    ];
+    // Mapeo de tipos de servicio
+    const serviceTypeNames: Record<string, string> = {
+      tuning: 'Afinación',
+      repair: 'Reparación',
+      regulation: 'Regulación',
+      maintenance_basic: 'Mantenimiento Básico',
+      maintenance_complete: 'Mantenimiento Completo',
+      maintenance_premium: 'Mantenimiento Premium',
+      inspection: 'Inspección',
+      restoration: 'Restauración',
+      other: 'Otros',
+    };
 
-    const results: ServicesByType[] = [];
-    let totalServices = 0;
+    // Consultar servicios agrupados por tipo
+    const results = await db
+      .select({
+        type: services.serviceType,
+        count: count(),
+        revenue: sum(services.cost),
+      })
+      .from(services)
+      .where(
+        and(
+          eq(services.organizationId, this.organizationId),
+          gte(services.date, startDate.toISOString()),
+          lte(services.date, endDate.toISOString())
+        )
+      )
+      .groupBy(services.serviceType);
 
-    for (const serviceType of serviceTypes) {
-      // En producción, consultar BD
-      const count = Math.floor(Math.random() * 50) + 5; // Placeholder
-      const revenue = count * (Math.random() * 100 + 50);
-      totalServices += count;
+    // Calcular total para porcentajes
+    const totalServices = results.reduce((sum, r) => sum + Number(r.count), 0);
 
-      results.push({
-        type: serviceType.type,
-        typeName: serviceType.name,
-        count,
-        revenue,
-        percentage: 0, // Se calcula después
-      });
-    }
-
-    // Calcular porcentajes
+    // Formatear resultados
     return results.map(r => ({
-      ...r,
-      percentage: totalServices > 0 ? (r.count / totalServices) * 100 : 0,
+      type: r.type,
+      typeName: serviceTypeNames[r.type] || r.type,
+      count: Number(r.count),
+      revenue: Number(r.revenue || 0),
+      percentage: totalServices > 0 ? (Number(r.count) / totalServices) * 100 : 0,
     }));
   }
 
@@ -467,39 +474,145 @@ export class AnalyticsService {
   }
 
   private async getServiceStats(startDate: Date, endDate: Date) {
-    // En producción, consultar BD
-    const total = await this.getServiceCount(startDate, endDate);
-    const completed = Math.floor(total * 0.85);
-    const cancelled = Math.floor(total * 0.05);
+    const db = getDb();
+    
+    // Contar total de appointments
+    const totalResult = await db
+      .select({ count: count() })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, this.organizationId),
+          gte(appointments.date, startDate.toISOString()),
+          lte(appointments.date, endDate.toISOString())
+        )
+      );
+    const total = Number(totalResult[0]?.count || 0);
+
+    // Contar completados
+    const completedResult = await db
+      .select({ count: count() })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, this.organizationId),
+          eq(appointments.status, 'completed'),
+          gte(appointments.date, startDate.toISOString()),
+          lte(appointments.date, endDate.toISOString())
+        )
+      );
+    const completed = Number(completedResult[0]?.count || 0);
+
+    // Contar cancelados
+    const cancelledResult = await db
+      .select({ count: count() })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, this.organizationId),
+          eq(appointments.status, 'cancelled'),
+          gte(appointments.date, startDate.toISOString()),
+          lte(appointments.date, endDate.toISOString())
+        )
+      );
+    const cancelled = Number(cancelledResult[0]?.count || 0);
+
+    // Pendientes = scheduled + confirmed
     const pending = total - completed - cancelled;
 
     return { total, completed, pending, cancelled };
   }
 
   private async getClientStats(startDate: Date, endDate: Date) {
-    // En producción, consultar BD
+    const db = getDb();
+    
+    // Total de clientes
+    const totalResult = await db
+      .select({ count: count() })
+      .from(clients)
+      .where(eq(clients.organizationId, this.organizationId));
+    const total = Number(totalResult[0]?.count || 0);
+
+    // Clientes nuevos en el período
+    const newResult = await db
+      .select({ count: count() })
+      .from(clients)
+      .where(
+        and(
+          eq(clients.organizationId, this.organizationId),
+          gte(clients.createdAt, startDate.toISOString()),
+          lte(clients.createdAt, endDate.toISOString())
+        )
+      );
+    const newClients = Number(newResult[0]?.count || 0);
+
+    // Clientes activos (con appointments en el período)
+    const activeResult = await db
+      .selectDistinct({ clientId: appointments.clientId })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, this.organizationId),
+          gte(appointments.date, startDate.toISOString()),
+          lte(appointments.date, endDate.toISOString())
+        )
+      );
+    const active = activeResult.length;
+
+    // Tasa de retención: clientes activos / total de clientes * 100
+    const retention = total > 0 ? (active / total) * 100 : 0;
+
     return {
-      total: Math.floor(Math.random() * 200) + 50,
-      new: Math.floor(Math.random() * 20) + 5,
-      active: Math.floor(Math.random() * 100) + 30,
-      retention: 75 + Math.random() * 20,
+      total,
+      new: newClients,
+      active,
+      retention,
     };
   }
 
   private async getPianoStats(startDate: Date, endDate: Date) {
-    // En producción, consultar BD
-    const total = Math.floor(Math.random() * 300) + 100;
-    const serviced = Math.floor(total * 0.6);
+    const db = getDb();
+    
+    // Total de pianos
+    const totalResult = await db
+      .select({ count: count() })
+      .from(pianos)
+      .where(eq(pianos.organizationId, this.organizationId));
+    const total = Number(totalResult[0]?.count || 0);
+
+    // Pianos con servicio en el período (pianos distintos en appointments)
+    const servicedResult = await db
+      .selectDistinct({ pianoId: appointments.pianoId })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, this.organizationId),
+          gte(appointments.date, startDate.toISOString()),
+          lte(appointments.date, endDate.toISOString())
+        )
+      );
+    const serviced = servicedResult.filter(r => r.pianoId !== null).length;
+
+    // Pendientes = total - serviced
+    const pending = total - serviced;
+
     return {
       total,
       serviced,
-      pending: total - serviced,
+      pending,
     };
   }
 
   private async getTechnicianCount(): Promise<number> {
-    // En producción, consultar BD
-    return Math.floor(Math.random() * 5) + 1;
+    const db = getDb();
+    
+    // Contar técnicos distintos asignados a trabajos de esta organización
+    const result = await db
+      .selectDistinct({ technicianId: workAssignments.technicianId })
+      .from(workAssignments)
+      .where(eq(workAssignments.organizationId, this.organizationId));
+    
+    return result.length || 1; // Mínimo 1 para evitar división por cero
   }
 
   private getWeekNumber(date: Date): number {
