@@ -6,7 +6,7 @@
 
 import { invokeGemini } from '../../_core/gemini.js';
 import { getDb } from '../../db.js';
-import { services, clients, pianos, appointments, inventory } from '../../../drizzle/schema.js';
+import { services, clients, pianos, appointments, inventory } from '../../../drizzle/schema.ts';
 import { and, gte, lte, count, sum, sql, desc } from 'drizzle-orm';
 
 // ============================================
