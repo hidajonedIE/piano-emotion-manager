@@ -101,7 +101,7 @@ export async function predictRevenue(data: RevenueData): Promise<RevenuePredicti
       model: 'gemini-2.5-flash',
       generationConfig: {
         maxOutputTokens: 1000,
-        temperature: 0.3,
+        temperature: 0,
       },
     });
 
@@ -173,7 +173,7 @@ export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction
       model: 'gemini-2.5-flash',
       generationConfig: {
         maxOutputTokens: 1000,
-        temperature: 0.3,
+        temperature: 0,
       },
     });
 
@@ -234,7 +234,7 @@ export async function predictMaintenance(data: MaintenanceData): Promise<Mainten
       model: 'gemini-2.5-flash',
       generationConfig: {
         maxOutputTokens: 1000,
-        temperature: 0.3,
+        temperature: 0,
       },
     });
 
