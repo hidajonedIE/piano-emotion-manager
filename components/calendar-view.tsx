@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
@@ -522,7 +522,10 @@ const styles = StyleSheet.create({
   // Vista mensual
   monthScrollView: {
     flex: 1,
-    maxHeight: '100%',
+    ...(Platform.OS === 'web' ? {
+      overflow: 'auto',
+      height: '100%',
+    } : {}),
   },
   monthScrollContent: {
     paddingBottom: 20,
