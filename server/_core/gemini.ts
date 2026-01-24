@@ -212,6 +212,7 @@ export async function generateJsonWithGemini<T>(
   options?: {
     model?: string;
     systemPrompt?: string;
+    maxTokens?: number;
   }
 ): Promise<T> {
   const systemPrompt = options?.systemPrompt || 
