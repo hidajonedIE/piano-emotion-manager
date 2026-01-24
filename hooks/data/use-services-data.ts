@@ -63,10 +63,11 @@ function serverToLocalService(server: ServerService): Service {
 export function useServicesData() {
   const utils = trpc.useUtils();
 
-  // Query para obtener todos los servicios
-  const { data: serverServices, isLoading: loading, refetch } = trpc.services.list.useQuery(undefined, {
-    staleTime: 5 * 60 * 1000, // 5 minutos
-  });
+  // Query para obtener todos los servicios (sin límite de paginación para el dashboard)
+  const { data: serverServices, isLoading: loading, refetch } = trpc.services.list.useQuery(
+    { limit: 10000, sortBy: 'date', sortOrder: 'desc' },
+    { staleTime: 5 * 60 * 1000 } // 5 minutos
+  );
 
   // Query para obtener estadísticas
   const { data: statsData } = trpc.services.getStats.useQuery(undefined, {
