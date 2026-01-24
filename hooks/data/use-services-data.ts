@@ -60,12 +60,18 @@ function serverToLocalService(server: ServerService): Service {
   };
 }
 
-export function useServicesData() {
+interface UseServicesDataOptions {
+  dateFrom?: string;
+  dateTo?: string;
+  limit?: number;
+}
+
+export function useServicesData(options?: UseServicesDataOptions) {
   const utils = trpc.useUtils();
 
-  // Query para obtener todos los servicios (aumentar límite para datos históricos)
+  // Query para obtener servicios con filtrado opcional por fechas
   const { data: serverServices, isLoading: loading, refetch } = trpc.services.list.useQuery(
-    { limit: 1000 }, // Cargar suficientes servicios para mostrar histórico
+    options || undefined, // Pasar opciones de filtrado si existen
     {
       staleTime: 5 * 60 * 1000, // 5 minutos
     }

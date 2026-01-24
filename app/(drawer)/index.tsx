@@ -78,10 +78,26 @@ export default function DashboardScreen() {
     }, [setHeaderConfig])
   );
 
-  // Datos
+  // Calcular rango de fechas del mes seleccionado para filtrado eficiente
+  const dateRange = useMemo(() => {
+    const year = selectedMonth.getFullYear();
+    const month = selectedMonth.getMonth();
+    
+    // Primer día del mes
+    const dateFrom = new Date(year, month, 1);
+    // Último día del mes
+    const dateTo = new Date(year, month + 1, 0, 23, 59, 59, 999);
+    
+    return {
+      dateFrom: dateFrom.toISOString(),
+      dateTo: dateTo.toISOString(),
+    };
+  }, [selectedMonth]);
+  
+  // Datos - servicios filtrados por mes seleccionado
   const { clients } = useClientsData();
   const { pianos } = usePianosData();
-  const { services } = useServicesData();
+  const { services } = useServicesData(dateRange);
   const { appointments } = useAppointmentsData();
   const { alerts, stats: alertStats } = useAlertsOptimized(15);
   
