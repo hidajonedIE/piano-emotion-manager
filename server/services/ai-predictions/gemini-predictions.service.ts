@@ -69,7 +69,11 @@ Responde SOLO JSON válido (sin markdown):
     
     console.log(`[predictRevenue] Respuesta recibida (${text.length} caracteres): ${text}`);
     
-    const prediction = JSON.parse(text.trim()) as {
+    // Limpiar markdown si existe
+    const cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    console.log(`[predictRevenue] Texto limpio: ${cleanText}`);
+    
+    const prediction = JSON.parse(cleanText) as {
       predictedAmount: number;
       confidence: 'high' | 'medium' | 'low';
       reasoning: string;
@@ -128,7 +132,11 @@ Responde SOLO JSON válido (sin markdown):
     
     console.log(`[predictChurn] Respuesta recibida (${text.length} caracteres): ${text}`);
     
-    const prediction = JSON.parse(text.trim()) as {
+    // Limpiar markdown si existe
+    const cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    console.log(`[predictChurn] Texto limpio: ${cleanText}`);
+    
+    const prediction = JSON.parse(cleanText) as {
       riskLevel: 'high' | 'medium' | 'low';
       affectedClients: number;
       reasoning: string;
@@ -182,7 +190,11 @@ Responde SOLO JSON válido (sin markdown):
     
     console.log(`[predictMaintenance] Respuesta recibida (${text.length} caracteres): ${text}`);
     
-    const prediction = JSON.parse(text.trim()) as {
+    // Limpiar markdown si existe
+    const cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    console.log(`[predictMaintenance] Texto limpio: ${cleanText}`);
+    
+    const prediction = JSON.parse(cleanText) as {
       urgentCount: number;
       scheduledCount: number;
       reasoning: string;

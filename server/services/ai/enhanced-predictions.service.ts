@@ -190,15 +190,9 @@ export async function collectBusinessData(organizationId: string): Promise<Busin
   }
   
   // 2. DATOS DE SERVICIOS
+  // Nota: La tabla services solo contiene servicios completados (registros históricos)
   const totalServices = await db.select({ count: count() }).from(services);
-  const completedServices = await db
-    .select({ count: count() })
-    .from(services)
-    .where(sql`${services.status} = 'completed'`);
-  const pendingServices = await db
-    .select({ count: count() })
-    .from(services)
-    .where(sql`${services.status} = 'pending'`);
+  const completedServices = totalServices; // Todos los servicios en la tabla son completados
   
   const servicesByType = await db
     .select({
@@ -311,7 +305,7 @@ export async function collectBusinessData(organizationId: string): Promise<Busin
     services: {
       total: Number(totalServices[0]?.count || 0),
       completed: Number(completedServices[0]?.count || 0),
-      pending: Number(pendingServices[0]?.count || 0),
+      pending: 0, // Los servicios pendientes están en appointments, no en services
       byType: Object.fromEntries(servicesByType.map(s => [s.type, Number(s.count)])),
       last12Months: last12MonthsServices,
     },
