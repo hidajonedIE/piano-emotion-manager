@@ -4,7 +4,7 @@
  */
 
 import { eq, and, gt } from 'drizzle-orm';
-import { db } from '../../db.js';
+import { getDb } from '../../db.js';
 import { aiPredictionsCache } from '../../../drizzle/ai-predictions-cache-schema.js';
 
 export type PredictionType = 'revenue' | 'churn' | 'maintenance';
@@ -22,7 +22,7 @@ export async function getCachedPrediction(
   type: PredictionType,
   targetMonth: string
 ): Promise<any | null> {
-  const database = await db.getDb();
+  const database = await getDb();
   if (!database) return null;
 
   try {
@@ -64,7 +64,7 @@ export async function setCachedPrediction(
   predictionData: any,
   expirationHours: number = 24
 ): Promise<void> {
-  const database = await db.getDb();
+  const database = await getDb();
   if (!database) return;
 
   try {
@@ -104,7 +104,7 @@ export async function invalidatePredictionCache(
   partnerId: string,
   type?: PredictionType
 ): Promise<void> {
-  const database = await db.getDb();
+  const database = await getDb();
   if (!database) return;
 
   try {
@@ -135,7 +135,7 @@ export async function invalidatePredictionCache(
  * Limpia predicciones expiradas (ejecutar periódicamente)
  */
 export async function cleanExpiredPredictions(): Promise<void> {
-  const database = await db.getDb();
+  const database = await getDb();
   if (!database) return;
 
   try {
