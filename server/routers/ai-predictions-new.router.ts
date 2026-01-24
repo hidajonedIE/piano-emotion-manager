@@ -49,12 +49,12 @@ export const aiPredictionsNewRouter = router({
             reasoning: revenuePrediction.reasoning
           },
           churn: {
-            atRisk: churnData.totalAtRisk,
+            atRisk: churnPrediction.affectedClients,
             riskLevel: churnPrediction.riskLevel,
             reasoning: churnPrediction.reasoning
           },
           maintenance: {
-            needed: maintenanceData.totalNeeded,
+            needed: maintenancePrediction.urgentCount + maintenancePrediction.scheduledCount,
             urgent: maintenancePrediction.urgentCount,
             reasoning: maintenancePrediction.reasoning
           }

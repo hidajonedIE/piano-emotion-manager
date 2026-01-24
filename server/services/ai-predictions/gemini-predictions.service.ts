@@ -70,7 +70,14 @@ Responde SOLO JSON válido (sin markdown):
     console.log(`[predictRevenue] Respuesta recibida (${text.length} caracteres): ${text}`);
     
     // Limpiar markdown si existe
-    const cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    let cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    
+    // Validar y cerrar JSON si falta }
+    if (!cleanText.endsWith('}')) {
+      console.log('[predictRevenue] JSON incompleto, agregando cierre }');
+      cleanText += '}';
+    }
+    
     console.log(`[predictRevenue] Texto limpio: ${cleanText}`);
     
     const prediction = JSON.parse(cleanText) as {
@@ -133,7 +140,14 @@ Responde SOLO JSON válido (sin markdown):
     console.log(`[predictChurn] Respuesta recibida (${text.length} caracteres): ${text}`);
     
     // Limpiar markdown si existe
-    const cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    let cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    
+    // Validar y cerrar JSON si falta }
+    if (!cleanText.endsWith('}')) {
+      console.log('[predictChurn] JSON incompleto, agregando cierre }');
+      cleanText += '}';
+    }
+    
     console.log(`[predictChurn] Texto limpio: ${cleanText}`);
     
     const prediction = JSON.parse(cleanText) as {
@@ -191,7 +205,14 @@ Responde SOLO JSON válido (sin markdown):
     console.log(`[predictMaintenance] Respuesta recibida (${text.length} caracteres): ${text}`);
     
     // Limpiar markdown si existe
-    const cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    let cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    
+    // Validar y cerrar JSON si falta }
+    if (!cleanText.endsWith('}')) {
+      console.log('[predictMaintenance] JSON incompleto, agregando cierre }');
+      cleanText += '}';
+    }
+    
     console.log(`[predictMaintenance] Texto limpio: ${cleanText}`);
     
     const prediction = JSON.parse(cleanText) as {
