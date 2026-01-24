@@ -21,10 +21,17 @@ export const aiPredictionsEnhancedRouter = router({
     .query(async ({ ctx, input }) => {
       try {
         const businessData = await collectBusinessData(ctx.organizationId);
+        console.log('[getRevenue] Business data collected:', JSON.stringify(businessData, null, 2));
+        
         const predictions = await generateEnhancedPredictions(businessData);
+        console.log('[getRevenue] Predictions generated:', JSON.stringify(predictions, null, 2));
+        console.log('[getRevenue] predictions.revenue:', JSON.stringify(predictions.revenue, null, 2));
+        console.log('[getRevenue] predictions.revenue.predictions:', predictions.revenue.predictions);
         
         // Retornar array de predicciones de ingresos
-        return predictions.revenue.predictions || [];
+        const result = predictions.revenue.predictions || [];
+        console.log('[getRevenue] Returning:', JSON.stringify(result, null, 2));
+        return result;
       } catch (error) {
         console.error('[getRevenue] Error:', error);
         return [];
