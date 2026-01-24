@@ -21,9 +21,9 @@ export const aiPredictionsEnhancedRouter = router({
     .query(async ({ ctx, input }) => {
       console.log('[getRevenue] 🚀 ENDPOINT LLAMADO');
       console.log('[getRevenue] Input:', input);
-      console.log('[getRevenue] Organization ID:', ctx.organizationId);
+      console.log('[getRevenue] Partner ID:', ctx.user.partnerId);
       try {
-        const businessData = await collectBusinessData(ctx.organizationId);
+        const businessData = await collectBusinessData(ctx.user.partnerId);
         console.log('[getRevenue] Business data collected:', JSON.stringify(businessData, null, 2));
         
         const predictions = await generateEnhancedPredictions(businessData);
@@ -56,7 +56,7 @@ export const aiPredictionsEnhancedRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.organizationId);
+        const businessData = await collectBusinessData(ctx.user.partnerId);
         const predictions = await generateEnhancedPredictions(businessData);
         
         const allClients = predictions.clientChurn.topRiskClients || [];
@@ -95,7 +95,7 @@ export const aiPredictionsEnhancedRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.organizationId);
+        const businessData = await collectBusinessData(ctx.user.partnerId);
         const predictions = await generateEnhancedPredictions(businessData);
         
         const allMaintenance = predictions.maintenance.predictions || [];
@@ -131,7 +131,7 @@ export const aiPredictionsEnhancedRouter = router({
     .input(z.object({ weeks: z.number().min(1).max(12).optional().default(8) }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.organizationId);
+        const businessData = await collectBusinessData(ctx.user.partnerId);
         const predictions = await generateEnhancedPredictions(businessData);
         
         return predictions.workload.predictions || [];
@@ -152,7 +152,7 @@ export const aiPredictionsEnhancedRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.organizationId);
+        const businessData = await collectBusinessData(ctx.user.partnerId);
         const predictions = await generateEnhancedPredictions(businessData);
         
         const allInventory = predictions.inventory.predictions || [];
@@ -185,7 +185,7 @@ export const aiPredictionsEnhancedRouter = router({
    */
   getCompletePredictions: protectedProcedure.query(async ({ ctx }) => {
     try {
-      const businessData = await collectBusinessData(ctx.organizationId);
+      const businessData = await collectBusinessData(ctx.user.partnerId);
       const predictions = await generateEnhancedPredictions(businessData);
       
       return {
