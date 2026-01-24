@@ -941,7 +941,13 @@ export const services = mysqlTable("services", {
 	temperature: decimal({ precision: 5, scale: 2 }),
 	partnerId: int().default(1).notNull(),
 	organizationId: int(),
-});
+},
+(table) => [
+	index("services_partner_date_idx").on(table.partnerId, table.date),
+	index("services_partner_idx").on(table.partnerId),
+	index("services_client_idx").on(table.clientId),
+	index("services_piano_idx").on(table.pianoId),
+]);
 
 export const subscriptionPlans = mysqlTable("subscription_plans", {
 	id: int().autoincrement().notNull(),
