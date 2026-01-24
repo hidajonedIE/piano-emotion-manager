@@ -152,41 +152,37 @@ export async function collectBusinessData(organizationId: string): Promise<Busin
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
   
   // 1. DATOS DE INGRESOS
-  const currentRevenue = await db
-    .select({ total: sum(services.cost) })
-    .from(services)
-    .where(
-      and(
-        gte(services.date, currentMonthStart.toISOString()),
-        lte(services.date, currentMonthEnd.toISOString())
-      )
-    );
+  const currentRevenueQuery = sql`
+    SELECT COALESCE(SUM(cost), 0) as total
+    FROM services
+    WHERE date >= ${currentMonthStart.toISOString()}
+      AND date <= ${currentMonthEnd.toISOString()}
+  `;
+  const currentRevenueResult = await db.execute(currentRevenueQuery);
+  const currentRevenue = [{ total: Number((currentRevenueResult[0] as any[])[0]?.total || 0) }];
   
-  const previousRevenue = await db
-    .select({ total: sum(services.cost) })
-    .from(services)
-    .where(
-      and(
-        gte(services.date, previousMonthStart.toISOString()),
-        lte(services.date, previousMonthEnd.toISOString())
-      )
-    );
+  const previousRevenueQuery = sql`
+    SELECT COALESCE(SUM(cost), 0) as total
+    FROM services
+    WHERE date >= ${previousMonthStart.toISOString()}
+      AND date <= ${previousMonthEnd.toISOString()}
+  `;
+  const previousRevenueResult = await db.execute(previousRevenueQuery);
+  const previousRevenue = [{ total: Number((previousRevenueResult[0] as any[])[0]?.total || 0) }];
   
   // Ingresos de los últimos 12 meses
   const last12MonthsRevenue: number[] = [];
   for (let i = 11; i >= 0; i--) {
     const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-    const monthRevenue = await db
-      .select({ total: sum(services.cost) })
-      .from(services)
-      .where(
-        and(
-          gte(services.date, monthStart.toISOString()),
-          lte(services.date, monthEnd.toISOString())
-        )
-      );
-    last12MonthsRevenue.push(Number(monthRevenue[0]?.total || 0));
+    const monthRevenueQuery = sql`
+      SELECT COALESCE(SUM(cost), 0) as total
+      FROM services
+      WHERE date >= ${monthStart.toISOString()}
+        AND date <= ${monthEnd.toISOString()}
+    `;
+    const monthRevenueResult = await db.execute(monthRevenueQuery);
+    last12MonthsRevenue.push(Number((monthRevenueResult[0] as any[])[0]?.total || 0));
   }
   
   // 2. DATOS DE SERVICIOS
