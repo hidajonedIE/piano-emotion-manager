@@ -219,7 +219,8 @@ export async function generateJsonWithGemini<T>(
     "Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional.";
   
   const response = await invokeGemini(prompt, {
-    ...options,
+    model: options?.model,
+    maxTokens: options?.maxTokens,
     systemPrompt,
     temperature: 0.3, // Más determinístico para JSON
   });
