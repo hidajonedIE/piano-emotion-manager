@@ -109,13 +109,32 @@ export async function predictRevenue(data: RevenueData): Promise<RevenuePredicti
     const last12Months = data.historical.slice(-12);
     const summary = last12Months.map(m => `${m.month}: ${m.amount}€`).join(', ');
     
-    const prompt = `Predice ingresos próximo mes.
-Últimos 12 meses: ${summary}
-Actual: ${data.current}€
-Promedio: ${data.average}€
+    // Identificar el mes objetivo (próximo mes)
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const targetMonthName = nextMonth.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+    
+    // Buscar el mismo mes del año anterior para comparación estacional
+    const lastYearSameMonth = last12Months.find(m => {
+      const monthDate = new Date(m.month);
+      return monthDate.getMonth() === nextMonth.getMonth();
+    });
+    const seasonalReference = lastYearSameMonth ? `\nMismo mes año anterior (${lastYearSameMonth.month}): ${lastYearSameMonth.amount}€` : '';
+    
+    const prompt = `Predice ingresos para ${targetMonthName}.
+
+HISTÓRICO (últimos 12 meses): ${summary}
+Mes actual: ${data.current}€
+Promedio general: ${data.average}€${seasonalReference}
+
+INSTRUCCIONES:
+1. Analiza patrones estacionales comparando con el mismo mes del año anterior
+2. Identifica tendencias de crecimiento o decrecimiento
+3. Considera anomalías o cambios significativos
+4. NO hagas solo una media simple, usa análisis inteligente
 
 Responde SOLO JSON válido (sin markdown):
-{"predictedAmount":número,"confidence":"high/medium/low","reasoning":"max 20 palabras"}`;
+{"predictedAmount":número,"confidence":"high/medium/low","reasoning":"max 30 palabras explicando por qué"}`;
 
     console.log('[predictRevenue] Enviando prompt a Gemini...');
     const result = await model.generateContent(prompt);
@@ -177,12 +196,25 @@ export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction
       },
     });
 
-    const prompt = `Evalúa riesgo de pérdida de clientes.
-Total en riesgo: ${data.totalAtRisk}
-Top 3: ${data.clients.slice(0, 3).map(c => `${c.name} (${c.riskScore}%)`).join(', ')}
+    // Identificar el mes objetivo
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const targetMonthName = nextMonth.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+    
+    const prompt = `Evalúa riesgo de pérdida de clientes para ${targetMonthName}.
+
+DATOS ACTUALES:
+- Total clientes en riesgo: ${data.totalAtRisk}
+- Top 3 clientes críticos: ${data.clients.slice(0, 3).map(c => `${c.name} (riesgo: ${c.riskScore}%)`).join(', ')}
+
+INSTRUCCIONES:
+1. Analiza la gravedad del riesgo según los scores individuales
+2. Considera si hay concentración de riesgo en pocos clientes
+3. Evalúa tendencias y patrones de comportamiento
+4. NO hagas solo un conteo simple, usa análisis inteligente
 
 Responde SOLO JSON válido (sin markdown):
-{"riskLevel":"high/medium/low","affectedClients":número,"reasoning":"max 20 palabras"}`;
+{"riskLevel":"high/medium/low","affectedClients":número,"reasoning":"max 30 palabras explicando por qué"}`;
 
     console.log('[predictChurn] Enviando prompt a Gemini...');
     const result = await model.generateContent(prompt);
@@ -240,19 +272,39 @@ export async function predictMaintenance(data: MaintenanceData): Promise<Mainten
 
      // Crear resumen del histórico mensual
     const historySummary = data.monthlyHistory && data.monthlyHistory.length > 0
-      ? data.monthlyHistory.map(m => `${m.month}:${m.count}`).join(', ')
+      ? data.monthlyHistory.map(m => `${m.month}: ${m.count} servicios`).join(', ')
       : 'Sin histórico';
     
     const avgMonthly = data.monthlyHistory && data.monthlyHistory.length > 0
       ? Math.round(data.monthlyHistory.reduce((sum, m) => sum + m.count, 0) / data.monthlyHistory.length)
       : 0;
 
-    const prompt = `Predice mantenimientos próximo mes basado en histórico.
-Histórico últimos 12 meses: ${historySummary}
-Promedio mensual: ${avgMonthly}
-Pianos que necesitan mantenimiento: ${data.totalNeeded}
+    // Identificar el mes objetivo (próximo mes)
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const targetMonthName = nextMonth.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+    
+    // Buscar el mismo mes del año anterior para comparación estacional
+    const lastYearSameMonth = data.monthlyHistory?.find(m => {
+      const monthDate = new Date(m.month);
+      return monthDate.getMonth() === nextMonth.getMonth();
+    });
+    const seasonalReference = lastYearSameMonth ? `\nMismo mes año anterior (${lastYearSameMonth.month}): ${lastYearSameMonth.count} servicios` : '';
+
+    const prompt = `Predice mantenimientos para ${targetMonthName}.
+
+HISTÓRICO (últimos 12 meses): ${historySummary}
+Promedio mensual general: ${avgMonthly} servicios
+Pianos que necesitan mantenimiento: ${data.totalNeeded}${seasonalReference}
+
+INSTRUCCIONES:
+1. Analiza patrones estacionales comparando con el mismo mes del año anterior
+2. Identifica tendencias de crecimiento o decrecimiento en servicios
+3. Considera la demanda típica del mes objetivo
+4. NO hagas solo una media simple, usa análisis inteligente
+
 Responde SOLO JSON válido (sin markdown):
-{"urgentCount":número,"scheduledCount":número,"reasoning":"max 20 palabras"}`;
+{"urgentCount":número,"scheduledCount":número,"reasoning":"max 30 palabras explicando por qué"}`;
 
     console.log('[predictMaintenance] Enviando prompt a Gemini...');
     const result = await model.generateContent(prompt);

@@ -189,8 +189,14 @@ export const DashboardStats = memo(function DashboardStats({
     router.push('/(tabs)/agenda' as any);
   }, [router]);
 
-  // Formatear valores para accesibilidad
+  // Formatear valores para accesibilidad y visualización
   const formatCurrency = useCallback((value: number) => {
+    // Formato compacto para números >= 10000
+    if (value >= 10000) {
+      const thousands = value / 1000;
+      return `${thousands.toFixed(1)}k€`;
+    }
+    // Formato normal para números menores
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'EUR',
