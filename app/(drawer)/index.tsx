@@ -85,10 +85,34 @@ export default function DashboardScreen() {
   const { appointments } = useAppointmentsData();
   const { alerts, stats: alertStats } = useAlertsOptimized(15);
   
-  // Predicciones IA generadas por Gemini
-  const { data: aiPredictions, isLoading: loadingPredictions } = trpc.aiPredictions.getDashboardPredictions.useQuery({
-    currentMonth: selectedMonth.toISOString(),
-  });
+  // Predicciones IA generadas por Gemini - Usando nuevos endpoints
+  const { data: revenueData, isLoading: loadingRevenue } = trpc.advanced.predictions.getRevenue.useQuery(
+    { months: 1 },
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+  
+  const { data: churnData, isLoading: loadingChurn } = trpc.advanced.predictions.getChurnRisk.useQuery(
+    undefined,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+  
+  const { data: maintenanceData, isLoading: loadingMaintenance } = trpc.advanced.predictions.getMaintenance.useQuery(
+    undefined,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
+  );
+  
+  const loadingPredictions = loadingRevenue || loadingChurn || loadingMaintenance;
+  
+  // Formatear datos para compatibilidad con el UI existente
+  const aiPredictions = {
+    predictions: {
+      revenueGrowth: revenueData && revenueData.length > 0 
+        ? `${Math.round(revenueData[0].estimated || 0)} €` 
+        : "N/A",
+      clientsAtRisk: churnData?.length || 0,
+      pianosNeedingMaintenance: maintenanceData?.length || 0,
+    }
+  };
 
   // Determinar si es móvil, tablet o desktop
   const isMobile = width < 768;
@@ -294,19 +318,19 @@ export default function DashboardScreen() {
                   color={COLORS.income}
                   icon="trending-up"
                   label="Ingresos prev."
-                  value={loadingPredictions ? "..." : (aiPredictions?.predictions.revenueGrowth || "N/A")}
+                  value={loadingPredictions ? "..." : aiPredictions.predictions.revenueGrowth}
                 />
                 <CircularIndicator
                   color={COLORS.aiWarning}
                   icon="help-circle-outline"
                   label="Clientes riesgo"
-                  value={loadingPredictions ? "..." : (aiPredictions?.predictions.clientsAtRisk.toString() || "0")}
+                  value={loadingPredictions ? "..." : aiPredictions.predictions.clientsAtRisk.toString()}
                 />
                 <CircularIndicator
                   color={COLORS.pianos}
                   icon="build-outline"
                   label="Mant. próximo"
-                  value={loadingPredictions ? "..." : (aiPredictions?.predictions.pianosNeedingMaintenance.toString() || "0")}
+                  value={loadingPredictions ? "..." : aiPredictions.predictions.pianosNeedingMaintenance.toString()}
                 />
               </View>
             </View>
