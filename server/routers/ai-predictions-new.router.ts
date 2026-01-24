@@ -70,7 +70,7 @@ export const aiPredictionsNewRouter = router({
           // Formatear ingresos con formato compacto
           const predictedAmount = revenuePrediction.predictedAmount;
           let formattedRevenue: string;
-          if (predictedAmount >= 10000) {
+          if (predictedAmount >= 1000) {
             const thousands = predictedAmount / 1000;
             formattedRevenue = `${thousands.toFixed(1)}k\u20ac`;
           } else {

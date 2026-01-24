@@ -522,9 +522,10 @@ const styles = StyleSheet.create({
   // Vista mensual
   monthScrollView: {
     flex: 1,
+    maxHeight: '100%',
   },
   monthScrollContent: {
-    flexGrow: 1,
+    paddingBottom: 20,
   },
   monthGrid: {
     padding: Spacing.xs,
