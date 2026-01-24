@@ -159,12 +159,12 @@ Responde SOLO JSON válido (sin markdown):
     
     console.log('[predictRevenue] Predicción parseada correctamente');
 
-    const now = new Date();
-    now.setMonth(now.getMonth() + 1);
-    const nextMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const nextMonthDate = new Date();
+    nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+    const nextMonthStr = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
     
     return {
-      nextMonth,
+      nextMonth: nextMonthStr,
       predictedAmount: Math.round(Number(prediction.predictedAmount) || 0),
       confidence: prediction.confidence || 'low',
       reasoning: prediction.reasoning || 'No disponible'
