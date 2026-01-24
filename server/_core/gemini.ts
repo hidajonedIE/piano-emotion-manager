@@ -128,12 +128,16 @@ export async function invokeGemini(
 
   const data = (await response.json()) as GeminiResponse;
   
+  console.log('[invokeGemini] Respuesta RAW completa:', JSON.stringify(data, null, 2));
+  
   if (!data.candidates || data.candidates.length === 0) {
+    console.error('[invokeGemini] No hay candidates en la respuesta');
     throw new Error("No se recibió respuesta de Gemini");
   }
 
   const responseText = data.candidates[0].content.parts[0].text;
-  console.log(`[invokeGemini] Respuesta recibida (${responseText.length} caracteres)`);
+  console.log(`[invokeGemini] Texto extraído: "${responseText}"`);
+  console.log(`[invokeGemini] Longitud: ${responseText.length} caracteres`);
   
   return responseText;
 }
@@ -185,12 +189,16 @@ export async function chatWithGemini(
 
   const data = (await response.json()) as GeminiResponse;
   
+  console.log('[invokeGemini] Respuesta RAW completa:', JSON.stringify(data, null, 2));
+  
   if (!data.candidates || data.candidates.length === 0) {
+    console.error('[invokeGemini] No hay candidates en la respuesta');
     throw new Error("No se recibió respuesta de Gemini");
   }
 
   const responseText = data.candidates[0].content.parts[0].text;
-  console.log(`[invokeGemini] Respuesta recibida (${responseText.length} caracteres)`);
+  console.log(`[invokeGemini] Texto extraído: "${responseText}"`);
+  console.log(`[invokeGemini] Longitud: ${responseText.length} caracteres`);
   
   return responseText;
 }
