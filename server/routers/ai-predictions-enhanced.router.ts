@@ -6,10 +6,7 @@
 
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc.js';
-import {
-  collectBusinessData,
-  generateEnhancedPredictions,
-} from '../services/ai/enhanced-predictions.service.js';
+import { collectBusinessDataOptimized, generateEnhancedPredictionsOptimized } from '../services/ai/enhanced-predictions-optimized.service.js';
 
 export const aiPredictionsEnhancedRouter = router({
   /**
@@ -23,35 +20,17 @@ export const aiPredictionsEnhancedRouter = router({
       console.log('[getRevenue] Input:', input);
       console.log('[getRevenue] Partner ID:', ctx.user.partnerId);
       try {
-        console.log('[getRevenue] 🚧 USANDO DATOS MOCK TEMPORALES');
+        console.log('[getRevenue] Calling collectBusinessDataOptimized...');
+        const businessData = await collectBusinessDataOptimized(ctx.user.partnerId);
+        console.log('[getRevenue] ✅ Business data collected');
         
-        // Datos mock para testing
-        const mockData = [
-          {
-            period: 'Febrero 2026',
-            value: 12500,
-            confidence: 85,
-            trend: 'up' as const,
-            factors: ['Aumento estacional', 'Nuevos clientes']
-          },
-          {
-            period: 'Marzo 2026',
-            value: 13200,
-            confidence: 80,
-            trend: 'up' as const,
-            factors: ['Tendencia positiva', 'Servicios premium']
-          },
-          {
-            period: 'Abril 2026',
-            value: 11800,
-            confidence: 75,
-            trend: 'stable' as const,
-            factors: ['Estabilización del mercado']
-          }
-        ];
+        console.log('[getRevenue] Calling generateEnhancedPredictionsOptimized...');
+        const predictions = await generateEnhancedPredictionsOptimized(businessData);
+        console.log('[getRevenue] ✅ Predictions generated');
         
-        console.log('[getRevenue] Returning mock data:', JSON.stringify(mockData, null, 2));
-        return mockData;
+        const result = predictions.revenue.predictions || [];
+        console.log('[getRevenue] Returning:', result.length, 'predictions');
+        return result;
       } catch (error) {
         console.error('[getRevenue] ❌ ERROR CAPTURADO:');
         console.error('[getRevenue] Error type:', typeof error);
