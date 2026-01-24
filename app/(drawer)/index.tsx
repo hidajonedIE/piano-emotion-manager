@@ -85,32 +85,18 @@ export default function DashboardScreen() {
   const { appointments } = useAppointmentsData();
   const { alerts, stats: alertStats } = useAlertsOptimized(15);
   
-  // Predicciones IA generadas por Gemini - Usando nuevos endpoints
-  const { data: revenueData, isLoading: loadingRevenue } = trpc.advanced.predictions.getRevenue.useQuery(
-    { months: 1 },
-    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
-  );
-  
-  const { data: churnData, isLoading: loadingChurn } = trpc.advanced.predictions.getChurnRisk.useQuery(
+  // Predicciones IA generadas por Gemini - Usando nuevo endpoint unificado
+  const { data: predictionsData, isLoading: loadingPredictions } = trpc.aiPredictions.getDashboardPredictions.useQuery(
     undefined,
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
   );
-  
-  const { data: maintenanceData, isLoading: loadingMaintenance } = trpc.advanced.predictions.getMaintenance.useQuery(
-    undefined,
-    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
-  );
-  
-  const loadingPredictions = loadingRevenue || loadingChurn || loadingMaintenance;
   
   // Formatear datos para compatibilidad con el UI existente
   const aiPredictions = {
     predictions: {
-      revenueGrowth: revenueData && revenueData.length > 0 
-        ? `${Math.round(revenueData[0].estimated || 0)} €` 
-        : "N/A",
-      clientsAtRisk: churnData?.length || 0,
-      pianosNeedingMaintenance: maintenanceData?.length || 0,
+      revenueGrowth: predictionsData?.revenue?.predicted || "N/A",
+      clientsAtRisk: predictionsData?.churn?.atRisk || 0,
+      pianosNeedingMaintenance: predictionsData?.maintenance?.needed || 0,
     }
   };
 
