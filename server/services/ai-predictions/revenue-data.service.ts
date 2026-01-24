@@ -1,12 +1,10 @@
 /**
- * Revenue Data Service - Nuevo desde cero
- * Compatible 100% con esquema actual de TiDB
+ * Revenue Data Service - SQL raw para compatibilidad total con TiDB
  * Piano Emotion Manager
  */
 
 import { getDb } from '../../db.js';
-import { services } from '../../../drizzle/schema.js';
-import { gte, sql, sum, count, desc } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export interface RevenueData {
   historical: {
@@ -28,22 +26,26 @@ export async function getRevenueData(organizationId?: number): Promise<RevenueDa
   // Calcular fecha de hace 12 meses
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  const dateParam = twelveMonthsAgo.toISOString().split('T')[0]; // Solo fecha YYYY-MM-DD
 
-  // Query compatible con sql_mode=only_full_group_by
-  // Usar una expresión derivada en el SELECT que coincida exactamente con el GROUP BY
-  const monthlyData = await db
-    .select({
-      month: sql<string>`DATE_FORMAT(${services.date}, '%Y-%m')`,
-      total: sum(services.cost),
-      count: count()
-    })
-    .from(services)
-    .where(gte(services.date, twelveMonthsAgo.toISOString()))
-    .groupBy(sql`DATE_FORMAT(${services.date}, '%Y-%m')`)
-    .orderBy(sql`DATE_FORMAT(${services.date}, '%Y-%m')`);
+  // Query SQL raw - 100% compatible con sql_mode=only_full_group_by
+  // Usar la MISMA expresión en SELECT y GROUP BY
+  const query = sql`
+    SELECT 
+      DATE_FORMAT(date, '%Y-%m') as month,
+      SUM(cost) as total,
+      COUNT(*) as count
+    FROM services
+    WHERE date >= ${dateParam}
+    GROUP BY DATE_FORMAT(date, '%Y-%m')
+    ORDER BY DATE_FORMAT(date, '%Y-%m') ASC
+  `;
+
+  const result = await db.execute(query);
+  const rows = result[0] as any[];
 
   // Procesar resultados
-  const historical = monthlyData.map(row => ({
+  const historical = rows.map(row => ({
     month: row.month,
     total: Number(row.total || 0),
     count: Number(row.count || 0)

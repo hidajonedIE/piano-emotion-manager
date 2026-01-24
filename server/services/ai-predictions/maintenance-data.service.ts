@@ -1,14 +1,13 @@
 /**
- * Maintenance Data Service - Nuevo desde cero
- * Compatible 100% con esquema actual de TiDB
+ * Maintenance Data Service - SQL raw para compatibilidad total con TiDB
  * Piano Emotion Manager
  */
 
 import { getDb } from '../../db.js';
-import { services, pianos, clients } from '../../../drizzle/schema.js';
-import { sql, desc, eq, or } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export interface MaintenanceData {
+  totalNeeded: number;
   pianos: {
     id: number;
     brand: string;
@@ -20,71 +19,74 @@ export interface MaintenanceData {
     daysSinceLastMaintenance: number;
     totalMaintenances: number;
   }[];
-  totalNeeded: number;
 }
 
 /**
- * Obtiene pianos que necesitan mantenimiento (12+ meses sin servicio de mantenimiento)
+ * Identifica pianos que necesitan mantenimiento (12+ meses sin mantenimiento)
  */
 export async function getMaintenanceData(organizationId?: number): Promise<MaintenanceData> {
   const db = await getDb();
+  
+  // Calcular fecha de hace 12 meses
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  const dateParam = twelveMonthsAgo.toISOString().split('T')[0];
 
-  // Query compatible con sql_mode=only_full_group_by
-  // Agrupar por todas las columnas no agregadas
-  const pianosWithStats = await db
-    .select({
-      id: pianos.id,
-      brand: pianos.brand,
-      model: pianos.model,
-      serialNumber: pianos.serialNumber,
-      clientId: pianos.clientId,
-      clientName: clients.name,
-      // Usar CASE para filtrar solo servicios de mantenimiento en MAX
-      lastMaintenanceDate: sql<string | null>`MAX(CASE 
-        WHEN ${services.serviceType} IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
-        THEN ${services.date} 
-        END)`,
-      totalMaintenances: sql<number>`COUNT(CASE 
-        WHEN ${services.serviceType} IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
+  // Query SQL raw - Pianos con último mantenimiento hace más de 12 meses
+  const query = sql`
+    SELECT 
+      p.id,
+      p.brand,
+      p.model,
+      p.serialNumber,
+      p.clientId,
+      c.name as clientName,
+      MAX(CASE 
+        WHEN s.serviceType IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
+        THEN s.date 
+      END) as lastMaintenanceDate,
+      DATEDIFF(CURDATE(), MAX(CASE 
+        WHEN s.serviceType IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
+        THEN s.date 
+      END)) as daysSinceLastMaintenance,
+      COUNT(CASE 
+        WHEN s.serviceType IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
         THEN 1 
-        END)`
-    })
-    .from(pianos)
-    .leftJoin(clients, eq(pianos.clientId, clients.id))
-    .leftJoin(services, eq(pianos.id, services.pianoId))
-    .groupBy(pianos.id, pianos.brand, pianos.model, pianos.serialNumber, pianos.clientId, clients.name)
-    .orderBy(desc(sql`MAX(CASE 
-      WHEN ${services.serviceType} IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
-      THEN ${services.date} 
-      END)`));
+      END) as totalMaintenances
+    FROM pianos p
+    LEFT JOIN clients c ON p.clientId = c.id
+    LEFT JOIN services s ON p.id = s.pianoId
+    GROUP BY p.id, p.brand, p.model, p.serialNumber, p.clientId, c.name
+    HAVING MAX(CASE 
+        WHEN s.serviceType IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
+        THEN s.date 
+      END) < ${dateParam} 
+      OR MAX(CASE 
+        WHEN s.serviceType IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium') 
+        THEN s.date 
+      END) IS NULL
+    ORDER BY daysSinceLastMaintenance DESC
+    LIMIT 10
+  `;
 
-  // Filtrar pianos que necesitan mantenimiento y calcular días
-  const now = new Date();
-  const needMaintenancePianos = pianosWithStats
-    .map(piano => {
-      const lastDate = piano.lastMaintenanceDate ? new Date(piano.lastMaintenanceDate) : null;
-      const daysSince = lastDate 
-        ? Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
-        : 9999;
+  const result = await db.execute(query);
+  const rows = result[0] as any[];
 
-      return {
-        id: piano.id,
-        brand: piano.brand,
-        model: piano.model || 'Desconocido',
-        serialNumber: piano.serialNumber || 'N/A',
-        clientId: piano.clientId,
-        clientName: piano.clientName || 'Cliente desconocido',
-        lastMaintenanceDate: piano.lastMaintenanceDate,
-        daysSinceLastMaintenance: daysSince,
-        totalMaintenances: Number(piano.totalMaintenances || 0)
-      };
-    })
-    .filter(piano => piano.daysSinceLastMaintenance >= 365) // 12 meses
-    .sort((a, b) => b.daysSinceLastMaintenance - a.daysSinceLastMaintenance) // Más urgentes primero
-    .slice(0, 10); // Top 10
+  // Procesar resultados
+  const pianos = rows.map(row => ({
+    id: row.id,
+    brand: row.brand || 'Desconocido',
+    model: row.model || 'Desconocido',
+    serialNumber: row.serialNumber || 'N/A',
+    clientId: row.clientId,
+    clientName: row.clientName || 'Sin cliente',
+    lastMaintenanceDate: row.lastMaintenanceDate,
+    daysSinceLastMaintenance: Number(row.daysSinceLastMaintenance || 9999),
+    totalMaintenances: Number(row.totalMaintenances || 0)
+  }));
 
   return {
-    pianos: needMaintenancePianos,
-    totalNeeded: needMaintenancePianos.length
+    totalNeeded: pianos.length,
+    pianos
   };
 }

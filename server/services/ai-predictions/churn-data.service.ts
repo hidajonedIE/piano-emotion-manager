@@ -1,14 +1,13 @@
 /**
- * Churn Risk Data Service - Nuevo desde cero
- * Compatible 100% con esquema actual de TiDB
+ * Churn Data Service - SQL raw para compatibilidad total con TiDB
  * Piano Emotion Manager
  */
 
 import { getDb } from '../../db.js';
-import { services, clients } from '../../../drizzle/schema.js';
-import { sql, desc, eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export interface ChurnRiskData {
+  totalAtRisk: number;
   clients: {
     id: number;
     name: string;
@@ -17,58 +16,51 @@ export interface ChurnRiskData {
     totalServices: number;
     totalSpent: number;
   }[];
-  totalAtRisk: number;
 }
 
 /**
- * Obtiene clientes en riesgo (sin servicios en 6+ meses)
+ * Identifica clientes en riesgo (6+ meses sin servicio)
  */
 export async function getChurnRiskData(organizationId?: number): Promise<ChurnRiskData> {
   const db = await getDb();
   
-  // Fecha de hace 6 meses
+  // Calcular fecha de hace 6 meses
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const dateParam = sixMonthsAgo.toISOString().split('T')[0];
 
-  // Query compatible con sql_mode=only_full_group_by
-  // Agrupar por clients.id y clients.name (ambos deben estar en GROUP BY)
-  const clientsWithStats = await db
-    .select({
-      id: clients.id,
-      name: clients.name,
-      lastServiceDate: sql<string | null>`MAX(${services.date})`,
-      totalServices: sql<number>`COUNT(${services.id})`,
-      totalSpent: sql<number>`COALESCE(SUM(${services.cost}), 0)`
-    })
-    .from(clients)
-    .leftJoin(services, eq(clients.id, services.clientId))
-    .groupBy(clients.id, clients.name)
-    .orderBy(desc(sql`MAX(${services.date})`));
+  // Query SQL raw - Clientes con último servicio hace más de 6 meses
+  const query = sql`
+    SELECT 
+      c.id,
+      c.name,
+      MAX(s.date) as lastServiceDate,
+      DATEDIFF(CURDATE(), MAX(s.date)) as daysSinceLastService,
+      COUNT(s.id) as totalServices,
+      COALESCE(SUM(s.cost), 0) as totalSpent
+    FROM clients c
+    LEFT JOIN services s ON c.id = s.clientId
+    GROUP BY c.id, c.name
+    HAVING MAX(s.date) < ${dateParam} OR MAX(s.date) IS NULL
+    ORDER BY totalSpent DESC
+    LIMIT 10
+  `;
 
-  // Filtrar clientes en riesgo y calcular días
-  const now = new Date();
-  const atRiskClients = clientsWithStats
-    .map(client => {
-      const lastDate = client.lastServiceDate ? new Date(client.lastServiceDate) : null;
-      const daysSince = lastDate 
-        ? Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
-        : 9999;
+  const result = await db.execute(query);
+  const rows = result[0] as any[];
 
-      return {
-        id: client.id,
-        name: client.name,
-        lastServiceDate: client.lastServiceDate,
-        daysSinceLastService: daysSince,
-        totalServices: Number(client.totalServices || 0),
-        totalSpent: Number(client.totalSpent || 0)
-      };
-    })
-    .filter(client => client.daysSinceLastService >= 180) // 6 meses
-    .sort((a, b) => b.totalSpent - a.totalSpent) // Ordenar por valor (más importantes primero)
-    .slice(0, 10); // Top 10
+  // Procesar resultados
+  const clients = rows.map(row => ({
+    id: row.id,
+    name: row.name,
+    lastServiceDate: row.lastServiceDate,
+    daysSinceLastService: Number(row.daysSinceLastService || 9999),
+    totalServices: Number(row.totalServices || 0),
+    totalSpent: Number(row.totalSpent || 0)
+  }));
 
   return {
-    clients: atRiskClients,
-    totalAtRisk: atRiskClients.length
+    totalAtRisk: clients.length,
+    clients
   };
 }
