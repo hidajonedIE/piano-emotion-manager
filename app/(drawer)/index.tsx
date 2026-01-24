@@ -110,12 +110,24 @@ export default function DashboardScreen() {
     const selectedYear = selectedMonth.getFullYear();
     const selectedMonthNum = selectedMonth.getMonth() + 1; // 1-12
     
+    // DEBUG: Ver formato de fechas
+    if (services.length > 0) {
+      console.log('[Dashboard] Ejemplo de fecha de servicio:', services[0].date, 'Tipo:', typeof services[0].date);
+    }
+    
     const monthServices = services.filter((s) => {
       // Extraer año y mes directamente del string de fecha (formato: YYYY-MM-DD...)
       const dateStr = String(s.date);
       const year = parseInt(dateStr.substring(0, 4));
       const month = parseInt(dateStr.substring(5, 7));
-      return year === selectedYear && month === selectedMonthNum;
+      const matches = year === selectedYear && month === selectedMonthNum;
+      
+      // DEBUG: Ver primeros 3 servicios
+      if (services.indexOf(s) < 3) {
+        console.log(`[Dashboard] Servicio: date=${dateStr}, year=${year}, month=${month}, matches=${matches}, buscando=${selectedYear}-${selectedMonthNum}`);
+      }
+      
+      return matches;
     });
 
     const monthlyRevenue = monthServices.reduce((sum, s) => sum + (s.cost || 0), 0);
