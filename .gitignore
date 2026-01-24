@@ -69,3 +69,4 @@ expo-env.d.ts
 
 # Manus tokens (no subir al repositorio)
 .manus/
+.env

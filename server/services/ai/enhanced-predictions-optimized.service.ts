@@ -60,7 +60,8 @@ export async function collectBusinessDataOptimized(partnerId: string): Promise<B
         DATE_FORMAT(date, '%Y-%m') as month,
         COALESCE(SUM(cost), 0) as total
       FROM services
-      WHERE date >= ${twelveMonthsAgo.toISOString()}
+      WHERE partnerId = ${partnerId}
+        AND date >= ${twelveMonthsAgo.toISOString()}
         AND date <= ${now.toISOString()}
       GROUP BY DATE_FORMAT(date, '%Y-%m')
       ORDER BY month ASC
@@ -90,7 +91,8 @@ export async function collectBusinessDataOptimized(partnerId: string): Promise<B
         DATE_FORMAT(date, '%Y-%m') as month,
         COUNT(*) as total
       FROM services
-      WHERE date >= ${twelveMonthsAgo.toISOString()}
+      WHERE partnerId = ${partnerId}
+        AND date >= ${twelveMonthsAgo.toISOString()}
         AND date <= ${now.toISOString()}
       GROUP BY DATE_FORMAT(date, '%Y-%m')
       ORDER BY month ASC
@@ -113,12 +115,13 @@ export async function collectBusinessDataOptimized(partnerId: string): Promise<B
     
     // CONSULTAS SIMPLES EN PARALELO
     const [totalServices, totalClients, activeClientsResult] = await Promise.all([
-      db.select({ count: count() }).from(services),
-      db.select({ count: count() }).from(clients),
+      db.select({ count: count() }).from(services).where(eq(services.partnerId, Number(partnerId))),
+      db.select({ count: count() }).from(clients).where(eq(clients.partnerId, Number(partnerId))),
       db.execute(sql`
         SELECT COUNT(DISTINCT clientId) as count
         FROM services
-        WHERE date >= ${new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000).toISOString()}
+        WHERE partnerId = ${partnerId}
+          AND date >= ${new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000).toISOString()}
       `)
     ]);
     
