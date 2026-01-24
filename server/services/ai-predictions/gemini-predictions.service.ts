@@ -40,9 +40,9 @@ export async function predictRevenue(data: RevenueData): Promise<RevenuePredicti
   console.log('[predictRevenue] API Key length:', process.env.GEMINI_API_KEY?.length || 0);
   
   try {
-    console.log('[predictRevenue] Obteniendo modelo gemini-2.5-flash...');
+    console.log('[predictRevenue] Obteniendo modelo gemini-1.5-flash-latest...');
     const modelStartTime = Date.now();
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
     console.log('[predictRevenue] Modelo obtenido en', Date.now() - modelStartTime, 'ms');
 
     const prompt = `Eres un analista financiero experto. Analiza estos datos de ingresos históricos y genera una predicción para el próximo mes.
@@ -114,8 +114,8 @@ export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction
   console.log('[predictChurn] Iniciando predicción...');
   
   try {
-    console.log('[predictChurn] Obteniendo modelo gemini-2.5-flash...');
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    console.log('[predictChurn] Obteniendo modelo gemini-1.5-flash-latest...');
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     const prompt = `Eres un analista de retención de clientes experto. Analiza estos datos de clientes en riesgo.
 
@@ -171,8 +171,8 @@ export async function predictMaintenance(data: MaintenanceData): Promise<Mainten
   console.log('[predictMaintenance] Iniciando predicción...');
   
   try {
-    console.log('[predictMaintenance] Obteniendo modelo gemini-2.5-flash...');
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    console.log('[predictMaintenance] Obteniendo modelo gemini-1.5-flash-latest...');
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     const prompt = `Eres un experto en mantenimiento de pianos. Analiza estos datos de pianos que necesitan mantenimiento.
 
