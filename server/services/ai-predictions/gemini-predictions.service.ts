@@ -35,7 +35,7 @@ export interface MaintenancePrediction {
  */
 export async function predictRevenue(data: RevenueData): Promise<RevenuePrediction> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const prompt = `Eres un analista financiero experto. Analiza estos datos de ingresos históricos y genera una predicción para el próximo mes.
 
@@ -91,7 +91,7 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
  */
 export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const prompt = `Eres un analista de retención de clientes experto. Analiza estos datos de clientes en riesgo.
 
@@ -135,7 +135,7 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
  */
 export async function predictMaintenance(data: MaintenanceData): Promise<MaintenancePrediction> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const prompt = `Eres un experto en mantenimiento de pianos. Analiza estos datos de pianos que necesitan mantenimiento.
 
