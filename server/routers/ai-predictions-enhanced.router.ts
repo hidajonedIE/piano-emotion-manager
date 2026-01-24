@@ -23,11 +23,16 @@ export const aiPredictionsEnhancedRouter = router({
       console.log('[getRevenue] Input:', input);
       console.log('[getRevenue] Partner ID:', ctx.user.partnerId);
       try {
+        console.log('[getRevenue] Calling collectBusinessData...');
         const businessData = await collectBusinessData(ctx.user.partnerId);
-        console.log('[getRevenue] Business data collected:', JSON.stringify(businessData, null, 2));
+        console.log('[getRevenue] ✅ Business data collected successfully');
+        console.log('[getRevenue] Business data keys:', Object.keys(businessData));
+        console.log('[getRevenue] Revenue data:', businessData.revenue);
         
+        console.log('[getRevenue] Calling generateEnhancedPredictions...');
         const predictions = await generateEnhancedPredictions(businessData);
-        console.log('[getRevenue] Predictions generated:', JSON.stringify(predictions, null, 2));
+        console.log('[getRevenue] ✅ Predictions generated successfully');
+        console.log('[getRevenue] Predictions keys:', Object.keys(predictions));
         console.log('[getRevenue] predictions.revenue:', JSON.stringify(predictions.revenue, null, 2));
         console.log('[getRevenue] predictions.revenue.predictions:', predictions.revenue.predictions);
         
