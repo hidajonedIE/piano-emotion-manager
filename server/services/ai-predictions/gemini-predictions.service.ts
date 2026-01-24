@@ -238,11 +238,19 @@ export async function predictMaintenance(data: MaintenanceData): Promise<Mainten
       },
     });
 
-    const prompt = `Evalúa necesidad de mantenimientos.
-Pianos totales: ${data.totalPianos}
-Pianos >18 meses sin mantenimiento: ${data.overdue}
-Próximos 30 días: ${data.upcoming}
+     // Crear resumen del histórico mensual
+    const historySummary = data.monthlyHistory && data.monthlyHistory.length > 0
+      ? data.monthlyHistory.map(m => `${m.month}:${m.count}`).join(', ')
+      : 'Sin histórico';
+    
+    const avgMonthly = data.monthlyHistory && data.monthlyHistory.length > 0
+      ? Math.round(data.monthlyHistory.reduce((sum, m) => sum + m.count, 0) / data.monthlyHistory.length)
+      : 0;
 
+    const prompt = `Predice mantenimientos próximo mes basado en histórico.
+Histórico últimos 12 meses: ${historySummary}
+Promedio mensual: ${avgMonthly}
+Pianos que necesitan mantenimiento: ${data.totalNeeded}
 Responde SOLO JSON válido (sin markdown):
 {"urgentCount":número,"scheduledCount":número,"reasoning":"max 20 palabras"}`;
 

@@ -8,6 +8,7 @@ import { sql } from 'drizzle-orm';
 
 export interface MaintenanceData {
   totalNeeded: number;
+  monthlyHistory: { month: string; count: number }[];
   pianos: {
     id: number;
     brand: string;
@@ -72,6 +73,26 @@ export async function getMaintenanceData(organizationId?: number): Promise<Maint
   const result = await db.execute(query);
   const rows = result[0] as any[];
 
+  // Query para histórico mensual de mantenimientos (últimos 12 meses)
+  const historyQuery = sql`
+    SELECT 
+      DATE_FORMAT(s.date, '%Y-%m') as month,
+      COUNT(*) as count
+    FROM services s
+    WHERE s.serviceType IN ('maintenance_basic', 'maintenance_complete', 'maintenance_premium')
+      AND s.date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+    GROUP BY DATE_FORMAT(s.date, '%Y-%m')
+    ORDER BY month ASC
+  `;
+  
+  const historyResult = await db.execute(historyQuery);
+  const historyRows = historyResult[0] as any[];
+  
+  const monthlyHistory = historyRows.map(row => ({
+    month: row.month,
+    count: Number(row.count)
+  }));
+
   // Procesar resultados
   const pianos = rows.map(row => ({
     id: row.id,
@@ -87,6 +108,7 @@ export async function getMaintenanceData(organizationId?: number): Promise<Maint
 
   return {
     totalNeeded: pianos.length,
+    monthlyHistory,
     pianos
   };
 }
