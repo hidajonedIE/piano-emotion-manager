@@ -353,7 +353,8 @@ DATOS DEL NEGOCIO:
 - Completados: ${businessData.services.completed}
 - Pendientes: ${businessData.services.pending}
 - Por tipo: ${JSON.stringify(businessData.services.byType)}
-- Últimos 12 meses: ${businessData.services.last12Months.join(', ')}
+- Servicios totales últimos 12 meses: ${businessData.services.last12Months.join(', ')}
+- Promedio mensual de servicios: ${(businessData.services.last12Months.reduce((a, b) => a + b, 0) / 12).toFixed(1)}
 
 👥 CLIENTES:
 - Total: ${businessData.clients.total}
@@ -365,6 +366,11 @@ DATOS DEL NEGOCIO:
 - Total: ${businessData.pianos.total}
 - Sin mantenimiento reciente (12+ meses): ${businessData.pianos.withoutRecentMaintenance}
 - Por marca: ${JSON.stringify(businessData.pianos.byBrand)}
+
+⚠️ IMPORTANTE PARA PREDICCIÓN DE MANTENIMIENTOS:
+- Histórico de servicios mensuales: ${businessData.services.last12Months.join(', ')}
+- Promedio de servicios por mes: ${(businessData.services.last12Months.reduce((a, b) => a + b, 0) / 12).toFixed(1)}
+- Basándote en este histórico, predice cuántos mantenimientos se necesitarán el próximo mes
 
 📅 CITAS:
 - Próximas: ${businessData.appointments.upcoming}
@@ -399,7 +405,7 @@ GENERA PREDICCIONES FUTURAS en JSON con este formato exacto (responde SOLO con J
     "retentionRecommendations": ["recomendación 1", ...]
   },
   "maintenance": {
-    "upcomingCount": número de mantenimientos estimados próximo mes,
+    "upcomingCount": número de mantenimientos estimados próximo mes (basado en promedio histórico de servicios),
     "nextMonth": [
       { "pianoInfo": "info", "clientName": "cliente", "estimatedDate": "fecha", "serviceType": "tipo", "confidence": porcentaje }
     ],
@@ -451,85 +457,43 @@ IMPORTANTE:
     return predictions;
   } catch (error) {
     console.error('[Enhanced AI Predictions] Error generando predicciones con IA:', error);
-    console.log('[Enhanced AI Predictions] Usando fallback con cálculos basados en datos reales');
+    console.log('[Enhanced AI Predictions] Devolviendo indicador de error - NO usar fallback calculado');
     
-    // Fallback: cálculos basados en datos reales
-    return generateFallbackPredictions(businessData);
+    // Devolver estructura con indicadores de error en lugar de cálculos
+    return {
+      revenue: {
+        nextMonth: {
+          estimated: -1,
+          confidence: 0,
+          trend: 'stable',
+          factors: ['Error en predicción IA']
+        },
+        next3Months: []
+      },
+      clientChurn: {
+        atRiskCount: -1,
+        highRiskClients: [],
+        retentionRecommendations: ['Error en predicción IA']
+      },
+      maintenance: {
+        upcomingCount: -1,
+        nextMonth: [],
+        recommendations: ['Error en predicción IA']
+      },
+      workload: {
+        next4Weeks: []
+      },
+      inventory: {
+        urgentItems: []
+      },
+      insights: {
+        businessHealth: 'poor',
+        keyOpportunities: ['Error en predicción IA'],
+        urgentActions: ['Revisar configuración de IA']
+      }
+    };
   }
 }
 
-/**
- * Genera predicciones de fallback basadas en cálculos simples pero reales
- */
-function generateFallbackPredictions(data: BusinessData): AIPredictionsEnhanced {
-  // Calcular tendencia de ingresos
-  const last3Months = data.revenue.last12Months.slice(-3);
-  const avgGrowth = last3Months.length >= 2
-    ? ((last3Months[last3Months.length - 1] - last3Months[0]) / last3Months[0]) * 100
-    : 0;
-  
-  const nextMonthEstimate = data.revenue.current * (1 + avgGrowth / 100);
-  
-  return {
-    revenue: {
-      nextMonth: {
-        estimated: Math.round(nextMonthEstimate),
-        confidence: Math.min(85, 50 + data.revenue.last12Months.filter(r => r > 0).length * 5),
-        trend: avgGrowth > 5 ? 'up' : avgGrowth < -5 ? 'down' : 'stable',
-        factors: [
-          avgGrowth > 0 ? 'Tendencia de crecimiento' : 'Tendencia estable',
-          `Basado en ${data.services.completed} servicios completados`,
-        ],
-      },
-      next3Months: [
-        { month: 'Próximo mes', estimated: Math.round(nextMonthEstimate), confidence: 75 },
-        { month: 'En 2 meses', estimated: Math.round(nextMonthEstimate * 1.05), confidence: 65 },
-        { month: 'En 3 meses', estimated: Math.round(nextMonthEstimate * 1.1), confidence: 55 },
-      ],
-    },
-    clientChurn: {
-      atRiskCount: data.clients.withoutRecentServices,
-      highRiskClients: [],
-      retentionRecommendations: [
-        `Contactar a ${data.clients.withoutRecentServices} clientes inactivos`,
-        'Enviar recordatorios de mantenimiento',
-      ],
-    },
-    maintenance: {
-      upcomingCount: Math.round(
-        data.services.last12Months.reduce((sum, count) => sum + count, 0) / 12
-      ),
-      nextMonth: [],
-      recommendations: [
-        data.pianos.withoutRecentMaintenance > 0
-          ? `${data.pianos.withoutRecentMaintenance} pianos requieren mantenimiento urgente`
-          : 'Mantener calendario de mantenimientos preventivos',
-        'Programar afinaciones periódicas',
-      ],
-    },
-    workload: {
-      next4Weeks: [
-        { week: 'Semana 1', estimated: data.appointments.thisWeek + 2, busyDays: ['Lunes', 'Miércoles'], recommendation: 'Carga normal' },
-        { week: 'Semana 2', estimated: data.appointments.nextWeek + 2, busyDays: ['Martes', 'Jueves'], recommendation: 'Carga normal' },
-        { week: 'Semana 3', estimated: 5, busyDays: ['Miércoles', 'Viernes'], recommendation: 'Carga normal' },
-        { week: 'Semana 4', estimated: 4, busyDays: ['Lunes', 'Jueves'], recommendation: 'Carga ligera' },
-      ],
-    },
-    inventory: {
-      urgentItems: data.inventory.criticalStock > 0
-        ? [{ item: 'Items críticos', daysUntilMin: 0, recommendation: 'Reponer urgentemente' }]
-        : [],
-    },
-    insights: {
-      businessHealth: data.revenue.current > data.revenue.monthlyAverage ? 'good' : 'fair',
-      keyOpportunities: [
-        data.clients.withoutRecentServices > 0 ? 'Reactivar clientes inactivos' : 'Mantener clientes activos',
-        'Optimizar calendario de servicios',
-      ],
-      urgentActions: [
-        ...(data.inventory.criticalStock > 0 ? ['Reponer inventario crítico'] : []),
-        ...(data.clients.withoutRecentServices > 5 ? ['Contactar clientes en riesgo'] : []),
-      ],
-    },
-  };
-}
+// Función generateFallbackPredictions ELIMINADA
+// Solo se usan predicciones reales de Gemini, sin fallback calculado
