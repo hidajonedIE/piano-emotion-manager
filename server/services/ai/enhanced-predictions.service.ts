@@ -496,10 +496,14 @@ function generateFallbackPredictions(data: BusinessData): AIPredictionsEnhanced 
       ],
     },
     maintenance: {
-      upcomingCount: data.pianos.withoutRecentMaintenance,
+      upcomingCount: Math.round(
+        data.services.last12Months.reduce((sum, count) => sum + count, 0) / 12
+      ),
       nextMonth: [],
       recommendations: [
-        `${data.pianos.withoutRecentMaintenance} pianos requieren mantenimiento`,
+        data.pianos.withoutRecentMaintenance > 0
+          ? `${data.pianos.withoutRecentMaintenance} pianos requieren mantenimiento urgente`
+          : 'Mantener calendario de mantenimientos preventivos',
         'Programar afinaciones periódicas',
       ],
     },
