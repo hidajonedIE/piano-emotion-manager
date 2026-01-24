@@ -1,6 +1,5 @@
 /**
- * Gemini AI Predictions Service - Usando invokeGemini() funcional
- * Usa Gemini AI para generar predicciones basadas en datos históricos
+ * Gemini AI Predictions Service - Versión simplificada
  * Piano Emotion Manager
  */
 
@@ -32,38 +31,32 @@ export interface MaintenancePrediction {
  * Genera predicción de ingresos usando Gemini AI
  */
 export async function predictRevenue(data: RevenueData): Promise<RevenuePrediction> {
-  console.log('[predictRevenue] Iniciando predicción con invokeGemini()...');
+  console.log('[predictRevenue] Iniciando predicción...');
   
   try {
-    const prompt = `Analiza estos datos de ingresos y predice el próximo mes.
+    // Crear resumen ultra-simple de los últimos 3 meses
+    const last3Months = data.historical.slice(-3);
+    const summary = last3Months.map(m => `${m.month}: ${m.amount}€`).join(', ');
+    
+    const prompt = `Predice ingresos próximo mes.
+Últimos 3 meses: ${summary}
+Actual: ${data.current}€
+Promedio: ${data.average}€
 
-Datos históricos:
-${JSON.stringify(data.historical, null, 2)}
+Responde JSON:
+{"predictedAmount":número,"confidence":"high/medium/low","reasoning":"max 20 palabras"}`;
 
-Actual: ${data.current}€ | Promedio: ${data.average}€ | Tendencia: ${data.trend}
-
-RESPONDE SOLO CON JSON:
-{
-  "predictedAmount": número,
-  "confidence": "high"|"medium"|"low",
-  "reasoning": "máximo 30 palabras"
-}
-
-IMPORTANTE: reasoning DEBE ser máximo 30 palabras. Sé extremadamente conciso.`;
-
-    console.log('[predictRevenue] Llamando a generateJsonWithGemini()...');
     const prediction = await generateJsonWithGemini<{
       predictedAmount: number;
       confidence: 'high' | 'medium' | 'low';
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Responde SOLO con JSON válido. reasoning: máximo 30 palabras.',
-      maxTokens: 500
+      systemPrompt: 'Responde SOLO JSON válido. reasoning: máximo 20 palabras.',
+      maxTokens: 300
     });
     
-    console.log('[predictRevenue] Predicción recibida exitosamente');
+    console.log('[predictRevenue] OK');
 
-    // Calcular próximo mes
     const now = new Date();
     now.setMonth(now.getMonth() + 1);
     const nextMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -81,7 +74,7 @@ IMPORTANTE: reasoning DEBE ser máximo 30 palabras. Sé extremadamente conciso.`
       nextMonth: 'N/A',
       predictedAmount: 0,
       confidence: 'low',
-      reasoning: `Error al generar predicción: ${error instanceof Error ? error.message : String(error)}`
+      reasoning: `Error: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
@@ -90,37 +83,30 @@ IMPORTANTE: reasoning DEBE ser máximo 30 palabras. Sé extremadamente conciso.`
  * Genera predicción de riesgo de pérdida de clientes usando Gemini AI
  */
 export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction> {
-  console.log('[predictChurn] Iniciando predicción con invokeGemini()...');
+  console.log('[predictChurn] Iniciando predicción...');
   
   try {
-    const prompt = `Analiza clientes en riesgo.
-
+    const prompt = `Evalúa riesgo de pérdida de clientes.
 Total en riesgo: ${data.totalAtRisk}
-Top clientes:
-${JSON.stringify(data.clients.slice(0, 5), null, 2)}
+Top 3: ${data.clients.slice(0, 3).map(c => `${c.name} (${c.riskScore}%)`).join(', ')}
 
-RESPONDE SOLO CON JSON:
-{
-  "riskLevel": "high"|"medium"|"low",
-  "reasoning": "máximo 30 palabras"
-}
+Responde JSON:
+{"riskLevel":"high/medium/low","affectedClients":número,"reasoning":"max 20 palabras"}`;
 
-IMPORTANTE: reasoning máximo 30 palabras.`;
-
-    console.log('[predictChurn] Llamando a generateJsonWithGemini()...');
     const prediction = await generateJsonWithGemini<{
       riskLevel: 'high' | 'medium' | 'low';
+      affectedClients: number;
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Responde SOLO con JSON válido. reasoning: máximo 30 palabras.',
-      maxTokens: 500
+      systemPrompt: 'Responde SOLO JSON válido. reasoning: máximo 20 palabras.',
+      maxTokens: 300
     });
     
-    console.log('[predictChurn] Predicción recibida exitosamente');
+    console.log('[predictChurn] OK');
     
     return {
       riskLevel: prediction.riskLevel || 'low',
-      affectedClients: data.totalAtRisk,
+      affectedClients: Number(prediction.affectedClients) || 0,
       reasoning: prediction.reasoning || 'No disponible'
     };
   } catch (error) {
@@ -129,7 +115,7 @@ IMPORTANTE: reasoning máximo 30 palabras.`;
     return {
       riskLevel: 'low',
       affectedClients: 0,
-      reasoning: `Error al generar predicción: ${error instanceof Error ? error.message : String(error)}`
+      reasoning: `Error: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
@@ -138,35 +124,27 @@ IMPORTANTE: reasoning máximo 30 palabras.`;
  * Genera predicción de mantenimientos usando Gemini AI
  */
 export async function predictMaintenance(data: MaintenanceData): Promise<MaintenancePrediction> {
-  console.log('[predictMaintenance] Iniciando predicción con invokeGemini()...');
+  console.log('[predictMaintenance] Iniciando predicción...');
   
   try {
-    const prompt = `Analiza pianos que necesitan mantenimiento.
+    const prompt = `Evalúa necesidad de mantenimientos.
+Pianos totales: ${data.totalPianos}
+Pianos >18 meses sin mantenimiento: ${data.overdue}
+Próximos 30 días: ${data.upcoming}
 
-Total: ${data.totalNeeded}
-Top urgentes:
-${JSON.stringify(data.pianos.slice(0, 5), null, 2)}
+Responde JSON:
+{"urgentCount":número,"scheduledCount":número,"reasoning":"max 20 palabras"}`;
 
-RESPONDE SOLO CON JSON:
-{
-  "urgentCount": número (>18 meses),
-  "scheduledCount": número (12-18 meses),
-  "reasoning": "máximo 30 palabras"
-}
-
-IMPORTANTE: reasoning máximo 30 palabras.`;
-
-    console.log('[predictMaintenance] Llamando a generateJsonWithGemini()...');
     const prediction = await generateJsonWithGemini<{
       urgentCount: number;
       scheduledCount: number;
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Responde SOLO con JSON válido. reasoning: máximo 30 palabras.',
-      maxTokens: 500
+      systemPrompt: 'Responde SOLO JSON válido. reasoning: máximo 20 palabras.',
+      maxTokens: 300
     });
     
-    console.log('[predictMaintenance] Predicción recibida exitosamente');
+    console.log('[predictMaintenance] OK');
     
     return {
       urgentCount: Number(prediction.urgentCount) || 0,
@@ -179,7 +157,7 @@ IMPORTANTE: reasoning máximo 30 palabras.`;
     return {
       urgentCount: 0,
       scheduledCount: 0,
-      reasoning: `Error al generar predicción: ${error instanceof Error ? error.message : String(error)}`
+      reasoning: `Error: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
