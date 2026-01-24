@@ -23,23 +23,35 @@ export const aiPredictionsEnhancedRouter = router({
       console.log('[getRevenue] Input:', input);
       console.log('[getRevenue] Partner ID:', ctx.user.partnerId);
       try {
-        console.log('[getRevenue] Calling collectBusinessData...');
-        const businessData = await collectBusinessData(ctx.user.partnerId);
-        console.log('[getRevenue] ✅ Business data collected successfully');
-        console.log('[getRevenue] Business data keys:', Object.keys(businessData));
-        console.log('[getRevenue] Revenue data:', businessData.revenue);
+        console.log('[getRevenue] 🚧 USANDO DATOS MOCK TEMPORALES');
         
-        console.log('[getRevenue] Calling generateEnhancedPredictions...');
-        const predictions = await generateEnhancedPredictions(businessData);
-        console.log('[getRevenue] ✅ Predictions generated successfully');
-        console.log('[getRevenue] Predictions keys:', Object.keys(predictions));
-        console.log('[getRevenue] predictions.revenue:', JSON.stringify(predictions.revenue, null, 2));
-        console.log('[getRevenue] predictions.revenue.predictions:', predictions.revenue.predictions);
+        // Datos mock para testing
+        const mockData = [
+          {
+            period: 'Febrero 2026',
+            value: 12500,
+            confidence: 85,
+            trend: 'up' as const,
+            factors: ['Aumento estacional', 'Nuevos clientes']
+          },
+          {
+            period: 'Marzo 2026',
+            value: 13200,
+            confidence: 80,
+            trend: 'up' as const,
+            factors: ['Tendencia positiva', 'Servicios premium']
+          },
+          {
+            period: 'Abril 2026',
+            value: 11800,
+            confidence: 75,
+            trend: 'stable' as const,
+            factors: ['Estabilización del mercado']
+          }
+        ];
         
-        // Retornar array de predicciones de ingresos
-        const result = predictions.revenue.predictions || [];
-        console.log('[getRevenue] Returning:', JSON.stringify(result, null, 2));
-        return result;
+        console.log('[getRevenue] Returning mock data:', JSON.stringify(mockData, null, 2));
+        return mockData;
       } catch (error) {
         console.error('[getRevenue] ❌ ERROR CAPTURADO:');
         console.error('[getRevenue] Error type:', typeof error);
