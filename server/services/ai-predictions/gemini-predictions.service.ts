@@ -43,7 +43,7 @@ export async function predictRevenue(data: RevenueData): Promise<RevenuePredicti
   
   try {
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash',
       generationConfig: {
         maxOutputTokens: 1000,
         temperature: 0.3,
@@ -107,7 +107,7 @@ export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction
   
   try {
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash',
       generationConfig: {
         maxOutputTokens: 1000,
         temperature: 0.3,
@@ -160,7 +160,7 @@ export async function predictMaintenance(data: MaintenanceData): Promise<Mainten
   
   try {
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash',
       generationConfig: {
         maxOutputTokens: 1000,
         temperature: 0.3,
