@@ -48,7 +48,7 @@ Genera un objeto JSON con esta estructura exacta:
 {
   "predictedAmount": número (sin símbolo de moneda),
   "confidence": "high" | "medium" | "low",
-  "reasoning": "explicación breve en español (máximo 100 palabras)"
+  "reasoning": "explicación MUY breve en español (máximo 30 palabras)"
 }`;
 
     console.log('[predictRevenue] Llamando a generateJsonWithGemini()...');
@@ -57,7 +57,8 @@ Genera un objeto JSON con esta estructura exacta:
       confidence: 'high' | 'medium' | 'low';
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Eres un analista financiero experto. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional.'
+      systemPrompt: 'Eres un analista financiero experto. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional. Sé CONCISO.',
+      maxTokens: 300
     });
     
     console.log('[predictRevenue] Predicción recibida exitosamente');
@@ -101,7 +102,7 @@ ${JSON.stringify(data.clients.slice(0, 5), null, 2)}
 Genera un objeto JSON con esta estructura exacta:
 {
   "riskLevel": "high" | "medium" | "low",
-  "reasoning": "explicación breve en español (máximo 100 palabras)"
+  "reasoning": "explicación MUY breve en español (máximo 30 palabras)"
 }`;
 
     console.log('[predictChurn] Llamando a generateJsonWithGemini()...');
@@ -109,7 +110,8 @@ Genera un objeto JSON con esta estructura exacta:
       riskLevel: 'high' | 'medium' | 'low';
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Eres un analista de retención de clientes experto. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional.'
+      systemPrompt: 'Eres un analista de retención de clientes experto. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional. Sé CONCISO.',
+      maxTokens: 300
     });
     
     console.log('[predictChurn] Predicción recibida exitosamente');
@@ -147,7 +149,7 @@ Genera un objeto JSON con esta estructura exacta:
 {
   "urgentCount": número de pianos urgentes (más de 18 meses),
   "scheduledCount": número de pianos a programar (12-18 meses),
-  "reasoning": "explicación breve en español (máximo 100 palabras)"
+  "reasoning": "explicación MUY breve en español (máximo 30 palabras)"
 }`;
 
     console.log('[predictMaintenance] Llamando a generateJsonWithGemini()...');
@@ -156,7 +158,8 @@ Genera un objeto JSON con esta estructura exacta:
       scheduledCount: number;
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Eres un experto en mantenimiento de pianos. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional.'
+      systemPrompt: 'Eres un experto en mantenimiento de pianos. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional. Sé CONCISO.',
+      maxTokens: 300
     });
     
     console.log('[predictMaintenance] Predicción recibida exitosamente');
