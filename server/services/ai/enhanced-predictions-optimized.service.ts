@@ -7,6 +7,7 @@ import { invokeGemini } from '../../_core/gemini.js';
 import { getDb } from '../../db.js';
 import { services, clients, pianos, appointments, inventory } from '../../../drizzle/schema.js';
 import { and, gte, lte, count, sum, sql, desc, eq } from 'drizzle-orm';
+import { cacheService } from '../../lib/cache.service.js';
 
 // ============================================
 // INTERFACES
@@ -85,6 +86,16 @@ export interface AIPredictionsEnhanced {
  * Recopila datos de la BD de forma optimizada
  */
 export async function collectBusinessDataOptimized(partnerId: string): Promise<BusinessDataOptimized> {
+  // CACHE: Intentar obtener del caché primero (1 hora de TTL)
+  const cacheKey = `business-data:${partnerId}`;
+  const cached = await cacheService.get<BusinessDataOptimized>(cacheKey);
+  if (cached) {
+    console.log('[collectBusinessDataOptimized] ✅ Datos obtenidos del caché');
+    return cached;
+  }
+  
+  console.log('[collectBusinessDataOptimized] Cache MISS, consultando base de datos...');
+  
   const db = await getDb();
   const now = new Date();
   const twelveMonthsAgo = new Date(now.getFullYear() - 1, now.getMonth(), 1);
@@ -158,7 +169,7 @@ export async function collectBusinessDataOptimized(partnerId: string): Promise<B
     
     console.log('[collectBusinessDataOptimized] ✅ Totales estimados (sin consultas pesadas)');
     
-    return {
+    const businessData = {
       revenue: {
         last12Months: last12MonthsRevenue,
         monthlyAverage
@@ -172,6 +183,12 @@ export async function collectBusinessDataOptimized(partnerId: string): Promise<B
         active: activeClientsApprox
       }
     };
+    
+    // CACHE: Guardar en caché por 1 hora (3600 segundos)
+    await cacheService.set(cacheKey, businessData, 3600);
+    console.log('[collectBusinessDataOptimized] ✅ Datos guardados en caché por 1 hora');
+    
+    return businessData;
   } catch (error) {
     console.error('[collectBusinessDataOptimized] ❌ Error:', error);
     throw error;
@@ -181,8 +198,18 @@ export async function collectBusinessDataOptimized(partnerId: string): Promise<B
 /**
  * Genera predicciones usando Gemini con datos optimizados
  */
-export async function generateEnhancedPredictionsOptimized(businessData: BusinessDataOptimized): Promise<AIPredictionsEnhanced> {
+export async function generateEnhancedPredictionsOptimized(businessData: BusinessDataOptimized, partnerId: string): Promise<AIPredictionsEnhanced> {
+  // CACHE: Intentar obtener del caché primero (24 horas de TTL)
   const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const cacheKey = `predictions:${partnerId}:${currentMonth}`;
+  const cached = await cacheService.get<AIPredictionsEnhanced>(cacheKey);
+  if (cached) {
+    console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones obtenidas del caché');
+    return cached;
+  }
+  
+  console.log('[generateEnhancedPredictionsOptimized] Cache MISS, generando predicciones con Gemini...');
   
   const prompt = `Eres un analista financiero experto. Analiza estos datos de un negocio de afinación de pianos y genera predicciones de ingresos para los próximos 6 meses.
 
@@ -232,7 +259,7 @@ IMPORTANTE:
     
     const parsed = JSON.parse(jsonText);
     
-    return {
+    const predictions = {
       revenue: {
         predictions: parsed.predictions || []
       },
@@ -249,6 +276,12 @@ IMPORTANTE:
         predictions: []
       }
     };
+    
+    // CACHE: Guardar en caché por 24 horas (86400 segundos)
+    await cacheService.set(cacheKey, predictions, 86400);
+    console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones guardadas en caché por 24 horas');
+    
+    return predictions;
   } catch (error) {
     console.error('[generateEnhancedPredictionsOptimized] Error:', error);
     
@@ -267,7 +300,7 @@ IMPORTANTE:
       });
     }
     
-    return {
+    const fallbackPredictions = {
       revenue: {
         predictions
       },
@@ -284,5 +317,11 @@ IMPORTANTE:
         predictions: []
       }
     };
+    
+    // CACHE: Guardar fallback en caché por 1 hora (3600 segundos)
+    await cacheService.set(cacheKey, fallbackPredictions, 3600);
+    console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones fallback guardadas en caché por 1 hora');
+    
+    return fallbackPredictions;
   }
 }
