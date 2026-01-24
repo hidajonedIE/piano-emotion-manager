@@ -50,12 +50,12 @@ export async function predictRevenue(data: RevenueData): Promise<RevenuePredicti
       },
     });
 
-    // Crear resumen ultra-simple de los últimos 3 meses
-    const last3Months = data.historical.slice(-3);
-    const summary = last3Months.map(m => `${m.month}: ${m.amount}€`).join(', ');
+    // Crear resumen de los últimos 12 meses
+    const last12Months = data.historical.slice(-12);
+    const summary = last12Months.map(m => `${m.month}: ${m.amount}€`).join(', ');
     
     const prompt = `Predice ingresos próximo mes.
-Últimos 3 meses: ${summary}
+Últimos 12 meses: ${summary}
 Actual: ${data.current}€
 Promedio: ${data.average}€
 
