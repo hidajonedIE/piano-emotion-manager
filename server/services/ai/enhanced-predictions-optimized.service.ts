@@ -37,6 +37,44 @@ export interface AIPredictionsEnhanced {
       factors: string[];
     }>;
   };
+  clientChurn: {
+    topRiskClients: Array<{
+      clientId: number;
+      clientName: string;
+      riskScore: number;
+      lastService: string;
+      daysSinceLastService: number;
+      reason: string;
+    }>;
+  };
+  maintenance: {
+    predictions: Array<{
+      pianoId: number;
+      clientName: string;
+      pianoInfo: string;
+      lastService: string;
+      predictedDate: string;
+      priority: 'high' | 'medium' | 'low';
+      reason: string;
+    }>;
+  };
+  workload: {
+    predictions: Array<{
+      week: string;
+      scheduled: number;
+      estimated: number;
+      recommendation: string;
+    }>;
+  };
+  inventory: {
+    predictions: Array<{
+      itemName: string;
+      currentStock: number;
+      predictedDemand: number;
+      recommendedOrder: number;
+      urgency: 'high' | 'medium' | 'low';
+    }>;
+  };
 }
 
 // ============================================
@@ -204,6 +242,18 @@ IMPORTANTE:
     return {
       revenue: {
         predictions: parsed.predictions || []
+      },
+      clientChurn: {
+        topRiskClients: []
+      },
+      maintenance: {
+        predictions: []
+      },
+      workload: {
+        predictions: []
+      },
+      inventory: {
+        predictions: []
       }
     };
   } catch (error) {
@@ -227,6 +277,18 @@ IMPORTANTE:
     return {
       revenue: {
         predictions
+      },
+      clientChurn: {
+        topRiskClients: []
+      },
+      maintenance: {
+        predictions: []
+      },
+      workload: {
+        predictions: []
+      },
+      inventory: {
+        predictions: []
       }
     };
   }

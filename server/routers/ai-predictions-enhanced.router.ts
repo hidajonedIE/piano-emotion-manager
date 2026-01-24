@@ -52,8 +52,9 @@ export const aiPredictionsEnhancedRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.user.partnerId);
-        const predictions = await generateEnhancedPredictions(businessData);
+        console.log('[getChurnRisk] 🚀 ENDPOINT LLAMADO');
+        const businessData = await collectBusinessDataOptimized(ctx.user.partnerId);
+        const predictions = await generateEnhancedPredictionsOptimized(businessData);
         
         const allClients = predictions.clientChurn.topRiskClients || [];
         const total = allClients.length;
@@ -91,8 +92,9 @@ export const aiPredictionsEnhancedRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.user.partnerId);
-        const predictions = await generateEnhancedPredictions(businessData);
+        console.log('[getMaintenance] 🚀 ENDPOINT LLAMADO');
+        const businessData = await collectBusinessDataOptimized(ctx.user.partnerId);
+        const predictions = await generateEnhancedPredictionsOptimized(businessData);
         
         const allMaintenance = predictions.maintenance.predictions || [];
         const total = allMaintenance.length;
@@ -127,8 +129,9 @@ export const aiPredictionsEnhancedRouter = router({
     .input(z.object({ weeks: z.number().min(1).max(12).optional().default(8) }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.user.partnerId);
-        const predictions = await generateEnhancedPredictions(businessData);
+        console.log('[getWorkload] 🚀 ENDPOINT LLAMADO');
+        const businessData = await collectBusinessDataOptimized(ctx.user.partnerId);
+        const predictions = await generateEnhancedPredictionsOptimized(businessData);
         
         return predictions.workload.predictions || [];
       } catch (error) {
@@ -148,8 +151,9 @@ export const aiPredictionsEnhancedRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        const businessData = await collectBusinessData(ctx.user.partnerId);
-        const predictions = await generateEnhancedPredictions(businessData);
+        console.log('[getInventoryDemand] 🚀 ENDPOINT LLAMADO');
+        const businessData = await collectBusinessDataOptimized(ctx.user.partnerId);
+        const predictions = await generateEnhancedPredictionsOptimized(businessData);
         
         const allInventory = predictions.inventory.predictions || [];
         const total = allInventory.length;
@@ -181,8 +185,9 @@ export const aiPredictionsEnhancedRouter = router({
    */
   getCompletePredictions: protectedProcedure.query(async ({ ctx }) => {
     try {
-      const businessData = await collectBusinessData(ctx.user.partnerId);
-      const predictions = await generateEnhancedPredictions(businessData);
+      console.log('[getCompletePredictions] 🚀 ENDPOINT LLAMADO');
+      const businessData = await collectBusinessDataOptimized(ctx.user.partnerId);
+      const predictions = await generateEnhancedPredictionsOptimized(businessData);
       
       return {
         success: true,
