@@ -190,7 +190,7 @@ async function updateSettings(
       settings: JSON.stringify(updatedSettings),
       updatedAt: new Date(),
     })
-    .where(eq(users.clerkId, userId));
+    .where(eq(users.openId, userId));
 
   return res.status(200).json({ success: true, settings: updatedSettings });
 }
