@@ -19,6 +19,9 @@ export const aiPredictionsEnhancedRouter = router({
   getRevenue: protectedProcedure
     .input(z.object({ months: z.number().min(1).max(12).optional().default(6) }))
     .query(async ({ ctx, input }) => {
+      console.log('[getRevenue] 🚀 ENDPOINT LLAMADO');
+      console.log('[getRevenue] Input:', input);
+      console.log('[getRevenue] Organization ID:', ctx.organizationId);
       try {
         const businessData = await collectBusinessData(ctx.organizationId);
         console.log('[getRevenue] Business data collected:', JSON.stringify(businessData, null, 2));
@@ -33,7 +36,11 @@ export const aiPredictionsEnhancedRouter = router({
         console.log('[getRevenue] Returning:', JSON.stringify(result, null, 2));
         return result;
       } catch (error) {
+        console.error('[getRevenue] ❌ ERROR CAPTURADO:');
+        console.error('[getRevenue] Error type:', typeof error);
         console.error('[getRevenue] Error:', error);
+        console.error('[getRevenue] Error message:', error instanceof Error ? error.message : String(error));
+        console.error('[getRevenue] Error stack:', error instanceof Error ? error.stack : 'No stack');
         return [];
       }
     }),
