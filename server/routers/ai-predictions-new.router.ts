@@ -41,9 +41,19 @@ export const aiPredictionsNewRouter = router({
 
         console.log('[getDashboardPredictions] Predicciones generadas exitosamente');
 
+        // Formatear ingresos con formato compacto
+        const predictedAmount = revenuePrediction.predictedAmount;
+        let formattedRevenue: string;
+        if (predictedAmount >= 10000) {
+          const thousands = predictedAmount / 1000;
+          formattedRevenue = `${thousands.toFixed(1)}k\u20ac`;
+        } else {
+          formattedRevenue = `${Math.round(predictedAmount)}\u20ac`;
+        }
+
         return {
           revenue: {
-            predicted: `${revenuePrediction.predictedAmount}€`,
+            predicted: formattedRevenue,
             confidence: revenuePrediction.confidence,
             trend: revenueData.trend,
             reasoning: revenuePrediction.reasoning
