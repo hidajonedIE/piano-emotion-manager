@@ -9,6 +9,7 @@ import { getRevenueData } from '../services/ai-predictions/revenue-data.service.
 import { getChurnRiskData } from '../services/ai-predictions/churn-data.service.js';
 import { getMaintenanceData } from '../services/ai-predictions/maintenance-data.service.js';
 import { predictRevenue, predictChurn, predictMaintenance } from '../services/ai-predictions/gemini-predictions.service.js';
+import { getCachedPrediction, setCachedPrediction } from '../services/ai-predictions/predictions-cache.service.js';
 
 export const aiPredictionsNewRouter = router({
   /**
@@ -18,6 +19,26 @@ export const aiPredictionsNewRouter = router({
     .query(async ({ ctx }) => {
       try {
         console.log('[getDashboardPredictions] Iniciando...');
+
+        const partnerId = ctx.partnerId || 'default';
+        const now = new Date();
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        const targetMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
+
+        // Intentar obtener del caché
+        const cachedRevenue = await getCachedPrediction(partnerId, 'revenue', targetMonth);
+        const cachedChurn = await getCachedPrediction(partnerId, 'churn', targetMonth);
+        const cachedMaintenance = await getCachedPrediction(partnerId, 'maintenance', targetMonth);
+
+        // Si todas están en caché, devolver directamente
+        if (cachedRevenue && cachedChurn && cachedMaintenance) {
+          console.log('[getDashboardPredictions] Todas las predicciones desde caché');
+          return {
+            revenue: cachedRevenue,
+            churn: cachedChurn,
+            maintenance: cachedMaintenance
+          };
+        }
 
         // Obtener datos históricos en paralelo
         const [revenueData, churnData, maintenanceData] = await Promise.all([
@@ -32,42 +53,73 @@ export const aiPredictionsNewRouter = router({
           maintenance: maintenanceData.totalNeeded
         });
 
-        // Generar predicciones con Gemini AI en paralelo
+        // Generar solo las predicciones que no están en caché
         const [revenuePrediction, churnPrediction, maintenancePrediction] = await Promise.all([
-          predictRevenue(revenueData),
-          predictChurn(churnData),
-          predictMaintenance(maintenanceData)
+          cachedRevenue ? Promise.resolve(null) : predictRevenue(revenueData),
+          cachedChurn ? Promise.resolve(null) : predictChurn(churnData),
+          cachedMaintenance ? Promise.resolve(null) : predictMaintenance(maintenanceData)
         ]);
 
         console.log('[getDashboardPredictions] Predicciones generadas exitosamente');
 
-        // Formatear ingresos con formato compacto
-        const predictedAmount = revenuePrediction.predictedAmount;
-        let formattedRevenue: string;
-        if (predictedAmount >= 10000) {
-          const thousands = predictedAmount / 1000;
-          formattedRevenue = `${thousands.toFixed(1)}k\u20ac`;
-        } else {
-          formattedRevenue = `${Math.round(predictedAmount)}\u20ac`;
-        }
-
-        return {
-          revenue: {
+        // Construir respuestas (usar caché o nuevas predicciones)
+        let revenueResponse;
+        if (cachedRevenue) {
+          revenueResponse = cachedRevenue;
+        } else if (revenuePrediction) {
+          // Formatear ingresos con formato compacto
+          const predictedAmount = revenuePrediction.predictedAmount;
+          let formattedRevenue: string;
+          if (predictedAmount >= 10000) {
+            const thousands = predictedAmount / 1000;
+            formattedRevenue = `${thousands.toFixed(1)}k\u20ac`;
+          } else {
+            formattedRevenue = `${Math.round(predictedAmount)}\u20ac`;
+          }
+          
+          revenueResponse = {
             predicted: formattedRevenue,
             confidence: revenuePrediction.confidence,
             trend: revenueData.trend,
             reasoning: revenuePrediction.reasoning
-          },
-          churn: {
+          };
+          
+          // Guardar en caché (24 horas)
+          await setCachedPrediction(partnerId, 'revenue', targetMonth, revenueResponse, 24);
+        }
+
+        let churnResponse;
+        if (cachedChurn) {
+          churnResponse = cachedChurn;
+        } else if (churnPrediction) {
+          churnResponse = {
             atRisk: churnPrediction.affectedClients,
             riskLevel: churnPrediction.riskLevel,
             reasoning: churnPrediction.reasoning
-          },
-          maintenance: {
+          };
+          
+          // Guardar en caché (24 horas)
+          await setCachedPrediction(partnerId, 'churn', targetMonth, churnResponse, 24);
+        }
+
+        let maintenanceResponse;
+        if (cachedMaintenance) {
+          maintenanceResponse = cachedMaintenance;
+        } else if (maintenancePrediction) {
+          maintenanceResponse = {
             needed: maintenancePrediction.urgentCount + maintenancePrediction.scheduledCount,
             urgent: maintenancePrediction.urgentCount,
             reasoning: maintenancePrediction.reasoning
-          }
+          };
+          
+          // Guardar en caché (24 horas)
+          await setCachedPrediction(partnerId, 'maintenance', targetMonth, maintenanceResponse, 24);
+        }
+
+        return {
+          revenue: revenueResponse,
+          churn: churnResponse,
+          maintenance: maintenanceResponse
         };
       } catch (error) {
         console.error('[getDashboardPredictions] Error:', error);

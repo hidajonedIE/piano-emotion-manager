@@ -201,60 +201,66 @@ export function CalendarView({ events, onEventPress, onDatePress, initialDate }:
   };
 
   const renderMonthView = () => (
-    <View style={styles.monthGrid}>
-      {/* Cabecera de días */}
-      <View style={styles.weekHeader}>
-        {DAYS_SHORT.map((day) => (
-          <View key={day} style={styles.weekHeaderCell}>
-            <ThemedText style={[styles.weekHeaderText, { color: textSecondary }]}>
-              {day}
-            </ThemedText>
-          </View>
-        ))}
-      </View>
-      
-      {/* Días del mes */}
-      <View style={styles.daysGrid}>
-        {monthDays.map((day, index) => {
-          const dayEvents = eventsByDate[day.date] || [];
-          const hasEvents = dayEvents.length > 0;
-          
-          return (
-            <Pressable
-              key={`${day.date}-${index}`}
-              style={[
-                styles.dayCell,
-                day.isToday && [styles.todayCell, { borderColor: accent }],
-              ]}
-              onPress={() => handleDatePress(day.date)}
-            >
-              <ThemedText
-                style={[
-                  styles.dayText,
-                  !day.isCurrentMonth && { color: textSecondary, opacity: 0.5 },
-                  day.isToday && { color: accent, fontWeight: '700' },
-                ]}
-              >
-                {day.day}
+    <ScrollView 
+      style={styles.monthScrollView}
+      contentContainerStyle={styles.monthScrollContent}
+      showsVerticalScrollIndicator={true}
+    >
+      <View style={styles.monthGrid}>
+        {/* Cabecera de días */}
+        <View style={styles.weekHeader}>
+          {DAYS_SHORT.map((day) => (
+            <View key={day} style={styles.weekHeaderCell}>
+              <ThemedText style={[styles.weekHeaderText, { color: textSecondary }]}>
+                {day}
               </ThemedText>
-              {hasEvents && (
-                <View style={styles.eventDots}>
-                  {dayEvents.slice(0, 3).map((event, i) => (
-                    <View
-                      key={event.id}
-                      style={[
-                        styles.eventDot,
-                        { backgroundColor: event.status === 'completed' ? success : accent },
-                      ]}
-                    />
-                  ))}
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
+            </View>
+          ))}
+        </View>
+        
+        {/* Días del mes */}
+        <View style={styles.daysGrid}>
+          {monthDays.map((day, index) => {
+            const dayEvents = eventsByDate[day.date] || [];
+            const hasEvents = dayEvents.length > 0;
+            
+            return (
+              <Pressable
+                key={`${day.date}-${index}`}
+                style={[
+                  styles.dayCell,
+                  day.isToday && [styles.todayCell, { borderColor: accent }],
+                ]}
+                onPress={() => handleDatePress(day.date)}
+              >
+                <ThemedText
+                  style={[
+                    styles.dayText,
+                    !day.isCurrentMonth && { color: textSecondary, opacity: 0.5 },
+                    day.isToday && { color: accent, fontWeight: '700' },
+                  ]}
+                >
+                  {day.day}
+                </ThemedText>
+                {hasEvents && (
+                  <View style={styles.eventDots}>
+                    {dayEvents.slice(0, 3).map((event, i) => (
+                      <View
+                        key={event.id}
+                        style={[
+                          styles.eventDot,
+                          { backgroundColor: event.status === 'completed' ? success : accent },
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 
   // Generar horas del día para la vista diaria
@@ -514,6 +520,12 @@ const styles = StyleSheet.create({
   },
   
   // Vista mensual
+  monthScrollView: {
+    flex: 1,
+  },
+  monthScrollContent: {
+    flexGrow: 1,
+  },
   monthGrid: {
     padding: Spacing.xs,
   },
