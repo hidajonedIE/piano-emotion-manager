@@ -267,7 +267,7 @@ Responde SOLO JSON válido (sin markdown):
       reasoning: string;
     };
     
-    console.log('[predictMaintenance] Predicción parseada correctamente', { urgentCount: prediction.urgentCount, scheduledCount: prediction.scheduledCount });
+    console.log('[predictMaintenance] Predicción parseada correctamente');
     
     return {
       urgentCount: Number(prediction.urgentCount) || 0,

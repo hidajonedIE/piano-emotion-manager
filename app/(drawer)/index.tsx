@@ -404,29 +404,11 @@ interface CircularIndicatorProps {
 }
 
 function CircularIndicator({ color, icon, label, value }: CircularIndicatorProps) {
-  // Formatear valor si es un número grande
-  const formatValue = (val: string): string => {
-    // Si termina en €, extraer el número
-    const hasEuro = val.endsWith('€');
-    const numStr = hasEuro ? val.slice(0, -1) : val;
-    const num = parseFloat(numStr);
-    
-    // Si es un número válido >= 10000, formatear como "14.2k€"
-    if (!isNaN(num) && num >= 10000) {
-      const formatted = (num / 1000).toFixed(1) + 'k';
-      return hasEuro ? formatted + '€' : formatted;
-    }
-    
-    return val;
-  };
-  
-  const displayValue = formatValue(value);
-  
   return (
     <View style={styles.circularIndicator}>
       <View style={[styles.circle, { borderColor: color }]}>
         <Ionicons name={icon as any} size={24} color={color} />
-        <Text style={[styles.circleValue, { color }]}>{displayValue}</Text>
+        <Text style={[styles.circleValue, { color }]}>{value}</Text>
       </View>
       <Text style={styles.circleLabel}>{label}</Text>
     </View>
