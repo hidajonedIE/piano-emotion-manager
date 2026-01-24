@@ -35,21 +35,21 @@ export async function predictRevenue(data: RevenueData): Promise<RevenuePredicti
   console.log('[predictRevenue] Iniciando predicción con invokeGemini()...');
   
   try {
-    const prompt = `Eres un analista financiero experto. Analiza estos datos de ingresos históricos y genera una predicción para el próximo mes.
+    const prompt = `Analiza estos datos de ingresos y predice el próximo mes.
 
-Datos históricos (últimos 12 meses):
+Datos históricos:
 ${JSON.stringify(data.historical, null, 2)}
 
-Ingreso actual: ${data.current}€
-Promedio: ${data.average}€
-Tendencia: ${data.trend}
+Actual: ${data.current}€ | Promedio: ${data.average}€ | Tendencia: ${data.trend}
 
-Genera un objeto JSON con esta estructura exacta:
+RESPONDE SOLO CON JSON:
 {
-  "predictedAmount": número (sin símbolo de moneda),
-  "confidence": "high" | "medium" | "low",
-  "reasoning": "explicación breve en español (máximo 50 palabras)"
-}`;
+  "predictedAmount": número,
+  "confidence": "high"|"medium"|"low",
+  "reasoning": "máximo 30 palabras"
+}
+
+IMPORTANTE: reasoning DEBE ser máximo 30 palabras. Sé extremadamente conciso.`;
 
     console.log('[predictRevenue] Llamando a generateJsonWithGemini()...');
     const prediction = await generateJsonWithGemini<{
@@ -57,8 +57,8 @@ Genera un objeto JSON con esta estructura exacta:
       confidence: 'high' | 'medium' | 'low';
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Eres un analista financiero experto. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional.',
-      maxTokens: 1000
+      systemPrompt: 'Responde SOLO con JSON válido. reasoning: máximo 30 palabras.',
+      maxTokens: 500
     });
     
     console.log('[predictRevenue] Predicción recibida exitosamente');
@@ -93,25 +93,27 @@ export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction
   console.log('[predictChurn] Iniciando predicción con invokeGemini()...');
   
   try {
-    const prompt = `Eres un analista de retención de clientes experto. Analiza estos datos de clientes en riesgo.
+    const prompt = `Analiza clientes en riesgo.
 
-Total de clientes en riesgo: ${data.totalAtRisk}
-Top clientes en riesgo:
+Total en riesgo: ${data.totalAtRisk}
+Top clientes:
 ${JSON.stringify(data.clients.slice(0, 5), null, 2)}
 
-Genera un objeto JSON con esta estructura exacta:
+RESPONDE SOLO CON JSON:
 {
-  "riskLevel": "high" | "medium" | "low",
-  "reasoning": "explicación breve en español (máximo 50 palabras)"
-}`;
+  "riskLevel": "high"|"medium"|"low",
+  "reasoning": "máximo 30 palabras"
+}
+
+IMPORTANTE: reasoning máximo 30 palabras.`;
 
     console.log('[predictChurn] Llamando a generateJsonWithGemini()...');
     const prediction = await generateJsonWithGemini<{
       riskLevel: 'high' | 'medium' | 'low';
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Eres un analista de retención de clientes experto. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional.',
-      maxTokens: 1000
+      systemPrompt: 'Responde SOLO con JSON válido. reasoning: máximo 30 palabras.',
+      maxTokens: 500
     });
     
     console.log('[predictChurn] Predicción recibida exitosamente');
@@ -139,18 +141,20 @@ export async function predictMaintenance(data: MaintenanceData): Promise<Mainten
   console.log('[predictMaintenance] Iniciando predicción con invokeGemini()...');
   
   try {
-    const prompt = `Eres un experto en mantenimiento de pianos. Analiza estos datos de pianos que necesitan mantenimiento.
+    const prompt = `Analiza pianos que necesitan mantenimiento.
 
-Total de pianos que necesitan mantenimiento: ${data.totalNeeded}
-Top pianos urgentes:
+Total: ${data.totalNeeded}
+Top urgentes:
 ${JSON.stringify(data.pianos.slice(0, 5), null, 2)}
 
-Genera un objeto JSON con esta estructura exacta:
+RESPONDE SOLO CON JSON:
 {
-  "urgentCount": número de pianos urgentes (más de 18 meses),
-  "scheduledCount": número de pianos a programar (12-18 meses),
-  "reasoning": "explicación breve en español (máximo 50 palabras)"
-}`;
+  "urgentCount": número (>18 meses),
+  "scheduledCount": número (12-18 meses),
+  "reasoning": "máximo 30 palabras"
+}
+
+IMPORTANTE: reasoning máximo 30 palabras.`;
 
     console.log('[predictMaintenance] Llamando a generateJsonWithGemini()...');
     const prediction = await generateJsonWithGemini<{
@@ -158,8 +162,8 @@ Genera un objeto JSON con esta estructura exacta:
       scheduledCount: number;
       reasoning: string;
     }>(prompt, {
-      systemPrompt: 'Eres un experto en mantenimiento de pianos. Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional.',
-      maxTokens: 1000
+      systemPrompt: 'Responde SOLO con JSON válido. reasoning: máximo 30 palabras.',
+      maxTokens: 500
     });
     
     console.log('[predictMaintenance] Predicción recibida exitosamente');

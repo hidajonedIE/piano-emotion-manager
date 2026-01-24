@@ -88,6 +88,9 @@ export async function invokeGemini(
   const apiKey = getApiKey();
   const model = options?.model || DEFAULT_MODEL;
   
+  const maxOutputTokens = options?.maxTokens || 2048;
+  console.log(`[invokeGemini] maxOutputTokens configurado: ${maxOutputTokens}`);
+  
   const request: GeminiRequest = {
     contents: [
       {
@@ -96,7 +99,7 @@ export async function invokeGemini(
       },
     ],
     generationConfig: {
-      maxOutputTokens: options?.maxTokens || 2048,
+      maxOutputTokens,
       temperature: options?.temperature || 0.7,
     },
   };
@@ -129,7 +132,10 @@ export async function invokeGemini(
     throw new Error("No se recibió respuesta de Gemini");
   }
 
-  return data.candidates[0].content.parts[0].text;
+  const responseText = data.candidates[0].content.parts[0].text;
+  console.log(`[invokeGemini] Respuesta recibida (${responseText.length} caracteres)`);
+  
+  return responseText;
 }
 
 /**
@@ -183,7 +189,10 @@ export async function chatWithGemini(
     throw new Error("No se recibió respuesta de Gemini");
   }
 
-  return data.candidates[0].content.parts[0].text;
+  const responseText = data.candidates[0].content.parts[0].text;
+  console.log(`[invokeGemini] Respuesta recibida (${responseText.length} caracteres)`);
+  
+  return responseText;
 }
 
 /**
