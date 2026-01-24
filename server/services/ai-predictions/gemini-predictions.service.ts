@@ -1,5 +1,5 @@
 /**
- * Gemini AI Predictions Service - Nuevo desde cero
+ * Gemini AI Predictions Service - Nuevo desde cero con logs detallados
  * Usa Gemini AI para generar predicciones basadas en datos históricos
  * Piano Emotion Manager
  */
@@ -34,8 +34,16 @@ export interface MaintenancePrediction {
  * Genera predicción de ingresos usando Gemini AI
  */
 export async function predictRevenue(data: RevenueData): Promise<RevenuePrediction> {
+  const startTime = Date.now();
+  console.log('[predictRevenue] Iniciando predicción...');
+  console.log('[predictRevenue] API Key presente:', !!process.env.GEMINI_API_KEY);
+  console.log('[predictRevenue] API Key length:', process.env.GEMINI_API_KEY?.length || 0);
+  
   try {
+    console.log('[predictRevenue] Obteniendo modelo gemini-2.5-flash...');
+    const modelStartTime = Date.now();
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    console.log('[predictRevenue] Modelo obtenido en', Date.now() - modelStartTime, 'ms');
 
     const prompt = `Eres un analista financiero experto. Analiza estos datos de ingresos históricos y genera una predicción para el próximo mes.
 
@@ -53,8 +61,13 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
   "reasoning": "explicación breve en español (máximo 100 palabras)"
 }`;
 
+    console.log('[predictRevenue] Llamando a Gemini API...');
+    const apiStartTime = Date.now();
     const result = await model.generateContent(prompt);
+    console.log('[predictRevenue] Gemini API respondió en', Date.now() - apiStartTime, 'ms');
+    
     const response = result.response.text();
+    console.log('[predictRevenue] Respuesta recibida, longitud:', response.length);
     
     // Extraer JSON de la respuesta
     const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -69,6 +82,8 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
     now.setMonth(now.getMonth() + 1);
     const nextMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
+    console.log('[predictRevenue] Predicción completada en', Date.now() - startTime, 'ms');
+    
     return {
       nextMonth,
       predictedAmount: Number(prediction.predictedAmount) || 0,
@@ -76,12 +91,17 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
       reasoning: prediction.reasoning || 'No disponible'
     };
   } catch (error) {
-    console.error('[predictRevenue] Error:', error);
+    const elapsed = Date.now() - startTime;
+    console.error('[predictRevenue] Error después de', elapsed, 'ms');
+    console.error('[predictRevenue] Error type:', error?.constructor?.name);
+    console.error('[predictRevenue] Error message:', error instanceof Error ? error.message : String(error));
+    console.error('[predictRevenue] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    
     return {
       nextMonth: 'N/A',
       predictedAmount: 0,
       confidence: 'low',
-      reasoning: 'Error al generar predicción'
+      reasoning: `Error al generar predicción: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
@@ -90,7 +110,11 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
  * Genera predicción de riesgo de pérdida de clientes usando Gemini AI
  */
 export async function predictChurn(data: ChurnRiskData): Promise<ChurnPrediction> {
+  const startTime = Date.now();
+  console.log('[predictChurn] Iniciando predicción...');
+  
   try {
+    console.log('[predictChurn] Obteniendo modelo gemini-2.5-flash...');
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `Eres un analista de retención de clientes experto. Analiza estos datos de clientes en riesgo.
@@ -105,7 +129,11 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
   "reasoning": "explicación breve en español (máximo 100 palabras)"
 }`;
 
+    console.log('[predictChurn] Llamando a Gemini API...');
+    const apiStartTime = Date.now();
     const result = await model.generateContent(prompt);
+    console.log('[predictChurn] Gemini API respondió en', Date.now() - apiStartTime, 'ms');
+    
     const response = result.response.text();
     
     const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -115,17 +143,22 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
 
     const prediction = JSON.parse(jsonMatch[0]);
 
+    console.log('[predictChurn] Predicción completada en', Date.now() - startTime, 'ms');
+    
     return {
       riskLevel: prediction.riskLevel || 'low',
       affectedClients: data.totalAtRisk,
       reasoning: prediction.reasoning || 'No disponible'
     };
   } catch (error) {
-    console.error('[predictChurn] Error:', error);
+    const elapsed = Date.now() - startTime;
+    console.error('[predictChurn] Error después de', elapsed, 'ms');
+    console.error('[predictChurn] Error message:', error instanceof Error ? error.message : String(error));
+    
     return {
       riskLevel: 'low',
       affectedClients: 0,
-      reasoning: 'Error al generar predicción'
+      reasoning: `Error al generar predicción: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
@@ -134,7 +167,11 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
  * Genera predicción de mantenimientos usando Gemini AI
  */
 export async function predictMaintenance(data: MaintenanceData): Promise<MaintenancePrediction> {
+  const startTime = Date.now();
+  console.log('[predictMaintenance] Iniciando predicción...');
+  
   try {
+    console.log('[predictMaintenance] Obteniendo modelo gemini-2.5-flash...');
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `Eres un experto en mantenimiento de pianos. Analiza estos datos de pianos que necesitan mantenimiento.
@@ -150,7 +187,11 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
   "reasoning": "explicación breve en español (máximo 100 palabras)"
 }`;
 
+    console.log('[predictMaintenance] Llamando a Gemini API...');
+    const apiStartTime = Date.now();
     const result = await model.generateContent(prompt);
+    console.log('[predictMaintenance] Gemini API respondió en', Date.now() - apiStartTime, 'ms');
+    
     const response = result.response.text();
     
     const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -160,17 +201,22 @@ Responde SOLO con un objeto JSON válido con esta estructura exacta:
 
     const prediction = JSON.parse(jsonMatch[0]);
 
+    console.log('[predictMaintenance] Predicción completada en', Date.now() - startTime, 'ms');
+    
     return {
       urgentCount: Number(prediction.urgentCount) || 0,
       scheduledCount: Number(prediction.scheduledCount) || 0,
       reasoning: prediction.reasoning || 'No disponible'
     };
   } catch (error) {
-    console.error('[predictMaintenance] Error:', error);
+    const elapsed = Date.now() - startTime;
+    console.error('[predictMaintenance] Error después de', elapsed, 'ms');
+    console.error('[predictMaintenance] Error message:', error instanceof Error ? error.message : String(error));
+    
     return {
       urgentCount: 0,
       scheduledCount: 0,
-      reasoning: 'Error al generar predicción'
+      reasoning: `Error al generar predicción: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
