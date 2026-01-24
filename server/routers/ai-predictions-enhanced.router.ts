@@ -9,141 +9,21 @@ import { router, protectedProcedure } from '../_core/trpc.js';
 import {
   collectBusinessData,
   generateEnhancedPredictions,
-  type AIPredictionsEnhanced,
 } from '../services/ai/enhanced-predictions.service.js';
 
 export const aiPredictionsEnhancedRouter = router({
   /**
-   * Obtiene predicciones completas del negocio usando IA
-   */
-  getCompletePredictions: protectedProcedure.query(async ({ ctx }) => {
-    console.log('[AI Predictions Enhanced] Iniciando generación de predicciones completas');
-    
-    try {
-      // 1. Recopilar todos los datos del negocio
-      const businessData = await collectBusinessData(ctx.organizationId);
-      console.log('[AI Predictions Enhanced] Datos del negocio recopilados:', {
-        revenue: businessData.revenue.current,
-        clients: businessData.clients.total,
-        services: businessData.services.total,
-      });
-      
-      // 2. Generar predicciones con Gemini
-      const predictions = await generateEnhancedPredictions(businessData);
-      console.log('[AI Predictions Enhanced] Predicciones generadas exitosamente');
-      
-      return {
-        success: true,
-        predictions,
-        businessData, // Para debugging y transparencia
-        generatedAt: new Date().toISOString(),
-      };
-    } catch (error) {
-      console.error('[AI Predictions Enhanced] Error:', error);
-      throw new Error('Error generando predicciones IA');
-    }
-  }),
-
-  /**
-   * Obtiene solo predicciones de ingresos con IA
-   */
-  getRevenuePredictions: protectedProcedure
-    .input(z.object({ months: z.number().min(1).max(12).optional().default(3) }))
-    .query(async ({ ctx, input }) => {
-      const businessData = await collectBusinessData(ctx.organizationId);
-      const predictions = await generateEnhancedPredictions(businessData);
-      
-      return {
-        success: true,
-        predictions: predictions.revenue,
-        generatedAt: new Date().toISOString(),
-      };
-    }),
-
-  /**
-   * Obtiene solo predicciones de clientes en riesgo con IA
-   */
-  getChurnPredictions: protectedProcedure.query(async ({ ctx }) => {
-    const businessData = await collectBusinessData(ctx.organizationId);
-    const predictions = await generateEnhancedPredictions(businessData);
-    
-    return {
-      success: true,
-      predictions: predictions.clientChurn,
-      generatedAt: new Date().toISOString(),
-    };
-  }),
-
-  /**
-   * Obtiene solo predicciones de mantenimiento con IA
-   */
-  getMaintenancePredictions: protectedProcedure.query(async ({ ctx }) => {
-    const businessData = await collectBusinessData(ctx.organizationId);
-    const predictions = await generateEnhancedPredictions(businessData);
-    
-    return {
-      success: true,
-      predictions: predictions.maintenance,
-      generatedAt: new Date().toISOString(),
-    };
-  }),
-
-  /**
-   * Obtiene solo predicciones de carga de trabajo con IA
-   */
-  getWorkloadPredictions: protectedProcedure
-    .input(z.object({ weeks: z.number().min(1).max(12).optional().default(4) }))
-    .query(async ({ ctx, input }) => {
-      const businessData = await collectBusinessData(ctx.organizationId);
-      const predictions = await generateEnhancedPredictions(businessData);
-      
-      return {
-        success: true,
-        predictions: predictions.workload,
-        generatedAt: new Date().toISOString(),
-      };
-    }),
-
-  /**
-   * Obtiene solo predicciones de inventario con IA
-   */
-  getInventoryPredictions: protectedProcedure.query(async ({ ctx }) => {
-    const businessData = await collectBusinessData(ctx.organizationId);
-    const predictions = await generateEnhancedPredictions(businessData);
-    
-    return {
-      success: true,
-      predictions: predictions.inventory,
-      generatedAt: new Date().toISOString(),
-    };
-  }),
-
-  /**
-   * Obtiene insights generales del negocio con IA
-   */
-  getBusinessInsights: protectedProcedure.query(async ({ ctx }) => {
-    const businessData = await collectBusinessData(ctx.organizationId);
-    const predictions = await generateEnhancedPredictions(businessData);
-    
-    return {
-      success: true,
-      insights: predictions.insights,
-      generatedAt: new Date().toISOString(),
-    };
-  }),
-
-  // ===== ALIASES PARA COMPATIBILIDAD CON WIDGETS =====
-  /**
-   * Alias de getRevenuePredictions para compatibilidad con widgets
+   * GET REVENUE - Predicciones de ingresos
+   * Formato esperado por la página: array de { period, value, confidence, trend, factors }
    */
   getRevenue: protectedProcedure
-    .input(z.object({ months: z.number().min(1).max(12).optional().default(3) }))  
+    .input(z.object({ months: z.number().min(1).max(12).optional().default(6) }))
     .query(async ({ ctx, input }) => {
       try {
         const businessData = await collectBusinessData(ctx.organizationId);
         const predictions = await generateEnhancedPredictions(businessData);
         
-        // Retornar en formato compatible con widget (array de predicciones)
+        // Retornar array de predicciones de ingresos
         return predictions.revenue.predictions || [];
       } catch (error) {
         console.error('[getRevenue] Error:', error);
@@ -152,34 +32,157 @@ export const aiPredictionsEnhancedRouter = router({
     }),
 
   /**
-   * Alias de getChurnPredictions para compatibilidad con widgets
+   * GET CHURN RISK - Clientes en riesgo
+   * Formato esperado: { data: [...], pagination: { page, limit, total, totalPages } }
    */
-  getChurnRisk: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      const businessData = await collectBusinessData(ctx.organizationId);
-      const predictions = await generateEnhancedPredictions(businessData);
-      
-      // Retornar array de clientes en riesgo
-      return predictions.clientChurn.topRiskClients || [];
-    } catch (error) {
-      console.error('[getChurnRisk] Error:', error);
-      return [];
-    }
-  }),
+  getChurnRisk: protectedProcedure
+    .input(z.object({
+      page: z.number().min(1).optional().default(1),
+      limit: z.number().min(1).max(100).optional().default(30),
+    }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const businessData = await collectBusinessData(ctx.organizationId);
+        const predictions = await generateEnhancedPredictions(businessData);
+        
+        const allClients = predictions.clientChurn.topRiskClients || [];
+        const total = allClients.length;
+        const totalPages = Math.ceil(total / input.limit);
+        const startIndex = (input.page - 1) * input.limit;
+        const endIndex = startIndex + input.limit;
+        const paginatedData = allClients.slice(startIndex, endIndex);
+        
+        return {
+          data: paginatedData,
+          pagination: {
+            page: input.page,
+            limit: input.limit,
+            total,
+            totalPages,
+          },
+        };
+      } catch (error) {
+        console.error('[getChurnRisk] Error:', error);
+        return {
+          data: [],
+          pagination: { page: 1, limit: input.limit, total: 0, totalPages: 0 },
+        };
+      }
+    }),
 
   /**
-   * Alias de getMaintenancePredictions para compatibilidad con widgets
+   * GET MAINTENANCE - Mantenimientos previstos
+   * Formato esperado: { data: [...], pagination: { page, limit, total, totalPages } }
    */
-  getMaintenance: protectedProcedure.query(async ({ ctx }) => {
+  getMaintenance: protectedProcedure
+    .input(z.object({
+      page: z.number().min(1).optional().default(1),
+      limit: z.number().min(1).max(100).optional().default(10),
+    }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const businessData = await collectBusinessData(ctx.organizationId);
+        const predictions = await generateEnhancedPredictions(businessData);
+        
+        const allMaintenance = predictions.maintenance.predictions || [];
+        const total = allMaintenance.length;
+        const totalPages = Math.ceil(total / input.limit);
+        const startIndex = (input.page - 1) * input.limit;
+        const endIndex = startIndex + input.limit;
+        const paginatedData = allMaintenance.slice(startIndex, endIndex);
+        
+        return {
+          data: paginatedData,
+          pagination: {
+            page: input.page,
+            limit: input.limit,
+            total,
+            totalPages,
+          },
+        };
+      } catch (error) {
+        console.error('[getMaintenance] Error:', error);
+        return {
+          data: [],
+          pagination: { page: 1, limit: input.limit, total: 0, totalPages: 0 },
+        };
+      }
+    }),
+
+  /**
+   * GET WORKLOAD - Carga de trabajo prevista
+   * Formato esperado: array de { week, scheduled, estimated, recommendation }
+   */
+  getWorkload: protectedProcedure
+    .input(z.object({ weeks: z.number().min(1).max(12).optional().default(8) }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const businessData = await collectBusinessData(ctx.organizationId);
+        const predictions = await generateEnhancedPredictions(businessData);
+        
+        return predictions.workload.predictions || [];
+      } catch (error) {
+        console.error('[getWorkload] Error:', error);
+        return [];
+      }
+    }),
+
+  /**
+   * GET INVENTORY DEMAND - Demanda de inventario
+   * Formato esperado: { data: [...], pagination: { page, limit, total, totalPages } }
+   */
+  getInventoryDemand: protectedProcedure
+    .input(z.object({
+      page: z.number().min(1).optional().default(1),
+      limit: z.number().min(1).max(100).optional().default(6),
+    }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const businessData = await collectBusinessData(ctx.organizationId);
+        const predictions = await generateEnhancedPredictions(businessData);
+        
+        const allInventory = predictions.inventory.predictions || [];
+        const total = allInventory.length;
+        const totalPages = Math.ceil(total / input.limit);
+        const startIndex = (input.page - 1) * input.limit;
+        const endIndex = startIndex + input.limit;
+        const paginatedData = allInventory.slice(startIndex, endIndex);
+        
+        return {
+          data: paginatedData,
+          pagination: {
+            page: input.page,
+            limit: input.limit,
+            total,
+            totalPages,
+          },
+        };
+      } catch (error) {
+        console.error('[getInventoryDemand] Error:', error);
+        return {
+          data: [],
+          pagination: { page: 1, limit: input.limit, total: 0, totalPages: 0 },
+        };
+      }
+    }),
+
+  /**
+   * GET COMPLETE PREDICTIONS - Todas las predicciones
+   */
+  getCompletePredictions: protectedProcedure.query(async ({ ctx }) => {
     try {
       const businessData = await collectBusinessData(ctx.organizationId);
       const predictions = await generateEnhancedPredictions(businessData);
       
-      // Retornar array de mantenimientos previstos
-      return predictions.maintenance.predictions || [];
+      return {
+        success: true,
+        predictions,
+        businessData,
+        generatedAt: new Date().toISOString(),
+      };
     } catch (error) {
-      console.error('[getMaintenance] Error:', error);
-      return [];
+      console.error('[getCompletePredictions] Error:', error);
+      throw new Error('Error generando predicciones IA');
     }
   }),
 });
