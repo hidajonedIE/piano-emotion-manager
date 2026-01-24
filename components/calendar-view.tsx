@@ -521,7 +521,8 @@ const styles = StyleSheet.create({
   
   // Vista mensual
   monthScrollView: {
-    maxHeight: 400,
+    height: 250,
+    overflow: 'scroll',
   },
   monthScrollContent: {
     paddingBottom: 20,
