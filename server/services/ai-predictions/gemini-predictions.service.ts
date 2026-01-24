@@ -16,6 +16,61 @@ if (!GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
+/**
+ * Repara JSON truncado agregando comillas y llaves faltantes
+ */
+function repairTruncatedJson(text: string, context: string): string {
+  console.log(`[${context}] Reparando JSON truncado...`);
+  
+  // Si ya es JSON válido, retornar
+  try {
+    JSON.parse(text);
+    console.log(`[${context}] JSON ya es válido`);
+    return text;
+  } catch {
+    // Continuar con reparación
+  }
+  
+  let repaired = text;
+  
+  // Contar comillas para ver si hay una sin cerrar
+  const quoteCount = (repaired.match(/"/g) || []).length;
+  if (quoteCount % 2 !== 0) {
+    console.log(`[${context}] Agregando comilla faltante`);
+    repaired += '"';
+  }
+  
+  // Verificar si termina en coma y agregar valor por defecto
+  if (repaired.trim().endsWith(',')) {
+    console.log(`[${context}] Removiendo coma final`);
+    repaired = repaired.trim().slice(0, -1);
+  }
+  
+  // Si no termina en }, agregarlo
+  if (!repaired.trim().endsWith('}')) {
+    console.log(`[${context}] Agregando llave de cierre`);
+    repaired += '}';
+  }
+  
+  // Intentar parsear de nuevo
+  try {
+    JSON.parse(repaired);
+    console.log(`[${context}] JSON reparado exitosamente`);
+    return repaired;
+  } catch (error) {
+    console.error(`[${context}] No se pudo reparar JSON:`, error);
+    // Retornar JSON por defecto según contexto
+    if (context === 'predictRevenue') {
+      return '{"predictedAmount":0,"confidence":"low","reasoning":"Error de parseo"}';
+    } else if (context === 'predictChurn') {
+      return '{"riskLevel":"low","affectedClients":0,"reasoning":"Error de parseo"}';
+    } else if (context === 'predictMaintenance') {
+      return '{"urgentCount":0,"scheduledCount":0,"reasoning":"Error de parseo"}';
+    }
+    return '{}';
+  }
+}
+
 export interface RevenuePrediction {
   nextMonth: string;
   predictedAmount: number;
@@ -72,11 +127,8 @@ Responde SOLO JSON válido (sin markdown):
     // Limpiar markdown si existe
     let cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
     
-    // Validar y cerrar JSON si falta }
-    if (!cleanText.endsWith('}')) {
-      console.log('[predictRevenue] JSON incompleto, agregando cierre }');
-      cleanText += '}';
-    }
+    // Reparar JSON truncado
+    cleanText = repairTruncatedJson(cleanText, 'predictRevenue');
     
     console.log(`[predictRevenue] Texto limpio: ${cleanText}`);
     
@@ -94,7 +146,7 @@ Responde SOLO JSON válido (sin markdown):
     
     return {
       nextMonth,
-      predictedAmount: Number(prediction.predictedAmount) || 0,
+      predictedAmount: Math.round(Number(prediction.predictedAmount) || 0),
       confidence: prediction.confidence || 'low',
       reasoning: prediction.reasoning || 'No disponible'
     };
@@ -142,11 +194,8 @@ Responde SOLO JSON válido (sin markdown):
     // Limpiar markdown si existe
     let cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
     
-    // Validar y cerrar JSON si falta }
-    if (!cleanText.endsWith('}')) {
-      console.log('[predictChurn] JSON incompleto, agregando cierre }');
-      cleanText += '}';
-    }
+    // Reparar JSON truncado
+    cleanText = repairTruncatedJson(cleanText, 'predictChurn');
     
     console.log(`[predictChurn] Texto limpio: ${cleanText}`);
     
@@ -207,11 +256,8 @@ Responde SOLO JSON válido (sin markdown):
     // Limpiar markdown si existe
     let cleanText = text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
     
-    // Validar y cerrar JSON si falta }
-    if (!cleanText.endsWith('}')) {
-      console.log('[predictMaintenance] JSON incompleto, agregando cierre }');
-      cleanText += '}';
-    }
+    // Reparar JSON truncado
+    cleanText = repairTruncatedJson(cleanText, 'predictMaintenance');
     
     console.log(`[predictMaintenance] Texto limpio: ${cleanText}`);
     

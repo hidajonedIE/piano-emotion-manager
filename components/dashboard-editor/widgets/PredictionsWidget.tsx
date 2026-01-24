@@ -75,12 +75,18 @@ export const PredictionsWidget = React.memo(function PredictionsWidget({ config,
     const trendColor = nextMonth.trend === 'up' ? '#10B981' : nextMonth.trend === 'down' ? '#EF4444' : '#F59E0B';
     const trendIcon = nextMonth.trend === 'up' ? 'trending-up' : nextMonth.trend === 'down' ? 'trending-down' : 'remove';
     
+    // Formatear valor de ingresos de forma compacta
+    const revenueValue = Math.round(nextMonth.value);
+    const formattedRevenue = revenueValue >= 10000 
+      ? `${(revenueValue / 1000).toFixed(1)}k€`
+      : `${revenueValue.toLocaleString('es-ES')}€`;
+    
     predictions.push({
       id: 'revenue-prediction',
       icon: trendIcon,
       color: trendColor,
       title: 'Proyección de ingresos',
-      value: `${nextMonth.value.toFixed(0)}€`,
+      value: formattedRevenue,
       subtitle: `${nextMonth.confidence}% confianza • ${nextMonth.period}`,
     });
   }
