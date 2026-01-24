@@ -522,10 +522,7 @@ const styles = StyleSheet.create({
   // Vista mensual
   monthScrollView: {
     flex: 1,
-    ...(Platform.OS === 'web' ? {
-      overflow: 'auto',
-      height: '100%',
-    } : {}),
+    maxHeight: 600,
   },
   monthScrollContent: {
     paddingBottom: 20,
