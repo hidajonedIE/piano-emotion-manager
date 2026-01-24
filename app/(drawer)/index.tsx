@@ -110,14 +110,29 @@ export default function DashboardScreen() {
     const selectedYear = selectedMonth.getFullYear();
     const selectedMonthNum = selectedMonth.getMonth() + 1; // 1-12
     
+    console.log('[DEBUG monthStats] ===== INICIO =====');
+    console.log('[DEBUG monthStats] selectedYear:', selectedYear, 'selectedMonthNum:', selectedMonthNum);
+    console.log('[DEBUG monthStats] Total services:', services.length);
+    if (services.length > 0) {
+      console.log('[DEBUG monthStats] Primera fecha:', services[0].date, 'tipo:', typeof services[0].date);
+      console.log('[DEBUG monthStats] Última fecha:', services[services.length - 1].date);
+    }
+    
     const monthServices = services.filter((s) => {
       // Extraer año y mes del timestamp ISO (formato: YYYY-MM-DDTHH:MM:SS.SSSZ o YYYY-MM-DD)
       const dateStr = String(s.date);
       // Los primeros 10 caracteres son siempre YYYY-MM-DD
       const year = parseInt(dateStr.substring(0, 4));
       const month = parseInt(dateStr.substring(5, 7));
-      return year === selectedYear && month === selectedMonthNum;
+      const matches = year === selectedYear && month === selectedMonthNum;
+      if (matches) {
+        console.log('[DEBUG monthStats] MATCH:', dateStr, '→ year:', year, 'month:', month);
+      }
+      return matches;
     });
+    
+    console.log('[DEBUG monthStats] monthServices encontrados:', monthServices.length);
+    console.log('[DEBUG monthStats] ===== FIN =====');
 
     const monthlyRevenue = monthServices.reduce((sum, s) => sum + (s.cost || 0), 0);
 

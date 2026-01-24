@@ -45,7 +45,7 @@ function serverToLocalService(server: ServerService): Service {
     clientId: String(server.clientId),
     serviceType: server.serviceType as Service['serviceType'],
     type: normalizedType as Service['type'], // Agregar alias 'type' para compatibilidad
-    date: server.date instanceof Date ? server.date.toISOString() : (typeof server.date === 'string' ? server.date : new Date().toISOString()),
+    date: server.date instanceof Date ? server.date.toISOString().split('T')[0] + 'T00:00:00.000Z' : (typeof server.date === 'string' ? server.date : new Date().toISOString()),
     cost: server.cost ? parseFloat(server.cost) : undefined,
     duration: server.duration || undefined,
     tasks: (server.tasks as Service['tasks']) || [],
