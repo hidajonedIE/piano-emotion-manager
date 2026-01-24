@@ -423,7 +423,7 @@ export class AnalyticsService {
       }
     }
 
-    return performance.sort((a, b) => b.totalRevenue - a.totalRevenue);
+    return performance.sort((a, b) => b.revenue - a.revenue);
   }
 
   /**
