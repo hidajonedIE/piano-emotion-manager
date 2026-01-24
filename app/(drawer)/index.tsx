@@ -107,23 +107,26 @@ export default function DashboardScreen() {
 
   // Estadísticas del mes seleccionado
   const monthStats = useMemo(() => {
+    const selectedYear = selectedMonth.getFullYear();
+    const selectedMonthNum = selectedMonth.getMonth() + 1; // 1-12
+    
     const monthServices = services.filter((s) => {
-      const serviceDate = new Date(s.date);
-      return (
-        serviceDate.getMonth() === selectedMonth.getMonth() &&
-        serviceDate.getFullYear() === selectedMonth.getFullYear()
-      );
+      // Extraer año y mes directamente del string de fecha (formato: YYYY-MM-DD...)
+      const dateStr = String(s.date);
+      const year = parseInt(dateStr.substring(0, 4));
+      const month = parseInt(dateStr.substring(5, 7));
+      return year === selectedYear && month === selectedMonthNum;
     });
 
     const monthlyRevenue = monthServices.reduce((sum, s) => sum + (s.cost || 0), 0);
 
     // Filtrar appointments del mes seleccionado
     const monthAppointments = appointments.filter((apt) => {
-      const aptDate = new Date(apt.date);
-      return (
-        aptDate.getMonth() === selectedMonth.getMonth() &&
-        aptDate.getFullYear() === selectedMonth.getFullYear()
-      );
+      // Extraer año y mes directamente del string de fecha (formato: YYYY-MM-DD...)
+      const dateStr = String(apt.date);
+      const year = parseInt(dateStr.substring(0, 4));
+      const month = parseInt(dateStr.substring(5, 7));
+      return year === selectedYear && month === selectedMonthNum;
     });
 
     // Contar clientes únicos con servicios/appointments en el mes
