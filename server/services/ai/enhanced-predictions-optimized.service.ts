@@ -88,10 +88,14 @@ export interface AIPredictionsEnhanced {
 export async function collectBusinessDataOptimized(partnerId: string): Promise<BusinessDataOptimized> {
   // CACHE: Intentar obtener del caché primero (1 hora de TTL)
   const cacheKey = `business-data:${partnerId}`;
-  const cached = await cacheService.get<BusinessDataOptimized>(cacheKey);
-  if (cached) {
-    console.log('[collectBusinessDataOptimized] ✅ Datos obtenidos del caché');
-    return cached;
+  try {
+    const cached = await cacheService.get<BusinessDataOptimized>(cacheKey);
+    if (cached) {
+      console.log('[collectBusinessDataOptimized] ✅ Datos obtenidos del caché');
+      return cached;
+    }
+  } catch (cacheError) {
+    console.warn('[collectBusinessDataOptimized] ⚠️  Error al leer caché, continuando sin caché:', cacheError);
   }
   
   console.log('[collectBusinessDataOptimized] Cache MISS, consultando base de datos...');
@@ -185,8 +189,12 @@ export async function collectBusinessDataOptimized(partnerId: string): Promise<B
     };
     
     // CACHE: Guardar en caché por 1 hora (3600 segundos)
-    await cacheService.set(cacheKey, businessData, 3600);
-    console.log('[collectBusinessDataOptimized] ✅ Datos guardados en caché por 1 hora');
+    try {
+      await cacheService.set(cacheKey, businessData, 3600);
+      console.log('[collectBusinessDataOptimized] ✅ Datos guardados en caché por 1 hora');
+    } catch (cacheError) {
+      console.warn('[collectBusinessDataOptimized] ⚠️  Error al guardar en caché, continuando sin caché:', cacheError);
+    }
     
     return businessData;
   } catch (error) {
@@ -203,10 +211,14 @@ export async function generateEnhancedPredictionsOptimized(businessData: Busines
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const cacheKey = `predictions:${partnerId}:${currentMonth}`;
-  const cached = await cacheService.get<AIPredictionsEnhanced>(cacheKey);
-  if (cached) {
-    console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones obtenidas del caché');
-    return cached;
+  try {
+    const cached = await cacheService.get<AIPredictionsEnhanced>(cacheKey);
+    if (cached) {
+      console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones obtenidas del caché');
+      return cached;
+    }
+  } catch (cacheError) {
+    console.warn('[generateEnhancedPredictionsOptimized] ⚠️  Error al leer caché, continuando sin caché:', cacheError);
   }
   
   console.log('[generateEnhancedPredictionsOptimized] Cache MISS, generando predicciones con Gemini...');
@@ -278,8 +290,12 @@ IMPORTANTE:
     };
     
     // CACHE: Guardar en caché por 24 horas (86400 segundos)
-    await cacheService.set(cacheKey, predictions, 86400);
-    console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones guardadas en caché por 24 horas');
+    try {
+      await cacheService.set(cacheKey, predictions, 86400);
+      console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones guardadas en caché por 24 horas');
+    } catch (cacheError) {
+      console.warn('[generateEnhancedPredictionsOptimized] ⚠️  Error al guardar en caché, continuando sin caché:', cacheError);
+    }
     
     return predictions;
   } catch (error) {
@@ -319,8 +335,12 @@ IMPORTANTE:
     };
     
     // CACHE: Guardar fallback en caché por 1 hora (3600 segundos)
-    await cacheService.set(cacheKey, fallbackPredictions, 3600);
-    console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones fallback guardadas en caché por 1 hora');
+    try {
+      await cacheService.set(cacheKey, fallbackPredictions, 3600);
+      console.log('[generateEnhancedPredictionsOptimized] ✅ Predicciones fallback guardadas en caché por 1 hora');
+    } catch (cacheError) {
+      console.warn('[generateEnhancedPredictionsOptimized] ⚠️  Error al guardar fallback en caché, continuando sin caché:', cacheError);
+    }
     
     return fallbackPredictions;
   }
