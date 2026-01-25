@@ -238,7 +238,7 @@ export const advancedRouter = router({
     getInventoryDemand: protectedProcedure.query(async () => []),
   }),
 
-  // Chat con IA usando Gemini
+  // Chat con IA usando Groq
   chat: router({
     sendMessage: protectedProcedure
       .input(z.object({
@@ -254,7 +254,7 @@ export const advancedRouter = router({
           const { requireAIFeature, recordAIUsage } = await import('../_core/subscription-middleware.js');
           const { usage, limit } = await requireAIFeature(ctx.user.id, 'chat');
           
-          const { pianoAssistantChat } = await import('../_core/gemini.js');
+          const { pianoAssistantChat } = await import('../_core/groq.js');
           
           const clients = await getClients(ctx.user.id);
           const services = await getServices(ctx.user.id);
@@ -295,9 +295,9 @@ export const advancedRouter = router({
 
     checkAvailability: protectedProcedure.query(async () => {
       try {
-        const { checkGeminiAvailability } = await import('../_core/gemini.js');
-        const available = await checkGeminiAvailability();
-        return { available, provider: 'gemini' };
+        const { checkGroqAvailability } = await import('../_core/groq.js');
+        const available = await checkGroqAvailability();
+        return { available, provider: 'groq' };
       } catch {
         return { available: false, provider: 'none' };
       }

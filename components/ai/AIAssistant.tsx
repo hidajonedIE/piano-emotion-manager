@@ -272,7 +272,7 @@ export function AIAssistant({ visible = false, onClose }: AIAssistantProps) {
               <View>
                 <ThemedText style={styles.headerTitle}>Asistente IA</ThemedText>
                 <ThemedText style={[styles.headerSubtitle, { color: aiAvailable ? '#10B981' : textSecondary }]}>
-                  {aiAvailable === null ? 'Conectando...' : aiAvailable ? '✨ Powered by Gemini AI' : 'Modo básico'}
+                  {aiAvailable === null ? 'Conectando...' : aiAvailable ? '✨ Powered by Groq' : 'Modo básico'}
                 </ThemedText>
               </View>
             </View>
