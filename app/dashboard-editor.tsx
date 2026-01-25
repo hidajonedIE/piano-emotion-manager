@@ -70,7 +70,7 @@ const SHORTCUT_INFO: Record<AccessShortcutModule, { label: string; icon: keyof t
   business: { label: 'Datos Fiscales', icon: 'briefcase', color: '#6B7280' },
   reminders: { label: 'Recordatorios', icon: 'alarm', color: '#F59E0B' },
   contracts: { label: 'Contratos', icon: 'document', color: '#059669' },
-  predictions: { label: 'Predicciones IA', icon: 'bulb', color: '#8B5CF6' },
+  predictions: { label: 'Predicciones', icon: 'bulb', color: '#8B5CF6' },
   import: { label: 'Importar', icon: 'download', color: '#22C55E' },
   routes: { label: 'Rutas', icon: 'navigate', color: '#F97316' },
   modules: { label: 'Módulos y Plan', icon: 'grid', color: '#8B5CF6' },

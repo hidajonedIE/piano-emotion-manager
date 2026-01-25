@@ -45,7 +45,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     title: 'Tipos de Widgets Disponibles',
-    description: 'Explora 25+ tipos de widgets organizados por categorías: Secciones principales (Alertas, Acciones Rápidas, Predicciones IA), Estadísticas (Ingresos, Servicios, Clientes), Gráficos (Líneas, Barras, Circular), Listas (Clientes, Facturas, Citas), y Utilidades (Calendario, Tareas, Mapa).',
+    description: 'Explora 25+ tipos de widgets organizados por categorías: Secciones principales (Alertas, Acciones Rápidas, Predicciones), Estadísticas (Ingresos, Servicios, Clientes), Gráficos (Líneas, Barras, Circular), Listas (Clientes, Facturas, Citas), y Utilidades (Calendario, Tareas, Mapa).',
     icon: 'apps',
     iconColor: '#EF4444',
   },

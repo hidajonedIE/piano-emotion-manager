@@ -33,7 +33,7 @@ export const AdvancedToolsWidget = React.memo(function AdvancedToolsWidget({ con
     { id: 'payments', icon: 'card', label: 'Pasarelas Pago', color: '#22C55E', route: '/payments' },
     { id: 'accounting', icon: 'calculator', label: 'Contabilidad', color: '#64748B', route: '/accounting' },
     { id: 'workflows', icon: 'git-branch', label: 'Workflows', color: '#EC4899', route: '/workflows' },
-    { id: 'ai', icon: 'sparkles', label: 'IA Avanzada', color: '#8B5CF6', route: '/ai' },
+    { id: 'ai', icon: 'sparkles', label: 'Predicciones', color: '#8B5CF6', route: '/ai' },
   ];
 
   const handleTool = (route: string) => {

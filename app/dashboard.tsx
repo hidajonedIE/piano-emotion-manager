@@ -33,7 +33,7 @@ export default function DashboardScreen() {
   const sections = [
     { title: 'Alertas y Avisos', icon: '⚠️', content: 'Mostrando 15 de 816 alertas' },
     { title: 'Acciones Rápidas', icon: '⚡', content: 'Acciones disponibles' },
-    { title: 'Predicciones IA', icon: '🤖', content: 'Análisis de datos' },
+    { title: 'Predicciones', icon: '🤖', content: 'Análisis de datos' },
     { title: 'Este Mes', icon: '📊', content: 'Resumen mensual' },
     { title: 'Servicios Recientes', icon: '📋', content: 'Últimos servicios' },
     { title: 'Accesos Rápidos', icon: '⭐', content: 'Accesos favoritos' },

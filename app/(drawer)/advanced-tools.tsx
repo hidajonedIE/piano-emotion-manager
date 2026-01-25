@@ -45,7 +45,7 @@ const ADVANCED_MODULES: Array<{
   // PREMIUM - Solo para Premium
   { key: 'accounting', icon: 'calculator', label: 'Contabilidad', color: '#F97316', tier: 'premium' },
   { key: 'workflows', icon: 'arrow.triangle.branch', label: 'Workflows', color: '#6366F1', tier: 'premium' },
-  { key: 'predictions', icon: 'brain.head.profile', label: 'IA Avanzada', color: '#8B5CF6', tier: 'premium' },
+  { key: 'predictions', icon: 'brain.head.profile', label: 'Predicciones', color: '#8B5CF6', tier: 'premium' },
 ];
 
 // Mapeo de rutas

@@ -146,7 +146,7 @@ export default function DashboardScreen() {
           onGoToCurrentMonth={goToCurrentMonth}
         />
 
-        {/* Predicciones IA */}
+        {/* Predicciones */}
         <DashboardPredictions />
 
         {/* Servicios recientes / Próximas citas */}

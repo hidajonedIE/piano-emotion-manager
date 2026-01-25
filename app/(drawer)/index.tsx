@@ -5,7 +5,7 @@
  * Diseño aprobado con:
  * - Barra de alertas (verde/roja, compacta y elegante)
  * - Grid 2x2 de métricas "Este Mes"
- * - Predicciones IA con indicadores circulares
+ * - Predicciones con indicadores circulares
  * - Próximas citas
  * - Acciones rápidas (botones terracota)
  * - Botón flotante IA
@@ -101,7 +101,7 @@ export default function DashboardScreen() {
   const { appointments } = useAppointmentsData();
   const { alerts, stats: alertStats } = useAlertsOptimized(15);
   
-  // Predicciones IA generadas por Gemini - Usando nuevo endpoint unificado
+  // Predicciones generadas por Gemini - Usando nuevo endpoint unificado
   const { data: predictionsData, isLoading: loadingPredictions } = trpc.aiPredictions.getDashboardPredictions.useQuery(
     undefined,
     { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false }
@@ -307,12 +307,12 @@ export default function DashboardScreen() {
               </View>
             </View>
 
-            {/* Predicciones IA */}
+            {/* Predicciones */}
             <View style={[styles.aiPredictionsContainer, isDesktop && styles.aiPredictionsDesktop]}>
               <View style={styles.sectionHeader}>
                 <View style={styles.aiHeaderLeft}>
                   <Ionicons name="bulb-outline" size={22} color={COLORS.pianos} />
-                  <Text style={styles.sectionTitle}>Predicciones IA</Text>
+                  <Text style={styles.sectionTitle}>Predicciones</Text>
                 </View>
                 <Pressable onPress={() => router.push('/predictions')}>
                   <Text style={styles.linkText}>Ver todo →</Text>
@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
 
-  // Predicciones IA
+  // Predicciones
   aiPredictionsContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 9,

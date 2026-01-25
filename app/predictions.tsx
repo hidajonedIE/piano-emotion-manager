@@ -528,7 +528,7 @@ export default function PredictionsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={textPrimary} />
         </TouchableOpacity>
-        <ThemedText style={[styles.title, { color: textPrimary }]}>Predicciones IA</ThemedText>
+        <ThemedText style={[styles.title, { color: textPrimary }]}>Predicciones</ThemedText>
       </View>
 
       <View style={[styles.tabsContainer, { borderBottomColor: border }]}>

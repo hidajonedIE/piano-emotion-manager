@@ -51,7 +51,7 @@ export const PredictionsWidget = React.memo(function PredictionsWidget({ config,
     return (
       <View style={[styles.widgetContent, { backgroundColor: colors.card }]}>
         <ThemedText style={{ color: colors.textSecondary, textAlign: 'center' }}>
-          Vista previa de Predicciones IA
+          Vista previa de Predicciones
         </ThemedText>
       </View>
     );

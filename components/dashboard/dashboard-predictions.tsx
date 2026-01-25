@@ -17,7 +17,7 @@ export const DashboardPredictions = memo(function DashboardPredictions() {
 
   return (
     <Accordion 
-      title="Predicciones IA" 
+      title="Predicciones" 
       defaultOpen={false}
       icon="brain.head.profile"
       iconColor="#8B5CF6"
