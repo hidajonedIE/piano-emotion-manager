@@ -58,11 +58,12 @@ export async function generateMathPredictions(partnerId: number): Promise<MathPr
   console.log('[generateMathPredictions] Iniciando para partnerId:', partnerId);
 
   try {
-    const [revenue, clientChurn, maintenance, workload] = await Promise.all([
+    const [revenue, clientChurn, maintenance, workload, inventory] = await Promise.all([
       predictRevenue(partnerId),
       predictClientChurn(partnerId),
       predictMaintenance(partnerId),
-      predictWorkload(partnerId)
+      predictWorkload(partnerId),
+      predictInventory(partnerId)
     ]);
 
     return {
@@ -70,7 +71,7 @@ export async function generateMathPredictions(partnerId: number): Promise<MathPr
       clientChurn,
       maintenance,
       workload,
-      inventory: { predictions: [] } // Deshabilitado: no hay tabla inventory_movements
+      inventory
     };
   } catch (error) {
     console.error('[generateMathPredictions] Error:', error);
@@ -301,6 +302,7 @@ async function predictWorkload(partnerId: number) {
     `);
 
     const weeklyData = (result as any)[0] || [];
+    console.log('[predictWorkload] weeklyData length:', weeklyData.length);
     
     if (weeklyData.length === 0) {
       return {
@@ -340,6 +342,54 @@ async function predictWorkload(partnerId: number) {
     return { predictions };
   } catch (error) {
     console.error('[predictWorkload] Error:', error);
+    return { predictions: [] };
+  }
+}
+
+/**
+ * 5. INVENTARIO: Items con stock bajo
+ */
+async function predictInventory(partnerId: number) {
+  try {
+    const db = await getDb();
+    if (!db) throw new Error('Database not available');
+
+    // Obtener items con stock por debajo del mínimo
+    const result = await db.execute(sql`
+      SELECT 
+        name as itemName,
+        quantity as currentStock,
+        minStock,
+        (minStock - quantity) as deficit
+      FROM inventory
+      WHERE partnerId = ${partnerId}
+        AND quantity < minStock
+      ORDER BY (minStock - quantity) DESC
+      LIMIT 20
+    `);
+
+    const inventoryData = (result as any)[0] || [];
+    console.log('[predictInventory] inventoryData length:', inventoryData.length);
+    
+    const predictions = inventoryData.map((row: any) => {
+      const deficit = Number(row.deficit || 0);
+      const currentStock = Number(row.currentStock || 0);
+      const minStock = Number(row.minStock || 0);
+      
+      return {
+        itemName: String(row.itemName),
+        currentStock,
+        minStock,
+        deficit,
+        urgency: deficit > minStock * 0.5 ? 'urgent' : deficit > minStock * 0.3 ? 'soon' : 'normal',
+        recommendation: `Reabastecer ${deficit} unidades`
+      };
+    });
+
+    console.log('[predictInventory] Returning predictions:', predictions.length);
+    return { predictions };
+  } catch (error) {
+    console.error('[predictInventory] Error:', error);
     return { predictions: [] };
   }
 }
