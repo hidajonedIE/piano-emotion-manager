@@ -115,16 +115,18 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
 const CircularIndicator: React.FC<CircularIndicatorProps> = ({ value, label, color }) => {
   // Formatear números grandes (>= 10000) como "14.2k€"
-  const formatValue = (val: string) => {
+  const formatValue = (val: string | number) => {
+    // Convertir a string si es número
+    const valStr = typeof val === 'string' ? val : String(val);
     // Si termina con €, extraer el número
-    const match = val.match(/^([0-9]+)\u20ac$/);
+    const match = valStr.match(/^([0-9]+)\u20ac$/);
     if (match) {
       const num = parseInt(match[1], 10);
       if (num >= 10000) {
         return `${(num / 1000).toFixed(1)}k€`;
       }
     }
-    return val;
+    return valStr;
   };
 
   return (
