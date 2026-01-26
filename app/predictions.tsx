@@ -95,19 +95,19 @@ export default function PredictionsScreen() {
     workload: workloadQuery.data && workloadQuery.data.length > 0
       ? workloadQuery.data.map((w: any) => ({
           week: w.week,
-          scheduled: w.scheduledAppointments,
-          estimated: w.estimatedTotal,
+          scheduled: w.scheduled || 0,
+          estimated: w.estimated || 0,
           recommendation: w.recommendation,
         }))
       : [],
     inventory: inventoryQuery.data?.data && inventoryQuery.data.data.length > 0
       ? inventoryQuery.data.data.map((i: any) => ({
           itemName: i.itemName,
-          itemId: i.itemId,
-          currentStock: i.currentStock,
-          monthlyUsage: i.monthlyUsage,
-          monthsUntilMin: i.monthsUntilMin,
-          urgency: i.urgency,
+          itemId: i.itemId || 0,
+          currentStock: i.currentStock || 0,
+          monthlyUsage: i.deficit || 0,
+          monthsUntilMin: i.minStock || 0,
+          urgency: i.urgency || 'normal',
         }))
       : [],
   };
