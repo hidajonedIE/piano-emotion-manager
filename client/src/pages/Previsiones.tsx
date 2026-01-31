@@ -64,10 +64,10 @@ export default function Previsiones() {
                 <p className="text-2xl font-bold">€{revenueData?.avgMonthlyRevenue.toFixed(2) || '0.00'}</p>
               </div>
               <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Tasa de Crecimiento</p>
+                <p className="text-sm text-muted-foreground mb-1">Tendencia Logarítmica</p>
                 <div className="flex items-center gap-2">
-                  <p className="text-2xl font-bold">{revenueData?.growthRate.toFixed(1) || '0.0'}%</p>
-                  {revenueData && revenueData.growthRate > 0 ? (
+                  <p className="text-2xl font-bold">{revenueData?.logTrend?.toFixed(3) || '0.000'}</p>
+                  {revenueData && revenueData.logTrend > 0 ? (
                     <TrendingUp className="w-5 h-5 text-green-600" />
                   ) : (
                     <TrendingDown className="w-5 h-5 text-red-600" />
