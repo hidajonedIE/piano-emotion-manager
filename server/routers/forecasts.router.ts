@@ -97,8 +97,8 @@ export const forecastsRouter = router({
    * Predicción de churn de clientes
    * Identifica clientes en riesgo de abandono
    */
-  predictChurn: protectedProcedure.query(async () => {
-    return withCache('forecasts:churn', async () => {
+  predictChurn: protectedProcedure.query(async ({ ctx }) => {
+    return withCache(`forecasts:churn:${ctx.user.organizationId}`, async () => {
       const db = await getDb();
     
     // Obtener clientes con sus últimos servicios
@@ -171,8 +171,8 @@ export const forecastsRouter = router({
    * Predicción de mantenimiento preventivo
    * Identifica pianos que requieren mantenimiento próximamente
    */
-  predictMaintenance: protectedProcedure.query(async () => {
-    return withCache('forecasts:maintenance', async () => {
+  predictMaintenance: protectedProcedure.query(async ({ ctx }) => {
+    return withCache(`forecasts:maintenance:${ctx.user.organizationId}`, async () => {
       const db = await getDb();
     
     // Obtener pianos con sus últimos servicios
@@ -248,8 +248,8 @@ export const forecastsRouter = router({
    * Predicción de carga de trabajo
    * Estima la carga de trabajo para las próximas semanas
    */
-  predictWorkload: protectedProcedure.query(async () => {
-    return withCache('forecasts:workload', async () => {
+  predictWorkload: protectedProcedure.query(async ({ ctx }) => {
+    return withCache(`forecasts:workload:${ctx.user.organizationId}`, async () => {
       const db = await getDb();
     
     // Obtener servicios de las últimas 8 semanas
@@ -315,8 +315,8 @@ export const forecastsRouter = router({
    * Predicción de inventario
    * Identifica productos con stock bajo y estima necesidades de reposición
    */
-  predictInventory: protectedProcedure.query(async () => {
-    return withCache('forecasts:inventory', async () => {
+  predictInventory: protectedProcedure.query(async ({ ctx }) => {
+    return withCache(`forecasts:inventory:${ctx.user.organizationId}`, async () => {
       const db = await getDb();
     
     // Obtener inventario actual
