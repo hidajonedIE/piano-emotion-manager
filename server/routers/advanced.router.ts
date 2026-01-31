@@ -160,7 +160,7 @@ export const advancedRouter = router({
         console.log('[DEBUG] Database instance obtained');
         const service = new PredictionService(db);
         console.log('[DEBUG] PredictionService instantiated');
-        const summary = await service.getPredictionsSummary(ctx.user.partnerId);
+        const summary = await service.getPredictionsSummary(ctx.user.partnerId.toString());
         console.log('[DEBUG] Summary received:', JSON.stringify(summary, null, 2));
         return summary;
       } catch (error) {

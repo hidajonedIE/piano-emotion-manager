@@ -64,9 +64,9 @@ export class PredictionService {
   /**
    * Predice los ingresos para los próximos meses
    */
-  async predictRevenue(organizationId: string, months: number = 3): Promise<Prediction[]> {
+  async predictRevenue(partnerId: string, months: number = 3): Promise<Prediction[]> {
     // Obtener datos históricos de los últimos 12 meses
-    const historicalData = await this.getHistoricalRevenue(organizationId, 12);
+    const historicalData = await this.getHistoricalRevenue(partnerId, 12);
     
     if (historicalData.length < 3) {
       return [{
@@ -122,7 +122,7 @@ export class PredictionService {
         DATE_FORMAT(date, '%Y-%m-01') as month,
         COALESCE(SUM(cost), 0) as total
       FROM services
-      WHERE partner_id = ?
+      WHERE partnerId = ?
         AND date >= DATE_SUB(NOW(), INTERVAL ${months} MONTH)
       GROUP BY DATE_FORMAT(date, '%Y-%m-01')
       ORDER BY month
@@ -568,13 +568,13 @@ export class PredictionService {
   /**
    * Obtiene un resumen de todas las predicciones
    */
-  async getPredictionsSummary(organizationId: string): Promise<any> {
+  async getPredictionsSummary(partnerId: string): Promise<any> {
     const [revenue, churn, maintenance, workload, inventory] = await Promise.all([
-      this.predictRevenue(organizationId, 3),
-      this.predictClientChurn(organizationId),
-      this.predictMaintenance(organizationId),
-      this.predictWorkload(organizationId, 4),
-      this.predictInventoryDemand(organizationId),
+      this.predictRevenue(partnerId, 3),
+      this.predictClientChurn(partnerId),
+      this.predictMaintenance(partnerId),
+      this.predictWorkload(partnerId, 4),
+      this.predictInventoryDemand(partnerId),
     ]);
 
     return {
