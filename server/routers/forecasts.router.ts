@@ -15,8 +15,8 @@ export const forecastsRouter = router({
    * Predicción de ingresos para los próximos 3 meses
    * Basado en tendencias históricas y estacionalidad
    */
-  predictRevenue: protectedProcedure.query(async () => {
-    return withCache('forecasts:revenue', async () => {
+  predictRevenue: protectedProcedure.query(async ({ ctx }) => {
+    return withCache(`forecasts:revenue:${ctx.user.organizationId}`, async () => {
       const db = await getDb();
     
     // Obtener ingresos de los últimos 12 meses
@@ -31,6 +31,7 @@ export const forecastsRouter = router({
       .from(invoices)
       .where(
         and(
+          eq(invoices.organizationId, ctx.user.organizationId),
           gte(invoices.issueDate, twelveMonthsAgo),
           sql`${invoices.status} != 'draft'`
         )
