@@ -154,10 +154,14 @@ export const advancedRouter = router({
   // Predictions - Analíticas predictivas locales (sin coste de API)
   predictions: router({
     getSummary: protectedProcedure.query(async ({ ctx }) => {
+      console.log('[DEBUG] getSummary called for partnerId:', ctx.user.partnerId);
       try {
         const db = await getDb();
+        console.log('[DEBUG] Database instance obtained');
         const service = new PredictionService(db);
+        console.log('[DEBUG] PredictionService instantiated');
         const summary = await service.getPredictionsSummary(ctx.user.partnerId);
+        console.log('[DEBUG] Summary received:', JSON.stringify(summary, null, 2));
         return summary;
       } catch (error) {
         console.error('[Predictions] Error getting summary:', error);
