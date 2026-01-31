@@ -32,30 +32,35 @@ export const forecastsRouter = router({
       .where(
         and(
           gte(invoices.issueDate, twelveMonthsAgo),
-          eq(invoices.status, 'paid')
+          sql`${invoices.status} != 'draft'`
         )
       )
       .groupBy(sql`DATE_FORMAT(${invoices.issueDate}, '%Y-%m')`)
       .orderBy(sql`DATE_FORMAT(${invoices.issueDate}, '%Y-%m')`);
 
-    // Calcular tendencia lineal simple
+    // Calcular tendencia logarítmica (crecimiento que se desacelera)
     const revenues = historicalRevenue.map(r => r.total || 0);
     const avgRevenue = revenues.length > 0
       ? revenues.reduce((a, b) => a + b, 0) / revenues.length
       : 0;
 
-    // Calcular tasa de crecimiento promedio
-    let growthRate = 0;
+    // Regresión logarítmica: y = a + b*ln(x)
+    let logTrend = 0;
     if (revenues.length >= 2) {
-      const firstHalf = revenues.slice(0, Math.floor(revenues.length / 2));
-      const secondHalf = revenues.slice(Math.floor(revenues.length / 2));
+      const n = revenues.length;
+      let sumLogX = 0, sumY = 0, sumLogXY = 0, sumLogX2 = 0;
       
-      const avgFirstHalf = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
-      const avgSecondHalf = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-      
-      if (avgFirstHalf > 0) {
-        growthRate = ((avgSecondHalf - avgFirstHalf) / avgFirstHalf) * 100;
+      for (let i = 0; i < n; i++) {
+        const logX = Math.log(i + 1); // +1 para evitar log(0)
+        sumLogX += logX;
+        sumY += revenues[i];
+        sumLogXY += logX * revenues[i];
+        sumLogX2 += logX * logX;
       }
+      
+      // Calcular pendiente logarítmica
+      const slope = (n * sumLogXY - sumLogX * sumY) / (n * sumLogX2 - sumLogX * sumLogX);
+      logTrend = avgRevenue > 0 ? slope / avgRevenue : 0;
     }
 
     // Predecir próximos 3 meses
@@ -66,9 +71,10 @@ export const forecastsRouter = router({
       const futureDate = new Date(currentDate);
       futureDate.setMonth(futureDate.getMonth() + i);
       
-      // Aplicar tasa de crecimiento y estacionalidad
+      // Aplicar tendencia logarítmica y estacionalidad
       const seasonalityFactor = 1 + (Math.sin((futureDate.getMonth() / 12) * 2 * Math.PI) * 0.1);
-      const predictedRevenue = avgRevenue * (1 + (growthRate / 100) * i) * seasonalityFactor;
+      const logFactor = Math.log(revenues.length + i);
+      const predictedRevenue = avgRevenue * (1 + logTrend * logFactor) * seasonalityFactor;
       
       predictions.push({
         month: futureDate.toISOString().slice(0, 7),
@@ -81,7 +87,7 @@ export const forecastsRouter = router({
       historical: historicalRevenue,
       predictions,
       avgMonthlyRevenue: Math.round(avgRevenue * 100) / 100,
-      growthRate: Math.round(growthRate * 10) / 10,
+      logTrend: Math.round(logTrend * 1000) / 1000,
     };
     }); // Cierre de withCache
   }),
