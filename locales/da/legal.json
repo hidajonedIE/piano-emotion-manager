@@ -1,0 +1,166 @@
+{
+  "privacyPolicy": {
+    "title": "Privatlivspolitik",
+    "lastUpdated": "Senest opdateret",
+    "sections": {
+      "intro": {
+        "title": "1. Introduktion",
+        "content": "Hos {companyName} ({tradeName}), med CVR-nummer {taxId} og adresse {address}, forpligter vi os til at beskytte vores brugeres privatliv. Denne Privatlivspolitik beskriver, hvordan vi indsamler, bruger og beskytter dine personoplysninger i overensstemmelse med Databeskyttelsesforordningen (GDPR) (EU) 2016/679."
+      },
+      "dataController": {
+        "title": "2. Dataansvarlig",
+        "content": "Den dataansvarlige for behandlingen af dine personoplysninger er:",
+        "company": "Virksomhed",
+        "taxId": "CVR-nummer",
+        "address": "Adresse",
+        "email": "Kontakt-e-mail",
+        "dpo": "Databeskyttelsesrådgiver"
+      },
+      "dataCollected": {
+        "title": "3. Data vi indsamler",
+        "content": "Vi indsamler følgende typer personoplysninger:",
+        "identification": "Identifikationsdata: navn, efternavn, CVR-nummer",
+        "contact": "Kontaktdata: adresse, telefon, e-mail",
+        "professional": "Faglige data: oplysninger om klaverer og udførte tjenester",
+        "financial": "Økonomiske data: fakturerings- og betalingsoplysninger",
+        "technical": "Tekniske data: IP-adresse, enhedstype, browser"
+      },
+      "purposes": {
+        "title": "4. Formål med behandlingen",
+        "content": "Vi behandler dine personoplysninger til følgende formål:",
+        "serviceManagement": "Administration af vedligeholdelses- og reparationstjenester for klaverer",
+        "clientManagement": "Administration af kunderelationer",
+        "invoicing": "Fakturering og administration",
+        "communication": "Kommunikation vedrørende tjenester",
+        "legalCompliance": "Overholdelse af juridiske forpligtelser"
+      },
+      "legalBasis": {
+        "title": "5. Retsgrundlag for behandlingen",
+        "content": "Behandlingen af dine data er baseret på:",
+        "contract": "Opfyldelse af en kontrakt eller forudgående foranstaltninger",
+        "consent": "Dit udtrykkelige samtykke",
+        "legal": "Overholdelse af juridiske forpligtelser",
+        "legitimate": "Den dataansvarliges legitime interesse"
+      },
+      "dataRetention": {
+        "title": "6. Opbevaring af data",
+        "content": "Vi opbevarer dine personoplysninger så længe det er nødvendigt for at opfylde de beskrevne formål, og derefter i de lovbestemte perioder. Faktureringsdata opbevares i den lovbestemte periode på 5 år i henhold til bogføringslovgivningen."
+      },
+      "dataSharing": {
+        "title": "7. Videregivelse af data",
+        "content": "Dine data kan videregives til:",
+        "taxAuthorities": "Skattemyndigheder til opfyldelse af skatteforpligtelser",
+        "serviceProviders": "Tekniske tjenesteudbydere (hosting, e-mail)",
+        "verifactu": "Elektroniske faktureringssystemer hos skattemyndighederne"
+      },
+      "internationalTransfers": {
+        "title": "8. Internationale overførsler",
+        "content": "Nogle af vores tjenesteudbydere kan være placeret uden for Det Europæiske Økonomiske Samarbejdsområde. I disse tilfælde sikrer vi, at der findes passende garantier i henhold til GDPR, såsom standardkontraktbestemmelser godkendt af Europa-Kommissionen."
+      },
+      "rights": {
+        "title": "9. Dine rettigheder",
+        "content": "Du har følgende rettigheder vedrørende dine personoplysninger:",
+        "access": "Ret til indsigt: vide hvilke data vi behandler om dig",
+        "rectification": "Ret til berigtigelse: rette unøjagtige data",
+        "erasure": "Ret til sletning: anmode om sletning af dine data",
+        "restriction": "Ret til begrænsning: begrænse behandlingen i visse tilfælde",
+        "portability": "Ret til dataportabilitet: modtage dine data i et struktureret format",
+        "objection": "Ret til indsigelse: gøre indsigelse mod behandlingen af dine data",
+        "withdraw": "Ret til at trække dit samtykke tilbage når som helst",
+        "howToExercise": "For at udøve disse rettigheder kan du kontakte os på {email} eller via Privatlivsafsnittet i applikationen."
+      },
+      "security": {
+        "title": "10. Sikkerhedsforanstaltninger",
+        "content": "Vi implementerer passende tekniske og organisatoriske foranstaltninger for at beskytte dine personoplysninger mod uautoriseret adgang, ændring, videregivelse eller ødelæggelse. Disse foranstaltninger omfatter datakryptering, adgangskontrol og regelmæssige sikkerhedskopier."
+      },
+      "cookies": {
+        "title": "11. Cookie-politik",
+        "content": "Denne applikation kan bruge cookies og lignende teknologier for at forbedre din oplevelse. Du kan administrere dine cookie-præferencer i Indstillinger."
+      },
+      "changes": {
+        "title": "12. Ændringer af denne politik",
+        "content": "Vi forbeholder os retten til at ændre denne Privatlivspolitik når som helst. Vi vil informere dig om væsentlige ændringer via applikationen eller e-mail."
+      },
+      "contact": {
+        "title": "13. Kontakt",
+        "content": "For spørgsmål vedrørende denne Privatlivspolitik eller behandlingen af dine personoplysninger kan du kontakte os på:",
+        "generalEmail": "Generel e-mail",
+        "dpoEmail": "DPO e-mail",
+        "supervisoryAuthority": "Du kan også indgive en klage til Datatilsynet (www.datatilsynet.dk), hvis du mener, at dine rettigheder er blevet krænket."
+      }
+    }
+  },
+  "termsConditions": {
+    "title": "Vilkår og Betingelser",
+    "lastUpdated": "Senest opdateret",
+    "sections": {
+      "intro": {
+        "title": "1. Introduktion",
+        "content": "Disse Vilkår og Betingelser regulerer brugen af applikationen {appName}, ejet af {companyName} ({tradeName}), med CVR-nummer {taxId}. Ved at bruge denne applikation accepterer du disse vilkår i deres helhed."
+      },
+      "definitions": {
+        "title": "2. Definitioner",
+        "app": "Applikation: mobil- og webapplikationen {appName}",
+        "user": "Bruger: enhver person, der tilgår og bruger Applikationen",
+        "services": "Tjenester: de funktioner, der leveres af Applikationen",
+        "content": "Indhold: alle oplysninger, data og materialer i Applikationen"
+      },
+      "license": {
+        "title": "3. Brugslicens",
+        "content": "Vi giver dig en begrænset, ikke-eksklusiv, ikke-overførbar og tilbagekaldelig licens til at bruge Applikationen i overensstemmelse med disse Vilkår. Denne licens omfatter ikke retten til at:",
+        "modify": "Modificere, kopiere eller distribuere Applikationen",
+        "reverse": "Foretage reverse engineering eller dekompilere koden",
+        "commercial": "Bruge Applikationen til uautoriserede kommercielle formål",
+        "sublicense": "Underlicensere eller overføre dine rettigheder"
+      },
+      "userObligations": {
+        "title": "4. Brugerens forpligtelser",
+        "content": "Ved at bruge Applikationen forpligter du dig til at:",
+        "accurate": "Angive sandfærdige og opdaterede oplysninger",
+        "security": "Opretholde fortroligheden af dine loginoplysninger",
+        "lawful": "Bruge Applikationen lovligt og i overensstemmelse med disse Vilkår",
+        "respect": "Respektere intellektuelle ejendomsrettigheder"
+      },
+      "intellectualProperty": {
+        "title": "5. Intellektuel ejendomsret",
+        "content": "Alle intellektuelle ejendomsrettigheder til Applikationen, herunder design, kode, grafik, logoer og indhold, tilhører {companyName} eller dets licensgivere. Enhver reproduktion, distribution eller ændring uden udtrykkelig tilladelse er forbudt."
+      },
+      "dataProtection": {
+        "title": "6. Databeskyttelse",
+        "content": "Behandlingen af dine personoplysninger er underlagt vores Privatlivspolitik, som udgør en integreret del af disse Vilkår. Ved at bruge Applikationen accepterer du denne behandling."
+      },
+      "invoicing": {
+        "title": "7. Elektronisk fakturering",
+        "content": "Applikationen muliggør generering af elektroniske fakturaer i overensstemmelse med gældende lovgivning. Brugeren er ansvarlig for rigtigheden af de data, der er inkluderet i fakturaerne."
+      },
+      "liability": {
+        "title": "8. Ansvarsbegrænsning",
+        "content": "{companyName} er ikke ansvarlig for:",
+        "indirect": "Indirekte, tilfældige eller følgeskader",
+        "dataLoss": "Tab af data på grund af tekniske fejl",
+        "thirdParty": "Tredjeparters handlinger eller misbrug af Applikationen",
+        "availability": "Afbrydelser i tjenestens tilgængelighed"
+      },
+      "warranties": {
+        "title": "9. Garantier",
+        "content": "Applikationen leveres \"som den er\" uden nogen form for garanti, udtrykkelig eller underforstået. Vi garanterer ikke, at Applikationen vil være uafbrudt, fejlfri eller opfylde dine specifikke forventninger."
+      },
+      "termination": {
+        "title": "10. Opsigelse",
+        "content": "Vi kan suspendere eller opsige din adgang til Applikationen når som helst, hvis du overtræder disse Vilkår. Du kan til enhver tid stoppe med at bruge Applikationen ved at slette din konto."
+      },
+      "modifications": {
+        "title": "11. Ændringer",
+        "content": "Vi forbeholder os retten til at ændre disse Vilkår når som helst. Ændringer træder i kraft fra deres offentliggørelse i Applikationen. Fortsat brug af Applikationen efter offentliggørelse af ændringer udgør din accept af disse."
+      },
+      "governing": {
+        "title": "12. Gældende lov og værneting",
+        "content": "Disse Vilkår er underlagt dansk lovgivning. For enhver tvist, der opstår som følge af disse Vilkår, underkaster parterne sig den eksklusive jurisdiktion ved domstolene i {city}."
+      },
+      "contact": {
+        "title": "13. Kontakt",
+        "content": "For spørgsmål om disse Vilkår kan du kontakte os på {email}."
+      }
+    }
+  }
+}

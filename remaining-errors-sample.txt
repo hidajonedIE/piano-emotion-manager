@@ -1,0 +1,500 @@
+server/services/einvoicing/italy/sdi.service.ts(347,47): error TS2693: 'EInvoice' only refers to a type, but is being used as a value here.
+server/services/einvoicing/italy/sdi.service.ts(582,5): error TS2322: Type '"sent"' is not assignable to type 'EInvoiceStatus'.
+server/services/einvoicing/portugal/ciuspt.service.ts(102,47): error TS2345: Argument of type '{ atcud?: string | undefined; hashAnterior?: string | undefined; } | undefined' is not assignable to parameter of type 'CIUSPTConfig | undefined'.
+server/services/einvoicing/portugal/ciuspt.service.ts(190,47): error TS2345: Argument of type '{ atcud?: string | undefined; hashAnterior?: string | undefined; } | undefined' is not assignable to parameter of type 'CIUSPTConfig | undefined'.
+server/services/einvoicing/portugal/ciuspt.service.ts(195,20): error TS2339: Property 'nif' does not exist on type '{ atcud?: string | undefined; hashAnterior?: string | undefined; }'.
+server/services/einvoicing/portugal/ciuspt.service.ts(209,20): error TS2339: Property 'atSoftwareCertificateNumber' does not exist on type '{ atcud?: string | undefined; hashAnterior?: string | undefined; }'.
+server/services/einvoicing/portugal/ciuspt.service.ts(450,47): error TS2345: Argument of type '{ atcud?: string | undefined; hashAnterior?: string | undefined; } | undefined' is not assignable to parameter of type 'CIUSPTConfig | undefined'.
+server/services/einvoicing/portugal/ciuspt.service.ts(569,68): error TS2339: Property 'atSoftwareCertificateNumber' does not exist on type '{ atcud?: string | undefined; hashAnterior?: string | undefined; }'.
+server/services/einvoicing/portugal/ciuspt.service.ts(598,44): error TS2345: Argument of type '{ atcud?: string | undefined; hashAnterior?: string | undefined; } | undefined' is not assignable to parameter of type 'CIUSPTConfig | undefined'.
+server/services/einvoicing/portugal/ciuspt.service.ts(623,5): error TS2322: Type '"sent"' is not assignable to type 'EInvoiceStatus'.
+server/services/einvoicing/portugal/ciuspt.service.ts(660,17): error TS2339: Property 'serieDocumento' does not exist on type '{ atcud?: string | undefined; hashAnterior?: string | undefined; }'.
+server/services/einvoicing/portugal/ciuspt.service.ts(661,38): error TS2339: Property 'serieDocumento' does not exist on type '{ atcud?: string | undefined; hashAnterior?: string | undefined; }'.
+server/services/einvoicing/spain/verifactu.service.ts(8,33): error TS2305: Module '"../base.service.js"' has no exported member 'Invoice'.
+server/services/einvoicing/spain/verifactu.service.ts(8,42): error TS2305: Module '"../base.service.js"' has no exported member 'EInvoiceResult'.
+server/services/einvoicing/spain/verifactu.service.ts(8,58): error TS2305: Module '"../base.service.js"' has no exported member 'ValidationResult'.
+server/services/einvoicing/spain/verifactu.service.ts(25,14): error TS2654: Non-abstract class 'VerifactuService' is missing implementations for the following members of 'BaseEInvoicingService': 'country', 'system', 'generatePDF'.
+server/services/einvoicing/spain/verifactu.service.ts(35,11): error TS2554: Expected 0 arguments, but got 2.
+server/services/einvoicing/spain/verifactu.service.ts(42,9): error TS2416: Property 'generateXML' in type 'VerifactuService' is not assignable to the same property in base type 'BaseEInvoicingService'.
+server/services/einvoicing/spain/verifactu.service.ts(60,36): error TS2339: Property 'date' does not exist on type 'VerifactuInvoice'.
+server/services/einvoicing/spain/verifactu.service.ts(61,41): error TS2339: Property 'date' does not exist on type 'VerifactuInvoice'.
+server/services/einvoicing/spain/verifactu.service.ts(67,48): error TS2339: Property 'number' does not exist on type 'VerifactuInvoice'.
+server/services/einvoicing/spain/verifactu.service.ts(68,71): error TS2339: Property 'date' does not exist on type 'VerifactuInvoice'.
+server/services/einvoicing/spain/verifactu.service.ts(73,39): error TS2339: Property 'total' does not exist on type 'VerifactuInvoice'.
+server/services/einvoicing/spain/verifactu.service.ts(76,55): error TS2339: Property 'customer' does not exist on type 'VerifactuInvoice'.
+server/services/einvoicing/spain/verifactu.service.ts(77,32): error TS2339: Property 'customer' does not exist on type 'VerifactuInvoice'.
+server/services/einvoicing/uk/mtd.service.ts(20,33): error TS2459: Module '"../base.service.js"' declares 'EInvoice' locally, but it is not exported.
+server/services/einvoicing/uk/mtd.service.ts(20,43): error TS2305: Module '"../base.service.js"' has no exported member 'EInvoiceResult'.
+server/services/einvoicing/uk/mtd.service.ts(20,59): error TS2305: Module '"../base.service.js"' has no exported member 'CountryConfig'.
+server/services/einvoicing/uk/mtd.service.ts(190,14): error TS2654: Non-abstract class 'UKMTDService' is missing implementations for the following members of 'BaseEInvoicingService': 'country', 'system', 'generatePDF', 'getStatus'.
+server/services/einvoicing/uk/mtd.service.ts(196,11): error TS2554: Expected 0 arguments, but got 1.
+server/services/einvoicing/uk/mtd.service.ts(711,26): error TS7006: Parameter 'line' implicitly has an 'any' type.
+server/services/einvoicing/uk/mtd.service.ts(711,32): error TS7006: Parameter 'index' implicitly has an 'any' type.
+server/services/email-smtp.service.ts(33,34): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/email-smtp.service.ts(34,16): error TS2769: No overload matches this call.
+server/services/inventory/invoice-integration.service.ts(85,42): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/invoice-integration.service.ts(92,52): error TS7006: Parameter 'p' implicitly has an 'any' type.
+server/services/inventory/invoice-integration.service.ts(99,63): error TS2339: Property 'salePrice' does not exist on type '{}'.
+server/services/inventory/invoice-integration.service.ts(101,42): error TS2339: Property 'taxRate' does not exist on type '{}'.
+server/services/inventory/invoice-integration.service.ts(112,28): error TS2339: Property 'id' does not exist on type '{}'.
+server/services/inventory/invoice-integration.service.ts(113,22): error TS2339: Property 'sku' does not exist on type '{}'.
+server/services/inventory/invoice-integration.service.ts(114,30): error TS2339: Property 'name' does not exist on type '{}'.
+server/services/inventory/invoice-integration.service.ts(134,37): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/invoice-integration.service.ts(139,9): error TS2769: No overload matches this call.
+server/services/inventory/invoice-integration.service.ts(308,37): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/invoice-integration.service.ts(311,9): error TS2769: No overload matches this call.
+server/services/inventory/invoice-integration.service.ts(375,42): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/invoice-integration.service.ts(382,32): error TS7006: Parameter 'product' implicitly has an 'any' type.
+server/services/inventory/product.service.ts(10,10): error TS2305: Module '"../../db.js"' has no exported member 'db'.
+server/services/inventory/product.service.ts(16,8): error TS2305: Module '"../../../drizzle/inventory-schema.js"' has no exported member 'ProductType'.
+server/services/inventory/product.service.ts(17,8): error TS2724: '"../../../drizzle/inventory-schema.js"' has no exported member named 'ProductCategory'. Did you mean 'productCategoryEnum'?
+server/services/inventory/product.service.ts(109,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(122,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(178,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(192,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(214,27): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(228,27): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(245,27): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(265,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(274,44): error TS7006: Parameter 's' implicitly has an 'any' type.
+server/services/inventory/product.service.ts(347,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(359,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(367,40): error TS7006: Parameter 'p' implicitly has an 'any' type.
+server/services/inventory/product.service.ts(369,15): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(386,67): error TS7006: Parameter 'product' implicitly has an 'any' type.
+server/services/inventory/product.service.ts(390,49): error TS7006: Parameter 's' implicitly has an 'any' type.
+server/services/inventory/product.service.ts(447,12): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(464,26): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(476,12): error TS7006: Parameter 'r' implicitly has an 'any' type.
+server/services/inventory/product.service.ts(477,16): error TS7006: Parameter 'b' implicitly has an 'any' type.
+server/services/inventory/product.service.ts(484,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(496,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(508,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(528,24): error TS2345: Argument of type '{ sku: string; name: string; costPrice: number; salePrice: number; taxRate: number; weight: number | undefined; length: number | undefined; width: number | undefined; height: number | undefined; ... 27 more ...; isBatchTracked: boolean; }' is not assignable to parameter of type 'CreateProductInput'.
+server/services/inventory/product.service.ts(584,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(611,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(619,32): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(633,36): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/product.service.ts(647,30): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/service-integration.service.ts(86,19): error TS2339: Property 'transaction' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(86,38): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+server/services/inventory/service-integration.service.ts(197,19): error TS2339: Property 'transaction' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(197,38): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+server/services/inventory/service-integration.service.ts(242,37): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(247,9): error TS2769: No overload matches this call.
+server/services/inventory/service-integration.service.ts(281,37): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(291,17): error TS7006: Parameter 'movements' implicitly has an 'any' type.
+server/services/inventory/service-integration.service.ts(291,30): error TS7031: Binding element 'desc' implicitly has an 'any' type.
+server/services/inventory/service-integration.service.ts(294,27): error TS7006: Parameter 'm' implicitly has an 'any' type.
+server/services/inventory/service-integration.service.ts(328,37): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(335,35): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(370,19): error TS2339: Property 'transaction' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(370,38): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+server/services/inventory/service-integration.service.ts(417,19): error TS2339: Property 'transaction' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/inventory/service-integration.service.ts(417,38): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+server/services/inventory/service-integration.service.ts(439,9): error TS2304: Cannot find name 'DatabaseTransaction'.
+server/services/inventory/stock.service.ts(10,10): error TS2305: Module '"../../db.js"' has no exported member 'db'.
+server/services/inventory/stock.service.ts(17,8): error TS2724: '"../../../drizzle/inventory-schema.js"' has no exported member named 'StockMovementType'. Did you mean 'stockMovementTypeEnum'?
+server/services/inventory/stock.service.ts(95,30): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(104,32): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(133,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(148,30): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(169,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(198,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(228,7): error TS2353: Object literal may only specify known properties, and 'relatedMovementId' does not exist in type 'StockMovementInput'.
+server/services/inventory/stock.service.ts(235,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(247,32): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(331,27): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(339,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(346,26): error TS7006: Parameter 's' implicitly has an 'any' type.
+server/services/inventory/stock.service.ts(370,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(383,25): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(401,25): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(413,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(432,25): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(444,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(489,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(497,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(525,27): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(533,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(547,33): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(563,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(581,12): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(598,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(607,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(652,33): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(660,36): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(675,37): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/stock.service.ts(689,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+server/services/inventory/supplier.service.ts(10,10): error TS2305: Module '"../../db.js"' has no exported member 'db'.
+server/services/inventory/supplier.service.ts(18,8): error TS2724: '"../../../drizzle/inventory-schema.js"' has no exported member named 'PurchaseOrderStatus'. Did you mean 'purchaseOrderStatusEnum'?
+server/services/inventory/supplier.service.ts(110,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(123,30): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(160,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(178,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(231,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(238,32): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(257,12): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(272,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(289,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(302,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(307,37): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(330,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(354,12): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(372,12): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(390,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(438,27): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(455,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(477,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(520,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(532,25): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(550,37): error TS7006: Parameter 'l' implicitly has an 'any' type.
+server/services/inventory/supplier.service.ts(561,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(591,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(607,25): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(662,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(669,26): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(691,25): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(718,36): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/supplier.service.ts(720,46): error TS2304: Cannot find name 'warehouseStock'.
+server/services/inventory/supplier.service.ts(723,17): error TS2304: Cannot find name 'warehouseStock'.
+server/services/inventory/supplier.service.ts(723,49): error TS2304: Cannot find name 'warehouseStock'.
+server/services/inventory/supplier.service.ts(731,34): error TS2304: Cannot find name 'warehouseStock'.
+server/services/inventory/warehouse.service.ts(10,10): error TS2305: Module '"../../db.js"' has no exported member 'db'.
+server/services/inventory/warehouse.service.ts(16,8): error TS2724: '"../../../drizzle/inventory-schema.js"' has no exported member named 'WarehouseType'. Did you mean 'warehouseTypeEnum'?
+server/services/inventory/warehouse.service.ts(17,8): error TS2724: '"../../../drizzle/inventory-schema.js"' has no exported member named 'ValuationMethod'. Did you mean 'valuationMethodEnum'?
+server/services/inventory/warehouse.service.ts(79,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(94,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(102,31): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(136,32): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(152,13): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(162,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(179,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(190,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(206,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(233,12): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(243,12): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(259,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(277,27): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(285,34): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(297,36): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(330,29): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(340,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(350,31): error TS7006: Parameter 's' implicitly has an 'any' type.
+server/services/inventory/warehouse.service.ts(372,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(388,32): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(398,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(410,11): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(490,28): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(497,32): error TS2304: Cannot find name 'getDb'.
+server/services/inventory/warehouse.service.ts(511,36): error TS2304: Cannot find name 'getDb'.
+server/services/license/license.service.ts(211,34): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(260,39): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(306,37): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(337,45): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(351,19): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(362,21): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(413,37): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(454,37): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(464,19): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(508,36): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/license/license.service.ts(550,19): error TS2339: Property 'execute' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/logging/logger.service.ts(334,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+server/services/marketing/marketing.service.ts(1,10): error TS2305: Module '"../../db.js"' has no exported member 'db'.
+server/services/marketing/marketing.service.ts(11,3): error TS2305: Module '"../../../drizzle/schema.js"' has no exported member 'messageTemplates'.
+server/services/marketing/marketing.service.ts(12,3): error TS2305: Module '"../../../drizzle/schema.js"' has no exported member 'marketingCampaigns'.
+server/services/marketing/marketing.service.ts(14,3): error TS2305: Module '"../../../drizzle/schema.js"' has no exported member 'messageHistory'.
+server/services/marketing/marketing.service.ts(15,3): error TS2305: Module '"../../../drizzle/schema.js"' has no exported member 'MessageTemplateType'.
+server/services/marketing/marketing.service.ts(250,12): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(260,30): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(273,30): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(296,13): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(304,28): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(323,32): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(328,15): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(337,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(349,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(382,12): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(392,30): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(412,28): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(430,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(451,17): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(453,26): error TS2339: Property 'firstName' does not exist on type 'MySqlTableWithColumns<{ name: "clients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "clients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 16 more ...; organizationId: MySqlCol...'.
+server/services/marketing/marketing.service.ts(454,25): error TS2339: Property 'lastName' does not exist on type 'MySqlTableWithColumns<{ name: "clients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "clients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 16 more ...; organizationId: MySqlCol...'.
+server/services/marketing/marketing.service.ts(487,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(502,13): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(512,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(529,12): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(533,28): error TS2339: Property 'firstName' does not exist on type 'MySqlTableWithColumns<{ name: "clients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "clients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 16 more ...; organizationId: MySqlCol...'.
+server/services/marketing/marketing.service.ts(534,27): error TS2339: Property 'lastName' does not exist on type 'MySqlTableWithColumns<{ name: "clients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "clients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 16 more ...; organizationId: MySqlCol...'.
+server/services/marketing/marketing.service.ts(541,33): error TS2339: Property 'queueOrder' does not exist on type 'MySqlTableWithColumns<{ name: "campaign_recipients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "campaign_recipients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 7 more ...; createdAt: MySql...'.
+server/services/marketing/marketing.service.ts(548,31): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(552,28): error TS2339: Property 'firstName' does not exist on type 'MySqlTableWithColumns<{ name: "clients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "clients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 16 more ...; organizationId: MySqlCol...'.
+server/services/marketing/marketing.service.ts(553,27): error TS2339: Property 'lastName' does not exist on type 'MySqlTableWithColumns<{ name: "clients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "clients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 16 more ...; organizationId: MySqlCol...'.
+server/services/marketing/marketing.service.ts(563,33): error TS2339: Property 'queueOrder' does not exist on type 'MySqlTableWithColumns<{ name: "campaign_recipients"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "campaign_recipients"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 7 more ...; createdAt: MySql...'.
+server/services/marketing/marketing.service.ts(573,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(582,31): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(587,13): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(597,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(637,11): error TS2304: Cannot find name 'getDb'.
+server/services/marketing/marketing.service.ts(648,12): error TS2304: Cannot find name 'getDb'.
+server/services/notifications/notification.service.ts(67,35): error TS2322: Type 'Promise<{ shouldShowAlert: true; shouldPlaySound: true; shouldSetBadge: true; }>' is not assignable to type 'Promise<NotificationBehavior>'.
+server/services/notifications/notification.service.ts(173,15): error TS2339: Property 'db' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/db")'.
+server/services/notifications/notification.service.ts(174,15): error TS2339: Property 'pushTokens' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/schema")'.
+server/services/notifications/notification.service.ts(194,15): error TS2304: Cannot find name 'getDb'.
+server/services/notifications/notification.service.ts(216,15): error TS2339: Property 'db' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/db")'.
+server/services/notifications/notification.service.ts(217,15): error TS2339: Property 'pushTokens' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/schema")'.
+server/services/notifications/notification.service.ts(329,7): error TS2322: Type '{ date: Date; }' is not assignable to type 'NotificationTriggerInput'.
+server/services/notifications/notification.service.ts(379,15): error TS2339: Property 'db' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/db")'.
+server/services/notifications/notification.service.ts(382,13): error TS2304: Cannot find name 'getDb'.
+server/services/notifications/notification.service.ts(446,15): error TS2339: Property 'db' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/db")'.
+server/services/notifications/notification.service.ts(475,15): error TS2339: Property 'db' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/db")'.
+server/services/payments/payment.service.ts(96,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(119,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(138,31): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(211,18): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(233,31): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(418,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(425,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(432,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(633,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(647,31): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(704,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(714,16): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(724,31): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(737,31): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(752,31): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(763,38): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/payments/payment.service.ts(800,38): error TS2339: Property 'getDb' does not exist on type 'PaymentService'.
+server/services/purchase-verification.service.ts(75,44): error TS2339: Property 'woocommerceApiKey' does not exist on type 'DistributorPremiumConfig'.
+server/services/purchase-verification.service.ts(76,47): error TS2339: Property 'woocommerceApiSecret' does not exist on type 'DistributorPremiumConfig'.
+server/services/purchase-verification.service.ts(95,59): error TS2365: Operator '>' cannot be applied to types 'Date' and 'string'.
+server/services/purchase-verification.service.ts(189,12): error TS2365: Operator '<' cannot be applied to types 'Date' and 'string'.
+server/services/reminder.service.ts(41,28): error TS2304: Cannot find name 'getDb'.
+server/services/reminder.service.ts(70,13): error TS2769: No overload matches this call.
+server/services/reminder.service.ts(71,13): error TS2769: No overload matches this call.
+server/services/reminder.service.ts(116,28): error TS2304: Cannot find name 'getDb'.
+server/services/reminder.service.ts(245,9): error TS2554: Expected 1 arguments, but got 4.
+server/services/reminder.service.ts(253,25): error TS2339: Property 'success' does not exist on type 'boolean'.
+server/services/reminder.service.ts(254,23): error TS2339: Property 'error' does not exist on type 'boolean'.
+server/services/reminder.service.ts(273,28): error TS2304: Cannot find name 'getDb'.
+server/services/reminder.service.ts(339,28): error TS2304: Cannot find name 'getDb'.
+server/services/reminder.service.ts(456,9): error TS2554: Expected 1 arguments, but got 4.
+server/services/reminder.service.ts(464,25): error TS2339: Property 'success' does not exist on type 'boolean'.
+server/services/reminder.service.ts(465,23): error TS2339: Property 'error' does not exist on type 'boolean'.
+server/services/reminders/appointment-reminder.service.ts(60,37): error TS2322: Type 'Promise<{ shouldShowAlert: true; shouldPlaySound: true; shouldSetBadge: true; }>' is not assignable to type 'Promise<NotificationBehavior>'.
+server/services/reminders/appointment-reminder.service.ts(176,5): error TS2322: Type '{ date: Date; }' is not assignable to type 'NotificationTriggerInput'.
+server/services/reminders/reminder.service.ts(294,31): error TS2339: Property 'getDb' does not exist on type 'ReminderService'.
+server/services/reminders/reminder.service.ts(328,31): error TS2339: Property 'getDb' does not exist on type 'ReminderService'.
+server/services/reminders/reminder.service.ts(370,30): error TS1361: 'getErrorMessage' cannot be used as a value because it was imported using 'import type'.
+server/services/reminders/reminder.service.ts(407,30): error TS1361: 'getErrorMessage' cannot be used as a value because it was imported using 'import type'.
+server/services/reminders/reminder.service.ts(560,18): error TS2339: Property 'getDb' does not exist on type 'ReminderService'.
+server/services/reminders/reminder.service.ts(738,35): error TS2339: Property 'getDb' does not exist on type 'ReminderService'.
+server/services/reminders/reminder.service.ts(774,37): error TS2339: Property 'getDb' does not exist on type 'ReminderService'.
+server/services/reminders/reminder.service.ts(821,41): error TS2339: Property 'getDb' does not exist on type 'ReminderService'.
+server/services/reminders/reminder.service.ts(864,37): error TS2339: Property 'getDb' does not exist on type 'ReminderService'.
+server/services/report-export.service.ts(76,32): error TS2304: Cannot find name 'getDb'.
+server/services/report-export.service.ts(78,31): error TS2769: No overload matches this call.
+server/services/report-export.service.ts(81,29): error TS2769: No overload matches this call.
+server/services/report-export.service.ts(85,29): error TS2769: No overload matches this call.
+server/services/report-export.service.ts(219,9): error TS7053: Element implicitly has an 'any' type because expression of type '"Detalle"' can't be used to index type '{ Resumen: string; Distribucion: string; 'Por Servicio': string; 'Top Pianos': string; }'.
+server/services/report-export.service.ts(224,26): error TS7053: Element implicitly has an 'any' type because expression of type '"Detalle"' can't be used to index type '{ Resumen: string; Distribucion: string; 'Por Servicio': string; 'Top Pianos': string; }'.
+server/services/security-audit.service.ts(47,15): error TS2304: Cannot find name 'DatabaseConnection'.
+server/services/security-audit.service.ts(49,19): error TS2304: Cannot find name 'DatabaseConnection'.
+server/services/security-audit.service.ts(76,18): error TS2339: Property 'getDb' does not exist on type 'SecurityAuditService'.
+server/services/security-audit.service.ts(168,33): error TS2339: Property 'getDb' does not exist on type 'SecurityAuditService'.
+server/services/security-audit.service.ts(186,33): error TS2339: Property 'getDb' does not exist on type 'SecurityAuditService'.
+server/services/security-audit.service.ts(205,37): error TS2304: Cannot find name 'DatabaseConnection'.
+server/services/security/sanitize.service.ts(395,49): error TS2559: Type 'SanitizeOptions' has no properties in common with type '{ min?: number | undefined; max?: number | undefined; decimals?: number | undefined; }'.
+server/services/shop/shop.service.ts(103,35): error TS2339: Property 'shops' does not exist on type '{}'.
+server/services/shop/shop.service.ts(123,39): error TS2339: Property 'shopRolePermissions' does not exist on type '{}'.
+server/services/shop/shop.service.ts(130,33): error TS2339: Property 'shops' does not exist on type '{}'.
+server/services/shop/shop.service.ts(199,48): error TS2339: Property 'encryptPassword' does not exist on type 'ShopService'.
+server/services/shop/shop.service.ts(207,43): error TS2339: Property 'id' does not exist on type 'ResultSetHeader'.
+server/services/shop/shop.service.ts(209,5): error TS2740: Type 'ResultSetHeader' is missing the following properties from type '{ name: string; description: string | null; url: string | null; type: "platform" | "distributor" | "external"; id: number; color: string | null; isActive: boolean | null; createdAt: Date; ... 10 more ...; approvalThreshold: string | null; }': name, description, url, type, and 15 more.
+server/services/shop/shop.service.ts(281,37): error TS2339: Property 'shops' does not exist on type '{}'.
+server/services/shop/shop.service.ts(292,42): error TS2339: Property 'shops' does not exist on type '{}'.
+server/services/shop/shop.service.ts(354,15): error TS2339: Property 'query' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/shop/shop.service.ts(360,7): error TS2304: Cannot find name 'db'.
+server/services/shop/shop.service.ts(382,31): error TS2339: Property 'shopCarts' does not exist on type '{}'.
+server/services/shop/shop.service.ts(415,41): error TS2339: Property 'shopCartItems' does not exist on type '{}'.
+server/services/shop/shop.service.ts(451,34): error TS2339: Property 'shopCartItems' does not exist on type '{}'.
+server/services/shop/shop.service.ts(458,33): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+server/services/shop/shop.service.ts(458,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+server/services/shop/shop.service.ts(518,24): error TS2339: Property 'id' does not exist on type 'ResultSetHeader'.
+server/services/shop/shop.service.ts(533,5): error TS2740: Type 'ResultSetHeader' is missing the following properties from type '{ status: "pending" | "cancelled" | "draft" | "approved" | "ordered" | "shipped" | "delivered" | null; id: number; createdAt: Date; updatedAt: Date; currency: string | null; ... 21 more ...; internalNotes: string | null; }': status, id, createdAt, updatedAt, and 23 more.
+server/services/shop/shop.service.ts(542,34): error TS2339: Property 'shopOrders' does not exist on type '{}'.
+server/services/shop/shop.service.ts(588,34): error TS2339: Property 'shopOrders' does not exist on type '{}'.
+server/services/shop/shop.service.ts(622,34): error TS2339: Property 'shopOrders' does not exist on type '{}'.
+server/services/shop/shop.service.ts(673,16): error TS2339: Property 'shopOrders' does not exist on type '{}'.
+server/services/shop/shop.service.ts(704,42): error TS2339: Property 'shopRolePermissions' does not exist on type '{}'.
+server/services/shop/shop.service.ts(718,21): error TS2339: Property 'shopOrders' does not exist on type '{}'.
+server/services/shop/stock-monitoring.service.ts(41,36): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(50,29): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(59,15): error TS2365: Operator '<' cannot be applied to types 'string | number' and 'number'.
+server/services/shop/stock-monitoring.service.ts(59,30): error TS18047: 'link.lowStockThreshold' is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(61,42): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(73,40): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(76,19): error TS2769: No overload matches this call.
+server/services/shop/stock-monitoring.service.ts(86,37): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(95,17): error TS2322: Type 'string | number' is not assignable to type 'number'.
+server/services/shop/stock-monitoring.service.ts(96,17): error TS2322: Type 'number | null' is not assignable to type 'number'.
+server/services/shop/stock-monitoring.service.ts(99,17): error TS2322: Type 'number | null' is not assignable to type 'number'.
+server/services/shop/stock-monitoring.service.ts(100,17): error TS2322: Type 'boolean | null' is not assignable to type 'boolean'.
+server/services/shop/stock-monitoring.service.ts(109,19): error TS2345: Argument of type 'number | null' is not assignable to parameter of type 'number'.
+server/services/shop/stock-monitoring.service.ts(137,29): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(160,29): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(182,13): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(197,13): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(221,28): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(243,13): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(270,30): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(282,15): error TS2531: Object is possibly 'null'.
+server/services/shop/stock-monitoring.service.ts(293,15): error TS2531: Object is possibly 'null'.
+server/services/team/organization.service.ts(15,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'Organization'. Did you mean 'organizations'?
+server/services/team/organization.service.ts(16,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'InsertOrganization'. Did you mean 'organizations'?
+server/services/team/organization.service.ts(17,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'OrganizationMember'. Did you mean 'organizationMembers'?
+server/services/team/organization.service.ts(18,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'InsertOrganizationMember'. Did you mean 'organizationMembers'?
+server/services/team/organization.service.ts(19,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'OrganizationInvitation'. Did you mean 'organizationInvitations'?
+server/services/team/organization.service.ts(93,42): error TS2339: Property 'insert' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/team/organization.service.ts(108,19): error TS2339: Property 'insert' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/team/organization.service.ts(133,34): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(149,27): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(163,28): error TS7006: Parameter 'm' implicitly has an 'any' type.
+server/services/team/organization.service.ts(172,30): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(179,34): error TS2339: Property 'status' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/organization.service.ts(183,27): error TS7006: Parameter 'm' implicitly has an 'any' type.
+server/services/team/organization.service.ts(190,29): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(214,39): error TS2551: Property 'maxMembers' does not exist on type 'OrganizationWithMembers'. Did you mean 'members'?
+server/services/team/organization.service.ts(224,40): error TS2339: Property 'insert' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/team/organization.service.ts(235,53): error TS2339: Property 'name' does not exist on type 'OrganizationWithMembers'.
+server/services/team/organization.service.ts(255,32): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(274,11): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(283,36): error TS2339: Property 'insert' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/team/organization.service.ts(315,28): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(336,29): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(365,28): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(384,29): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(415,28): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(434,11): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(454,12): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(460,34): error TS2339: Property 'status' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/organization.service.ts(469,12): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(475,34): error TS2339: Property 'status' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/organization.service.ts(476,11): error TS2769: No overload matches this call.
+server/services/team/organization.service.ts(485,12): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(491,34): error TS2339: Property 'status' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/organization.service.ts(492,11): error TS2304: Cannot find name 'or'.
+server/services/team/organization.service.ts(493,36): error TS2339: Property 'role' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/organization.service.ts(494,36): error TS2339: Property 'role' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/organization.service.ts(495,36): error TS2339: Property 'role' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/organization.service.ts(517,32): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(533,28): error TS2304: Cannot find name 'db'.
+server/services/team/organization.service.ts(574,19): error TS2339: Property 'insert' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/team/permissions.service.ts(15,31): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'OrganizationMember'. Did you mean 'organizationMembers'?
+server/services/team/permissions.service.ts(455,27): error TS2304: Cannot find name 'db'.
+server/services/team/permissions.service.ts(463,30): error TS2339: Property 'technicianId' does not exist on type 'MySqlTableWithColumns<{ name: "technician_zones"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "technician_zones"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 4 more ...; createdAt: MySqlColumn...'.
+server/services/team/permissions.service.ts(483,30): error TS2304: Cannot find name 'db'.
+server/services/team/permissions.service.ts(486,37): error TS2339: Property 'role' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/permissions.service.ts(509,28): error TS2304: Cannot find name 'db'.
+server/services/team/permissions.service.ts(524,28): error TS2304: Cannot find name 'db'.
+server/services/team/permissions.service.ts(545,22): error TS2304: Cannot find name 'PermissionContext'.
+server/services/team/work-assignment.service.ts(16,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'WorkAssignment'. Did you mean 'workAssignments'?
+server/services/team/work-assignment.service.ts(17,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'InsertWorkAssignment'. Did you mean 'workAssignments'?
+server/services/team/work-assignment.service.ts(18,3): error TS2724: '"../../../drizzle/schema.js"' has no exported member named 'OrganizationMember'. Did you mean 'organizationMembers'?
+server/services/team/work-assignment.service.ts(117,40): error TS2339: Property 'insert' does not exist on type 'Promise<(MySql2Database<Record<string, unknown>> & { $client: Pool; }) | null>'.
+server/services/team/work-assignment.service.ts(137,53): error TS2304: Cannot find name 'technicianId'.
+server/services/team/work-assignment.service.ts(138,27): error TS2339: Property 'clientName' does not exist on type 'CreateAssignmentInput'.
+server/services/team/work-assignment.service.ts(139,28): error TS2339: Property 'serviceType' does not exist on type 'CreateAssignmentInput'.
+server/services/team/work-assignment.service.ts(157,32): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(175,12): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(181,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(182,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(202,31): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(222,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(223,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(228,5): error TS2322: Type '{ technician: { displayName: string | null; color: string | null; phone: string | null; }; id: number; organizationId: number; appointmentId: number | null; serviceId: number | null; ... 22 more ...; updatedAt: string; }[]' is not assignable to type 'WorkAssignmentWithDetails[]'.
+server/services/team/work-assignment.service.ts(246,57): error TS2551: Property 'technicianId' does not exist on type 'WorkAssignmentWithDetails'. Did you mean 'technician'?
+server/services/team/work-assignment.service.ts(247,72): error TS2339: Property 'estimatedDuration' does not exist on type 'WorkAssignmentWithDetails'.
+server/services/team/work-assignment.service.ts(286,29): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(292,9): error TS2322: Type 'Date' is not assignable to type 'string | SQL<unknown> | null | undefined'.
+server/services/team/work-assignment.service.ts(303,38): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(309,37): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(350,29): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(354,9): error TS2322: Type 'Date' is not assignable to type 'string | SQL<unknown> | null | undefined'.
+server/services/team/work-assignment.service.ts(376,29): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(380,9): error TS2322: Type 'Date' is not assignable to type 'string | SQL<unknown> | null | undefined'.
+server/services/team/work-assignment.service.ts(397,34): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(437,29): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(441,9): error TS2322: Type 'Date' is not assignable to type 'string | SQL<unknown> | null | undefined'.
+server/services/team/work-assignment.service.ts(467,29): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(471,9): error TS2322: Type 'Date' is not assignable to type 'string | SQL<unknown> | null | undefined'.
+server/services/team/work-assignment.service.ts(484,29): error TS2304: Cannot find name 'db'.
+server/services/team/work-assignment.service.ts(503,28): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(510,34): error TS2339: Property 'status' does not exist on type 'MySqlTableWithColumns<{ name: "organization_members"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "organization_members"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 23 more ...; updatedAt: My...'.
+server/services/team/work-assignment.service.ts(534,29): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(541,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(542,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(561,36): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(567,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(568,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(633,31): error TS2339: Property 'technicianZoneAssignments' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/schema")'.
+server/services/team/work-assignment.service.ts(636,39): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(641,39): error TS2339: Property 'polygon' does not exist on type 'MySqlTableWithColumns<{ name: "service_zones"; schema: undefined; columns: { id: MySqlColumn<{ name: "id"; tableName: "service_zones"; dataType: "number"; columnType: "MySqlInt"; data: number; driverParam: string | number; ... 8 more ...; generated: undefined; }, {}, {}>; ... 11 more ...; updatedAt: MySqlColumn<...>...'.
+server/services/team/work-assignment.service.ts(675,31): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(726,25): error TS18047: 'db' is possibly 'null'.
+server/services/team/work-assignment.service.ts(736,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(737,11): error TS2769: No overload matches this call.
+server/services/team/work-assignment.service.ts(774,38): error TS2554: Expected 1 arguments, but got 0.
+server/services/verifactu.service.ts(440,15): error TS2339: Property 'db' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/drizzle/db")'.
+server/services/verifactu.service.ts(460,13): error TS2769: No overload matches this call.
+server/services/whatsapp/whatsapp.service.ts(217,16): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(235,31): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(285,39): error TS2345: Argument of type '(param: TemplateParameter) => { text: string; type: "text" | "currency" | "date_time" | "image" | "document"; currency?: { fallback_value: string; code: string; amount_1000: number; }; date_time?: { fallback_value: string; }; }' is not assignable to parameter of type '(value: { type: string; text: string; }, index: number, array: { type: string; text: string; }[]) => { text: string; type: "image" | "text" | "currency" | "document" | "date_time"; currency?: { ...; } | undefined; date_time?: { ...; } | undefined; }'.
+server/services/whatsapp/whatsapp.service.ts(287,15): error TS18048: 'param.text' is possibly 'undefined'.
+server/services/whatsapp/whatsapp.service.ts(297,9): error TS2322: Type '{ parameters: { text: string; type: "image" | "text" | "currency" | "document" | "date_time"; currency?: { fallback_value: string; code: string; amount_1000: number; } | undefined; date_time?: { ...; } | undefined; }[]; type: string; }[]' is not assignable to type 'TemplateComponent[]'.
+server/services/whatsapp/whatsapp.service.ts(450,28): error TS18046: 'error' is of type 'unknown'.
+server/services/whatsapp/whatsapp.service.ts(471,16): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(499,18): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(505,18): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(517,31): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(538,31): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(549,39): error TS2339: Property 'getDb' does not exist on type 'WhatsAppService'.
+server/services/whatsapp/whatsapp.service.ts(626,13): error TS2345: Argument of type '"sent" | "failed" | "delivered" | "read"' is not assignable to parameter of type '"failed" | "delivered" | "read"'.
+server/services/workflows/workflow.service.ts(337,31): error TS2339: Property 'getDb' does not exist on type 'WorkflowService'.
+server/services/workflows/workflow.service.ts(445,31): error TS2339: Property 'getDb' does not exist on type 'WorkflowService'.
+server/services/workflows/workflow.service.ts(538,18): error TS2339: Property 'getDb' does not exist on type 'WorkflowService'.
+server/services/workflows/workflow.service.ts(698,16): error TS2339: Property 'getDb' does not exist on type 'WorkflowService'.
+server/services/workflows/workflow.service.ts(719,16): error TS2339: Property 'getDb' does not exist on type 'WorkflowService'.
+server/services/workflows/workflow.service.ts(956,16): error TS2339: Property 'getDb' does not exist on type 'WorkflowService'.
+server/webhooks/clerk.ts(65,32): error TS2304: Cannot find name 'getDb'.
+server/webhooks/clerk.ts(92,34): error TS2304: Cannot find name 'getDb'.
+server/webhooks/clerk.ts(116,34): error TS2304: Cannot find name 'getDb'.
+services/accounting-export-service.ts(138,29): error TS2339: Property 'vatRate' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(139,31): error TS2339: Property 'vatAmount' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(144,21): error TS2339: Property 'date' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(145,27): error TS2339: Property 'clientName' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(146,28): error TS2551: Property 'clientTaxId' does not exist on type 'Invoice'. Did you mean 'clientId'?
+services/accounting-export-service.ts(147,24): error TS2339: Property 'concept' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(252,44): error TS2339: Property 'vatRate' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(253,44): error TS2339: Property 'vatRate' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(254,49): error TS2339: Property 'vatRate' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(272,18): error TS2367: This comparison appears to be unintentional because the types 'DocumentType' and '"goods"' have no overlap.
+services/accounting-export-service.ts(273,34): error TS2339: Property 'vatAmount' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(273,70): error TS2339: Property 'vatRate' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(276,18): error TS2367: This comparison appears to be unintentional because the types 'DocumentType' and '"services"' have no overlap.
+services/accounting-export-service.ts(277,34): error TS2339: Property 'vatAmount' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(277,70): error TS2339: Property 'vatRate' does not exist on type 'Invoice'.
+services/accounting-export-service.ts(448,42): error TS2339: Property 'date' does not exist on type 'Invoice'.
+services/analytics-service.ts(288,20): error TS2367: This comparison appears to be unintentional because the types 'ClientType' and '"company"' have no overlap.
+services/analytics-service.ts(289,18): error TS2339: Property 'companyName' does not exist on type 'Client'.
+services/analytics-service.ts(290,41): error TS2551: Property 'lastName' does not exist on type 'Client'. Did you mean 'lastName1'?
+services/analytics-service.ts(367,7): error TS2339: Property 'status' does not exist on type 'Service'.
+services/analytics-service.ts(367,36): error TS2339: Property 'invoiceId' does not exist on type 'Service'.
+services/barcode-scanner-service.ts(99,62): error TS2339: Property 'message' does not exist on type '{}'.
+services/pdf-report-service.ts(903,36): error TS2339: Property 'documentDirectory' does not exist on type 'typeof import("/home/ubuntu/piano-emotion-fix/node_modules/.pnpm/expo-file-system@19.0.21_expo@54.0.29_react-native@0.81.5_@babel+core@7.28.5_@types+react@19._ibvq233wfgnzl5pi246kl74anm/node_modules/expo-file-system/build/index")'.
+services/quote-service.ts(315,17): error TS2551: Property 'service' does not exist on type '{ services: number; parts: number; labor: number; travel: number; other: number; }'. Did you mean 'services'?
+services/stock-notifications.ts(258,11): error TS2304: Cannot find name 'email'.
+services/stock-notifications.ts(268,17): error TS2304: Cannot find name 'message'.
+services/stock-notifications.ts(276,13): error TS2304: Cannot find name 'message'.
+stress-test/database-test.ts(85,14): error TS2769: No overload matches this call.

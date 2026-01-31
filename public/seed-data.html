@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insertar Datos de Prueba</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎹 Piano Emotion Manager</h1>
+        <p>Haz clic en el botón para insertar datos de prueba en la base de datos. Esto creará 2 clientes, 2 pianos y 2 servicios con alertas.</p>
+        <button id="seedBtn" onclick="seedData()">Insertar Datos de Prueba</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function seedData() {
+            const btn = document.getElementById('seedBtn');
+            const result = document.getElementById('result');
+            
+            btn.disabled = true;
+            result.style.display = 'block';
+            result.className = 'loading';
+            result.textContent = 'Insertando datos...';
+
+            try {
+                const response = await fetch('/api/seed-test-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    result.className = 'success';
+                    result.innerHTML = `
+                        <strong>✅ Datos insertados exitosamente!</strong><br><br>
+                        <strong>Clientes creados:</strong> ${data.data.clientsCreated}<br>
+                        <strong>Pianos creados:</strong> ${data.data.pianosCreated}<br>
+                        <strong>Servicios creados:</strong> ${data.data.servicesCreated}<br>
+                        <strong>Alertas urgentes:</strong> ${data.data.alerts.urgent}<br>
+                        <strong>Alertas pendientes:</strong> ${data.data.alerts.pending}<br><br>
+                        <a href="/">Volver al Dashboard</a>
+                    `;
+                } else {
+                    result.className = 'error';
+                    result.innerHTML = `
+                        <strong>❌ Error al insertar datos</strong><br><br>
+                        ${data.error || 'Error desconocido'}<br>
+                        ${data.details || ''}
+                    `;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                result.className = 'error';
+                result.innerHTML = `
+                    <strong>❌ Error de conexión</strong><br><br>
+                    ${error.message}
+                `;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

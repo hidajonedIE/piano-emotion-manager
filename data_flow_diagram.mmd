@@ -1,0 +1,13 @@
+graph TD
+    A[Usuario inicia sesión en la App] --> B{Clerk Autentica al Usuario};
+    B --> C[Clerk Devuelve un `clerkId` Único];
+    C --> D{La App Llama al Backend con el `clerkId`};
+    D --> E[Backend Busca en la Tabla `users`];
+    E --> F{¿Existe Usuario con ese `clerkId`?};
+    F -- Sí --> G[Recupera los Datos del Usuario de la BD];
+    F -- No --> H{Busca por Email del Usuario de Clerk};
+    H -- Sí --> I[Actualiza el Registro Existente con el `clerkId`];
+    H -- No --> J[Crea un Nuevo Usuario en la BD con el `clerkId`];
+    I --> G;
+    J --> G;
+    G --> K[La App Muestra los Datos del Usuario];

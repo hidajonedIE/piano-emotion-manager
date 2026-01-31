@@ -1,0 +1,44 @@
+flowchart TD
+    subgraph CRITICA["🔴 CRÍTICA"]
+        RGPD["✅ RGPD Básico<br/>(Completado)"]
+        LEADS["Captura de Leads"]
+        WOOCOMMERCE["Integración WooCommerce"]
+    end
+
+    subgraph ALTA["🟡 ALTA"]
+        PORTAL["Portal del Cliente"]
+        WHATSAPP["WhatsApp Business"]
+    end
+
+    subgraph MEDIA["🟢 MEDIA"]
+        IA_DIAG["IA Diagnóstico"]
+        IA_RUTAS["IA Rutas Inteligentes"]
+        IA_PRED["IA Predicción Mantenimiento"]
+    end
+
+    subgraph BAJA["🔵 BAJA"]
+        VERIFACTU["Facturación Verifactu"]
+    end
+
+    %% Dependencias técnicas
+    RGPD --> LEADS
+    RGPD --> PORTAL
+    LEADS --> PORTAL
+    LEADS --> WHATSAPP
+    PORTAL --> WHATSAPP
+    WOOCOMMERCE --> PORTAL
+    
+    %% IA depende de datos
+    PORTAL --> IA_PRED
+    PORTAL --> IA_DIAG
+    
+    %% Estilos
+    style RGPD fill:#4CAF50,color:#fff
+    style LEADS fill:#ff5252,color:#fff
+    style WOOCOMMERCE fill:#ff5252,color:#fff
+    style PORTAL fill:#FFC107,color:#000
+    style WHATSAPP fill:#FFC107,color:#000
+    style IA_DIAG fill:#8BC34A,color:#000
+    style IA_RUTAS fill:#8BC34A,color:#000
+    style IA_PRED fill:#8BC34A,color:#000
+    style VERIFACTU fill:#2196F3,color:#fff

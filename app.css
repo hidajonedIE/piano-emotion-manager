@@ -1,0 +1,44 @@
+/* Definir fuentes personalizadas */
+@font-face {
+  font-family: 'Arkhip';
+  src: url('/fonts/Arkhip_font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Estilos globales para prevenir selección de texto no deseada */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Permitir selección solo en campos de entrada */
+input,
+textarea,
+[contenteditable="true"],
+.selectable {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Prevenir cursor de texto en elementos no editables */
+body {
+  cursor: default;
+}
+
+input,
+textarea {
+  cursor: text;
+}
+
+button,
+a,
+[role="button"] {
+  cursor: pointer;
+}
+/* Deployment trigger 1768825164 */

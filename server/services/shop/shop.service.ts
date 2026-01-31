@@ -1,0 +1,788 @@
+/**
+ * Servicio de Tienda con Control de Acceso por Rol
+ * Piano Emotion Manager
+ */
+
+import { getDb } from '../../../drizzle/db.js';
+import { eq, and, desc, asc, sql, inArray } from 'drizzle-orm';
+import {
+  shops,
+  shopRolePermissions,
+  shopProducts,
+  shopOrders,
+  shopOrderLines,
+  shopCarts,
+  shopCartItems,
+  type ShopType,
+  type OrderStatus,
+  type ApprovalStatus,
+} from '../../../drizzle/shop-schema.js';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface ShopInput {
+  name: string;
+  type: ShopType;
+  description?: string;
+  url?: string;
+  apiEndpoint?: string;
+  apiKey?: string;
+  username?: string;
+  password?: string;
+  requiresApproval?: boolean;
+  approvalThreshold?: number;
+  logoUrl?: string;
+  color?: string;
+}
+
+export interface ShopPermissionInput {
+  role: string;
+  canView: boolean;
+  canOrder: boolean;
+  canApprove: boolean;
+  maxOrderAmount?: number;
+}
+
+export interface CartItemInput {
+  productId: number;
+  quantity: number;
+}
+
+export interface OrderInput {
+  shopId: number;
+  items: Array<{ productId: number; quantity: number }>;
+  shippingAddress: {
+    name: string;
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    phone?: string;
+  };
+  notes?: string;
+}
+
+export interface ShopAccessResult {
+  canView: boolean;
+  canOrder: boolean;
+  canApprove: boolean;
+  maxOrderAmount: number | null;
+  requiresApproval: boolean;
+  approvalThreshold: number | null;
+}
+
+// ============================================================================
+// Shop Service
+// ============================================================================
+
+export class ShopService {
+  private organizationId: number;
+  private userId: number;
+  private userRole: string;
+
+  constructor(organizationId: number, userId: number, userRole: string) {
+    this.organizationId = organizationId;
+    this.userId! = userId;
+    this.userRole = userRole;
+  }
+
+  // ============================================================================
+  // Access Control
+  // ============================================================================
+
+  /**
+   * Verifica el acceso del usuario a una tienda
+   */
+  async checkShopAccess(shopId: number): Promise<ShopAccessResult> {
+    // Los roles owner y admin siempre tienen acceso completo
+    if (this.userRole === 'owner' || this.userRole === 'admin') {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const shop = await (await getDb())!.query.shops.findFirst({
+        where: and(
+          eq(shops.id, shopId),
+          eq(shops.organizationId, this.organizationId)
+        ),
+      });
+
+      return {
+        canView: true,
+        canOrder: true,
+        canApprove: true,
+        maxOrderAmount: null,
+        requiresApproval: false,
+        approvalThreshold: shop?.approvalThreshold ? parseFloat(shop.approvalThreshold) : null,
+      };
+    }
+
+    // Buscar permisos específicos del rol
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const permission = await (await getDb())!.query.shopRolePermissions.findFirst({
+      where: and(
+        eq(shopRolePermissions.shopId, shopId),
+        eq(shopRolePermissions.role, this.userRole)
+      ),
+    });
+
+    const shop = await (await getDb())!.query.shops.findFirst({
+      where: eq(shops.id, shopId),
+    });
+
+    if (!permission) {
+      return {
+        canView: false,
+        canOrder: false,
+        canApprove: false,
+        maxOrderAmount: null,
+        requiresApproval: shop?.requiresApproval ?? true,
+        approvalThreshold: shop?.approvalThreshold ? parseFloat(shop.approvalThreshold) : null,
+      };
+    }
+
+    return {
+      canView: permission.canView ?? false,
+      canOrder: permission.canOrder ?? false,
+      canApprove: permission.canApprove ?? false,
+      maxOrderAmount: permission.maxOrderAmount ? parseFloat(permission.maxOrderAmount) : null,
+      requiresApproval: shop?.requiresApproval ?? true,
+      approvalThreshold: shop?.approvalThreshold ? parseFloat(shop.approvalThreshold) : null,
+    };
+  }
+
+  /**
+   * Verifica si el usuario puede hacer pedidos
+   */
+  async canPlaceOrder(shopId: number, orderTotal: number): Promise<{ allowed: boolean; reason?: string; requiresApproval: boolean }> {
+    const access = await this.checkShopAccess(shopId);
+
+    if (!access.canOrder) {
+      return { allowed: false, reason: 'no_order_permission', requiresApproval: false };
+    }
+
+    if (access.maxOrderAmount && orderTotal > access.maxOrderAmount) {
+      return { allowed: false, reason: 'exceeds_max_amount', requiresApproval: false };
+    }
+
+    const requiresApproval = access.requiresApproval && 
+      (!access.canApprove) && 
+      (access.approvalThreshold ? orderTotal >= access.approvalThreshold : true);
+
+    return { allowed: true, requiresApproval };
+  }
+
+  // ============================================================================
+  // Shop Management (Admin Only)
+  // ============================================================================
+
+  /**
+   * Crea una tienda (solo admin/owner)
+   */
+  async createShop(input: ShopInput): Promise<typeof shops.$inferSelect> {
+    if (this.userRole !== 'owner' && this.userRole !== 'admin') {
+      throw new Error('No tienes permiso para crear tiendas');
+    }
+
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const [shop] = await (await getDb())!.insert(shops).values({
+      organizationId: this.organizationId,
+      name: input.name,
+      type: input.type,
+      description: input.description,
+      url: input.url,
+      apiEndpoint: input.apiEndpoint,
+      apiKey: input.apiKey,
+      username: input.username,
+      encryptedPassword: input.password ? this.encryptPassword(input.password) : undefined,
+      requiresApproval: input.requiresApproval ?? true,
+      approvalThreshold: input.approvalThreshold?.toString(),
+      logoUrl: input.logoUrl,
+      color: input.color,
+    });
+
+    // Configurar permisos por defecto
+    await this.setDefaultPermissions(shop.id);
+
+    return shop;
+  }
+
+  /**
+   * Configura permisos por defecto para una tienda
+   */
+  private async setDefaultPermissions(shopId: number): Promise<void> {
+    const defaultPermissions: ShopPermissionInput[] = [
+      { role: 'owner', canView: true, canOrder: true, canApprove: true },
+      { role: 'admin', canView: true, canOrder: true, canApprove: true },
+      { role: 'manager', canView: true, canOrder: true, canApprove: false },
+      { role: 'senior_tech', canView: true, canOrder: false, canApprove: false },
+      { role: 'technician', canView: true, canOrder: false, canApprove: false },
+      { role: 'apprentice', canView: false, canOrder: false, canApprove: false },
+      { role: 'receptionist', canView: true, canOrder: false, canApprove: false },
+      { role: 'accountant', canView: true, canOrder: false, canApprove: false },
+      { role: 'viewer', canView: true, canOrder: false, canApprove: false },
+    ];
+
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await (await getDb())!.insert(shopRolePermissions).values(
+      defaultPermissions.map((p: any) => ({
+        shopId,
+        role: p.role,
+        canView: p.canView,
+        canOrder: p.canOrder,
+        canApprove: p.canApprove,
+        maxOrderAmount: p.maxOrderAmount?.toString(),
+      }))
+    );
+  }
+
+  /**
+   * Actualiza permisos de una tienda
+   */
+  async updateShopPermissions(shopId: number, permissions: ShopPermissionInput[]): Promise<void> {
+    if (this.userRole !== 'owner' && this.userRole !== 'admin') {
+      throw new Error('No tienes permiso para modificar permisos');
+    }
+
+    // Eliminar permisos existentes
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await (await getDb())!.delete(shopRolePermissions).where(eq(shopRolePermissions.shopId, shopId));
+
+    // Insertar nuevos permisos
+    if (permissions.length > 0) {
+      await (await getDb())!.insert(shopRolePermissions).values(
+        permissions.map((p: any) => ({
+          shopId,
+          role: p.role,
+          canView: p.canView,
+          canOrder: p.canOrder,
+          canApprove: p.canApprove,
+          maxOrderAmount: p.maxOrderAmount?.toString(),
+        }))
+      );
+    }
+  }
+
+  /**
+   * Obtiene tiendas accesibles para el usuario
+   */
+  async getAccessibleShops(): Promise<Array<typeof shops.$inferSelect & { access: ShopAccessResult }>> {
+    console.log('[SHOP DEBUG] getAccessibleShops called, organizationId:', this.organizationId, 'userRole:', this.userRole);
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    console.log('[SHOP DEBUG] db obtained');
+    
+    // Obtener tiendas de la organización del usuario
+    console.log('[SHOP DEBUG] Querying orgShops for organizationId:', this.organizationId);
+    const orgShops = await (await getDb())!.query.shops.findMany({
+      where: and(
+        eq(shops.organizationId, this.organizationId),
+        eq(shops.isActive, true)
+      ),
+      orderBy: [desc(shops.isDefault), asc(shops.name)],
+    });
+    console.log('[SHOP DEBUG] orgShops found:', orgShops.length, orgShops);
+    
+    // Obtener tiendas tipo 'platform' (disponibles globalmente)
+    console.log('[SHOP DEBUG] Querying platformShops');
+    const platformShops = await (await getDb())!.query.shops.findMany({
+      where: and(
+        eq(shops.type, 'platform'),
+        eq(shops.isActive, true)
+      ),
+      orderBy: [desc(shops.isDefault), asc(shops.name)],
+    });
+    console.log('[SHOP DEBUG] platformShops found:', platformShops.length, platformShops);
+    
+    // Combinar y eliminar duplicados
+    const allShopsMap = new Map();
+    [...orgShops, ...platformShops].forEach(shop => {
+      allShopsMap.set(shop.id, shop);
+    });
+    const allShops = Array.from(allShopsMap.values());
+
+    const result = [];
+    for (const shop of allShops) {
+      const access = await this.checkShopAccess(shop.id);
+      if (access.canView) {
+        result.push({ ...shop, access });
+      }
+    }
+
+    return result;
+  }
+
+  // ============================================================================
+  // Products
+  // ============================================================================
+
+  /**
+   * Obtiene productos de una tienda
+   */
+  async getProducts(
+    shopId: number,
+    options: { category?: string; search?: string; page?: number; pageSize?: number } = {}
+  ): Promise<{ products: Array<typeof shopProducts.$inferSelect>; total: number }> {
+    const access = await this.checkShopAccess(shopId);
+    if (!access.canView) {
+      throw new Error('No tienes acceso a esta tienda');
+    }
+
+    const conditions = [eq(shopProducts.shopId, shopId)];
+
+    // Filtro por categoría
+    if (options.category) {
+      conditions.push(eq(shopProducts.category, options.category));
+    }
+
+    // Filtro por búsqueda
+    if (options.search) {
+      const searchTerm = `%${options.search.toLowerCase()}%`;
+      conditions.push(
+        sql`(LOWER(${shopProducts.name}) LIKE ${searchTerm} OR LOWER(${shopProducts.description}) LIKE ${searchTerm} OR LOWER(${shopProducts.sku}) LIKE ${searchTerm})`
+      );
+    }
+
+    const page = options.page || 1;
+    const pageSize = options.pageSize || 20;
+
+    const [products, countResult] = await Promise.all([
+      (await getDb())!.query.shopProducts.findMany({
+        where: and(...conditions),
+        orderBy: [asc(shopProducts.name)],
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+      }),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(shopProducts)
+        .where(and(...conditions)),
+    ]);
+
+    return {
+      products,
+      total: countResult[0]?.count || 0,
+    };
+  }
+
+  // ============================================================================
+  // Cart
+  // ============================================================================
+
+  /**
+   * Obtiene o crea el carrito del usuario
+   */
+  async getOrCreateCart(shopId: number): Promise<typeof shopCarts.$inferSelect> {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    let cart = await (await getDb())!.query.shopCarts.findFirst({
+      where: and(
+        eq(shopCarts.userId!, this.userId!),
+        eq(shopCarts.shopId, shopId),
+        eq(shopCarts.isActive, true)
+      ),
+    });
+
+    if (!cart) {
+      [cart] = await (await getDb())!.insert(shopCarts).values({
+        organizationId: this.organizationId,
+        userId: this.userId!,
+        shopId,
+      });
+    }
+
+    return cart;
+  }
+
+  /**
+   * Añade un producto al carrito
+   */
+  async addToCart(shopId: number, productId: number, quantity: number = 1): Promise<void> {
+    const access = await this.checkShopAccess(shopId);
+    if (!access.canOrder) {
+      throw new Error('No tienes permiso para hacer pedidos en esta tienda');
+    }
+
+    const cart = await this.getOrCreateCart(shopId);
+
+    // Verificar si el producto ya está en el carrito
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const existingItem = await (await getDb())!.query.shopCartItems.findFirst({
+      where: and(
+        eq(shopCartItems.cartId, cart.id),
+        eq(shopCartItems.productId!, productId)
+      ),
+    });
+
+    if (existingItem) {
+      await db
+        .update(shopCartItems)
+        .set({
+          quantity: existingItem.quantity + quantity,
+          updatedAt: new Date(),
+        })
+        .where(eq(shopCartItems.id, existingItem.id));
+    } else {
+      await (await getDb())!.insert(shopCartItems).values({
+        cartId: cart.id,
+        productId,
+        quantity,
+      });
+    }
+  }
+
+  /**
+   * Obtiene el contenido del carrito
+   */
+  async getCartContents(shopId: number): Promise<{
+    cart: typeof shopCarts.$inferSelect;
+    items: Array<typeof shopCartItems.$inferSelect & { product: typeof shopProducts.$inferSelect }>;
+    total: number;
+  }> {
+    const cart = await this.getOrCreateCart(shopId);
+
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const items = await (await getDb())!.query.shopCartItems.findMany({
+      where: eq(shopCartItems.cartId, cart.id),
+      with: {
+        product: true,
+      },
+    });
+
+    const total = items.reduce((sum, item) => {
+      const price = parseFloat(item.product?.price || '0');
+      return sum + price * item.quantity;
+    }, 0);
+
+    return { cart, items: items as any, total };
+  }
+
+  // ============================================================================
+  // Orders
+  // ============================================================================
+
+  /**
+   * Crea un pedido desde el carrito
+   */
+  async createOrderFromCart(shopId: number, shippingAddress: OrderInput['shippingAddress'], notes?: string): Promise<typeof shopOrders.$inferSelect> {
+    const { items, total } = await this.getCartContents(shopId);
+
+    if (items.length === 0) {
+      throw new Error('El carrito está vacío');
+    }
+
+    const orderCheck = await this.canPlaceOrder(shopId, total);
+    if (!orderCheck.allowed) {
+      throw new Error(`No puedes realizar este pedido: ${orderCheck.reason}`);
+    }
+
+    // Calcular totales
+    let subtotal = 0;
+    let vatAmount = 0;
+
+    for (const item of items) {
+      const price = parseFloat(item.product.price);
+      const vatRate = parseFloat(item.product.vatRate || '21') / 100;
+      const lineTotal = price * item.quantity;
+      const lineVat = lineTotal * vatRate / (1 + vatRate);
+
+      subtotal += lineTotal - lineVat;
+      vatAmount += lineVat;
+    }
+
+    // Crear pedido en estado draft (requiere confirmación del técnico)
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const [order] = await (await getDb())!.insert(shopOrders).values({
+      organizationId: this.organizationId,
+      shopId,
+      createdBy: this.userId!,
+      status: 'draft', // Pedido en borrador hasta que el técnico lo confirme
+      approvalStatus: 'not_required', // Se determinará al confirmar
+      subtotal: subtotal.toString(),
+      vatAmount: vatAmount.toString(),
+      total: total.toString(),
+      shippingAddress,
+      notes,
+    });
+
+    // Crear líneas de pedido
+    await (await getDb())!.insert(shopOrderLines).values(
+      items.map((item: any) => ({
+        orderId: order.id,
+        productId: item.productId!,
+        productName: item.product.name,
+        productSku: item.product.sku,
+        quantity: item.quantity,
+        unitPrice: item.product.price,
+        vatRate: item.product.vatRate,
+        total: (parseFloat(item.product.price) * item.quantity).toString(),
+      }))
+    );
+
+    // Vaciar carrito
+    const cart = await this.getOrCreateCart(shopId);
+    await (await getDb())!.delete(shopCartItems).where(eq(shopCartItems.cartId, cart.id));
+
+    return order;
+  }
+
+  /**
+   * Confirma un pedido (técnico confirma antes de hacerse efectivo)
+   */
+  async confirmOrder(orderId: number): Promise<void> {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const order = await (await getDb())!.query.shopOrders.findFirst({
+      where: and(
+        eq(shopOrders.id, orderId),
+        eq(shopOrders.organizationId, this.organizationId),
+        eq(shopOrders.createdBy, this.userId!) // Solo el creador puede confirmar
+      ),
+    });
+
+    if (!order) {
+      throw new Error('Pedido no encontrado o no tienes permiso para confirmarlo');
+    }
+
+    if (order.status !== 'draft') {
+      throw new Error('Solo se pueden confirmar pedidos en estado borrador');
+    }
+
+    // Verificar acceso
+    const access = await this.checkShopAccess(order.shopId);
+    if (!access.canOrder) {
+      throw new Error('No tienes permiso para hacer pedidos');
+    }
+
+    // Determinar si requiere aprobación
+    const total = parseFloat(order.total);
+    const requiresApproval = access.requiresApproval && 
+                            access.approvalThreshold !== null && 
+                            total > parseFloat(access.approvalThreshold.toString());
+
+    const db2 = await getDb();
+    if (!db2) throw new Error("Database not available");
+    await db2
+      .update(shopOrders)
+      .set({
+        status: requiresApproval ? 'pending' : 'approved',
+        approvalStatus: requiresApproval ? 'pending' : 'not_required',
+        updatedAt: new Date(),
+      })
+      .where(eq(shopOrders.id, orderId));
+  }
+
+  /**
+   * Aprueba un pedido (solo admin/owner o con permiso canApprove)
+   */
+  async approveOrder(orderId: number): Promise<void> {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const order = await (await getDb())!.query.shopOrders.findFirst({
+      where: and(
+        eq(shopOrders.id, orderId),
+        eq(shopOrders.organizationId, this.organizationId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error('Pedido no encontrado');
+    }
+
+    const access = await this.checkShopAccess(order.shopId);
+    if (!access.canApprove) {
+      throw new Error('No tienes permiso para aprobar pedidos');
+    }
+
+    await db
+      .update(shopOrders)
+      .set({
+        approvalStatus: 'approved',
+        approvedBy: this.userId!,
+        approvedAt: new Date(),
+        status: 'approved',
+        updatedAt: new Date(),
+      })
+      .where(eq(shopOrders.id, orderId));
+  }
+
+  /**
+   * Rechaza un pedido
+   */
+  async rejectOrder(orderId: number, reason: string): Promise<void> {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const order = await (await getDb())!.query.shopOrders.findFirst({
+      where: and(
+        eq(shopOrders.id, orderId),
+        eq(shopOrders.organizationId, this.organizationId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error('Pedido no encontrado');
+    }
+
+    const access = await this.checkShopAccess(order.shopId);
+    if (!access.canApprove) {
+      throw new Error('No tienes permiso para rechazar pedidos');
+    }
+
+    await db
+      .update(shopOrders)
+      .set({
+        approvalStatus: 'rejected',
+        approvedBy: this.userId!,
+        approvedAt: new Date(),
+        rejectionReason: reason,
+        status: 'cancelled',
+        updatedAt: new Date(),
+      })
+      .where(eq(shopOrders.id, orderId));
+  }
+
+  /**
+   * Obtiene pedidos de la organización
+   */
+  async getOrders(options: { status?: OrderStatus; shopId?: number; page?: number; pageSize?: number } = {}): Promise<{
+    orders: Array<typeof shopOrders.$inferSelect>;
+    total: number;
+  }> {
+    const conditions = [eq(shopOrders.organizationId, this.organizationId)];
+
+    if (options.status) {
+      conditions.push(eq(shopOrders.status, options.status));
+    }
+    if (options.shopId) {
+      conditions.push(eq(shopOrders.shopId, options.shopId));
+    }
+
+    const page = options.page || 1;
+    const pageSize = options.pageSize || 20;
+
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const [orders, countResult] = await Promise.all([
+      (await getDb())!.query.shopOrders.findMany({
+        where: and(...conditions),
+        orderBy: [desc(shopOrders.createdAt)],
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        with: {
+          shop: true,
+          lines: true,
+        },
+      }),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(shopOrders)
+        .where(and(...conditions)),
+    ]);
+
+    return {
+      orders,
+      total: countResult[0]?.count || 0,
+    };
+  }
+
+  /**
+   * Obtiene pedidos pendientes de aprobación
+   */
+  async getPendingApprovals(): Promise<Array<typeof shopOrders.$inferSelect>> {
+    // Solo admin/owner o usuarios con permiso canApprove
+    if (this.userRole !== 'owner' && this.userRole !== 'admin') {
+      // Verificar si tiene permiso en alguna tienda
+      const db = await getDb();
+      if (!db) return [];
+      const permissions = await (await getDb())!.query.shopRolePermissions.findMany({
+        where: and(
+          eq(shopRolePermissions.role, this.userRole),
+          eq(shopRolePermissions.canApprove, true)
+        ),
+      });
+
+      if (permissions.length === 0) {
+        return [];
+      }
+    }
+
+    const db = await getDb();
+    if (!db) return [];
+    return (await getDb())!.query.shopOrders.findMany({
+      where: and(
+        eq(shopOrders.organizationId, this.organizationId),
+        eq(shopOrders.approvalStatus, 'pending')
+      ),
+      orderBy: [asc(shopOrders.createdAt)],
+      with: {
+        shop: true,
+        lines: true,
+      },
+    });
+  }
+}
+
+// ============================================================================
+// Factory Function
+// ============================================================================
+
+export function createShopService(organizationId: number, userId: number, userRole: string): ShopService {
+  return new ShopService(organizationId, userId, userRole);
+}
+
+// ============================================================================
+// Encryption Utilities
+// ============================================================================
+
+/**
+ * Encripta una contraseña para almacenamiento seguro
+ */
+export function encryptPassword(password: string): string {
+  // Usar crypto para encriptar
+  const crypto = require('crypto');
+  const algorithm = 'aes-256-gcm';
+  const key = process.env.ENCRYPTION_KEY || crypto.randomBytes(32);
+  const iv = crypto.randomBytes(16);
+  
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'hex').slice(0, 32), iv);
+  let encrypted = cipher.update(password, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  const authTag = cipher.getAuthTag();
+  
+  // Formato: iv:authTag:encrypted
+  return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+}
+
+/**
+ * Desencripta una contraseña almacenada
+ */
+export function decryptPassword(encryptedPassword: string): string {
+  const crypto = require('crypto');
+  const algorithm = 'aes-256-gcm';
+  const key = process.env.ENCRYPTION_KEY || '';
+  
+  const parts = encryptedPassword.split(':');
+  if (parts.length !== 3) {
+    throw new Error('Invalid encrypted password format');
+  }
+  
+  const [ivHex, authTagHex, encrypted] = parts;
+  const iv = Buffer.from(ivHex, 'hex');
+  const authTag = Buffer.from(authTagHex, 'hex');
+  
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex').slice(0, 32), iv);
+  decipher.setAuthTag(authTag);
+  
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  
+  return decrypted;
+}
+// Force rebuild Thu Jan 22 06:34:22 EST 2026

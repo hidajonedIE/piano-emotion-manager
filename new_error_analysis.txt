@@ -1,0 +1,21 @@
+NUEVOS ERRORES después del deployment b26554e:
+
+Hay DOS tipos de errores diferentes:
+
+1. Errores MÁS RECIENTES (22:30:03, 22:30:01, 22:29:58):
+   Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@/drizzle' imported from /var/task/server/services/distributor/distributor.service.js
+
+2. Errores ANTERIORES (22:23 y antes):
+   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/var/task/drizzle/schema' imported from /var/task/drizzle/distributor-schema.js
+
+CONCLUSIÓN:
+- El fix de agregar .js a los imports relativos FUNCIONÓ para los errores del tipo 2
+- PERO ahora hay un NUEVO error: los servicios están usando el alias '@/drizzle' que NO está configurado correctamente en producción
+
+El problema es que en los archivos de services (como distributor.service.ts) se está usando:
+  import { ... } from '@/drizzle/schema';
+
+Pero el alias '@/' NO funciona en producción (Vercel). Necesito cambiar TODOS los imports de '@/drizzle/...' a rutas relativas con extensión .js
+
+Archivos afectados:
+- server/services/distributor/distributor.service.ts (y probablemente otros services)

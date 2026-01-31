@@ -1,0 +1,50 @@
+app/settings/usage.tsx(48,21): error TS2367: This comparison appears to be unintentional because the types 'SubscriptionPlan | undefined' and '"PREMIUM_IA"' have no overlap.
+app/settings/usage.tsx(67,16): error TS2367: This comparison appears to be unintentional because the types 'SubscriptionPlan | undefined' and '"PREMIUM_IA"' have no overlap.
+app/settings/usage.tsx(67,59): error TS2367: This comparison appears to be unintentional because the types 'SubscriptionPlan | undefined' and '"PROFESSIONAL"' have no overlap.
+app/teams/index.tsx(810,16): error TS2339: Property 'small' does not exist on type '{ sm: { shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }; md: { shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }; lg: { ...; }; }'.
+app/whats-new.tsx(145,22): error TS2322: Type 'any[] | { flex: number; backgroundColor: string; }' is not assignable to type 'ViewStyle'.
+app/workflows/index.tsx(260,25): error TS2339: Property 'executionCount' does not exist on type 'Workflow'.
+app/workflows/index.tsx(263,21): error TS2339: Property 'lastExecuted' does not exist on type 'Workflow'.
+app/workflows/index.tsx(267,44): error TS2339: Property 'lastExecuted' does not exist on type 'Workflow'.
+app/workflows/index.tsx(290,17): error TS2783: 'id' is specified more than once, so this usage will be overwritten.
+app/workflows/index.tsx(296,28): error TS2345: Argument of type '(prev: { id: string; name: string; description: string; trigger: string; actions: { type: string; }[]; enabled: boolean; executionCount: number; lastExecuted: string; }[]) => ({ id: string; name: string; ... 5 more ...; lastExecuted: string; } | { ...; })[]' is not assignable to parameter of type 'SetStateAction<{ id: string; name: string; description: string; trigger: string; actions: { type: string; }[]; enabled: boolean; executionCount: number; lastExecuted: string; }[]>'.
+app/workflows/index.tsx(386,27): error TS2345: Argument of type '(workflow: Workflow) => React.JSX.Element' is not assignable to parameter of type '(value: { id: string; name: string; description: string; trigger: string; actions: { type: string; }[]; enabled: boolean; executionCount: number; lastExecuted: string; }, index: number, array: { id: string; ... 6 more ...; lastExecuted: string; }[]) => Element'.
+components/ai/AIAssistant.tsx(91,5): error TS2769: No overload matches this call.
+components/ai/AIAssistant.tsx(91,17): error TS7006: Parameter 'data' implicitly has an 'any' type.
+components/barcode-scanner.tsx(102,16): error TS18046: 'err' is of type 'unknown'.
+components/breadcrumbs.tsx(46,7): error TS2769: No overload matches this call.
+components/client-map.tsx(142,32): error TS2339: Property 'name' does not exist on type 'Client'.
+components/client-map.tsx(143,24): error TS2339: Property 'city' does not exist on type 'Client'.
+components/client-map.tsx(169,16): error TS2339: Property 'street' does not exist on type 'Client'.
+components/client-map.tsx(170,25): error TS2339: Property 'street' does not exist on type 'Client'.
+components/client-map.tsx(171,18): error TS2339: Property 'streetNumber' does not exist on type 'Client'.
+components/client-map.tsx(171,55): error TS2339: Property 'streetNumber' does not exist on type 'Client'.
+components/client-map.tsx(173,16): error TS2339: Property 'city' does not exist on type 'Client'.
+components/client-map.tsx(173,40): error TS2339: Property 'city' does not exist on type 'Client'.
+components/client-map.tsx(174,16): error TS2339: Property 'province' does not exist on type 'Client'.
+components/client-map.tsx(174,44): error TS2339: Property 'province' does not exist on type 'Client'.
+components/client-map.tsx(175,16): error TS2339: Property 'postalCode' does not exist on type 'Client'.
+components/client-map.tsx(175,46): error TS2339: Property 'postalCode' does not exist on type 'Client'.
+components/client-map.tsx(229,73): error TS2339: Property 'name' does not exist on type 'Client'.
+components/client-map.tsx(248,35): error TS2339: Property 'city' does not exist on type 'Client'.
+components/client-map.tsx(252,42): error TS2339: Property 'street' does not exist on type 'Client'.
+components/client-map.tsx(252,65): error TS2339: Property 'city' does not exist on type 'Client'.
+components/client-map.tsx(252,86): error TS2339: Property 'province' does not exist on type 'Client'.
+components/client-selector.tsx(259,17): error TS2322: Type '{ style: ({ flex: number; fontSize: number; } | { color: string; })[]; placeholder: string; placeholderTextColor: string; onChangeText: Dispatch<SetStateAction<string>>; value: string; }' is not assignable to type 'IntrinsicAttributes & TextProps & { lightColor?: string | undefined; darkColor?: string | undefined; type?: "link" | "default" | "title" | "subtitle" | "defaultSemiBold" | undefined; }'.
+components/crm/ClientList.tsx(6,37): error TS2440: Import declaration conflicts with local declaration of 'ClientCardProps'.
+components/crm/ClientList.tsx(6,54): error TS2440: Import declaration conflicts with local declaration of 'ClientListProps'.
+components/crm/ClientList.tsx(89,46): error TS2339: Property 'status' does not exist on type 'ClientProfile'.
+components/dashboard-editor/dashboard-editor-tutorial.tsx(161,69): error TS2339: Property 'textTertiary' does not exist on type '{ text: string; textSecondary: string; background: string; card: string; cardBackground: string; border: string; primary: string; accent: string; success: string; warning: string; error: string; }'.
+components/dashboard-editor/dashboard-editor-tutorial.tsx(199,74): error TS2339: Property 'textTertiary' does not exist on type '{ text: string; textSecondary: string; background: string; card: string; cardBackground: string; border: string; primary: string; accent: string; success: string; warning: string; error: string; }'.
+components/dashboard-editor/dashboard-widgets.tsx(35,10): error TS2300: Duplicate identifier 'RecentServicesWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(36,10): error TS2300: Duplicate identifier 'StatsCardWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(37,10): error TS2300: Duplicate identifier 'RevenueSummaryWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(38,10): error TS2300: Duplicate identifier 'PaymentStatusWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(39,10): error TS2300: Duplicate identifier 'InventoryAlertsWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(42,10): error TS2300: Duplicate identifier 'CalendarWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(43,10): error TS2300: Duplicate identifier 'TasksWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(44,10): error TS2300: Duplicate identifier 'MapWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(45,10): error TS2300: Duplicate identifier 'ChartLineWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(46,10): error TS2300: Duplicate identifier 'ChartBarWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(47,10): error TS2300: Duplicate identifier 'ChartPieWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(50,10): error TS2300: Duplicate identifier 'RecentServicesWidget'.

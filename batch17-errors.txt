@@ -1,0 +1,50 @@
+components/digital-signature.tsx(87,23): error TS2339: Property 'touches' does not exist on type 'TouchEvent<Element> | MouseEvent<Element, MouseEvent>'.
+components/digital-signature.tsx(87,35): error TS2339: Property 'touches' does not exist on type 'TouchEvent<Element> | MouseEvent<Element, MouseEvent>'.
+components/digital-signature.tsx(87,58): error TS2339: Property 'clientY' does not exist on type 'TouchEvent<Element> | MouseEvent<Element, MouseEvent>'.
+components/einvoicing/EInvoicingConfigPanel.tsx(186,66): error TS2345: Argument of type '{ certificatePath?: string | undefined; certificatePassword?: string | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/einvoicing/EInvoicingConfigPanel.tsx(192,54): error TS2345: Argument of type '{ codiceDestinatario?: string | undefined; pecDestinatario?: string | undefined; regimeFiscale?: string | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/einvoicing/EInvoicingConfigPanel.tsx(198,62): error TS2345: Argument of type '{ profile?: string | undefined; leitwegId?: string | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/einvoicing/EInvoicingConfigPanel.tsx(204,62): error TS2345: Argument of type '{ siret?: string | undefined; profile?: string | undefined; chorusProEnabled?: boolean | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/einvoicing/EInvoicingConfigPanel.tsx(210,60): error TS2345: Argument of type '{ atSoftwareCertificateNumber?: string | undefined; serieDocumento?: string | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/einvoicing/EInvoicingConfigPanel.tsx(216,60): error TS2345: Argument of type '{ cvr?: string | undefined; ean?: string | undefined; nemhandelEnabled?: boolean | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/einvoicing/EInvoicingConfigPanel.tsx(222,60): error TS2345: Argument of type '{ enterpriseNumber?: string | undefined; accessPointId?: string | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/einvoicing/EInvoicingConfigPanel.tsx(228,54): error TS2345: Argument of type '{ vrn?: string | undefined; clientId?: string | undefined; clientSecret?: string | undefined; } | undefined' is not assignable to parameter of type 'string | number | boolean'.
+components/form/postal-code-input.tsx(54,27): error TS2345: Argument of type 'boolean | "" | null' is not assignable to parameter of type 'SetStateAction<boolean>'.
+components/global-search-bar.tsx(59,25): error TS2339: Property 'clientType' does not exist on type 'Client'.
+components/global-search-bar.tsx(60,25): error TS2339: Property 'clientType' does not exist on type 'Client'.
+components/global-search-bar.tsx(61,25): error TS2339: Property 'clientType' does not exist on type 'Client'.
+components/global-search-bar.tsx(62,25): error TS2339: Property 'clientType' does not exist on type 'Client'.
+components/inventory/InventoryDashboard.tsx(167,54): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, any>'.
+components/inventory/InventoryDashboard.tsx(354,38): error TS7006: Parameter 'alert' implicitly has an 'any' type.
+components/inventory/ProductList.tsx(21,15): error TS2305: Module '"../../drizzle/inventory-schema.js"' has no exported member 'ProductType'.
+components/inventory/ProductList.tsx(21,28): error TS2724: '"../../drizzle/inventory-schema.js"' has no exported member named 'ProductCategory'. Did you mean 'productCategoryEnum'?
+components/inventory/ProductList.tsx(102,11): error TS2607: JSX element class does not support attributes because it does not have a 'props' property.
+components/inventory/ProductList.tsx(102,12): error TS2786: 'Image' cannot be used as a JSX component.
+components/inventory/ProductList.tsx(190,14): error TS2304: Cannot find name 'ScrollView'.
+components/inventory/ProductList.tsx(210,15): error TS2304: Cannot find name 'ScrollView'.
+components/layout/ResponsiveLayout.tsx(21,11): error TS2769: No overload matches this call.
+components/layout/ResponsiveLayout.tsx(24,23): error TS2769: No overload matches this call.
+components/layout/ResponsiveLayout.tsx(30,13): error TS2769: No overload matches this call.
+components/layout/ResponsiveLayout.tsx(37,15): error TS2769: No overload matches this call.
+components/layout/ResponsiveLayout.tsx(47,13): error TS2769: No overload matches this call.
+components/layout/ResponsiveLayout.tsx(52,25): error TS2769: No overload matches this call.
+components/layout/ResponsiveLayout.tsx(67,3): error TS2322: Type '{ position: any; top: number; height: "100vh"; } | { position: "relative"; top?: undefined; height?: undefined; }' is not assignable to type 'ViewStyle | TextStyle | ImageStyle'.
+components/lazy-components.ts(55,9): error TS2322: Type 'Promise<typeof import("/home/ubuntu/piano-emotion-fix/components/calendar-view")>' is not assignable to type 'Promise<{ default: ComponentType<any>; }>'.
+components/lazy-components.ts(63,9): error TS2322: Type 'Promise<typeof import("/home/ubuntu/piano-emotion-fix/components/charts")>' is not assignable to type 'Promise<{ default: ComponentType<any>; }>'.
+components/lazy-components.ts(119,9): error TS2322: Type 'Promise<typeof import("/home/ubuntu/piano-emotion-fix/components/dashboard/dashboard-alerts-detailed")>' is not assignable to type 'Promise<{ default: ComponentType<any>; }>'.
+components/lazy-components.ts(135,9): error TS2322: Type 'Promise<typeof import("/home/ubuntu/piano-emotion-fix/components/cookie-consent")>' is not assignable to type 'Promise<{ default: ComponentType<any>; }>'.
+components/lazy-components.ts(159,9): error TS2322: Type 'Promise<typeof import("/home/ubuntu/piano-emotion-fix/components/dashboard/dashboard-alerts-v2")>' is not assignable to type 'Promise<{ default: ComponentType<any>; }>'.
+components/modules/ModulesSettings.tsx(187,38): error TS18046: 'error' is of type 'unknown'.
+components/ownership-history.tsx(75,41): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/ownership-history.tsx(211,29): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/ownership-history.tsx(212,26): error TS7006: Parameter 'client' implicitly has an 'any' type.
+components/premium/index.tsx(31,17): error TS2323: Cannot redeclare exported variable 'PremiumFeature'.
+components/premium/index.tsx(87,17): error TS2323: Cannot redeclare exported variable 'UpgradePrompt'.
+components/premium/index.tsx(199,17): error TS2323: Cannot redeclare exported variable 'AccountStatusCard'.
+components/premium/index.tsx(319,17): error TS2323: Cannot redeclare exported variable 'PremiumBadge'.
+components/premium/index.tsx(343,17): error TS2323: Cannot redeclare exported variable 'TrialBanner'.
+components/premium/index.tsx(389,17): error TS2323: Cannot redeclare exported variable 'BasicAccountBanner'.
+components/premium/index.tsx(433,3): error TS2323: Cannot redeclare exported variable 'PremiumFeature'.
+components/premium/index.tsx(433,3): error TS2484: Export declaration conflicts with exported declaration of 'PremiumFeature'.
+components/premium/index.tsx(434,3): error TS2323: Cannot redeclare exported variable 'UpgradePrompt'.
+components/premium/index.tsx(434,3): error TS2484: Export declaration conflicts with exported declaration of 'UpgradePrompt'.

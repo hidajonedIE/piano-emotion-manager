@@ -1,0 +1,8 @@
+Errores encontrados en Vercel Logs (26 Dic 2025):
+
+Error: [ERR_MODULE_NOT_FOUND]: Cannot find module '/var/task/server/_core/trpc' imported from '/var/task/server/routers/team.router.ts'
+
+Endpoint afectado: /api/trpc/clients.listAll
+Status: 500
+
+Este error indica que hay un problema con la importación del módulo trpc en el archivo team.router.ts

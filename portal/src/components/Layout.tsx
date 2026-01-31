@@ -1,0 +1,40 @@
+import React from 'react';
+import { useLocation, Outlet } from 'react-router-dom';
+import AppLayout from './AppLayout';
+
+// Mapeo de rutas a títulos de página
+const routeTitles: Record<string, string> = {
+  '/': 'Dashboard',
+  '/pianos': 'Mis Pianos',
+  '/servicios': 'Servicios',
+  '/facturas': 'Facturas',
+  '/facturacion': 'Facturación',
+  '/citas': 'Citas',
+  '/agenda': 'Agenda',
+  '/mensajes': 'Mensajes',
+  '/clientes': 'Clientes',
+  '/inventario': 'Inventario',
+  '/store': 'Piano Emotion Store',
+  '/accesos-rapidos': 'Accesos Rápidos',
+  '/herramientas': 'Herramientas Avanzadas',
+  '/configuracion': 'Configuración',
+};
+
+export default function Layout() {
+  const location = useLocation();
+  
+  // Obtener el título basado en la ruta actual
+  let title = 'Dashboard';
+  for (const [path, pageTitle] of Object.entries(routeTitles)) {
+    if (location.pathname === path || location.pathname.startsWith(path + '/')) {
+      title = pageTitle;
+      break;
+    }
+  }
+
+  return (
+    <AppLayout title={title}>
+      <Outlet />
+    </AppLayout>
+  );
+}

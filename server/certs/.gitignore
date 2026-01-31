@@ -1,0 +1,7 @@
+# NUNCA subir certificados al repositorio
+*.p12
+*.pfx
+*.pem
+*.key
+*.crt
+*.cer

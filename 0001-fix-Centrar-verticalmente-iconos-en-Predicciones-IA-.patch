@@ -1,0 +1,48 @@
+From aedb4d0b5d5d7384cc076419f5a8b3025a00f184 Mon Sep 17 00:00:00 2001
+From: Javier Navarrete <jnavarrete@inboundemotion.com>
+Date: Mon, 19 Jan 2026 13:43:09 -0500
+Subject: [PATCH] =?UTF-8?q?fix:=20Centrar=20verticalmente=20iconos=20en=20?=
+ =?UTF-8?q?Predicciones=20IA=20y=20horas=20en=20Pr=C3=B3ximas=20Citas?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Añadir gap y flexDirection al componente CircularIndicator para alineación perfecta
+- Añadir justifyContent: center al contenedor appointmentTime
+- Resolver desajustes visuales en el dashboard
+---
+ app/(drawer)/index.tsx | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/app/(drawer)/index.tsx b/app/(drawer)/index.tsx
+index 2c08f17..ecda1ae 100644
+--- a/app/(drawer)/index.tsx
++++ b/app/(drawer)/index.tsx
+@@ -636,6 +636,7 @@ const styles = StyleSheet.create({
+     alignItems: 'center',
+     justifyContent: 'center',
+     flex: 1,
++    gap: 4,
+   },
+   circle: {
+     width: 63,
+@@ -645,6 +646,7 @@ const styles = StyleSheet.create({
+     justifyContent: 'center',
+     alignItems: 'center',
+     backgroundColor: COLORS.white,
++    flexDirection: 'column',
+   },
+   circleValue: {
+     fontSize: 13,
+@@ -706,6 +708,8 @@ const styles = StyleSheet.create({
+   appointmentTime: {
+     width: 70,
+     marginRight: 12,
++    justifyContent: 'center',
++    alignItems: 'flex-start',
+   },
+   appointmentTimeText: {
+     fontSize: 14,
+-- 
+2.34.1
+

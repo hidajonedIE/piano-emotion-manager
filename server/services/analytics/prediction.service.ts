@@ -1,0 +1,615 @@
+/**
+import type { MySql2Database } from 'drizzle-orm/mysql2';
+import { getDb } from "../../db.js";
+type any = MySql2Database<Record<string, never>>;
+ * Servicio de Predicción de Demanda
+ * 
+ * Analíticas predictivas para anticipar necesidades del negocio
+ */
+
+// Tipos de predicción
+type PredictionType = 
+  | 'revenue'           // Predicción de ingresos
+  | 'services'          // Predicción de servicios
+  | 'client_churn'      // Riesgo de pérdida de clientes
+  | 'maintenance'       // Necesidades de mantenimiento
+  | 'inventory'         // Demanda de inventario
+  | 'workload';         // Carga de trabajo
+
+// Interfaz de predicción
+interface Prediction {
+  type: PredictionType;
+  period: string;
+  value: number;
+  confidence: number;      // 0-100%
+  trend: 'up' | 'down' | 'stable';
+  factors: string[];       // Factores que influyen
+  recommendations: string[];
+}
+
+// Interfaz de cliente en riesgo
+interface ChurnRisk {
+  clientId: string;
+  clientName: string;
+  riskScore: number;       // 0-100
+  lastServiceDate: Date;
+  daysSinceLastService: number;
+  averageServiceInterval: number;
+  factors: string[];
+  suggestedAction: string;
+}
+
+// Interfaz de predicción de mantenimiento
+interface MaintenancePrediction {
+  pianoId: string;
+  pianoInfo: string;
+  clientName: string;
+  predictedDate: Date;
+  serviceType: string;
+  confidence: number;
+  basedOn: string;
+}
+
+export class PredictionService {
+  private db: any;
+
+  constructor(db: any) {
+    this.db = db;
+  }
+
+  // ============================================
+  // PREDICCIÓN DE INGRESOS
+  // ============================================
+
+  /**
+   * Predice los ingresos para los próximos meses
+   */
+  async predictRevenue(organizationId: string, months: number = 3): Promise<Prediction[]> {
+    // Obtener datos históricos de los últimos 12 meses
+    const historicalData = await this.getHistoricalRevenue(organizationId, 12);
+    
+    if (historicalData.length < 3) {
+      return [{
+        type: 'revenue',
+        period: 'Próximos meses',
+        value: 0,
+        confidence: 0,
+        trend: 'stable',
+        factors: ['Datos insuficientes para predicción'],
+        recommendations: ['Registra más servicios para obtener predicciones precisas'],
+      }];
+    }
+
+    // Calcular tendencia y estacionalidad
+    const trend = this.calculateTrend(historicalData);
+    const seasonality = this.calculateSeasonality(historicalData);
+    const average = historicalData.reduce((a: any, b: any) => a + b, 0) / historicalData.length;
+
+    const predictions: Prediction[] = [];
+    const now = new Date();
+
+    for (let i = 1; i <= months; i++) {
+      const targetMonth = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthIndex = targetMonth.getMonth();
+      
+      // Predicción logarítmica: y = average * (1 + trend * ln(x))
+      const logFactor = Math.log(historicalData.length + i);
+      const baseValue = average * (1 + trend * logFactor);
+      const seasonalFactor = seasonality[monthIndex] || 1;
+      const predictedValue = baseValue * seasonalFactor;
+
+      // Confianza basada en cantidad de datos y variabilidad
+      const variance = this.calculateVariance(historicalData);
+      const confidence = Math.max(30, Math.min(90, 100 - variance * 100));
+
+      predictions.push({
+        type: 'revenue',
+        period: targetMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+        value: Math.round(predictedValue * 100) / 100,
+        confidence: Math.round(confidence),
+        trend: trend > 0.02 ? 'up' : trend < -0.02 ? 'down' : 'stable',
+        factors: this.getRevenueFactor(trend, seasonalFactor),
+        recommendations: this.getRevenueRecommendations(trend, predictedValue, average),
+      });
+    }
+
+    return predictions;
+  }
+
+  private async getHistoricalRevenue(organizationId: string, months: number): Promise<number[]> {
+    const result = await getDb()().execute(`
+      SELECT 
+        DATE_TRUNC('month', created_at) as month,
+        COALESCE(SUM(total), 0) as total
+      FROM invoices
+      WHERE organization_id = $1 
+        AND status != 'draft'
+        AND created_at >= NOW() - INTERVAL '${months} months'
+      GROUP BY DATE_TRUNC('month', created_at)
+      ORDER BY month
+    `, [organizationId]);
+
+    return (result.rows || []).map((r: { total: string }) => parseFloat(r.total) || 0);
+  }
+
+  private calculateTrend(data: number[]): number {
+    if (data.length < 2) return 0;
+    
+    // Usar regresión logarítmica para capturar crecimiento no lineal
+    const n = data.length;
+    let sumLogX = 0, sumY = 0, sumLogXY = 0, sumLogX2 = 0;
+    
+    for (let i = 0; i < n; i++) {
+      const logX = Math.log(i + 1); // +1 para evitar log(0)
+      sumLogX += logX;
+      sumY += data[i];
+      sumLogXY += logX * data[i];
+      sumLogX2 += logX * logX;
+    }
+    
+    // Calcular pendiente logarítmica: y = a + b*ln(x)
+    const slope = (n * sumLogXY - sumLogX * sumY) / (n * sumLogX2 - sumLogX * sumLogX);
+    const average = sumY / n;
+    
+    return average > 0 ? slope / average : 0;
+  }
+
+  private calculateSeasonality(data: number[]): number[] {
+    // Simplificado: retorna factores estacionales basados en datos históricos
+    const seasonality = new Array(12).fill(1);
+    const average = data.reduce((a: any, b: any) => a + b, 0) / data.length;
+    
+    if (average > 0) {
+      data.forEach((value, index) => {
+        const monthIndex = (new Date().getMonth() - data.length + index + 1 + 12) % 12;
+        seasonality[monthIndex] = value / average;
+      });
+    }
+    
+    return seasonality;
+  }
+
+  private calculateVariance(data: number[]): number {
+    if (data.length < 2) return 0;
+    const mean = data.reduce((a: any, b: any) => a + b, 0) / data.length;
+    const squaredDiffs = data.map(value => Math.pow(value - mean, 2));
+    const avgSquaredDiff = squaredDiffs.reduce((a: any, b: any) => a + b, 0) / data.length;
+    return Math.sqrt(avgSquaredDiff) / (mean || 1);
+  }
+
+  private getRevenueFactor(trend: number, seasonalFactor: number): string[] {
+    const factors: string[] = [];
+    
+    if (trend > 0.05) factors.push('Tendencia de crecimiento sostenido');
+    else if (trend < -0.05) factors.push('Tendencia de decrecimiento');
+    else factors.push('Ingresos estables');
+    
+    if (seasonalFactor > 1.1) factors.push('Temporada alta esperada');
+    else if (seasonalFactor < 0.9) factors.push('Temporada baja esperada');
+    
+    return factors;
+  }
+
+  private getRevenueRecommendations(trend: number, predicted: number, average: number): string[] {
+    const recommendations: string[] = [];
+    
+    if (trend < -0.05) {
+      recommendations.push('Considera campañas de marketing para reactivar clientes');
+      recommendations.push('Revisa precios y ofertas de la competencia');
+    }
+    
+    if (predicted > average * 1.2) {
+      recommendations.push('Prepárate para mayor demanda');
+      recommendations.push('Considera contratar ayuda temporal');
+    }
+    
+    if (predicted < average * 0.8) {
+      recommendations.push('Buen momento para mantenimiento de equipos');
+      recommendations.push('Contacta clientes inactivos');
+    }
+    
+    return recommendations.length > 0 ? recommendations : ['Mantén el ritmo actual de trabajo'];
+  }
+
+  // ============================================
+  // PREDICCIÓN DE PÉRDIDA DE CLIENTES (CHURN)
+  // ============================================
+
+  /**
+   * Identifica clientes en riesgo de pérdida
+   */
+  async predictClientChurn(organizationId: string): Promise<ChurnRisk[]> {
+    // Obtener clientes con su historial de servicios
+    const result = await getDb()().execute(`
+      SELECT 
+        c.id,
+        c.name,
+        c.email,
+        MAX(s.created_at) as last_service,
+        COUNT(s.id) as service_count,
+        AVG(
+          EXTRACT(EPOCH FROM (
+            s.created_at - LAG(s.created_at) OVER (PARTITION BY c.id ORDER BY s.created_at)
+          )) / 86400
+        ) as avg_interval_days
+      FROM clients c
+      LEFT JOIN services s ON s.client_id = c.id
+      WHERE c.organization_id = $1
+      GROUP BY c.id, c.name, c.email
+      HAVING COUNT(s.id) > 0
+    `, [organizationId]);
+
+    const churnRisks: ChurnRisk[] = [];
+    const now = new Date();
+
+    for (const client of result.rows || []) {
+      const lastServiceDate = new Date(client.last_service);
+      const daysSinceLastService = Math.floor((now.getTime() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24));
+      const avgInterval = parseFloat(client.avg_interval_days) || 180; // Default 6 meses
+
+      // Calcular score de riesgo
+      let riskScore = 0;
+      const factors: string[] = [];
+
+      // Factor 1: Tiempo desde último servicio vs intervalo promedio
+      const intervalRatio = daysSinceLastService / avgInterval;
+      if (intervalRatio > 2) {
+        riskScore += 40;
+        factors.push('Muy por encima del intervalo habitual');
+      } else if (intervalRatio > 1.5) {
+        riskScore += 25;
+        factors.push('Por encima del intervalo habitual');
+      } else if (intervalRatio > 1) {
+        riskScore += 10;
+        factors.push('Cerca del intervalo habitual');
+      }
+
+      // Factor 2: Días absolutos sin servicio
+      if (daysSinceLastService > 365) {
+        riskScore += 30;
+        factors.push('Más de 1 año sin servicio');
+      } else if (daysSinceLastService > 180) {
+        riskScore += 15;
+        factors.push('Más de 6 meses sin servicio');
+      }
+
+      // Factor 3: Frecuencia histórica
+      if (client.service_count < 2) {
+        riskScore += 15;
+        factors.push('Pocos servicios históricos');
+      }
+
+      // Solo incluir clientes con riesgo significativo
+      if (riskScore >= 25) {
+        churnRisks.push({
+          clientId: client.id,
+          clientName: client.name,
+          riskScore: Math.min(100, riskScore),
+          lastServiceDate,
+          daysSinceLastService,
+          averageServiceInterval: Math.round(avgInterval),
+          factors,
+          suggestedAction: this.getSuggestedChurnAction(riskScore, daysSinceLastService),
+        });
+      }
+    }
+
+    // Ordenar por riesgo descendente
+    return churnRisks.sort((a: any, b: any) => b.riskScore - a.riskScore);
+  }
+
+  private getSuggestedChurnAction(riskScore: number, daysSince: number): string {
+    if (riskScore >= 70) {
+      return 'Contactar urgentemente con oferta especial';
+    } else if (riskScore >= 50) {
+      return 'Enviar recordatorio de mantenimiento';
+    } else if (daysSince > 180) {
+      return 'Enviar email de seguimiento';
+    }
+    return 'Programar contacto de cortesía';
+  }
+
+  // ============================================
+  // PREDICCIÓN DE MANTENIMIENTO
+  // ============================================
+
+  /**
+   * Predice cuándo los pianos necesitarán mantenimiento
+   */
+  async predictMaintenance(organizationId: string): Promise<MaintenancePrediction[]> {
+    // Obtener pianos con su historial de servicios
+    const result = await getDb()().execute(`
+      SELECT 
+        p.id as piano_id,
+        p.brand,
+        p.model,
+        p.type,
+        c.name as client_name,
+        s.type as service_type,
+        s.created_at as service_date,
+        LAG(s.created_at) OVER (PARTITION BY p.id, s.type ORDER BY s.created_at) as prev_service_date
+      FROM pianos p
+      JOIN clients c ON p.client_id = c.id
+      LEFT JOIN services s ON s.piano_id = p.id
+      WHERE p.organization_id = $1
+      ORDER BY p.id, s.type, s.created_at DESC
+    `, [organizationId]);
+
+    const predictions: MaintenancePrediction[] = [];
+    const pianoServices: Map<string, Map<string, Date[]>> = new Map();
+
+    // Agrupar servicios por piano y tipo
+    for (const row of result.rows || []) {
+      if (!row.service_date) continue;
+
+      const pianoKey = row.piano_id;
+      if (!pianoServices.has(pianoKey)) {
+        pianoServices.set(pianoKey, new Map());
+      }
+
+      const serviceType = row.service_type || 'general';
+      if (!pianoServices.get(pianoKey)!.has(serviceType)) {
+        pianoServices.get(pianoKey)!.set(serviceType, []);
+      }
+
+      pianoServices.get(pianoKey)!.get(serviceType)!.push(new Date(row.service_date));
+    }
+
+    // Calcular predicciones
+    const now = new Date();
+    const processedPianos = new Set<string>();
+
+    for (const row of result.rows || []) {
+      if (!row.piano_id || processedPianos.has(row.piano_id)) continue;
+      processedPianos.add(row.piano_id);
+
+      const pianoData = pianoServices.get(row.piano_id);
+      if (!pianoData) continue;
+
+      // Calcular intervalo promedio para cada tipo de servicio
+      for (const [serviceType, dates] of pianoData.entries()) {
+        if (dates.length < 1) continue;
+
+        // Calcular intervalo promedio
+        let avgInterval = 180; // Default 6 meses
+        if (dates.length >= 2) {
+          const intervals: number[] = [];
+          for (let i = 1; i < dates.length; i++) {
+            const diff = dates[i - 1].getTime() - dates[i].getTime();
+            intervals.push(diff / (1000 * 60 * 60 * 24));
+          }
+          avgInterval = intervals.reduce((a: any, b: any) => a + b, 0) / intervals.length;
+        }
+
+        // Predecir próxima fecha
+        const lastService = dates[0];
+        const predictedDate = new Date(lastService.getTime() + avgInterval * 24 * 60 * 60 * 1000);
+
+        // Solo incluir si la fecha predicha está en el futuro cercano (próximos 6 meses)
+        const sixMonthsFromNow = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
+        if (predictedDate > now && predictedDate < sixMonthsFromNow) {
+          predictions.push({
+            pianoId: row.piano_id,
+            pianoInfo: `${row.brand} ${row.model} (${row.type})`,
+            clientName: row.client_name,
+            predictedDate,
+            serviceType: serviceType === 'general' ? 'Mantenimiento general' : serviceType,
+            confidence: Math.min(90, 50 + dates.length * 10),
+            basedOn: `${dates.length} servicios anteriores, intervalo promedio: ${Math.round(avgInterval)} días`,
+          });
+        }
+      }
+    }
+
+    // Ordenar por fecha predicha
+    return predictions.sort((a: any, b: any) => a.predictedDate.getTime() - b.predictedDate.getTime());
+  }
+
+  // ============================================
+  // PREDICCIÓN DE CARGA DE TRABAJO
+  // ============================================
+
+  /**
+   * Predice la carga de trabajo para las próximas semanas
+   */
+  async predictWorkload(organizationId: string, weeks: number = 4): Promise<any[]> {
+    // Obtener citas programadas
+    const appointmentsResult = await getDb()().execute(`
+      SELECT 
+        DATE_TRUNC('week', date) as week,
+        COUNT(*) as appointments
+      FROM appointments
+      WHERE organization_id = $1 AND date >= CURRENT_DATE
+      GROUP BY DATE_TRUNC('week', date)
+      ORDER BY week
+    `, [organizationId]);
+
+    // Obtener histórico de servicios por semana
+    const historicalResult = await getDb()().execute(`
+      SELECT 
+        EXTRACT(DOW FROM created_at) as day_of_week,
+        COUNT(*) as services
+      FROM services
+      WHERE organization_id = $1 AND created_at >= NOW() - INTERVAL '3 months'
+      GROUP BY EXTRACT(DOW FROM created_at)
+    `, [organizationId]);
+
+    const dayDistribution = new Array(7).fill(0);
+    let totalServices = 0;
+    for (const row of historicalResult.rows || []) {
+      dayDistribution[parseInt(row.day_of_week)] = parseInt(row.services);
+      totalServices += parseInt(row.services);
+    }
+
+    // Normalizar distribución
+    if (totalServices > 0) {
+      for (let i = 0; i < 7; i++) {
+        dayDistribution[i] = dayDistribution[i] / totalServices;
+      }
+    }
+
+    const predictions = [];
+    const now = new Date();
+
+    for (let w = 0; w < weeks; w++) {
+      const weekStart = new Date(now.getTime() + w * 7 * 24 * 60 * 60 * 1000);
+      const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+
+      // Buscar citas programadas para esta semana
+      const scheduledAppointments = (appointmentsResult.rows || []).find((r: { week: string; appointments?: string }) => {
+        const weekDate = new Date(r.week);
+        return weekDate >= weekStart && weekDate <= weekEnd;
+      });
+
+      const scheduled = parseInt(scheduledAppointments?.appointments) || 0;
+      
+      // Estimar servicios adicionales basados en histórico
+      const avgWeeklyServices = totalServices / 13; // 3 meses = ~13 semanas
+      const estimatedAdditional = Math.round(avgWeeklyServices * 0.3); // 30% de servicios no programados
+
+      predictions.push({
+        week: `Semana del ${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`,
+        scheduledAppointments: scheduled,
+        estimatedTotal: scheduled + estimatedAdditional,
+        busyDays: this.getBusyDays(dayDistribution),
+        recommendation: this.getWorkloadRecommendation(scheduled + estimatedAdditional, avgWeeklyServices),
+      });
+    }
+
+    return predictions;
+  }
+
+  private getBusyDays(distribution: number[]): string[] {
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const threshold = 1 / 7; // Promedio
+    
+    return distribution
+      .map((value, index) => ({ day: days[index], value }))
+      .filter(d => d.value > threshold * 1.2)
+      .sort((a: any, b: any) => b.value - a.value)
+      .slice(0, 3)
+      .map(d => d.day);
+  }
+
+  private getWorkloadRecommendation(estimated: number, average: number): string {
+    const ratio = estimated / (average || 1);
+    
+    if (ratio > 1.5) {
+      return 'Semana muy ocupada - considera reorganizar citas';
+    } else if (ratio > 1.2) {
+      return 'Semana ocupada - planifica con antelación';
+    } else if (ratio < 0.5) {
+      return 'Semana tranquila - buen momento para contactar clientes';
+    }
+    return 'Carga de trabajo normal';
+  }
+
+  // ============================================
+  // PREDICCIÓN DE INVENTARIO
+  // ============================================
+
+  /**
+   * Predice la demanda de inventario
+   */
+  async predictInventoryDemand(organizationId: string): Promise<any[]> {
+    // Obtener consumo histórico de inventario
+    const result = await getDb()().execute(`
+      SELECT 
+        i.id,
+        i.name,
+        i.current_stock,
+        i.min_stock,
+        i.unit,
+        COUNT(im.id) as usage_count,
+        SUM(im.quantity) as total_used,
+        AVG(im.quantity) as avg_per_service
+      FROM inventory_items i
+      LEFT JOIN inventory_movements im ON im.item_id = i.id AND im.type = 'out' AND im.created_at >= NOW() - INTERVAL '3 months'
+      WHERE i.organization_id = $1
+      GROUP BY i.id, i.name, i.current_stock, i.min_stock, i.unit
+      HAVING COUNT(im.id) > 0
+    `, [organizationId]);
+
+    const predictions = [];
+
+    for (const item of result.rows || []) {
+      const monthlyUsage = (parseFloat(item.total_used) || 0) / 3;
+      const currentStock = parseFloat(item.current_stock) || 0;
+      const minStock = parseFloat(item.min_stock) || 0;
+
+      if (monthlyUsage > 0) {
+        const monthsUntilEmpty = currentStock / monthlyUsage;
+        const monthsUntilMin = (currentStock - minStock) / monthlyUsage;
+
+        predictions.push({
+          itemId: item.id,
+          itemName: item.name,
+          currentStock,
+          minStock,
+          unit: item.unit,
+          monthlyUsage: Math.round(monthlyUsage * 10) / 10,
+          monthsUntilMin: Math.max(0, Math.round(monthsUntilMin * 10) / 10),
+          monthsUntilEmpty: Math.max(0, Math.round(monthsUntilEmpty * 10) / 10),
+          suggestedOrder: Math.max(0, Math.ceil(monthlyUsage * 3 - currentStock)), // Stock para 3 meses
+          urgency: monthsUntilMin < 1 ? 'high' : monthsUntilMin < 2 ? 'medium' : 'low',
+        });
+      }
+    }
+
+    // Ordenar por urgencia
+    return predictions.sort((a: any, b: any) => {
+      const urgencyOrder = { high: 0, medium: 1, low: 2 };
+      return urgencyOrder[a.urgency as keyof typeof urgencyOrder] - urgencyOrder[b.urgency as keyof typeof urgencyOrder];
+    });
+  }
+
+  // ============================================
+  // RESUMEN DE PREDICCIONES
+  // ============================================
+
+  /**
+   * Obtiene un resumen de todas las predicciones
+   */
+  async getPredictionsSummary(organizationId: string): Promise<any> {
+    const [revenue, churn, maintenance, workload, inventory] = await Promise.all([
+      this.predictRevenue(organizationId, 3),
+      this.predictClientChurn(organizationId),
+      this.predictMaintenance(organizationId),
+      this.predictWorkload(organizationId, 4),
+      this.predictInventoryDemand(organizationId),
+    ]);
+
+    return {
+      revenue: {
+        predictions: revenue,
+        trend: revenue[0]?.trend || 'stable',
+        nextMonthValue: revenue[0]?.value || 0,
+      },
+      clientChurn: {
+        atRiskCount: churn.length,
+        highRiskCount: churn.filter(c => c.riskScore >= 70).length,
+        topRiskClients: churn.slice(0, 5),
+      },
+      maintenance: {
+        upcomingCount: maintenance.length,
+        thisMonth: maintenance.filter(m => {
+          const now = new Date();
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          return m.predictedDate <= endOfMonth;
+        }).length,
+        predictions: maintenance.slice(0, 10),
+      },
+      workload: {
+        predictions: workload,
+        busiestWeek: workload.reduce((max, w) => w.estimatedTotal > max.estimatedTotal ? w : max, workload[0]),
+      },
+      inventory: {
+        urgentItems: inventory.filter(i => i.urgency === 'high').length,
+        predictions: inventory.slice(0, 10),
+      },
+      generatedAt: new Date(),
+    };
+  }
+}
+
+export default PredictionService;

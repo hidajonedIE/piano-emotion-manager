@@ -1,0 +1,50 @@
+api/distributor/index.ts(103,9): error TS2769: No overload matches this call.
+api/distributor/index.ts(127,43): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+api/distributor/index.ts(128,36): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+api/distributor/index.ts(129,33): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+api/init-shop.ts(27,47): error TS2769: No overload matches this call.
+api/user/settings.ts(27,28): error TS2554: Expected 2-3 arguments, but got 1.
+api/user/settings.ts(78,24): error TS2304: Cannot find name 'getAuthenticatedUserId'.
+api/user/settings.ts(127,7): error TS2322: Type '{}' is not assignable to type 'string'.
+api/user/settings.ts(183,41): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+api/user/settings.ts(191,43): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+api/webhooks/stripe.ts(135,14): error TS2304: Cannot find name 'res'.
+api/webhooks/stripe.ts(144,41): error TS2339: Property 'current_period_end' does not exist on type 'Response<Subscription>'.
+api/webhooks/stripe.ts(144,84): error TS2339: Property 'current_period_end' does not exist on type 'Response<Subscription>'.
+api/webhooks/stripe.ts(163,14): error TS2304: Cannot find name 'res'.
+api/webhooks/stripe.ts(179,41): error TS2339: Property 'current_period_end' does not exist on type 'Subscription'.
+api/webhooks/stripe.ts(179,84): error TS2339: Property 'current_period_end' does not exist on type 'Subscription'.
+api/webhooks/stripe.ts(194,14): error TS2304: Cannot find name 'res'.
+api/webhooks/stripe.ts(223,14): error TS2304: Cannot find name 'res'.
+app/(app)/calendar/index.tsx(37,9): error TS2322: Type '(event: { id: string; title: string; start: Date; end: Date; }) => void' is not assignable to type '(event: CalendarEvent) => void'.
+app/(app)/crm/index.tsx(85,69): error TS2339: Property 'price' does not exist on type 'Service'.
+app/(app)/crm/index.tsx(193,21): error TS7006: Parameter 'notes' implicitly has an 'any' type.
+app/(app)/inventory/products.tsx(65,5): error TS2322: Type 'string | PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>' is not assignable to type 'PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>'.
+app/(app)/inventory/products.tsx(66,5): error TS2322: Type 'string | PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", ... 11 more ..., "other"]>' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(85,5): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(85,16): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(85,31): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(85,42): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(85,53): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(86,5): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(86,21): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(86,30): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(86,46): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(86,61): error TS2322: Type 'string' is not assignable to type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>'.
+app/(app)/inventory/products.tsx(89,44): error TS2322: Type 'string' is not assignable to type 'PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>'.
+app/(app)/inventory/products.tsx(89,58): error TS2322: Type 'string' is not assignable to type 'PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>'.
+app/(app)/inventory/products.tsx(89,66): error TS2322: Type 'string' is not assignable to type 'PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>'.
+app/(app)/inventory/products.tsx(89,80): error TS2322: Type 'string' is not assignable to type 'PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>'.
+app/(app)/inventory/products.tsx(89,93): error TS2322: Type 'string' is not assignable to type 'PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>'.
+app/(app)/inventory/products.tsx(178,23): error TS2322: Type 'PgEnum<["spare_part", "tool", "consumable", "accessory", "other"]>' is not assignable to type 'Key | null | undefined'.
+app/(app)/inventory/products.tsx(203,23): error TS2322: Type 'PgEnum<["strings", "tuning_pins", "pin_blocks", "hammers", "dampers", "keys", "action_parts", "springs", "felts", "cloths", "leather", "soundboard", "bridges", "pedals", ... 10 more ..., "other"]>' is not assignable to type 'Key | null | undefined'.
+app/(app)/inventory/warehouses.tsx(63,27): error TS2749: 'warehouseTypeEnum' refers to a value, but is being used as a type here. Did you mean 'typeof warehouseTypeEnum'?
+app/(app)/inventory/warehouses.tsx(71,28): error TS2749: 'warehouseTypeEnum' refers to a value, but is being used as a type here. Did you mean 'typeof warehouseTypeEnum'?
+app/(app)/inventory/warehouses.tsx(81,73): error TS2538: Type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>' cannot be used as an index type.
+app/(app)/inventory/warehouses.tsx(82,35): error TS2538: Type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>' cannot be used as an index type.
+app/(app)/inventory/warehouses.tsx(82,80): error TS2538: Type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>' cannot be used as an index type.
+app/(app)/inventory/warehouses.tsx(100,71): error TS2538: Type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>' cannot be used as an index type.
+app/(app)/inventory/warehouses.tsx(133,5): error TS2322: Type 'string | PgEnum<["central", "vehicle", "workshop", "consignment"]>' is not assignable to type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>'.
+app/(app)/inventory/warehouses.tsx(141,55): error TS2322: Type 'string' is not assignable to type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>'.
+app/(app)/inventory/warehouses.tsx(141,66): error TS2322: Type 'string' is not assignable to type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>'.
+app/(app)/inventory/warehouses.tsx(141,78): error TS2322: Type 'string' is not assignable to type 'PgEnum<["central", "vehicle", "workshop", "consignment"]>'.

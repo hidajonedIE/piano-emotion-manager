@@ -1,0 +1,50 @@
+components/dashboard-editor/dashboard-widgets.tsx(51,10): error TS2300: Duplicate identifier 'StatsCardWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(52,10): error TS2300: Duplicate identifier 'RevenueSummaryWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(53,10): error TS2300: Duplicate identifier 'PaymentStatusWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(54,10): error TS2300: Duplicate identifier 'InventoryAlertsWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(57,10): error TS2300: Duplicate identifier 'CalendarWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(58,10): error TS2300: Duplicate identifier 'TasksWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(59,10): error TS2300: Duplicate identifier 'MapWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(60,10): error TS2300: Duplicate identifier 'ChartLineWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(61,10): error TS2300: Duplicate identifier 'ChartBarWidget'.
+components/dashboard-editor/dashboard-widgets.tsx(62,10): error TS2300: Duplicate identifier 'ChartPieWidget'.
+components/dashboard-editor/widgets/AlertsWidget.tsx(66,32): error TS2769: No overload matches this call.
+components/dashboard-editor/widgets/ChartBarWidget.tsx(101,10): error TS2769: No overload matches this call.
+components/dashboard-editor/widgets/PredictionsWidget.tsx(75,24): error TS2367: This comparison appears to be unintentional because the types '"stable"' and '"up"' have no overlap.
+components/dashboard-editor/widgets/PredictionsWidget.tsx(75,63): error TS2367: This comparison appears to be unintentional because the types '"stable"' and '"down"' have no overlap.
+components/dashboard-editor/widgets/PredictionsWidget.tsx(76,23): error TS2367: This comparison appears to be unintentional because the types '"stable"' and '"up"' have no overlap.
+components/dashboard-editor/widgets/PredictionsWidget.tsx(76,66): error TS2367: This comparison appears to be unintentional because the types '"stable"' and '"down"' have no overlap.
+components/dashboard-editor/widgets/PredictionsWidget.tsx(90,59): error TS2339: Property 'riskScore' does not exist on type 'never'.
+components/dashboard-editor/widgets/RecentInvoicesWidget.tsx(89,28): error TS2339: Property 'number' does not exist on type 'Invoice'.
+components/dashboard/EnhancedDashboard.tsx(300,22): error TS2304: Cannot find name 'user'.
+components/dashboard/EnhancedDashboard.tsx(301,22): error TS2304: Cannot find name 'user'.
+components/dashboard/alert-config-banner.tsx(25,13): error TS2339: Property 'alertSettings' does not exist on type '"The property 'client' in your router collides with a built-in method, rename this router or procedure on your backend."'.
+components/dashboard/alert-config-banner.tsx(39,7): error TS2353: Object literal may only specify known properties, and 'hasSeenAdvancedConfigTip' does not exist in type '{ tuningPendingDays?: number | undefined; tuningUrgentDays?: number | undefined; regulationPendingDays?: number | undefined; regulationUrgentDays?: number | undefined; appointmentsNoticeDays?: number | undefined; ... 13 more ...; weeklyDigestDay?: number | undefined; }'.
+components/dashboard/dashboard-access-shortcuts.tsx(70,82): error TS2339: Property 'urgentCount' does not exist on type 'DashboardAccessShortcutsProps'.
+components/dashboard/dashboard-alerts-detailed.tsx(46,40): error TS2339: Property 'acknowledgeAlert' does not exist on type 'DecorateRouterRecord<{ ctx: TrpcContext; meta: object; errorShape: DefaultErrorShape; transformer: true; }, DecorateCreateRouterOptions<{ getAll: QueryProcedure<{ input: { limit?: number | undefined; offset?: number | undefined; } | undefined; output: { ...; } | { ...; }; meta: object; }>; }>>'.
+components/dashboard/dashboard-alerts-detailed.tsx(47,36): error TS2339: Property 'dismissAlert' does not exist on type 'DecorateRouterRecord<{ ctx: TrpcContext; meta: object; errorShape: DefaultErrorShape; transformer: true; }, DecorateCreateRouterOptions<{ getAll: QueryProcedure<{ input: { limit?: number | undefined; offset?: number | undefined; } | undefined; output: { ...; } | { ...; }; meta: object; }>; }>>'.
+components/dashboard/dashboard-alerts-detailed.tsx(371,51): error TS2345: Argument of type 'ServiceType' is not assignable to parameter of type '"tuning" | "repair" | "regulation"'.
+components/dashboard/dashboard-alerts-detailed.tsx(399,41): error TS2345: Argument of type 'ServiceType' is not assignable to parameter of type '"tuning" | "repair" | "regulation"'.
+components/dashboard/dashboard-alerts-detailed.tsx(558,32): error TS2339: Property 'xs' does not exist on type '{ sm: number; md: number; lg: number; xl: number; full: number; }'.
+components/dashboard/dashboard-alerts-detailed.tsx(578,32): error TS2339: Property 'xs' does not exist on type '{ sm: number; md: number; lg: number; xl: number; full: number; }'.
+components/dashboard/dashboard-alerts-v2.tsx(58,34): error TS2345: Argument of type '"info"' is not assignable to parameter of type '"text" | "icon" | "error" | "success" | "warning" | "border" | "background" | "surface" | "surfaceElevated" | "textSecondary" | "textDisabled" | "tint" | "accent" | "tabIconDefault" | "tabIconSelected" | "separator" | "cardBackground" | "cardBorder"'.
+components/dashboard/dashboard-alerts-v2.tsx(122,35): error TS2339: Property 'name' does not exist on type 'Client'.
+components/dashboard/dashboard-alerts-v2.tsx(146,56): error TS2339: Property 'name' does not exist on type 'Client'.
+components/dashboard/dashboard-alerts-v2.tsx(155,56): error TS2339: Property 'name' does not exist on type 'Client'.
+components/dashboard/dashboard-alerts-v2.tsx(188,58): error TS2339: Property 'name' does not exist on type 'Client'.
+components/dashboard/dashboard-alerts-v2.tsx(197,58): error TS2339: Property 'name' does not exist on type 'Client'.
+components/dashboard/dashboard-alerts-v2.tsx(208,56): error TS2339: Property 'name' does not exist on type 'Client'.
+components/dashboard/dashboard-alerts-v2.tsx(217,56): error TS2339: Property 'name' does not exist on type 'Client'.
+components/dashboard/dashboard-alerts-v2.tsx(224,76): error TS2345: Argument of type '({ text: string; onPress: () => void; } | { text: string; style: string; })[]' is not assignable to parameter of type 'AlertButton[]'.
+components/dashboard/dashboard-help.tsx(28,42): error TS2345: Argument of type '"textTertiary"' is not assignable to parameter of type '"text" | "icon" | "error" | "success" | "warning" | "border" | "background" | "surface" | "surfaceElevated" | "textSecondary" | "textDisabled" | "tint" | "accent" | "tabIconDefault" | "tabIconSelected" | "separator" | "cardBackground" | "cardBorder"'.
+components/dashboard/dashboard-recent-services.tsx(33,38): error TS2367: This comparison appears to be unintentional because the types 'string' and 'number' have no overlap.
+components/dashboard/dashboard-recent-services.tsx(34,51): error TS2551: Property 'lastName' does not exist on type 'Client'. Did you mean 'lastName1'?
+components/dashboard/dashboard-recent-services.tsx(38,36): error TS2367: This comparison appears to be unintentional because the types 'string' and 'number' have no overlap.
+components/dashboard/dashboard-recent-services.tsx(92,41): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+components/dashboard/dashboard-recent-services.tsx(93,39): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+components/dashboard/dashboard-settings-panel.tsx(13,3): error TS2724: '"@/hooks/use-dashboard-preferences"' has no exported member named 'DashboardSection'. Did you mean 'DashboardSectionId'?
+components/dashboard/dashboard-settings-panel.tsx(14,3): error TS2724: '"@/hooks/use-dashboard-preferences"' has no exported member named 'AIIconPosition'. Did you mean 'AIIconFreePosition'?
+components/dashboard/dashboard-settings-panel.tsx(54,28): error TS2554: Expected 1 arguments, but got 2.
+components/digital-signature.tsx(86,23): error TS2339: Property 'touches' does not exist on type 'TouchEvent<Element> | MouseEvent<Element, MouseEvent>'.
+components/digital-signature.tsx(86,35): error TS2339: Property 'touches' does not exist on type 'TouchEvent<Element> | MouseEvent<Element, MouseEvent>'.
+components/digital-signature.tsx(86,58): error TS2339: Property 'clientX' does not exist on type 'TouchEvent<Element> | MouseEvent<Element, MouseEvent>'.

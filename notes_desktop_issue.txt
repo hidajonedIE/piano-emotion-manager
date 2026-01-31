@@ -1,0 +1,7 @@
+Problema detectado en versión desktop:
+- El icono del piano NO es blanco (se ve azul/original)
+- El header tiene un color diferente (más morado/azulado)
+- El fondo crema se ve correctamente
+
+El problema es que tintColor no funciona igual en web que en móvil nativo.
+Necesito usar una solución CSS para web.

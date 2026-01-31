@@ -1,0 +1,1216 @@
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ClientSelector } from '@/components/client-selector';
+import { useClientsData, usePianosData, useServicesData } from '@/hooks/data';
+import { useInventoryData } from '@/hooks/data';
+import { trpc } from '@/utils/trpc';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { BorderRadius, Spacing } from '@/constants/theme';
+import {
+  Service,
+  ServiceType,
+  MaintenanceLevel,
+  Task,
+  MaterialUsed,
+  PianoCondition,
+  SERVICE_TYPE_LABELS,
+  MAINTENANCE_LEVEL_LABELS,
+  MAINTENANCE_LEVEL_DESCRIPTIONS,
+  MAINTENANCE_LEVEL_COLORS,
+  PIANO_CONDITION_LABELS,
+  PIANO_CONDITION_COLORS,
+  getTasksForService,
+  generateId,
+  formatDate,
+  getClientFullName,
+} from '@/types';
+
+export default function ServiceDetailScreen() {
+  const { id, pianoId: initialPianoId, clientId: initialClientId } = useLocalSearchParams<{
+    id: string;
+    pianoId?: string;
+    clientId?: string;
+  }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const isNew = id === 'new';
+
+  const { clients, getClient } = useClientsData();
+  const { pianos, getPiano, getPianosByClient, updatePiano } = usePianosData();
+  const { services, addService, updateService, deleteService, getService } = useServicesData();
+  const { materials, getMaterial, updateMaterial } = useInventoryData();
+
+  const [isEditing, setIsEditing] = useState(isNew);
+  const [form, setForm] = useState<Partial<Service>>({
+    pianoId: initialPianoId || '',
+    clientId: initialClientId || '',
+    date: new Date().toISOString().split('T')[0],
+    type: 'tuning',
+    maintenanceLevel: undefined,
+    tasks: [],
+    materialsUsed: [],
+    notes: '',
+    cost: undefined,
+    duration: undefined,  // Duración en minutos
+    pianoConditionAfter: undefined,
+    photosBefore: [],  // Fotos antes del servicio
+    photosAfter: [],   // Fotos después del servicio
+    clientSignature: undefined,  // Firma del cliente
+    technicianNotes: '',  // Notas internas del técnico
+  });
+
+  // Estado para modal de añadir material
+  const [showMaterialModal, setShowMaterialModal] = useState(false);
+  const [selectedMaterialId, setSelectedMaterialId] = useState('');
+  const [materialQuantity, setMaterialQuantity] = useState('1');
+
+  const cardBg = useThemeColor({}, 'cardBackground');
+  const borderColor = useThemeColor({}, 'border');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const accent = useThemeColor({}, 'accent');
+  const error = useThemeColor({}, 'error');
+  const textColor = useThemeColor({}, 'text');
+
+  // Cargar datos del servicio existente
+  useEffect(() => {
+    if (!isNew && id) {
+      const service = getService(id);
+      if (service) {
+        setForm(service);
+      }
+    }
+  }, [id, isNew, services]);
+
+  // Cargar tipos de servicio desde la API (antes de los useEffect que lo necesitan)
+  const { data: serviceTypesData = [], isLoading: isLoadingServiceTypes } = trpc.serviceTypes.list.useQuery();
+
+  // Auto-cargar tareas cuando cambia el tipo de servicio
+  useEffect(() => {
+    if ((isNew || isEditing) && form.type && !isLoadingServiceTypes) {
+      // Buscar el tipo de servicio en el catálogo
+      const serviceType = serviceTypesData.find(st => st.code === form.type);
+      
+      let taskNames: string[] = [];
+      
+      if (serviceType?.defaultTasks) {
+        // Usar tareas del catálogo si existen
+        try {
+          const parsed = JSON.parse(serviceType.defaultTasks);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            taskNames = parsed;
+          } else {
+            // Si el array está vacío, usar tareas por defecto
+            taskNames = getTasksForService(form.type as ServiceType, form.maintenanceLevel);
+          }
+        } catch (e) {
+          // Si falla el parse, usar las tareas por defecto del sistema
+          taskNames = getTasksForService(form.type as ServiceType, form.maintenanceLevel);
+        }
+      } else {
+        // Fallback a tareas por defecto del sistema
+        taskNames = getTasksForService(form.type as ServiceType, form.maintenanceLevel);
+      }
+      
+      const tasks: Task[] = taskNames.map((name) => ({
+        id: generateId(),
+        name,
+        completed: false,
+      }));
+      setForm((prev) => ({ ...prev, tasks }));
+    }
+  }, [form.type, form.maintenanceLevel, isEditing, isNew, serviceTypesData, isLoadingServiceTypes]);
+
+  const selectedClient = form.clientId ? getClient(form.clientId) : null;
+  const selectedPiano = form.pianoId ? getPiano(form.pianoId) : null;
+  const clientPianos = form.clientId ? getPianosByClient(form.clientId) : [];
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    if (!form.clientId) {
+      Alert.alert('Error', 'Debes seleccionar un cliente');
+      return;
+    }
+    if (!form.pianoId) {
+      Alert.alert('Error', 'Debes seleccionar un piano');
+      return;
+    }
+    if (!form.date) {
+      Alert.alert('Error', 'La fecha es obligatoria');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      // Actualizar estado del piano si se especificó
+      if (form.pianoConditionAfter && selectedPiano) {
+        await updatePiano(selectedPiano.id, { condition: form.pianoConditionAfter });
+      }
+
+      if (isNew) {
+        await addService({
+          pianoId: form.pianoId,
+          clientId: form.clientId,
+          date: form.date,
+          type: form.type || 'tuning',
+          maintenanceLevel: form.maintenanceLevel,
+          tasks: form.tasks || [],
+          materialsUsed: form.materialsUsed || [],
+          notes: form.notes?.trim(),
+          cost: form.cost,
+          pianoConditionAfter: form.pianoConditionAfter,
+        });
+
+        // Descontar materiales del stock
+        if (form.materialsUsed && form.materialsUsed.length > 0) {
+          for (const mat of form.materialsUsed) {
+            const material = getMaterial(mat.materialId);
+            if (material) {
+              const newStock = Math.max(0, material.currentStock - mat.quantity);
+              await updateMaterial(mat.materialId, { currentStock: newStock });
+            }
+          }
+        }
+
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Servicio creado correctamente');
+        router.back();
+      } else if (id) {
+        await updateService(id, form);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Éxito', 'Servicio actualizado correctamente');
+        setIsEditing(false);
+      }
+    } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el servicio';
+      setSaveError(errorMessage);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Eliminar servicio',
+      '¿Estás seguro de que quieres eliminar este servicio?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            await deleteService(id!);
+            router.back();
+          },
+        },
+      ]
+    );
+  };
+
+  const toggleTask = (taskId: string) => {
+    const updatedTasks = form.tasks?.map((t) =>
+      t.id === taskId ? { ...t, completed: !t.completed } : t
+    );
+    setForm({ ...form, tasks: updatedTasks });
+  };
+
+  // Convertir tipos de servicio de la API al formato esperado
+  const serviceTypes: ServiceType[] = serviceTypesData
+    .filter(st => st.isActive)
+    .map(st => st.code as ServiceType);
+  
+  // Crear un mapa de etiquetas dinámicas
+  const dynamicServiceTypeLabels: Record<string, string> = {};
+  serviceTypesData.forEach(st => {
+    dynamicServiceTypeLabels[st.code] = st.label;
+  });
+  
+  const maintenanceLevels: MaintenanceLevel[] = ['basic', 'complete', 'premium'];
+
+  return (
+    <ThemedView style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: isNew ? 'Nuevo Servicio' : (dynamicServiceTypeLabels[form.type] || SERVICE_TYPE_LABELS[form.type as ServiceType] || 'Servicio'),
+          headerTitleStyle: {
+            fontFamily: 'Arkhip',
+            fontSize: 22,
+            fontWeight: '700',
+          },
+          headerLeft: () => (
+            <Pressable onPress={() => router.back()} style={{ marginRight: 16 }}>
+              <IconSymbol name="chevron.left" size={24} color={accent} />
+            </Pressable>
+          ),
+          headerRight: () =>
+            !isNew && (
+              <Pressable onPress={() => setIsEditing(!isEditing)}>
+                <ThemedText style={{ color: accent }}>
+                  {isEditing ? 'Cancelar' : 'Editar'}
+                </ThemedText>
+              </Pressable>
+            ),
+        }}
+      />
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Selección de cliente */}
+        {isEditing ? (
+          <View style={[styles.section, { paddingHorizontal: 0, paddingVertical: 0 }]}>
+            <ClientSelector
+              clients={clients}
+              selectedClientId={form.clientId}
+              onClientSelect={(clientId) => setForm({ ...form, clientId, pianoId: '' })}
+              onCreateClient={() => router.push('/client/new')}
+              showCreateOption={true}
+              label="Cliente"
+              required={true}
+            />
+          </View>
+        ) : (
+          <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>Cliente *</ThemedText>
+            <ThemedText style={styles.value}>{selectedClient ? getClientFullName(selectedClient) : '-'}</ThemedText>
+          </View>
+        )}
+
+        {/* Selección de piano */}
+        {form.clientId && (
+          <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>Piano *</ThemedText>
+            {isEditing ? (
+              clientPianos.length > 0 ? (
+                <View style={styles.pianoList}>
+                  {clientPianos.map((p) => (
+                    <Pressable
+                      key={p.id}
+                      style={[
+                        styles.pianoOption,
+                        { backgroundColor: cardBg, borderColor },
+                        form.pianoId === p.id && { backgroundColor: accent, borderColor: accent },
+                      ]}
+                      onPress={() => setForm({ ...form, pianoId: p.id })}
+                    >
+                      <ThemedText
+                        style={{ color: form.pianoId === p.id ? '#FFFFFF' : textColor }}
+                      >
+                        {p.brand} {p.model}
+                      </ThemedText>
+                      {p.serialNumber && (
+                        <ThemedText
+                          style={[
+                            styles.pianoSerial,
+                            { color: form.pianoId === p.id ? '#FFFFFF' : textSecondary },
+                          ]}
+                        >
+                          S/N: {p.serialNumber}
+                        </ThemedText>
+                      )}
+                    </Pressable>
+                  ))}
+                </View>
+              ) : (
+                <ThemedText style={{ color: textSecondary }}>
+                  Este cliente no tiene pianos registrados.
+                </ThemedText>
+              )
+            ) : (
+              <ThemedText style={styles.value}>
+                {selectedPiano ? `${selectedPiano.brand} ${selectedPiano.model}` : '-'}
+              </ThemedText>
+            )}
+          </View>
+        )}
+
+        {/* Fecha y tipo de servicio */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <View style={styles.inputGroup}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>Fecha *</ThemedText>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                value={form.date}
+                onChangeText={(text) => setForm({ ...form, date: text })}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={textSecondary}
+              />
+            ) : (
+              <ThemedText style={styles.value}>{form.date ? formatDate(form.date) : '-'}</ThemedText>
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>Tipo de servicio</ThemedText>
+            {isEditing ? (
+              <View style={styles.typeGrid}>
+                {serviceTypes.map((type) => (
+                  <Pressable
+                    key={type}
+                    style={[
+                      styles.typeOption,
+                      { backgroundColor: cardBg, borderColor },
+                      form.type === type && { backgroundColor: accent, borderColor: accent },
+                    ]}
+                    onPress={() => setForm({ ...form, type, maintenanceLevel: type === 'maintenance' ? 'basic' : undefined })}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.typeText,
+                        { color: form.type === type ? '#FFFFFF' : textSecondary },
+                      ]}
+                    >
+                      {dynamicServiceTypeLabels[type] || SERVICE_TYPE_LABELS[type]}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <ThemedText style={styles.value}>
+                {dynamicServiceTypeLabels[form.type] || SERVICE_TYPE_LABELS[form.type as ServiceType]}
+              </ThemedText>
+            )}
+          </View>
+
+          {/* Nivel de mantenimiento (solo para tipo maintenance) */}
+          {form.type === 'maintenance' && (
+            <View style={styles.inputGroup}>
+              <ThemedText style={[styles.label, { color: textSecondary }]}>
+                Nivel de mantenimiento
+              </ThemedText>
+              {isEditing ? (
+                <View style={styles.levelList}>
+                  {maintenanceLevels.map((level) => {
+                    const levelColor = MAINTENANCE_LEVEL_COLORS[level];
+                    return (
+                      <Pressable
+                        key={level}
+                        style={[
+                          styles.levelOption,
+                          { borderColor: levelColor },
+                          form.maintenanceLevel === level && { backgroundColor: levelColor },
+                        ]}
+                        onPress={() => setForm({ ...form, maintenanceLevel: level })}
+                      >
+                        <ThemedText
+                          style={[
+                            styles.levelTitle,
+                            { color: form.maintenanceLevel === level ? '#FFFFFF' : levelColor },
+                          ]}
+                        >
+                          {MAINTENANCE_LEVEL_LABELS[level]}
+                        </ThemedText>
+                        <ThemedText
+                          style={[
+                            styles.levelDesc,
+                            { color: form.maintenanceLevel === level ? '#FFFFFF' : textSecondary },
+                          ]}
+                          numberOfLines={2}
+                        >
+                          {MAINTENANCE_LEVEL_DESCRIPTIONS[level]}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ) : (
+                <ThemedText style={styles.value}>
+                  {form.maintenanceLevel ? MAINTENANCE_LEVEL_LABELS[form.maintenanceLevel] : '-'}
+                </ThemedText>
+              )}
+            </View>
+          )}
+
+          {/* Coste */}
+          <View style={styles.inputGroup}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>Coste (€)</ThemedText>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                value={form.cost?.toString() || ''}
+                onChangeText={(text) => setForm({ ...form, cost: text ? parseFloat(text) : undefined })}
+                placeholder="0.00"
+                placeholderTextColor={textSecondary}
+                keyboardType="decimal-pad"
+              />
+            ) : (
+              <ThemedText style={styles.value}>
+                {form.cost !== undefined ? `€${form.cost}` : '-'}
+              </ThemedText>
+            )}
+          </View>
+        </View>
+
+        {/* Estado del piano después del servicio */}
+        {isEditing && (
+          <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>
+              Estado del piano tras el servicio
+            </ThemedText>
+            <View style={styles.conditionRow}>
+              {(['tunable', 'needs_repair', 'unknown'] as PianoCondition[]).map((cond) => {
+                const color = PIANO_CONDITION_COLORS[cond];
+                return (
+                  <Pressable
+                    key={cond}
+                    style={[
+                      styles.conditionOption,
+                      { borderColor: color },
+                      form.pianoConditionAfter === cond && { backgroundColor: color },
+                    ]}
+                    onPress={() => setForm({ ...form, pianoConditionAfter: cond })}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.conditionText,
+                        { color: form.pianoConditionAfter === cond ? '#FFFFFF' : color },
+                      ]}
+                    >
+                      {PIANO_CONDITION_LABELS[cond]}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {/* Lista de tareas */}
+        {form.tasks && form.tasks.length > 0 && (
+          <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>
+              Tareas ({form.tasks.filter((t) => t.completed).length}/{form.tasks.length})
+            </ThemedText>
+            <View style={styles.taskList}>
+              {form.tasks.map((task) => (
+                <Pressable
+                  key={task.id}
+                  style={styles.taskItem}
+                  onPress={() => isEditing && toggleTask(task.id)}
+                  disabled={!isEditing}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      { borderColor: accent },
+                      task.completed && { backgroundColor: accent },
+                    ]}
+                  >
+                    {task.completed && (
+                      <IconSymbol name="checkmark" size={14} color="#FFFFFF" />
+                    )}
+                  </View>
+                  <ThemedText
+                    style={[
+                      styles.taskText,
+                      task.completed && styles.taskCompleted,
+                    ]}
+                  >
+                    {task.name}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Materiales Usados */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <ThemedText style={[styles.label, { color: textSecondary }]}>
+              Materiales Usados ({form.materialsUsed?.length || 0})
+            </ThemedText>
+            {isEditing && (
+              <Pressable
+                style={[styles.addMaterialBtn, { backgroundColor: accent }]}
+                onPress={() => setShowMaterialModal(true)}
+              >
+                <IconSymbol name="plus" size={16} color="#FFFFFF" />
+                <ThemedText style={{ color: '#FFFFFF', marginLeft: 4 }}>Añadir</ThemedText>
+              </Pressable>
+            )}
+          </View>
+          {form.materialsUsed && form.materialsUsed.length > 0 ? (
+            <View style={styles.materialsList}>
+              {form.materialsUsed.map((mat, index) => (
+                <View key={index} style={[styles.materialItem, { borderColor }]}>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText style={styles.materialName}>{mat.materialName}</ThemedText>
+                    <ThemedText style={[styles.materialQty, { color: textSecondary }]}>
+                      {mat.quantity} uds. {mat.unitPrice ? `x €${mat.unitPrice}` : ''}
+                    </ThemedText>
+                  </View>
+                  {mat.totalPrice && (
+                    <ThemedText style={[styles.materialPrice, { color: accent }]}>
+                      €{mat.totalPrice.toFixed(2)}
+                    </ThemedText>
+                  )}
+                  {isEditing && (
+                    <Pressable
+                      onPress={() => {
+                        const updated = [...(form.materialsUsed || [])];
+                        updated.splice(index, 1);
+                        setForm({ ...form, materialsUsed: updated });
+                      }}
+                      style={{ padding: 8 }}
+                    >
+                      <IconSymbol name="xmark.circle.fill" size={20} color={error} />
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+              {form.materialsUsed.some(m => m.totalPrice) && (
+                <View style={[styles.materialTotal, { borderColor }]}>
+                  <ThemedText style={{ fontWeight: '600' }}>Total Materiales:</ThemedText>
+                  <ThemedText style={[styles.materialPrice, { color: accent }]}>
+                    €{form.materialsUsed.reduce((sum, m) => sum + (m.totalPrice || 0), 0).toFixed(2)}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+          ) : (
+            <ThemedText style={[styles.emptyText, { color: textSecondary }]}>
+              No se han registrado materiales
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Modal para añadir material */}
+        {showMaterialModal && (
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: cardBg }]}>
+              <ThemedText type="subtitle" style={{ marginBottom: 16 }}>Añadir Material</ThemedText>
+              
+              <ThemedText style={[styles.label, { color: textSecondary }]}>Material</ThemedText>
+              <ScrollView style={{ maxHeight: 200, marginBottom: 16 }}>
+                {materials.map((mat) => (
+                  <Pressable
+                    key={mat.id}
+                    style={[
+                      styles.materialOption,
+                      { borderColor },
+                      selectedMaterialId === mat.id && { backgroundColor: accent, borderColor: accent },
+                    ]}
+                    onPress={() => setSelectedMaterialId(mat.id)}
+                  >
+                    <ThemedText style={{ color: selectedMaterialId === mat.id ? '#FFFFFF' : textColor }}>
+                      {mat.name}
+                    </ThemedText>
+                    <ThemedText style={{ color: selectedMaterialId === mat.id ? '#FFFFFF' : textSecondary, fontSize: 12 }}>
+                      Stock: {mat.currentStock} | {mat.unitPrice ? `€${mat.unitPrice}` : 'Sin precio'}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </ScrollView>
+
+              <ThemedText style={[styles.label, { color: textSecondary }]}>Cantidad</ThemedText>
+              <TextInput
+                style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                value={materialQuantity}
+                onChangeText={setMaterialQuantity}
+                keyboardType="numeric"
+                placeholder="1"
+                placeholderTextColor={textSecondary}
+              />
+
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={[styles.modalBtn, { borderColor }]}
+                  onPress={() => {
+                    setShowMaterialModal(false);
+                    setSelectedMaterialId('');
+                    setMaterialQuantity('1');
+                  }}
+                >
+                  <ThemedText>Cancelar</ThemedText>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalBtn, { backgroundColor: accent }]}
+                  onPress={() => {
+                    if (selectedMaterialId && materialQuantity) {
+                      const material = getMaterial(selectedMaterialId);
+                      if (material) {
+                        const qty = parseInt(materialQuantity) || 1;
+                        const newMaterial: MaterialUsed = {
+                          materialId: material.id,
+                          materialName: material.name,
+                          quantity: qty,
+                          unitPrice: material.unitPrice,
+                          totalPrice: material.unitPrice ? material.unitPrice * qty : undefined,
+                        };
+                        setForm({
+                          ...form,
+                          materialsUsed: [...(form.materialsUsed || []), newMaterial],
+                        });
+                      }
+                    }
+                    setShowMaterialModal(false);
+                    setSelectedMaterialId('');
+                    setMaterialQuantity('1');
+                  }}
+                >
+                  <ThemedText style={{ color: '#FFFFFF' }}>Añadir</ThemedText>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Condiciones Ambientales */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.sectionTitle, { color: textColor }]}>Condiciones Ambientales</ThemedText>
+          <View style={styles.environmentalRow}>
+            <View style={styles.environmentalField}>
+              <ThemedText style={[styles.label, { color: textSecondary }]}>Humedad (%)</ThemedText>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                  value={form.humidity?.toString() || ''}
+                  onChangeText={(text) => setForm({ ...form, humidity: text ? parseFloat(text) : undefined })}
+                  placeholder="45-70%"
+                  placeholderTextColor={textSecondary}
+                  keyboardType="numeric"
+                />
+              ) : (
+                <ThemedText style={styles.value}>
+                  {form.humidity ? `${form.humidity}%` : '-'}
+                </ThemedText>
+              )}
+            </View>
+            <View style={styles.environmentalField}>
+              <ThemedText style={[styles.label, { color: textSecondary }]}>Temperatura (°C)</ThemedText>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, borderColor, color: textColor }]}
+                  value={form.temperature?.toString() || ''}
+                  onChangeText={(text) => setForm({ ...form, temperature: text ? parseFloat(text) : undefined })}
+                  placeholder="18-22°C"
+                  placeholderTextColor={textSecondary}
+                  keyboardType="numeric"
+                />
+              ) : (
+                <ThemedText style={styles.value}>
+                  {form.temperature ? `${form.temperature}°C` : '-'}
+                </ThemedText>
+              )}
+            </View>
+          </View>
+          {(form.humidity || form.temperature) && !isEditing && (
+            <View style={[styles.environmentalWarning, { backgroundColor: form.humidity && (form.humidity < 40 || form.humidity > 60) ? '#FFF3CD' : '#D4EDDA' }]}>
+              <IconSymbol name={form.humidity && (form.humidity < 40 || form.humidity > 60) ? 'exclamationmark.triangle.fill' : 'checkmark.circle.fill'} size={16} color={form.humidity && (form.humidity < 40 || form.humidity > 60) ? '#856404' : '#155724'} />
+              <ThemedText style={{ color: form.humidity && (form.humidity < 40 || form.humidity > 60) ? '#856404' : '#155724', marginLeft: 8, flex: 1 }}>
+                {form.humidity && (form.humidity < 40 || form.humidity > 60) 
+                  ? 'Humedad fuera del rango óptimo (40-60%). Recomendar humidificador/deshumidificador.'
+                  : 'Condiciones ambientales óptimas para el piano.'}
+              </ThemedText>
+            </View>
+          )}
+        </View>
+
+        {/* Notas */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>Notas</ThemedText>
+          {isEditing ? (
+            <TextInput
+              style={[
+                styles.input,
+                styles.inputMultiline,
+                { backgroundColor: cardBg, borderColor, color: textColor },
+              ]}
+              value={form.notes}
+              onChangeText={(text) => setForm({ ...form, notes: text })}
+              placeholder="Observaciones, recomendaciones..."
+              placeholderTextColor={textSecondary}
+              multiline
+              numberOfLines={4}
+            />
+          ) : (
+            <ThemedText style={styles.value}>{form.notes || '-'}</ThemedText>
+          )}
+        </View>
+
+        {/* Fotos Antes del Servicio */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>Fotos Antes del Servicio</ThemedText>
+          {isEditing ? (
+            <View style={styles.photosContainer}>
+              {(form.photosBefore || []).map((photo, index) => (
+                <View key={index} style={styles.photoItem}>
+                  <ThemedText style={styles.photoText}>📷 Foto {index + 1}</ThemedText>
+                  <Pressable onPress={() => {
+                    const newPhotos = (form.photosBefore || []).filter((_, i) => i !== index);
+                    setForm({ ...form, photosBefore: newPhotos });
+                  }}>
+                    <IconSymbol name="xmark.circle.fill" size={20} color={error} />
+                  </Pressable>
+                </View>
+              ))}
+              <Pressable
+                style={[styles.addPhotoButton, { borderColor: accent }]}
+                onPress={() => {
+                  // Simular añadir foto (en producción usaría ImagePicker)
+                  const newPhoto = `photo_before_${Date.now()}.jpg`;
+                  setForm({ ...form, photosBefore: [...(form.photosBefore || []), newPhoto] });
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="camera.fill" size={20} color={accent} />
+                <ThemedText style={[styles.addPhotoText, { color: accent }]}>Añadir Foto</ThemedText>
+              </Pressable>
+            </View>
+          ) : (
+            <ThemedText style={styles.value}>
+              {(form.photosBefore || []).length > 0 ? `${form.photosBefore?.length} foto(s)` : 'Sin fotos'}
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Fotos Después del Servicio */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>Fotos Después del Servicio</ThemedText>
+          {isEditing ? (
+            <View style={styles.photosContainer}>
+              {(form.photosAfter || []).map((photo, index) => (
+                <View key={index} style={styles.photoItem}>
+                  <ThemedText style={styles.photoText}>📷 Foto {index + 1}</ThemedText>
+                  <Pressable onPress={() => {
+                    const newPhotos = (form.photosAfter || []).filter((_, i) => i !== index);
+                    setForm({ ...form, photosAfter: newPhotos });
+                  }}>
+                    <IconSymbol name="xmark.circle.fill" size={20} color={error} />
+                  </Pressable>
+                </View>
+              ))}
+              <Pressable
+                style={[styles.addPhotoButton, { borderColor: accent }]}
+                onPress={() => {
+                  const newPhoto = `photo_after_${Date.now()}.jpg`;
+                  setForm({ ...form, photosAfter: [...(form.photosAfter || []), newPhoto] });
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <IconSymbol name="camera.fill" size={20} color={accent} />
+                <ThemedText style={[styles.addPhotoText, { color: accent }]}>Añadir Foto</ThemedText>
+              </Pressable>
+            </View>
+          ) : (
+            <ThemedText style={styles.value}>
+              {(form.photosAfter || []).length > 0 ? `${form.photosAfter?.length} foto(s)` : 'Sin fotos'}
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Firma del Cliente */}
+        <View style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>Firma del Cliente</ThemedText>
+          {isEditing ? (
+            <View style={styles.signatureContainer}>
+              {form.signature ? (
+                <View style={styles.signaturePreview}>
+                  <ThemedText style={styles.signatureText}>✅ Firma capturada</ThemedText>
+                  <Pressable
+                    style={[styles.clearSignatureButton, { borderColor: error }]}
+                    onPress={() => setForm({ ...form, signature: undefined })}
+                  >
+                    <ThemedText style={[styles.clearSignatureText, { color: error }]}>Borrar firma</ThemedText>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable
+                  style={[styles.captureSignatureButton, { borderColor: accent }]}
+                  onPress={() => {
+                    // Simular captura de firma (en producción usaría un canvas)
+                    setForm({ ...form, signature: `signature_${Date.now()}.png` });
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  }}
+                >
+                  <IconSymbol name="pencil.tip" size={24} color={accent} />
+                  <ThemedText style={[styles.captureSignatureText, { color: accent }]}>Capturar Firma</ThemedText>
+                </Pressable>
+              )}
+            </View>
+          ) : (
+            <ThemedText style={styles.value}>
+              {form.signature ? '✅ Firmado' : 'Sin firma'}
+            </ThemedText>
+          )}
+        </View>
+
+        {/* Botones de acción */}
+        {isEditing && (
+          <Pressable style={[styles.saveButton, { backgroundColor: accent }]} onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar cambios"
+            accessibilityHint="Pulsa para guardar los datos">
+            <ThemedText style={styles.saveButtonText}>
+              {isNew ? 'Registrar Servicio' : 'Guardar Cambios'}
+            </ThemedText>
+          </Pressable>
+        )}
+
+        {!isNew && !isEditing && (
+          <Pressable style={[styles.deleteButton, { borderColor: error }]} onPress={handleDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar"
+            accessibilityHint="Pulsa para eliminar este elemento">
+            <IconSymbol name="trash.fill" size={20} color={error} />
+            <ThemedText style={[styles.deleteButtonText, { color: error }]}>
+              Eliminar Servicio
+            </ThemedText>
+          </Pressable>
+        )}
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: Spacing.md,
+    gap: Spacing.md,
+  },
+  section: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  inputGroup: {
+    gap: 4,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: 16,
+  },
+  inputMultiline: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  value: {
+    fontSize: 16,
+    paddingVertical: 4,
+  },
+  horizontalList: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingRight: Spacing.md,
+  },
+  selectOption: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  pianoList: {
+    gap: Spacing.sm,
+  },
+  pianoOption: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  pianoSerial: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  typeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  typeOption: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  typeText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  levelList: {
+    gap: Spacing.sm,
+  },
+  levelOption: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 2,
+  },
+  levelTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  levelDesc: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+  conditionRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  conditionOption: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  conditionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  taskList: {
+    gap: Spacing.sm,
+  },
+  taskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  taskText: {
+    flex: 1,
+    fontSize: 14,
+  },
+  taskCompleted: {
+    textDecorationLine: 'line-through',
+    opacity: 0.6,
+  },
+  saveButton: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  addMaterialBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: BorderRadius.sm,
+  },
+  materialsList: {
+    gap: Spacing.sm,
+  },
+  materialItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+  },
+  materialName: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  materialQty: {
+    fontSize: 12,
+  },
+  materialPrice: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  materialTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    marginTop: Spacing.sm,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+  },
+  materialOption: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginTop: Spacing.md,
+  },
+  modalBtn: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  environmentalRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  environmentalField: {
+    flex: 1,
+    gap: 4,
+  },
+  environmentalWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.sm,
+  },
+  // Estilos para fotos
+  photosContainer: {
+    gap: Spacing.sm,
+  },
+  photoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  photoText: {
+    fontSize: 14,
+  },
+  addPhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  addPhotoText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  // Estilos para firma
+  signatureContainer: {
+    gap: Spacing.sm,
+  },
+  signaturePreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  signatureText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  clearSignatureButton: {
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  clearSignatureText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  captureSignatureButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  captureSignatureText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
