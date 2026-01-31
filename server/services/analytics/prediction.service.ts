@@ -116,18 +116,17 @@ export class PredictionService {
     return predictions;
   }
 
-  private async getHistoricalRevenue(organizationId: string, months: number): Promise<number[]> {
+  private async getHistoricalRevenue(partnerId: string, months: number): Promise<number[]> {
     const result = await this.db.execute(`
       SELECT 
-        DATE_TRUNC('month', created_at) as month,
-        COALESCE(SUM(total), 0) as total
-      FROM invoices
-      WHERE organization_id = $1 
-        AND status != 'draft'
-        AND created_at >= NOW() - INTERVAL '${months} months'
-      GROUP BY DATE_TRUNC('month', created_at)
+        DATE_FORMAT(date, '%Y-%m-01') as month,
+        COALESCE(SUM(cost), 0) as total
+      FROM services
+      WHERE partner_id = ?
+        AND date >= DATE_SUB(NOW(), INTERVAL ${months} MONTH)
+      GROUP BY DATE_FORMAT(date, '%Y-%m-01')
       ORDER BY month
-    `, [organizationId]);
+    `, [partnerId]);
 
     return (result.rows || []).map((r: { total: string }) => parseFloat(r.total) || 0);
   }
