@@ -118,6 +118,7 @@ export const forecastsRouter = router({
       })
       .from(clients)
       .leftJoin(services, eq(clients.id, services.clientId))
+      .where(eq(clients.organizationId, ctx.user.organizationId))
       .groupBy(clients.id, clients.name)
       .having(sql`MAX(${services.serviceDate}) < ${threeMonthsAgo} OR MAX(${services.serviceDate}) IS NULL`);
 
@@ -152,7 +153,10 @@ export const forecastsRouter = router({
     });
 
     // Estadísticas generales
-    const totalClients = await db.select({ count: sql<number>`COUNT(*)` }).from(clients);
+    const totalClients = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(clients)
+      .where(eq(clients.organizationId, ctx.user.organizationId));
     const atRiskCount = clientsAtRisk.filter(c => c.riskLevel !== 'low').length;
     const churnRate = totalClients[0].count > 0
       ? (atRiskCount / totalClients[0].count) * 100
@@ -189,6 +193,7 @@ export const forecastsRouter = router({
       .from(pianos)
       .leftJoin(clients, eq(pianos.clientId, clients.id))
       .leftJoin(services, eq(pianos.id, services.pianoId))
+      .where(eq(pianos.organizationId, ctx.user.organizationId))
       .groupBy(pianos.id, pianos.brand, pianos.model, pianos.clientId, clients.name);
 
     // Calcular necesidad de mantenimiento
@@ -263,7 +268,12 @@ export const forecastsRouter = router({
         avgDuration: sql<number>`AVG(TIMESTAMPDIFF(HOUR, ${services.serviceDate}, ${services.serviceDate}))`,
       })
       .from(services)
-      .where(gte(services.serviceDate, eightWeeksAgo))
+      .where(
+        and(
+          eq(services.organizationId, ctx.user.organizationId),
+          gte(services.serviceDate, eightWeeksAgo)
+        )
+      )
       .groupBy(sql`YEARWEEK(${services.serviceDate})`)
       .orderBy(sql`YEARWEEK(${services.serviceDate})`);
 
@@ -323,6 +333,7 @@ export const forecastsRouter = router({
     const inventoryItems = await db
       .select()
       .from(inventory)
+      .where(eq(inventory.organizationId, ctx.user.organizationId))
       .orderBy(inventory.quantity);
 
     // Calcular uso promedio mensual basado en servicios
@@ -334,7 +345,12 @@ export const forecastsRouter = router({
         count: sql<number>`COUNT(*)`,
       })
       .from(services)
-      .where(gte(services.serviceDate, threeMonthsAgo));
+      .where(
+        and(
+          eq(services.organizationId, ctx.user.organizationId),
+          gte(services.serviceDate, threeMonthsAgo)
+        )
+      );
 
     const avgMonthlyServices = recentServices[0]?.count ? recentServices[0].count / 3 : 0;
 
