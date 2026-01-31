@@ -8,6 +8,8 @@ import { getServices } from "../db.js";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc.js";
 import { getUserByClerkId } from "../db.js";
 import { storageRouter } from "./storage/index.js";
+import PredictionService from "../services/analytics/prediction.service.js";
+import { getDb } from "../db.js";
 
 // Funciones auxiliares para el chat
 function generateSuggestions(message: string): string[] {
@@ -151,33 +153,42 @@ export const advancedRouter = router({
 
   // Predictions - Analíticas predictivas locales (sin coste de API)
   predictions: router({
-    getSummary: protectedProcedure.query(async () => {
-      return {
-        revenue: {
-          predictions: [],
-          trend: 'stable' as const,
-          nextMonthValue: 0,
-        },
-        clientChurn: {
-          atRiskCount: 0,
-          highRiskCount: 0,
-          topRiskClients: [],
-        },
-        maintenance: {
-          upcomingCount: 0,
-          thisMonth: 0,
-          predictions: [],
-        },
-        workload: {
-          predictions: [],
-          busiestWeek: null,
-        },
-        inventory: {
-          urgentItems: 0,
-          predictions: [],
-        },
-        generatedAt: new Date(),
-      };
+    getSummary: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const db = await getDb();
+        const service = new PredictionService(db);
+        const summary = await service.getPredictionsSummary(ctx.user.partnerId);
+        return summary;
+      } catch (error) {
+        console.error('[Predictions] Error getting summary:', error);
+        // Retornar datos vacíos en caso de error
+        return {
+          revenue: {
+            predictions: [],
+            trend: 'stable' as const,
+            nextMonthValue: 0,
+          },
+          clientChurn: {
+            atRiskCount: 0,
+            highRiskCount: 0,
+            topRiskClients: [],
+          },
+          maintenance: {
+            upcomingCount: 0,
+            thisMonth: 0,
+            predictions: [],
+          },
+          workload: {
+            predictions: [],
+            busiestWeek: null,
+          },
+          inventory: {
+            urgentItems: 0,
+            predictions: [],
+          },
+          generatedAt: new Date(),
+        };
+      }
     }),
 
     getRevenue: protectedProcedure
