@@ -217,26 +217,25 @@ export class PredictionService {
   /**
    * Identifica clientes en riesgo de pérdida
    */
-  async predictClientChurn(organizationId: string): Promise<ChurnRisk[]> {
+  async predictClientChurn(partnerId: string): Promise<ChurnRisk[]> {
     // Obtener clientes con su historial de servicios
     const result = await this.db.execute(`
       SELECT 
         c.id,
         c.name,
         c.email,
-        MAX(s.created_at) as last_service,
+        MAX(s.date) as last_service,
         COUNT(s.id) as service_count,
-        AVG(
-          EXTRACT(EPOCH FROM (
-            s.created_at - LAG(s.created_at) OVER (PARTITION BY c.id ORDER BY s.created_at)
-          )) / 86400
-        ) as avg_interval_days
+        AVG(TIMESTAMPDIFF(DAY, 
+          LAG(s.date) OVER (PARTITION BY c.id ORDER BY s.date),
+          s.date
+        )) as avg_interval_days
       FROM clients c
       LEFT JOIN services s ON s.client_id = c.id
-      WHERE c.organization_id = $1
+      WHERE c.partner_id = ?
       GROUP BY c.id, c.name, c.email
       HAVING COUNT(s.id) > 0
-    `, [organizationId]);
+    `, [partnerId]);
 
     const churnRisks: ChurnRisk[] = [];
     const now = new Date();
@@ -315,7 +314,7 @@ export class PredictionService {
   /**
    * Predice cuándo los pianos necesitarán mantenimiento
    */
-  async predictMaintenance(organizationId: string): Promise<MaintenancePrediction[]> {
+  async predictMaintenance(partnerId: string): Promise<MaintenancePrediction[]> {
     // Obtener pianos con su historial de servicios
     const result = await this.db.execute(`
       SELECT 
@@ -324,15 +323,15 @@ export class PredictionService {
         p.model,
         p.type,
         c.name as client_name,
-        s.type as service_type,
-        s.created_at as service_date,
-        LAG(s.created_at) OVER (PARTITION BY p.id, s.type ORDER BY s.created_at) as prev_service_date
+        s.service_type,
+        s.date as service_date,
+        LAG(s.date) OVER (PARTITION BY p.id, s.service_type ORDER BY s.date) as prev_service_date
       FROM pianos p
       JOIN clients c ON p.client_id = c.id
       LEFT JOIN services s ON s.piano_id = p.id
-      WHERE p.organization_id = $1
-      ORDER BY p.id, s.type, s.created_at DESC
-    `, [organizationId]);
+      WHERE p.partner_id = ?
+      ORDER BY p.id, s.service_type, s.date DESC
+    `, [partnerId]);
 
     const predictions: MaintenancePrediction[] = [];
     const pianoServices: Map<string, Map<string, Date[]>> = new Map();
@@ -411,27 +410,27 @@ export class PredictionService {
   /**
    * Predice la carga de trabajo para las próximas semanas
    */
-  async predictWorkload(organizationId: string, weeks: number = 4): Promise<any[]> {
+  async predictWorkload(partnerId: string, weeks: number = 4): Promise<any[]> {
     // Obtener citas programadas
     const appointmentsResult = await this.db.execute(`
       SELECT 
-        DATE_TRUNC('week', date) as week,
+        DATE_FORMAT(date, '%Y-%m-%d') as week,
         COUNT(*) as appointments
       FROM appointments
-      WHERE organization_id = $1 AND date >= CURRENT_DATE
-      GROUP BY DATE_TRUNC('week', date)
+      WHERE partner_id = ? AND date >= CURDATE()
+      GROUP BY WEEK(date, 1)
       ORDER BY week
-    `, [organizationId]);
+    `, [partnerId]);
 
-    // Obtener histórico de servicios por semana
+    // Obtener histórico de servicios por día de la semana
     const historicalResult = await this.db.execute(`
       SELECT 
-        EXTRACT(DOW FROM created_at) as day_of_week,
+        DAYOFWEEK(date) as day_of_week,
         COUNT(*) as services
       FROM services
-      WHERE organization_id = $1 AND created_at >= NOW() - INTERVAL '3 months'
-      GROUP BY EXTRACT(DOW FROM created_at)
-    `, [organizationId]);
+      WHERE partner_id = ? AND date >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
+      GROUP BY DAYOFWEEK(date)
+    `, [partnerId]);
 
     const dayDistribution = new Array(7).fill(0);
     let totalServices = 0;
@@ -510,7 +509,7 @@ export class PredictionService {
   /**
    * Predice la demanda de inventario
    */
-  async predictInventoryDemand(organizationId: string): Promise<any[]> {
+  async predictInventoryDemand(partnerId: string): Promise<any[]> {
     // Obtener consumo histórico de inventario
     const result = await this.db.execute(`
       SELECT 
@@ -523,11 +522,11 @@ export class PredictionService {
         SUM(im.quantity) as total_used,
         AVG(im.quantity) as avg_per_service
       FROM inventory_items i
-      LEFT JOIN inventory_movements im ON im.item_id = i.id AND im.type = 'out' AND im.created_at >= NOW() - INTERVAL '3 months'
-      WHERE i.organization_id = $1
+      LEFT JOIN inventory_movements im ON im.item_id = i.id AND im.type = 'out' AND im.created_at >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
+      WHERE i.partner_id = ?
       GROUP BY i.id, i.name, i.current_stock, i.min_stock, i.unit
       HAVING COUNT(im.id) > 0
-    `, [organizationId]);
+    `, [partnerId]);
 
     const predictions = [];
 
