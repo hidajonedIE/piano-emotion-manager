@@ -430,7 +430,7 @@ export class PredictionService {
       FROM services
       WHERE partner_id = ${partnerId} AND date >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
       GROUP BY DAYOFWEEK(date)
-    `);d]);
+    `);
 
     const dayDistribution = new Array(7).fill(0);
     let totalServices = 0;
