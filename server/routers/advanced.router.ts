@@ -152,7 +152,8 @@ export const advancedRouter = router({
   }),
 
   // Predictions - Analíticas predictivas locales (sin coste de API)
-  predictions: router({
+  // TEMPORALMENTE DESHABILITADO - Queries SQL con errores de nomenclatura
+  /* predictions: router({
     getSummary: protectedProcedure.query(async ({ ctx }) => {
       console.log('[DEBUG] getSummary called for partnerId:', ctx.user.partnerId);
       try {
@@ -244,7 +245,7 @@ export const advancedRouter = router({
       }),
 
     getInventoryDemand: protectedProcedure.query(async () => []),
-  }),
+  }), */
 
   // Chat con IA usando Gemini
   chat: router({

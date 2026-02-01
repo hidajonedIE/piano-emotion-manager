@@ -338,9 +338,9 @@ export class PredictionService {
         s.date as service_date,
         LAG(s.date) OVER (PARTITION BY p.id, s.service_type ORDER BY s.date) as prev_service_date
       FROM pianos p
-      JOIN clients c ON p.client_id = c.id
-      LEFT JOIN services s ON s.piano_id = p.id
-      WHERE p.partner_id = ${partnerId}
+      JOIN clients c ON p.clientId = c.id
+      LEFT JOIN services s ON s.pianoId = p.id
+      WHERE p.partnerId = ${partnerId}
       ORDER BY p.id, s.service_type, s.date DESC
     `);
 
