@@ -98,7 +98,7 @@ export default function AgendaScreen() {
     React.useCallback(() => {
     setHeaderConfig({
       title: 'Agenda',
-      subtitle: `${pendingCount} ${pendingCount === 1 ? 'cita pendiente' : 'citas pendientes'}`,
+      subtitle: `${totalCount} ${totalCount === 1 ? 'cita' : 'citas'}`,
       icon: 'calendar',
       showBackButton: false,
       rightAction: (
@@ -124,7 +124,7 @@ export default function AgendaScreen() {
         </View>
       ),
     });
-    }, [pendingCount, showCalendar, accent, router, setHeaderConfig])
+    }, [totalCount, showCalendar, accent, router, setHeaderConfig])
   );
 
   // Convertir citas a eventos para el calendario
