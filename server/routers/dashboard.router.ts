@@ -22,84 +22,96 @@ export const dashboardRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const db = getDb();
-      const partnerId = ctx.user.partnerId;
+      try {
+        const db = getDb();
+        const partnerId = ctx.user.partnerId;
 
-      console.log('[Dashboard] getMonthlyMetrics called with:', { year: input.year, month: input.month, partnerId });
+        console.log('[Dashboard] getMonthlyMetrics called with:', { year: input.year, month: input.month, partnerId });
 
-      // Calcular rango de fechas del mes
-      const startDate = new Date(input.year, input.month - 1, 1);
-      const endDate = new Date(input.year, input.month, 1);
+        // Calcular rango de fechas del mes
+        const startDate = new Date(input.year, input.month - 1, 1);
+        const endDate = new Date(input.year, input.month, 1);
 
-      // Convertir a formato ISO string (compatible con MySQL)
-      const startDateStr = startDate.toISOString();
-      const endDateStr = endDate.toISOString();
+        // Convertir a formato ISO string (compatible con MySQL)
+        const startDateStr = startDate.toISOString();
+        const endDateStr = endDate.toISOString();
 
-      console.log('[Dashboard] Date range:', { startDateStr, endDateStr });
+        console.log('[Dashboard] Date range:', { startDateStr, endDateStr });
 
-      // Contar clientes creados en el mes
-      const clientsResult = await db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(clients)
-        .where(
-          and(
-            eq(clients.partnerId, partnerId),
-            gte(clients.createdAt, startDateStr),
-            lt(clients.createdAt, endDateStr)
-          )
-        );
+        // Contar clientes creados en el mes
+        console.log('[Dashboard] Querying clients...');
+        const clientsResult = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(clients)
+          .where(
+            and(
+              eq(clients.partnerId, partnerId),
+              gte(clients.createdAt, startDateStr),
+              lt(clients.createdAt, endDateStr)
+            )
+          );
+        console.log('[Dashboard] Clients result:', clientsResult[0]);
 
-      // Contar pianos creados en el mes
-      const pianosResult = await db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(pianos)
-        .where(
-          and(
-            eq(pianos.partnerId, partnerId),
-            gte(pianos.createdAt, startDateStr),
-            lt(pianos.createdAt, endDateStr)
-          )
-        );
+        // Contar pianos creados en el mes
+        console.log('[Dashboard] Querying pianos...');
+        const pianosResult = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(pianos)
+          .where(
+            and(
+              eq(pianos.partnerId, partnerId),
+              gte(pianos.createdAt, startDateStr),
+              lt(pianos.createdAt, endDateStr)
+            )
+          );
+        console.log('[Dashboard] Pianos result:', pianosResult[0]);
 
-      // Contar servicios del mes (por fecha de servicio, no createdAt)
-      const servicesResult = await db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(services)
-        .where(
-          and(
-            eq(services.partnerId, partnerId),
-            gte(services.date, startDateStr),
-            lt(services.date, endDateStr)
-          )
-        );
+        // Contar servicios del mes (por fecha de servicio, no createdAt)
+        console.log('[Dashboard] Querying services...');
+        const servicesResult = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(services)
+          .where(
+            and(
+              eq(services.partnerId, partnerId),
+              gte(services.date, startDateStr),
+              lt(services.date, endDateStr)
+            )
+          );
+        console.log('[Dashboard] Services result:', servicesResult[0]);
 
-      // Calcular ingresos del mes (suma de cost de servicios)
-      const revenueResult = await db
-        .select({ total: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
-        .from(services)
-        .where(
-          and(
-            eq(services.partnerId, partnerId),
-            gte(services.date, startDateStr),
-            lt(services.date, endDateStr)
-          )
-        );
+        // Calcular ingresos del mes (suma de cost de servicios)
+        console.log('[Dashboard] Querying revenue...');
+        const revenueResult = await db
+          .select({ total: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
+          .from(services)
+          .where(
+            and(
+              eq(services.partnerId, partnerId),
+              gte(services.date, startDateStr),
+              lt(services.date, endDateStr)
+            )
+          );
+        console.log('[Dashboard] Revenue result:', revenueResult[0]);
 
-      const result = {
-        clients: Number(clientsResult[0]?.count || 0),
-        pianos: Number(pianosResult[0]?.count || 0),
-        services: Number(servicesResult[0]?.count || 0),
-        revenue: Number(revenueResult[0]?.total || 0),
-      };
+        const result = {
+          clients: Number(clientsResult[0]?.count || 0),
+          pianos: Number(pianosResult[0]?.count || 0),
+          services: Number(servicesResult[0]?.count || 0),
+          revenue: Number(revenueResult[0]?.total || 0),
+        };
 
-      console.log('[Dashboard] Query results:', {
-        clientsRaw: clientsResult[0],
-        pianosRaw: pianosResult[0],
-        servicesRaw: servicesResult[0],
-        revenueRaw: revenueResult[0],
-        final: result
-      });
+        console.log('[Dashboard] Final result:', result);
 
-      return result;
+        return result;
+      } catch (error) {
+        console.error('[Dashboard] ERROR in getMonthlyMetrics:', {
+          error: error,
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          input: input
+        });
+        throw error;
+      }
     }),
 });
