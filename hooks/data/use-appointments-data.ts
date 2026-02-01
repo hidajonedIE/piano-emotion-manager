@@ -94,7 +94,10 @@ export function useAppointmentsData() {
   });
 
   // Convertir citas del servidor al formato local
+  console.log('[useAppointmentsData] serverAppointments:', serverAppointments);
+  console.log('[useAppointmentsData] serverAppointments?.items:', serverAppointments?.items);
   const appointments: Appointment[] = (serverAppointments?.items || []).map(serverToLocalAppointment);
+  console.log('[useAppointmentsData] appointments after mapping:', appointments.length);
 
   // Citas de hoy
   const todayAppointments = useMemo(() => {
