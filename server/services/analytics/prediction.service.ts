@@ -122,11 +122,11 @@ export class PredictionService {
         DATE_FORMAT(date, '%Y-%m-01') as month,
         COALESCE(SUM(cost), 0) as total
       FROM services
-      WHERE partnerId = ?
+      WHERE partnerId = ${partnerId}
         AND date >= DATE_SUB(NOW(), INTERVAL ${months} MONTH)
       GROUP BY DATE_FORMAT(date, '%Y-%m-01')
       ORDER BY month
-    `, [partnerId]);
+    `);
 
     return (result.rows || []).map((r: { total: string }) => parseFloat(r.total) || 0);
   }
@@ -232,10 +232,10 @@ export class PredictionService {
         )) as avg_interval_days
       FROM clients c
       LEFT JOIN services s ON s.client_id = c.id
-      WHERE c.partner_id = ?
+      WHERE c.partner_id = ${partnerId}
       GROUP BY c.id, c.name, c.email
       HAVING COUNT(s.id) > 0
-    `, [partnerId]);
+    `);
 
     const churnRisks: ChurnRisk[] = [];
     const now = new Date();
@@ -329,9 +329,9 @@ export class PredictionService {
       FROM pianos p
       JOIN clients c ON p.client_id = c.id
       LEFT JOIN services s ON s.piano_id = p.id
-      WHERE p.partner_id = ?
+      WHERE p.partner_id = ${partnerId}
       ORDER BY p.id, s.service_type, s.date DESC
-    `, [partnerId]);
+    `);
 
     const predictions: MaintenancePrediction[] = [];
     const pianoServices: Map<string, Map<string, Date[]>> = new Map();
@@ -412,15 +412,15 @@ export class PredictionService {
    */
   async predictWorkload(partnerId: string, weeks: number = 4): Promise<any[]> {
     // Obtener citas programadas
-    const appointmentsResult = await this.db.execute(`
+    const upcomingResult = await this.db.execute(`
       SELECT 
         DATE_FORMAT(date, '%Y-%m-%d') as week,
         COUNT(*) as appointments
       FROM appointments
-      WHERE partner_id = ? AND date >= CURDATE()
+      WHERE partner_id = ${partnerId} AND date >= CURDATE()
       GROUP BY WEEK(date, 1)
       ORDER BY week
-    `, [partnerId]);
+    `);
 
     // Obtener histórico de servicios por día de la semana
     const historicalResult = await this.db.execute(`
@@ -428,9 +428,9 @@ export class PredictionService {
         DAYOFWEEK(date) as day_of_week,
         COUNT(*) as services
       FROM services
-      WHERE partner_id = ? AND date >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
+      WHERE partner_id = ${partnerId} AND date >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
       GROUP BY DAYOFWEEK(date)
-    `, [partnerId]);
+    `);d]);
 
     const dayDistribution = new Array(7).fill(0);
     let totalServices = 0;
@@ -523,10 +523,10 @@ export class PredictionService {
         AVG(im.quantity) as avg_per_service
       FROM inventory_items i
       LEFT JOIN inventory_movements im ON im.item_id = i.id AND im.type = 'out' AND im.created_at >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
-      WHERE i.partner_id = ?
+      WHERE i.partner_id = ${partnerId}
       GROUP BY i.id, i.name, i.current_stock, i.min_stock, i.unit
       HAVING COUNT(im.id) > 0
-    `, [partnerId]);
+    `);
 
     const predictions = [];
 
