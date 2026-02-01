@@ -117,6 +117,17 @@ export function useInvoicesData(options: UseInvoicesDataOptions = {}) {
     }
   );
 
+  // Query para estadísticas globales
+  const { data: statsData } = trpc.invoices.getStats.useQuery(
+    {
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+    },
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutos
+    }
+  );
+
   // Mutations con manejo de errores
   const createMutation = trpc.invoices.create.useMutation({
     onSuccess: () => {
@@ -162,11 +173,11 @@ export function useInvoicesData(options: UseInvoicesDataOptions = {}) {
     );
   }, [data]);
 
-  // Total de facturas
-  const totalInvoices = data?.pages[0]?.total || 0;
+  // Total de facturas - usar statsData si está disponible, sino el total de la primera página
+  const totalInvoices = statsData?.total || data?.pages[0]?.total || 0;
 
-  // Estadísticas
-  const stats = data?.pages[0]?.stats || null;
+  // Estadísticas - usar statsData del endpoint dedicado
+  const stats = statsData || data?.pages[0]?.stats || null;
 
   // Añadir factura
   const addInvoice = useCallback(

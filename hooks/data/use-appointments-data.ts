@@ -69,6 +69,11 @@ export function useAppointmentsData() {
     staleTime: 2 * 60 * 1000, // 2 minutos (las citas cambian más frecuentemente)
   });
 
+  // Query para estadísticas globales
+  const { data: statsData } = trpc.appointments.getStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
   // Mutations
   const createMutation = trpc.appointments.create.useMutation({
     onSuccess: () => {
@@ -224,6 +229,8 @@ export function useAppointmentsData() {
     loading,
     todayAppointments,
     upcomingAppointments,
+    stats: statsData,
+    total: statsData?.total || appointments.length,
     addAppointment,
     updateAppointment,
     deleteAppointment,
