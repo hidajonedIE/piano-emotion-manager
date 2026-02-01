@@ -167,14 +167,28 @@ export function useInvoicesData(options: UseInvoicesDataOptions = {}) {
 
   // Convertir facturas del servidor al formato local
   const invoices: LocalInvoice[] = useMemo(() => {
-    if (!data?.pages) return [];
-    return data.pages.flatMap(page => 
+    if (!data?.pages) {
+      console.log('🔍 [useInvoicesData] No hay páginas de datos');
+      return [];
+    }
+    const allInvoices = data.pages.flatMap(page => 
       (page.items || []).map(serverToLocalInvoice)
     );
+    console.log('🔍 [useInvoicesData] Total facturas cargadas:', allInvoices.length);
+    console.log('🔍 [useInvoicesData] Primeras 3 facturas:', allInvoices.slice(0, 3).map(inv => ({
+      id: inv.id,
+      invoiceNumber: inv.invoiceNumber,
+      date: inv.date,
+      clientName: inv.clientName,
+      total: inv.total
+    })));
+    return allInvoices;
   }, [data]);
 
   // Total de facturas - usar statsData si está disponible, sino el total de la primera página
   const totalInvoices = statsData?.total || data?.pages[0]?.total || 0;
+  console.log('🔍 [useInvoicesData] Total facturas (statsData):', statsData?.total);
+  console.log('🔍 [useInvoicesData] Total facturas (primera página):', data?.pages[0]?.total);
 
   // Estadísticas - usar statsData del endpoint dedicado
   const stats = statsData || data?.pages[0]?.stats || null;

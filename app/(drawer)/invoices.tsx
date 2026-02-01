@@ -51,9 +51,8 @@ export default function InvoicesScreen() {
   const params = useLocalSearchParams<{ filter?: string }>();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState<number | null>(new Date().getFullYear());
-  const [showAllPeriods, setShowAllPeriods] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null); // null = "Todos los meses"
+  const [selectedYear, setSelectedYear] = useState<number | null>(null); // null = "Todos los años"
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -92,12 +91,20 @@ export default function InvoicesScreen() {
           inv.clientName.toLowerCase().includes(debouncedSearch.toLowerCase());
         const matchesStatus = filter === 'all' || inv.status === filter;
         
+        // Filtrado independiente de mes y año
         let matchesDate = true;
-        if (!showAllPeriods && selectedMonth !== null && selectedYear !== null) {
-          const invDate = new Date(inv.date);
-          const invMonth = invDate.getMonth();
-          const invYear = invDate.getFullYear();
-          matchesDate = invMonth === selectedMonth && invYear === selectedYear;
+        const invDate = new Date(inv.date);
+        const invMonth = invDate.getMonth();
+        const invYear = invDate.getFullYear();
+        
+        // Filtrar por mes si está seleccionado
+        if (selectedMonth !== null) {
+          matchesDate = matchesDate && invMonth === selectedMonth;
+        }
+        
+        // Filtrar por año si está seleccionado
+        if (selectedYear !== null) {
+          matchesDate = matchesDate && invYear === selectedYear;
         }
         
         let matchesOverdue = true;
@@ -109,7 +116,7 @@ export default function InvoicesScreen() {
         return matchesSearch && matchesStatus && matchesDate && matchesOverdue;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [invoices, debouncedSearch, filter, selectedMonth, selectedYear, showAllPeriods, params.filter]);
+  }, [invoices, debouncedSearch, filter, selectedMonth, selectedYear, params.filter]);
 
   const statusFilters = useMemo(() => [
     { key: 'all' as FilterType, label: 'Todas' },
@@ -123,8 +130,13 @@ export default function InvoicesScreen() {
   useFocusEffect(
     React.useCallback(() => {
       let subtitle = `${filteredInvoices.length} ${filteredInvoices.length === 1 ? 'factura' : 'facturas'}`;
-      if (!showAllPeriods && selectedMonth !== null && selectedYear !== null) {
-        subtitle += ` - ${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+      
+      // Mostrar filtros activos en el subtítulo
+      const filters = [];
+      if (selectedMonth !== null) filters.push(MONTH_NAMES[selectedMonth]);
+      if (selectedYear !== null) filters.push(String(selectedYear));
+      if (filters.length > 0) {
+        subtitle += ` - ${filters.join(' ')}`;
       }
       setHeaderConfig({
         title: 'Facturaci\u00f3n',
@@ -132,43 +144,53 @@ export default function InvoicesScreen() {
         icon: 'doc.plaintext',
         showBackButton: false,
       });
-    }, [filteredInvoices.length, selectedMonth, selectedYear, showAllPeriods, setHeaderConfig])
+    }, [filteredInvoices.length, selectedMonth, selectedYear, setHeaderConfig])
   );
 
 
 
   const handlePrevMonth = () => {
-    if (selectedMonth === null || selectedYear === null) return;
-    if (selectedMonth === 0) {
+    if (selectedMonth === null) {
+      setSelectedMonth(11); // Empezar desde diciembre
+    } else if (selectedMonth === 0) {
       setSelectedMonth(11);
-      setSelectedYear(selectedYear - 1);
     } else {
       setSelectedMonth(selectedMonth - 1);
     }
-    setShowAllPeriods(false);
   };
 
   const handleNextMonth = () => {
-    if (selectedMonth === null || selectedYear === null) return;
-    if (selectedMonth === 11) {
+    if (selectedMonth === null) {
+      setSelectedMonth(0); // Empezar desde enero
+    } else if (selectedMonth === 11) {
       setSelectedMonth(0);
-      setSelectedYear(selectedYear + 1);
     } else {
       setSelectedMonth(selectedMonth + 1);
     }
-    setShowAllPeriods(false);
   };
 
   const handlePrevYear = () => {
-    if (selectedYear === null) return;
-    setSelectedYear(selectedYear - 1);
-    setShowAllPeriods(false);
+    if (selectedYear === null) {
+      setSelectedYear(2025); // Año por defecto
+    } else {
+      setSelectedYear(selectedYear - 1);
+    }
   };
 
   const handleNextYear = () => {
-    if (selectedYear === null) return;
-    setSelectedYear(selectedYear + 1);
-    setShowAllPeriods(false);
+    if (selectedYear === null) {
+      setSelectedYear(2026); // Año por defecto
+    } else {
+      setSelectedYear(selectedYear + 1);
+    }
+  };
+
+  const handleResetMonth = () => {
+    setSelectedMonth(null);
+  };
+
+  const handleResetYear = () => {
+    setSelectedYear(null);
   };
 
   const handleInvoicePress = useCallback((invoice: Invoice) => {
@@ -273,49 +295,35 @@ export default function InvoicesScreen() {
         </View>
         
         <View style={styles.periodSelectorContainer}>
-          {/* Selector de mes */}
+          {/* Selector de mes independiente */}
           <View style={styles.periodSelector}>
             <Pressable onPress={handlePrevMonth} style={styles.navButton}>
               <Text style={styles.navButtonText}>←</Text>
             </Pressable>
-            <Text style={styles.periodText}>
-              {selectedMonth !== null && selectedYear !== null
-                ? `${MONTH_NAMES[selectedMonth]} ${selectedYear}`
-                : 'Seleccionar mes'}
-            </Text>
+            <Pressable onPress={handleResetMonth} style={styles.periodTextContainer}>
+              <Text style={styles.periodText}>
+                {selectedMonth !== null ? MONTH_NAMES[selectedMonth] : 'Todos los meses'}
+              </Text>
+            </Pressable>
             <Pressable onPress={handleNextMonth} style={styles.navButton}>
               <Text style={styles.navButtonText}>→</Text>
             </Pressable>
           </View>
 
-          {/* Selector de año */}
+          {/* Selector de año independiente */}
           <View style={styles.periodSelector}>
             <Pressable onPress={handlePrevYear} style={styles.navButton}>
               <Text style={styles.navButtonText}>←</Text>
             </Pressable>
-            <Text style={styles.periodText}>
-              {selectedYear !== null ? selectedYear : 'A\u00f1o'}
-            </Text>
+            <Pressable onPress={handleResetYear} style={styles.periodTextContainer}>
+              <Text style={styles.periodText}>
+                {selectedYear !== null ? selectedYear : 'Todos los años'}
+              </Text>
+            </Pressable>
             <Pressable onPress={handleNextYear} style={styles.navButton}>
               <Text style={styles.navButtonText}>→</Text>
             </Pressable>
           </View>
-
-          {/* Botón Todo */}
-          <Pressable
-            style={[
-              styles.filterChip,
-              showAllPeriods && styles.filterChipActive,
-            ]}
-            onPress={() => setShowAllPeriods(!showAllPeriods)}
-          >
-            <Text style={[
-              styles.filterChipText,
-              showAllPeriods && styles.filterChipTextActive,
-            ]}>
-              Todo
-            </Text>
-          </Pressable>
         </View>
       </View>
 
@@ -502,6 +510,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.primary,
+  },
+  periodTextContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   periodText: {
     fontSize: 13,
