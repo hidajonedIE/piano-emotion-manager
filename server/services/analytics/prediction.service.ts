@@ -117,18 +117,23 @@ export class PredictionService {
   }
 
   private async getHistoricalRevenue(partnerId: string, months: number): Promise<number[]> {
-    const result = await this.db.execute(`
-      SELECT 
-        DATE_FORMAT(date, '%Y-%m-01') as month,
-        COALESCE(SUM(cost), 0) as total
-      FROM services
-      WHERE partnerId = ${partnerId}
-        AND date >= DATE_SUB(NOW(), INTERVAL ${months} MONTH)
-      GROUP BY DATE_FORMAT(date, '%Y-%m-01')
-      ORDER BY month
-    `);
+    try {
+      const result = await this.db.execute(`
+        SELECT 
+          DATE_FORMAT(date, '%Y-%m-01') as month,
+          COALESCE(SUM(cost), 0) as total
+        FROM services
+        WHERE partnerId = ${partnerId}
+          AND date >= DATE_SUB(NOW(), INTERVAL ${months} MONTH)
+        GROUP BY DATE_FORMAT(date, '%Y-%m-01')
+        ORDER BY month
+      `);
 
-    return (result.rows || []).map((r: { total: string }) => parseFloat(r.total) || 0);
+      return (result.rows || []).map((r: { total: string }) => parseFloat(r.total) || 0);
+    } catch (error) {
+      console.error('[PredictionService] Error getting historical revenue:', error);
+      return [];
+    }
   }
 
   private calculateTrend(data: number[]): number {
@@ -218,8 +223,9 @@ export class PredictionService {
    * Identifica clientes en riesgo de pérdida
    */
   async predictClientChurn(partnerId: string): Promise<ChurnRisk[]> {
-    // Obtener clientes con su historial de servicios
-    const result = await this.db.execute(`
+    try {
+      // Obtener clientes con su historial de servicios
+      const result = await this.db.execute(`
       SELECT 
         c.id,
         c.name,
@@ -292,8 +298,12 @@ export class PredictionService {
       }
     }
 
-    // Ordenar por riesgo descendente
-    return churnRisks.sort((a: any, b: any) => b.riskScore - a.riskScore);
+      // Ordenar por riesgo descendente
+      return churnRisks.sort((a: any, b: any) => b.riskScore - a.riskScore);
+    } catch (error) {
+      console.error('[PredictionService] Error predicting client churn:', error);
+      return [];
+    }
   }
 
   private getSuggestedChurnAction(riskScore: number, daysSince: number): string {
@@ -315,8 +325,9 @@ export class PredictionService {
    * Predice cuándo los pianos necesitarán mantenimiento
    */
   async predictMaintenance(partnerId: string): Promise<MaintenancePrediction[]> {
-    // Obtener pianos con su historial de servicios
-    const result = await this.db.execute(`
+    try {
+      // Obtener pianos con su historial de servicios
+      const result = await this.db.execute(`
       SELECT 
         p.id as piano_id,
         p.brand,
@@ -399,8 +410,12 @@ export class PredictionService {
       }
     }
 
-    // Ordenar por fecha predicha
-    return predictions.sort((a: any, b: any) => a.predictedDate.getTime() - b.predictedDate.getTime());
+      // Ordenar por fecha predicha
+      return predictions.sort((a: any, b: any) => a.predictedDate.getTime() - b.predictedDate.getTime());
+    } catch (error) {
+      console.error('[PredictionService] Error predicting maintenance:', error);
+      return [];
+    }
   }
 
   // ============================================
@@ -411,8 +426,9 @@ export class PredictionService {
    * Predice la carga de trabajo para las próximas semanas
    */
   async predictWorkload(partnerId: string, weeks: number = 4): Promise<any[]> {
-    // Obtener citas programadas
-    const upcomingResult = await this.db.execute(`
+    try {
+      // Obtener citas programadas
+      const upcomingResult = await this.db.execute(`
       SELECT 
         DATE_FORMAT(date, '%Y-%m-%d') as week,
         COUNT(*) as appointments
@@ -474,7 +490,11 @@ export class PredictionService {
       });
     }
 
-    return predictions;
+      return predictions;
+    } catch (error) {
+      console.error('[PredictionService] Error predicting workload:', error);
+      return [];
+    }
   }
 
   private getBusyDays(distribution: number[]): string[] {
@@ -510,8 +530,9 @@ export class PredictionService {
    * Predice la demanda de inventario
    */
   async predictInventoryDemand(partnerId: string): Promise<any[]> {
-    // Obtener consumo histórico de inventario
-    const result = await this.db.execute(`
+    try {
+      // Obtener consumo histórico de inventario
+      const result = await this.db.execute(`
       SELECT 
         i.id,
         i.name,
@@ -554,11 +575,15 @@ export class PredictionService {
       }
     }
 
-    // Ordenar por urgencia
-    return predictions.sort((a: any, b: any) => {
-      const urgencyOrder = { high: 0, medium: 1, low: 2 };
-      return urgencyOrder[a.urgency as keyof typeof urgencyOrder] - urgencyOrder[b.urgency as keyof typeof urgencyOrder];
-    });
+      // Ordenar por urgencia
+      return predictions.sort((a: any, b: any) => {
+        const urgencyOrder = { high: 0, medium: 1, low: 2 };
+        return urgencyOrder[a.urgency as keyof typeof urgencyOrder] - urgencyOrder[b.urgency as keyof typeof urgencyOrder];
+      });
+    } catch (error) {
+      console.error('[PredictionService] Error predicting inventory demand:', error);
+      return [];
+    }
   }
 
   // ============================================
