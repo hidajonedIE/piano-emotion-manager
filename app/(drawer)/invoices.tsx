@@ -42,6 +42,8 @@ const COLORS = {
 
 type FilterType = 'all' | Invoice['status'];
 
+const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
 export default function InvoicesScreen() {
   const router = useRouter();
   const { setHeaderConfig } = useHeader();
@@ -69,7 +71,7 @@ export default function InvoicesScreen() {
     React.useCallback(() => {
       let subtitle = `${filteredInvoices.length} ${filteredInvoices.length === 1 ? 'factura' : 'facturas'}`;
       if (!showAllPeriods && selectedMonth !== null && selectedYear !== null) {
-        subtitle += ` - ${monthNames[selectedMonth]} ${selectedYear}`;
+        subtitle += ` - ${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
       }
       setHeaderConfig({
         title: 'Facturaci\u00f3n',
@@ -77,7 +79,7 @@ export default function InvoicesScreen() {
         icon: 'doc.plaintext',
         showBackButton: false,
       });
-    }, [filteredInvoices.length, selectedMonth, selectedYear, showAllPeriods, monthNames, setHeaderConfig])
+    }, [filteredInvoices.length, selectedMonth, selectedYear, showAllPeriods, setHeaderConfig])
   );
 
   // Calcular estadísticas
@@ -132,7 +134,7 @@ export default function InvoicesScreen() {
     { key: 'cancelled' as FilterType, label: 'Anulada' },
   ], []);
 
-  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
 
   const handlePrevMonth = () => {
     if (selectedMonth === null || selectedYear === null) return;
@@ -277,7 +279,7 @@ export default function InvoicesScreen() {
             </Pressable>
             <Text style={styles.periodText}>
               {selectedMonth !== null && selectedYear !== null
-                ? `${monthNames[selectedMonth]} ${selectedYear}`
+                ? `${MONTH_NAMES[selectedMonth]} ${selectedYear}`
                 : 'Seleccionar mes'}
             </Text>
             <Pressable onPress={handleNextMonth} style={styles.navButton}>
