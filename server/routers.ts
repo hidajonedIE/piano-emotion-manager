@@ -48,6 +48,7 @@ import { shopRouter } from "./routers/shop/shop.router.js";
 import { teamRouter } from "./routers/team.router.js";
 import { clientRouter } from "./routers/crm/index.js";
 import { analyticsRouter } from "./routers/reports/index.js";
+import { debugRouter } from "./routers/debug.router.js";
 
 export const appRouter = router({
   // Sistema
@@ -79,6 +80,9 @@ export const appRouter = router({
   
   // Funcionalidades avanzadas
   advanced: advancedRouter,
+  
+  // Debug (temporal)
+  debug: debugRouter,
   
   // Uso y límites de suscripción
   usage: usageRouter,
