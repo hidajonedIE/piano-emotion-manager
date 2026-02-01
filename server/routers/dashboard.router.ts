@@ -25,6 +25,8 @@ export const dashboardRouter = router({
       const db = getDb();
       const partnerId = ctx.user.partnerId;
 
+      console.log('[Dashboard] getMonthlyMetrics called with:', { year: input.year, month: input.month, partnerId });
+
       // Calcular rango de fechas del mes
       const startDate = new Date(input.year, input.month - 1, 1);
       const endDate = new Date(input.year, input.month, 1);
@@ -32,6 +34,8 @@ export const dashboardRouter = router({
       // Convertir a formato ISO string (compatible con MySQL)
       const startDateStr = startDate.toISOString();
       const endDateStr = endDate.toISOString();
+
+      console.log('[Dashboard] Date range:', { startDateStr, endDateStr });
 
       // Contar clientes creados en el mes
       const clientsResult = await db
@@ -81,11 +85,21 @@ export const dashboardRouter = router({
           )
         );
 
-      return {
+      const result = {
         clients: Number(clientsResult[0]?.count || 0),
         pianos: Number(pianosResult[0]?.count || 0),
         services: Number(servicesResult[0]?.count || 0),
         revenue: Number(revenueResult[0]?.total || 0),
       };
+
+      console.log('[Dashboard] Query results:', {
+        clientsRaw: clientsResult[0],
+        pianosRaw: pianosResult[0],
+        servicesRaw: servicesResult[0],
+        revenueRaw: revenueResult[0],
+        final: result
+      });
+
+      return result;
     }),
 });
