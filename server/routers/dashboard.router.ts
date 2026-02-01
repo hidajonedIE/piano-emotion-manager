@@ -29,9 +29,9 @@ export const dashboardRouter = router({
       const startDate = new Date(input.year, input.month - 1, 1);
       const endDate = new Date(input.year, input.month, 1);
 
-      // Convertir a formato MySQL DATETIME
-      const startDateStr = startDate.toISOString().slice(0, 19).replace('T', ' ');
-      const endDateStr = endDate.toISOString().slice(0, 19).replace('T', ' ');
+      // Convertir a formato ISO string (compatible con MySQL)
+      const startDateStr = startDate.toISOString();
+      const endDateStr = endDate.toISOString();
 
       // Contar clientes creados en el mes
       const clientsResult = await db
