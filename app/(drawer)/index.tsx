@@ -108,13 +108,31 @@ export default function DashboardScreen() {
       );
     });
 
+    // Filtrar clientes creados en el mes seleccionado
+    const monthClients = clients.filter((c) => {
+      const createdDate = new Date(c.createdAt);
+      return (
+        createdDate.getMonth() === selectedMonth.getMonth() &&
+        createdDate.getFullYear() === selectedMonth.getFullYear()
+      );
+    });
+
+    // Filtrar pianos creados en el mes seleccionado
+    const monthPianos = pianos.filter((p) => {
+      const createdDate = new Date(p.createdAt);
+      return (
+        createdDate.getMonth() === selectedMonth.getMonth() &&
+        createdDate.getFullYear() === selectedMonth.getFullYear()
+      );
+    });
+
     const monthlyRevenue = monthServices.reduce((sum, s) => sum + (s.cost || 0), 0);
 
     return {
       services: monthServices.length,
       revenue: monthlyRevenue,
-      clients: clients.length,
-      pianos: pianos.length,
+      clients: monthClients.length,
+      pianos: monthPianos.length,
     };
   }, [services, clients, pianos, selectedMonth]);
 
