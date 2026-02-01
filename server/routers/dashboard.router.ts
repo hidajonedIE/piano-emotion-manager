@@ -23,7 +23,7 @@ export const dashboardRouter = router({
     )
     .query(async ({ ctx, input }) => {
       try {
-        const db = getDb();
+        const db = await getDb();
         const partnerId = ctx.user.partnerId;
 
         console.log('[Dashboard] getMonthlyMetrics called with:', { year: input.year, month: input.month, partnerId });
