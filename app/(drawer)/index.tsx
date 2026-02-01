@@ -203,7 +203,9 @@ export default function DashboardScreen() {
                     <Ionicons name="chevron-back" size={20} color={COLORS.textSecondary} />
                   </Pressable>
                   <Pressable style={styles.todayButton as any} onPress={goToToday}>
-                    <Text style={styles.todayText as any}>Hoy</Text>
+                    <Text style={styles.todayText as any}>
+                      {selectedMonth.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).replace('.', '')}
+                    </Text>
                   </Pressable>
                   <Pressable
                     style={styles.monthButton as any}
