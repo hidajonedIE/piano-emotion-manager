@@ -62,7 +62,53 @@ export default function InvoicesScreen() {
   }, [params.filter]);
 
   const debouncedSearch = useDebounce(search, 300);
-  const { invoices, loading, totalInvoices } = useInvoicesData();
+  
+  // Calcular dateFrom y dateTo basado en los filtros seleccionados
+  const { dateFrom, dateTo } = useMemo(() => {
+    if (selectedMonth === null && selectedYear === null) {
+      // Sin filtro de fecha
+      return { dateFrom: undefined, dateTo: undefined };
+    }
+    
+    let year = selectedYear || new Date().getFullYear();
+    let month = selectedMonth;
+    
+    if (selectedMonth !== null && selectedYear !== null) {
+      // Mes y año específicos
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 0, 23, 59, 59);
+      return {
+        dateFrom: start.toISOString(),
+        dateTo: end.toISOString()
+      };
+    } else if (selectedMonth !== null) {
+      // Solo mes seleccionado (todos los años)
+      // Buscar desde 2022 hasta 2026
+      const start = new Date(2022, month, 1);
+      const end = new Date(2026, month + 1, 0, 23, 59, 59);
+      return {
+        dateFrom: start.toISOString(),
+        dateTo: end.toISOString()
+      };
+    } else if (selectedYear !== null) {
+      // Solo año seleccionado (todos los meses)
+      const start = new Date(year, 0, 1);
+      const end = new Date(year, 11, 31, 23, 59, 59);
+      return {
+        dateFrom: start.toISOString(),
+        dateTo: end.toISOString()
+      };
+    }
+    
+    return { dateFrom: undefined, dateTo: undefined };
+  }, [selectedMonth, selectedYear]);
+  
+  const { invoices, loading, totalInvoices } = useInvoicesData({
+    search: debouncedSearch,
+    status: filter !== 'all' ? filter : undefined,
+    dateFrom,
+    dateTo,
+  });
 
   const isDesktop = width >= 1024;
 
@@ -76,47 +122,23 @@ export default function InvoicesScreen() {
     return { total, pending, paid, count: invoices.length, draft };
   }, [invoices]);
 
-  // Filtrar facturas
+  // Filtrar facturas (el backend ya filtra por fecha, aquí solo filtramos overdue)
   const filteredInvoices = useMemo(() => {
     const now = new Date();
-    const thisMonth = now.getMonth();
-    const thisYear = now.getFullYear();
-    const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
-    const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
 
     return invoices
       .filter(inv => {
-        const matchesSearch = 
-          inv.invoiceNumber.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          inv.clientName.toLowerCase().includes(debouncedSearch.toLowerCase());
-        const matchesStatus = filter === 'all' || inv.status === filter;
-        
-        // Filtrado independiente de mes y año
-        let matchesDate = true;
-        const invDate = new Date(inv.date);
-        const invMonth = invDate.getMonth();
-        const invYear = invDate.getFullYear();
-        
-        // Filtrar por mes si está seleccionado
-        if (selectedMonth !== null) {
-          matchesDate = matchesDate && invMonth === selectedMonth;
-        }
-        
-        // Filtrar por año si está seleccionado
-        if (selectedYear !== null) {
-          matchesDate = matchesDate && invYear === selectedYear;
-        }
-        
+        // Filtro overdue (solo si viene del parámetro de URL)
         let matchesOverdue = true;
         if (params.filter === 'overdue' && inv.dueDate) {
           const dueDate = new Date(inv.dueDate);
           matchesOverdue = dueDate < now;
         }
         
-        return matchesSearch && matchesStatus && matchesDate && matchesOverdue;
+        return matchesOverdue;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [invoices, debouncedSearch, filter, selectedMonth, selectedYear, params.filter]);
+  }, [invoices, params.filter]);
 
   const statusFilters = useMemo(() => [
     { key: 'all' as FilterType, label: 'Todas' },
