@@ -69,15 +69,16 @@ export const dashboardRouter = router({
           )
         );
 
-      // Calcular ingresos del mes (suma de cost de servicios)
+      // Calcular ingresos del mes (suma de total de facturas cobradas)
       const revenueResult = await db
-        .select({ total: sql<number>`COALESCE(SUM(${services.cost}), 0)` })
-        .from(services)
+        .select({ total: sql<number>`COALESCE(SUM(${invoices.total}), 0)` })
+        .from(invoices)
         .where(
           and(
-            eq(services.partnerId, partnerId),
-            gte(services.date, startDateStr),
-            lt(services.date, endDateStr)
+            eq(invoices.partnerId, partnerId),
+            eq(invoices.status, 'paid'),
+            gte(invoices.date, startDateStr),
+            lt(invoices.date, endDateStr)
           )
         );
 
