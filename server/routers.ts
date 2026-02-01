@@ -33,6 +33,7 @@ import {
   usageRouter,
   alertsRouter,
   alertSettingsRouter,
+  dashboardRouter,
 } from "./routers/index.js";
 import { licenseRouter } from "./routers/license/index.js";
 import { aiGenerationRouter } from "./routers/ai-generation.router.js";
@@ -112,6 +113,9 @@ export const appRouter = router({
   // Sistema de alertas
   alerts: alertsRouter,
   alertSettings: alertSettingsRouter,
+
+  // Dashboard y métricas
+  dashboard: dashboardRouter,
   
   // Tipos de servicio personalizados
   serviceTypes: serviceTypesRouter,

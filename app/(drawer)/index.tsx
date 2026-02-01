@@ -29,8 +29,9 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // Hooks y datos
-import { useClientsData, usePianosData, useServicesData, useAppointmentsData } from '@/hooks/data';
+import { useServicesData, useAppointmentsData } from '@/hooks/data';
 import { useTranslation } from '@/hooks/use-translation';
+import { trpc } from '@/utils/trpc';
 import { useAlertsOptimized } from '@/hooks/use-alerts-optimized';
 import { usePredictionsSummary, useChurnRisk, useMaintenancePredictions, useInventoryPredictions, useWorkloadPredictions } from '@/hooks/use-predictions';
 import { formatCompactNumber } from '@/utils/format';
@@ -80,8 +81,6 @@ export default function DashboardScreen() {
   );
 
   // Datos
-  const { clients } = useClientsData();
-  const { pianos } = usePianosData();
   const { services } = useServicesData();
   const { appointments } = useAppointmentsData();
   const { alerts, stats: alertStats } = useAlertsOptimized(15);
@@ -98,43 +97,19 @@ export default function DashboardScreen() {
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
-  // Estadísticas del mes seleccionado
-  const monthStats = useMemo(() => {
-    const monthServices = services.filter((s) => {
-      const serviceDate = new Date(s.date);
-      return (
-        serviceDate.getMonth() === selectedMonth.getMonth() &&
-        serviceDate.getFullYear() === selectedMonth.getFullYear()
-      );
-    });
+  // Obtener métricas del mes seleccionado desde el backend
+  const { data: monthStats, isLoading: isLoadingStats } = trpc.dashboard.getMonthlyMetrics.useQuery({
+    year: selectedMonth.getFullYear(),
+    month: selectedMonth.getMonth() + 1, // JavaScript usa 0-11, backend usa 1-12
+  });
 
-    // Filtrar clientes creados en el mes seleccionado
-    const monthClients = clients.filter((c) => {
-      const createdDate = new Date(c.createdAt);
-      return (
-        createdDate.getMonth() === selectedMonth.getMonth() &&
-        createdDate.getFullYear() === selectedMonth.getFullYear()
-      );
-    });
-
-    // Filtrar pianos creados en el mes seleccionado
-    const monthPianos = pianos.filter((p) => {
-      const createdDate = new Date(p.createdAt);
-      return (
-        createdDate.getMonth() === selectedMonth.getMonth() &&
-        createdDate.getFullYear() === selectedMonth.getFullYear()
-      );
-    });
-
-    const monthlyRevenue = monthServices.reduce((sum, s) => sum + (s.cost || 0), 0);
-
-    return {
-      services: monthServices.length,
-      revenue: monthlyRevenue,
-      clients: monthClients.length,
-      pianos: monthPianos.length,
-    };
-  }, [services, clients, pianos, selectedMonth]);
+  // Valores por defecto mientras carga
+  const stats = monthStats || {
+    clients: 0,
+    pianos: 0,
+    services: 0,
+    revenue: 0,
+  };
 
   // Próximas citas (3 más cercanas)
   const upcomingAppointments = useMemo(() => {
@@ -247,28 +222,28 @@ export default function DashboardScreen() {
                 <MetricCard
                   icon="construct-outline"
                   iconColor={COLORS.services}
-                  value={monthStats.services.toString()}
+                  value={stats.services.toString()}
                   label="Servicios"
                   onPress={() => router.push('/(drawer)/services')}
                 />
                 <MetricCard
                   icon="cash-outline"
                   iconColor={COLORS.income}
-                  value={`${monthStats.revenue.toFixed(0)} €`}
+                  value={`${stats.revenue.toFixed(0)} €`}
                   label="Ingresos"
                   onPress={() => router.push('/(drawer)/invoices')}
                 />
                 <MetricCard
                   icon="people-outline"
                   iconColor={COLORS.clients}
-                  value={monthStats.clients.toString()}
+                  value={stats.clients.toString()}
                   label="Clientes"
                   onPress={() => router.push('/(drawer)/clients')}
                 />
                 <MetricCard
                   icon="musical-notes-outline"
                   iconColor={COLORS.pianos}
-                  value={monthStats.pianos.toString()}
+                  value={stats.pianos.toString()}
                   label="Pianos"
                   onPress={() => router.push('/(drawer)/inventory')}
                 />
