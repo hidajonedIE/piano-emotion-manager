@@ -41,7 +41,6 @@ const COLORS = {
 };
 
 type FilterType = 'all' | Invoice['status'];
-type PeriodType = 'all' | 'thisMonth' | 'lastMonth' | 'thisYear';
 
 export default function InvoicesScreen() {
   const router = useRouter();
@@ -50,7 +49,9 @@ export default function InvoicesScreen() {
   const params = useLocalSearchParams<{ filter?: string }>();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
-  const [period, setPeriod] = useState<PeriodType>('all');
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState<number | null>(new Date().getFullYear());
+  const [showAllPeriods, setShowAllPeriods] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -66,13 +67,17 @@ export default function InvoicesScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
+      let subtitle = `${filteredInvoices.length} ${filteredInvoices.length === 1 ? 'factura' : 'facturas'}`;
+      if (!showAllPeriods && selectedMonth !== null && selectedYear !== null) {
+        subtitle += ` - ${monthNames[selectedMonth]} ${selectedYear}`;
+      }
       setHeaderConfig({
         title: 'Facturaci\u00f3n',
-        subtitle: `${totalInvoices} ${totalInvoices === 1 ? 'factura' : 'facturas'}`,
+        subtitle,
         icon: 'doc.plaintext',
         showBackButton: false,
       });
-    }, [totalInvoices, setHeaderConfig])
+    }, [filteredInvoices.length, selectedMonth, selectedYear, showAllPeriods, monthNames, setHeaderConfig])
   );
 
   // Calcular estadísticas
@@ -101,18 +106,11 @@ export default function InvoicesScreen() {
         const matchesStatus = filter === 'all' || inv.status === filter;
         
         let matchesDate = true;
-        if (period !== 'all') {
+        if (!showAllPeriods && selectedMonth !== null && selectedYear !== null) {
           const invDate = new Date(inv.date);
           const invMonth = invDate.getMonth();
           const invYear = invDate.getFullYear();
-          
-          if (period === 'thisMonth') {
-            matchesDate = invMonth === thisMonth && invYear === thisYear;
-          } else if (period === 'lastMonth') {
-            matchesDate = invMonth === lastMonth && invYear === lastMonthYear;
-          } else if (period === 'thisYear') {
-            matchesDate = invYear === thisYear;
-          }
+          matchesDate = invMonth === selectedMonth && invYear === selectedYear;
         }
         
         let matchesOverdue = true;
@@ -124,7 +122,7 @@ export default function InvoicesScreen() {
         return matchesSearch && matchesStatus && matchesDate && matchesOverdue;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [invoices, debouncedSearch, filter, period, params.filter]);
+  }, [invoices, debouncedSearch, filter, selectedMonth, selectedYear, showAllPeriods, params.filter]);
 
   const statusFilters = useMemo(() => [
     { key: 'all' as FilterType, label: 'Todas' },
@@ -134,12 +132,41 @@ export default function InvoicesScreen() {
     { key: 'cancelled' as FilterType, label: 'Anulada' },
   ], []);
 
-  const periodFilters = useMemo(() => [
-    { key: 'all' as PeriodType, label: 'Todo' },
-    { key: 'thisMonth' as PeriodType, label: 'Este mes' },
-    { key: 'lastMonth' as PeriodType, label: 'Mes anterior' },
-    { key: 'thisYear' as PeriodType, label: 'Este año' },
-  ], []);
+  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+  const handlePrevMonth = () => {
+    if (selectedMonth === null || selectedYear === null) return;
+    if (selectedMonth === 0) {
+      setSelectedMonth(11);
+      setSelectedYear(selectedYear - 1);
+    } else {
+      setSelectedMonth(selectedMonth - 1);
+    }
+    setShowAllPeriods(false);
+  };
+
+  const handleNextMonth = () => {
+    if (selectedMonth === null || selectedYear === null) return;
+    if (selectedMonth === 11) {
+      setSelectedMonth(0);
+      setSelectedYear(selectedYear + 1);
+    } else {
+      setSelectedMonth(selectedMonth + 1);
+    }
+    setShowAllPeriods(false);
+  };
+
+  const handlePrevYear = () => {
+    if (selectedYear === null) return;
+    setSelectedYear(selectedYear - 1);
+    setShowAllPeriods(false);
+  };
+
+  const handleNextYear = () => {
+    if (selectedYear === null) return;
+    setSelectedYear(selectedYear + 1);
+    setShowAllPeriods(false);
+  };
 
   const handleInvoicePress = useCallback((invoice: Invoice) => {
     router.push({
@@ -242,24 +269,50 @@ export default function InvoicesScreen() {
           ))}
         </View>
         
-        <View style={styles.filterGroup}>
-          {periodFilters.map((f) => (
-            <Pressable
-              key={f.key}
-              style={[
-                styles.filterChip,
-                period === f.key && styles.filterChipActive,
-              ]}
-              onPress={() => setPeriod(f.key)}
-            >
-              <Text style={[
-                styles.filterChipText,
-                period === f.key && styles.filterChipTextActive,
-              ]}>
-                {f.label}
-              </Text>
+        <View style={styles.periodSelectorContainer}>
+          {/* Selector de mes */}
+          <View style={styles.periodSelector}>
+            <Pressable onPress={handlePrevMonth} style={styles.navButton}>
+              <Text style={styles.navButtonText}>←</Text>
             </Pressable>
-          ))}
+            <Text style={styles.periodText}>
+              {selectedMonth !== null && selectedYear !== null
+                ? `${monthNames[selectedMonth]} ${selectedYear}`
+                : 'Seleccionar mes'}
+            </Text>
+            <Pressable onPress={handleNextMonth} style={styles.navButton}>
+              <Text style={styles.navButtonText}>→</Text>
+            </Pressable>
+          </View>
+
+          {/* Selector de año */}
+          <View style={styles.periodSelector}>
+            <Pressable onPress={handlePrevYear} style={styles.navButton}>
+              <Text style={styles.navButtonText}>←</Text>
+            </Pressable>
+            <Text style={styles.periodText}>
+              {selectedYear !== null ? selectedYear : 'A\u00f1o'}
+            </Text>
+            <Pressable onPress={handleNextYear} style={styles.navButton}>
+              <Text style={styles.navButtonText}>→</Text>
+            </Pressable>
+          </View>
+
+          {/* Botón Todo */}
+          <Pressable
+            style={[
+              styles.filterChip,
+              showAllPeriods && styles.filterChipActive,
+            ]}
+            onPress={() => setShowAllPeriods(!showAllPeriods)}
+          >
+            <Text style={[
+              styles.filterChipText,
+              showAllPeriods && styles.filterChipTextActive,
+            ]}>
+              Todo
+            </Text>
+          </Pressable>
         </View>
       </View>
 
@@ -420,6 +473,39 @@ const styles = StyleSheet.create({
   },
   filterChipTextActive: {
     color: '#FFFFFF',
+  },
+  periodSelectorContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    alignItems: 'center',
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    gap: 8,
+  },
+  navButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  navButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  periodText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+    minWidth: 120,
+    textAlign: 'center',
   },
 
   // Lista
