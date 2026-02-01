@@ -446,9 +446,9 @@
   - [x] Formulario factura
   - [x] Formulario tarifa
   - [x] Formulario orden de trabajo
-- [ ] Facturas no aparecen al filtrar por meses/años anteriores (2022-2025)
+- [x] Facturas no aparecen al filtrar por meses/años anteriores (2022-2025) - SOLUCIONADO: filtrado ahora usa backend con dateFrom/dateTo
 - [ ] Citas no se muestran en la sección de agenda
-- [ ] Implementar filtros independientes de mes y año en facturas (permitir "Enero de todos los años", "Todos los meses de 2025", etc.)
+- [x] Implementar filtros independientes de mes y año en facturas (permitir "Enero de todos los años", "Todos los meses de 2025", etc.) - COMPLETADO
   - [x] Formulario inventario
   - [x] Formulario proveedor
 - [x] Corregir tipos de servicio cortados en formulario de nueva cita (layout vertical)
