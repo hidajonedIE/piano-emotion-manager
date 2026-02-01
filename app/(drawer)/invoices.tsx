@@ -67,21 +67,6 @@ export default function InvoicesScreen() {
 
   const isDesktop = width >= 1024;
 
-  useFocusEffect(
-    React.useCallback(() => {
-      let subtitle = `${filteredInvoices.length} ${filteredInvoices.length === 1 ? 'factura' : 'facturas'}`;
-      if (!showAllPeriods && selectedMonth !== null && selectedYear !== null) {
-        subtitle += ` - ${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
-      }
-      setHeaderConfig({
-        title: 'Facturaci\u00f3n',
-        subtitle,
-        icon: 'doc.plaintext',
-        showBackButton: false,
-      });
-    }, [filteredInvoices.length, selectedMonth, selectedYear, showAllPeriods, setHeaderConfig])
-  );
-
   // Calcular estadísticas
   const stats = useMemo(() => {
     const total = invoices.reduce((sum, inv) => sum + inv.total, 0);
@@ -133,6 +118,22 @@ export default function InvoicesScreen() {
     { key: 'paid' as FilterType, label: 'Pagada' },
     { key: 'cancelled' as FilterType, label: 'Anulada' },
   ], []);
+
+  // Configurar header - DEBE estar después de filteredInvoices
+  useFocusEffect(
+    React.useCallback(() => {
+      let subtitle = `${filteredInvoices.length} ${filteredInvoices.length === 1 ? 'factura' : 'facturas'}`;
+      if (!showAllPeriods && selectedMonth !== null && selectedYear !== null) {
+        subtitle += ` - ${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+      }
+      setHeaderConfig({
+        title: 'Facturaci\u00f3n',
+        subtitle,
+        icon: 'doc.plaintext',
+        showBackButton: false,
+      });
+    }, [filteredInvoices.length, selectedMonth, selectedYear, showAllPeriods, setHeaderConfig])
+  );
 
 
 
