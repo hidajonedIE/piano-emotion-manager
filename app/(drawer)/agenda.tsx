@@ -27,7 +27,7 @@ export default function AgendaScreen() {
   const { t } = useTranslation();
   const { setHeaderConfig } = useHeader();
   const insets = useSafeAreaInsets();
-  const { appointments, loading } = useAppointmentsData();
+  const { appointments, loading, total, stats } = useAppointmentsData();
   const { getClient } = useClientsData();
   const { getPiano } = usePianosData();
 
@@ -79,7 +79,9 @@ export default function AgendaScreen() {
     return groups;
   }, [appointments]);
 
-  const pendingCount = appointments.filter((a: Appointment) => a.status !== 'cancelled' && a.status !== 'completed').length;
+  // Usar stats del hook si está disponible, sino calcular localmente
+  const pendingCount = stats?.pending || appointments.filter((a: Appointment) => a.status !== 'cancelled' && a.status !== 'completed').length;
+  const totalCount = total || appointments.length;
 
   // Citas de hoy para el optimizador de rutas
   const todayAppointments = useMemo(() => {

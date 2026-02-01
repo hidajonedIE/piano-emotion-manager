@@ -60,19 +60,19 @@ export default function InvoicesScreen() {
   }, [params.filter]);
 
   const debouncedSearch = useDebounce(search, 300);
-  const { invoices, loading } = useInvoicesData();
+  const { invoices, loading, totalInvoices } = useInvoicesData();
 
   const isDesktop = width >= 1024;
 
   useFocusEffect(
     React.useCallback(() => {
       setHeaderConfig({
-        title: 'Facturación',
-        subtitle: `${invoices.length} ${invoices.length === 1 ? 'factura' : 'facturas'}`,
+        title: 'Facturaci\u00f3n',
+        subtitle: `${totalInvoices} ${totalInvoices === 1 ? 'factura' : 'facturas'}`,
         icon: 'doc.plaintext',
         showBackButton: false,
       });
-    }, [invoices.length, setHeaderConfig])
+    }, [totalInvoices, setHeaderConfig])
   );
 
   // Calcular estadísticas
