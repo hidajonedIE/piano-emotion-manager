@@ -50,6 +50,7 @@ import { teamRouter } from "./routers/team.router.js";
 import { clientRouter } from "./routers/crm/index.js";
 import { analyticsRouter } from "./routers/reports/index.js";
 import { debugRouter } from "./routers/debug.router.js";
+import { diagnosticRouter } from "./routers/diagnostic.router.js";
 
 export const appRouter = router({
   // Sistema
@@ -84,6 +85,7 @@ export const appRouter = router({
   
   // Debug (temporal)
   debug: debugRouter,
+  diagnostic: diagnosticRouter,
   
   // Uso y límites de suscripción
   usage: usageRouter,
