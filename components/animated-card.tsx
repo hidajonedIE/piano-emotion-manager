@@ -79,7 +79,6 @@ export function AnimatedCard({
           backgroundColor: disabled ? '#F3F4F6' : cardBg, 
           borderColor: disabled ? '#E5E7EB' : borderColor,
           width: cardSize,
-          opacity: disabled ? 0.8 : 1,
         }
       ]}
       onPressIn={handlePressIn}
@@ -130,15 +129,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: Spacing.xs,
     position: 'relative',
-    // Sombras más prominentes
+    // Sombras muy prominentes
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 6,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
   },
   iconContainer: {
     borderRadius: BorderRadius.sm,
